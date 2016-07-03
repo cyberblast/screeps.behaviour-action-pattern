@@ -9,46 +9,42 @@ var creeps = {
         upgrader: require('creep.role.upgrader'),
         builder: require('creep.role.builder')
     },
-    bodyParts: {
-        harvester: {
-            xs: [WORK,CARRY,MOVE],
-            s: [WORK,WORK,CARRY,CARRY,MOVE,MOVE],
-            m: [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
-            l: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-            xl: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-            xxl: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]
+    builds: {
+        templateCosts: {
+            WORK: 100, 
+            CARRY: 50, 
+            MOVE: 50
+        },        
+        worker: function(energy){
+            var buildTemplate = {
+                WORK: 1, 
+                CARRY: 1, 
+                MOVE: 1
+            }
+            var simpleCost = (buildTemplate.WORK * this.templateCosts.WORK) + 
+                (buildTemplate.CARRY * this.templateCosts.CARRY) + 
+                (buildTemplate.MOVE * this.templateCosts.MOVE);
+            var multi = Math.floor(energy/simpleCost);
+            buildTemplate.WORK *= multi;
+            buildTemplate.CARRY *= multi;
+            buildTemplate.MOVE *= multi;
+            
+            var build = [];
+            
+            for( ; buildTemplate.WORK > 0; buildTemplate.WORK-- ){
+                build.push(WORK);
+            }
+            for( ; buildTemplate.CARRY > 0; buildTemplate.CARRY-- ){
+                build.push(CARRY);
+            }
+            for( ; buildTemplate.MOVE > 0; buildTemplate.MOVE-- ){
+                build.push(MOVE);
+            }
+            return build;
         }, 
-        upgrader: {
-            xs: [WORK,CARRY,MOVE],
-            s: [WORK,WORK,CARRY,CARRY,MOVE,MOVE],
-            m: [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
-            l: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-            xl: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-            xxl: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]
-        }, 
-        builder: {
-            xs: [WORK,CARRY,MOVE],
-            s: [WORK,WORK,CARRY,CARRY,MOVE,MOVE],
-            m: [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
-            l: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-            xl: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-            xxl: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]
-        }
-    },
-    sizes: {
-        getMaxForEnergy: function(energy){
-            if(energy < 200) return null;
-            if(energy < 400) return this.xs;
-            if(energy < 600) return this.s;
-            if(energy < 800) return this.m;
-            if(energy < 1000) return this.l;
-            if(energy < 1500) return this.xl;
-            return this.xxl;
-        },
-        xs: {
-            cost: 200, 
-            weight: 1, 
-            name: 'xs'
+        get: function(role, energy){
+            //if( role == 'harvester' || role == 'upgrader' || role == 'builder')
+            return this.worker(energy);
         }
     },
     count: {
@@ -80,9 +76,12 @@ var creeps = {
             if(!creep) {                
                 var id = Memory.creeps[name].id;
                 var source = Memory.creeps[name].source;
-                if(creep.room.memory.sources[source]) {
-                    var index = creep.room.memory.sources[source].creeps.indexOf(creep.id);
-                    if( index > -1 ) creep.room.memory.sources[source].creeps.splice(index);
+                if( source != null ){
+                    var sourceObj = Game.getObjectById(source);
+                    if(sourceObj.room.memory.sources[source]) {
+                        var index = sourceObj.room.memory.sources[source].creeps.indexOf(id);
+                        if( index > -1 ) sourceObj.room.memory.sources[source].creeps.splice(index);
+                    }
                 }
                 delete Memory.creeps[name];
                 console.log('Clearing non-existing creep memory:', name);
@@ -105,21 +104,21 @@ var creeps = {
     },
     breed: function(spawn){
         if( spawn.room.memory.maxSourceCreeps > spawn.room.find(FIND_CREEPS).length){
-            var size = creeps.sizes.getMaxForEnergy(spawn.energy);
-            if(size) {
-                creeps.count.sum();
-                var role = 'builder';
-                if(creeps.count.harvesterQuote() < creeps.balancing.harvester) role = 'harvester';
-                else if(creeps.count.upgraderQuote() < creeps.balancing.upgrader) role = 'upgrader';
-                creeps.createCreep(spawn, role, size);
-            }
+            creeps.count.sum();
+            var role = 'builder';
+            if(creeps.count.harvesterQuote() < creeps.balancing.harvester) role = 'harvester';
+            else if(creeps.count.upgraderQuote() < creeps.balancing.upgrader) role = 'upgrader';
+            creeps.createCreep(spawn, role, spawn.energy);
         }
     },
-	createCreep: function(spawn, role, size){
-        var newName = spawn.createCreep(this.bodyParts[role][size.name], undefined, {role: role, size: size.name, source: null});
-        Memory.creeps[name].id = Game.creeps[name].id;
-	    creeps.count[role] += size.weight;
-        console.log('Spawning new ' + size.name + ' ' + role + ': ' + newName);
+	createCreep: function(spawn, role, energy){
+        var build = this.builds.get(role, energy);
+        if( build.length > 0 ){
+            var newName = spawn.createCreep(build, undefined, {role: role, build: build, source: null});
+            Memory.creeps[newName].id = Game.creeps[newName].id;
+            creeps.count[role] += size.weight;
+            console.log('Spawning new ' + size.name + ' ' + role + ': ' + newName);
+        }
 	}
 }
 

@@ -29,7 +29,7 @@ var mod = {
                 
                 room.memory.sources[source.id].nextSpawn = nextSpawn;
                 room.memory.sources[source.id].nextSpawnDistance = nextSpawnDistance;
-                room.memory.sources[source.id].maxCreeps = nextSpawnDistance/4.9;
+                room.memory.sources[source.id].maxCreeps = nextSpawnDistance/4.5;
                 room.memory.maxSourceCreeps += room.memory.sources[source.id].maxCreeps;
             }
         }
