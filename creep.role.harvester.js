@@ -5,9 +5,12 @@ var roleHarvester = {
 	    if(creep.carry.energy < creep.carryCapacity) {
 	        var source = null;
 	        if( creep.memory.source == null){
-                source = Game.getObjectById(this.getResourceId(creep.room));
-                creep.room.memory.sources[source.id].creeps.push(creep.id);
-                creep.memory.source = source.id;
+	            var sourceId = this.getResourceId(creep.room);
+	            if( sourceId != null ){
+                    source = Game.getObjectById(sourceId);
+                    creep.room.memory.sources[source.id].creeps.push(creep.id);
+                    creep.memory.source = source.id;
+	            }
 	        } else source = Game.getObjectById(creep.memory.source);
 	        
             if(creep.harvest(source) == ERR_NOT_IN_RANGE) {

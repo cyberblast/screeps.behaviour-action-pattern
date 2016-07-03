@@ -77,7 +77,13 @@ var creeps = {
     initCreeps: function(){
         for(var name in Memory.creeps) {
             var creep = Game.creeps[name];
-            if(!creep) {
+            if(!creep) {                
+                var id = Memory.creeps[name].id;
+                var source = Memory.creeps[name].source;
+                if(creep.room.memory.sources[source]) {
+                    var index = creep.room.memory.sources[source].creeps.indexOf(creep.id);
+                    if( index > -1 ) creep.room.memory.sources[source].creeps.splice(index);
+                }
                 delete Memory.creeps[name];
                 console.log('Clearing non-existing creep memory:', name);
             }
@@ -111,6 +117,7 @@ var creeps = {
     },
 	createCreep: function(spawn, role, size){
         var newName = spawn.createCreep(this.bodyParts[role][size.name], undefined, {role: role, size: size.name, source: null});
+        Memory.creeps[name].id = Game.creeps[name].id;
 	    creeps.count[role] += size.weight;
         console.log('Spawning new ' + size.name + ' ' + role + ': ' + newName);
 	}
