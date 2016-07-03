@@ -1,5 +1,3 @@
-var room = require('room');
-
 var creeps = {
     balancing: {
       harvester: 50, 
@@ -64,7 +62,6 @@ var creeps = {
                 console.log('Clearing non-existing creep memory:', name);
             }
             else {
-                room.init(creep.room);
                 if(creep.memory.role == 'harvester') {
                     creeps.role.harvester.run(creep);
                     creeps.count.harvester++;
@@ -81,7 +78,7 @@ var creeps = {
         }
     },
     breed: function(spawn){
-        if( spawn.room.memory.maxSourceCreeps <= spawn.room.find(FIND_CREEPS).length){
+        if( spawn.room.memory.maxSourceCreeps > spawn.room.find(FIND_CREEPS).length){
             var size = creeps.sizes.getMaxForEnergy(spawn.energy);
             if(size) {
                 creeps.count.sum();
