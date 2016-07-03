@@ -2,9 +2,9 @@ var room = require('room');
 var creeps = require('creep');
 
 var mod = {
-    run: function(){
+    run: function(force){
         for(var iRoom in Game.rooms){
-            room.init(Game.rooms[iRoom]);   
+            room.init(Game.rooms[iRoom], force);   
         }
         creeps.reset();
         creeps.initCreeps();

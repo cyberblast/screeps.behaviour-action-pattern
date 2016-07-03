@@ -11,24 +11,44 @@ var creeps = {
     },
     bodyParts: {
         harvester: {
-            small: [WORK,CARRY,MOVE]
+            xs: [WORK,CARRY,MOVE]
+            s: [WORK,WORK,CARRY,CARRY,MOVE,MOVE]
+            m: [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE]
+            l: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]
+            xl: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE
+            xxl: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]
         }, 
         upgrader: {
-            small: [WORK,CARRY,MOVE]
+            xs: [WORK,CARRY,MOVE]
+            s: [WORK,WORK,CARRY,CARRY,MOVE,MOVE]
+            m: [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE]
+            l: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]
+            xl: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE
+            xxl: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]
         }, 
         builder: {
-            small: [WORK,CARRY,MOVE]
+            xs: [WORK,CARRY,MOVE]
+            s: [WORK,WORK,CARRY,CARRY,MOVE,MOVE]
+            m: [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE]
+            l: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]
+            xl: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE
+            xxl: [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE]
         }
     },
     sizes: {
         getMaxForEnergy: function(energy){
             if(energy < 200) return null;
-            return this.small;
+            if(energy < 400) return this.xs;
+            if(energy < 600) return this.s;
+            if(energy < 800) return this.m;
+            if(energy < 1000) return this.l;
+            if(energy < 1500) return this.xl;
+            return this.xxl;
         },
-        small: {
+        xs: {
             cost: 200, 
             weight: 1, 
-            name: 'small'
+            name: 'xs'
         }
     },
     count: {

@@ -7,7 +7,7 @@ var mod = {
             room.memory.spawns.count = spawns.length;
             room.memory.maxSourceCreeps = 0;
             
-            var allSources = room.find(FIND_SOURCES);
+            var allSources = room.find(FIND_SOURCES).concat(room.find(FIND_MINERALS));
             for(var iSource in allSources){
                 var source = allSources[iSource];
                 if(!room.memory.sources[source.id]) {
@@ -29,7 +29,7 @@ var mod = {
                 
                 room.memory.sources[source.id].nextSpawn = nextSpawn;
                 room.memory.sources[source.id].nextSpawnDistance = nextSpawnDistance;
-                room.memory.sources[source.id].maxCreeps = nextSpawnDistance/4;
+                room.memory.sources[source.id].maxCreeps = nextSpawnDistance/4.9;
                 room.memory.maxSourceCreeps += room.memory.sources[source.id].maxCreeps;
             }
         }
