@@ -1,8 +1,8 @@
 var creeps = {
     balancing: {
-      harvester: 50, 
-      upgrader: 40, 
-      builder: 10
+      harvester: 10, 
+      upgrader: 30, 
+      builder: 60
     },
     role: {
         harvester: require('creep.role.harvester'),
