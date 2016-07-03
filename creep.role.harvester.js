@@ -6,7 +6,7 @@ var roleHarvester = {
 	        var source = null;
 	        if( creep.memory.source == null){
                 source = Game.getObjectById(this.getResourceId(creep.room));
-                creep.room.memory.sources[source.id].creeps++;
+                creep.room.memory.sources[source.id].creeps.push(creep.id);
                 creep.memory.source = source.id;
 	        } else source = Game.getObjectById(creep.memory.source);
 	        
@@ -16,7 +16,10 @@ var roleHarvester = {
         }
         else {
             if( creep.memory.source != null){
-                creep.room.memory.sources[creep.memory.source].creeps--;
+                if(creep.room.memory.sources[creep.memory.source]) {
+                    var index = creep.room.memory.sources[creep.memory.source].creeps.indexOf(creep.id);
+                    if( index > -1 ) creep.room.memory.sources[creep.memory.source].creeps.splice(index);
+                }
                 creep.memory.source = null;
 	        }
             var targets = creep.room.find(FIND_STRUCTURES, {

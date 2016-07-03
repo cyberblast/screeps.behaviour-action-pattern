@@ -12,7 +12,7 @@ var mod = {
                 var source = allSources[iSource];
                 if(!room.memory.sources[source.id]) {
                     room.memory.sources[source.id] = {};
-                    room.memory.sources[source.id].creeps = 0;
+                    room.memory.sources[source.id].creeps = [];
                     room.memory.sources[source.id].maxCreeps = 3;
                 }
                 
