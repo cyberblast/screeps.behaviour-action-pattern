@@ -2,12 +2,11 @@ var room = require('room');
 var creeps = require('creep');
 
 var mod = {
-    run: function(force){
+    run: function(resetMemory){
         for(var iRoom in Game.rooms){
-            room.init(Game.rooms[iRoom], force);   
+            room.init(Game.rooms[iRoom], resetMemory);   
         }
-        creeps.reset();
-        creeps.initCreeps();
+        creeps.initCreeps(resetMemory);
         for(var iSpawn in Game.spawns){
             creeps.breed(Game.spawns[iSpawn]);
         }

@@ -1,7 +1,7 @@
 var loop = require('loop');
-var force = false;
+var resetMemory = false;
 
 module.exports.loop = function () {
-    loop.run(force);
-    force = false;
+    loop.run(resetMemory);
+    resetMemory = false;
 };

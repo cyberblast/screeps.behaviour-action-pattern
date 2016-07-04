@@ -1,4 +1,3 @@
-var harvester =  require('creep.role.harvester');
 
 var roleBuilder = {
 
@@ -27,9 +26,8 @@ var roleBuilder = {
                 }
             } else harvester.run(creep);
 	    }
-	    else {
-	        harvester.run(creep);
-	    }
+	    else return false;
+        return true;
 	}
 };
 

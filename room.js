@@ -7,7 +7,7 @@ var mod = {
             room.memory.spawns.count = spawns.length;
             room.memory.maxSourceCreeps = 0;
             
-            var allSources = room.find(FIND_SOURCES).concat(room.find(FIND_MINERALS));
+            var allSources = room.find(FIND_SOURCES);//.concat(room.find(FIND_MINERALS));
             for(var iSource in allSources){
                 var source = allSources[iSource];
                 if(!room.memory.sources[source.id]) {
