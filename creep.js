@@ -87,8 +87,8 @@ var creeps = {
                 console.log('Clearing non-existing creep memory:', name);
             }
             else {
-              if (!Memory.creeps[newName])
-                Memory.creeps[newName].id = creep.id;
+              if (!creep.memory.id)
+                creep.memory.id = creep.id;
 
                 if(creep.memory.role == 'harvester') {
                     creeps.role.harvester.run(creep);
