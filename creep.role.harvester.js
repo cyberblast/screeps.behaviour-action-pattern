@@ -3,11 +3,11 @@ var roleHarvester = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
-	    if(creep.carry.energy < creep.carryCapacity) {
+	    if(creep.carry.energy < creep.carryCapacity) { // need energy
 	        var source = null;
-	        if( creep.memory.source != null)
+	        if( creep.memory.source != null) // has source target
 	            source = Game.getObjectById(creep.memory.source);
-	        if( source == null) {
+	        if( source == null) { // need source target
 	            var sourceId = this.getResourceId(creep.room);
 	            if( sourceId != null ){
                     source = Game.getObjectById(sourceId);
@@ -18,8 +18,8 @@ var roleHarvester = {
             if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(source);
             }
-        } else {
-            if( creep.memory.source != null){
+        } else { // energy full
+            if( creep.memory.source != null){ // clear harvest source instruction
                 var source = creep.room.memory.sources[creep.memory.source];
                 if(source) {
                     var index = source.creeps.indexOf(creep.id);

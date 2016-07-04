@@ -1,4 +1,3 @@
-var harvester =  require('creep.role.harvester');
 
 var roleUpgrader = {
 
@@ -13,7 +12,7 @@ var roleUpgrader = {
 	    }
 
 	    if(creep.memory.upgrading) {
-            if( creep.memory.source != null){
+            if( creep.memory.source != null){ // clear harvest source target
                 if(creep.room.memory.sources[creep.memory.source]) {
                     var index = creep.room.memory.sources[creep.memory.source].creeps.indexOf(creep.id);
                     if( index > -1 ) creep.room.memory.sources[creep.memory.source].creeps.splice(index);
@@ -24,9 +23,8 @@ var roleUpgrader = {
                 creep.moveTo(creep.room.controller);
             }
         }
-        else {
-	        harvester.run(creep);
-        }
+        else return false;
+        return true;
 	}
 };
 

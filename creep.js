@@ -100,12 +100,13 @@ var creeps = {
           creeps.count.harvester += creep.memory.build.cost;
         }
         if (creep.memory.role == 'upgrader') {
-          creeps.role.upgrader.run(creep);
+          if( !creeps.role.upgrader.run(creep) )
+            creeps.role.harvester.run(creep);
           creeps.count.upgrader += creep.memory.build.cost;
         }
         if (creep.memory.role == 'builder') {
           if( !creeps.role.builder.run(creep) )
-            creeps.role.harvester.run(creep)
+            creeps.role.harvester.run(creep);
           creeps.count.builder += creep.memory.build.cost;
         }
       }
