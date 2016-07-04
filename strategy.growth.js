@@ -6,34 +6,60 @@ var mod = {
         upgrader: 20,
         builder: 40
     }, 
+    partCost: {
+      work: 100,
+      carry: 50,
+      move: 50
+    },
     nextRole: function(room){        
         var roomCreeps = room.memory.creeps;
         var total = roomCreeps.harvester + roomCreeps.builder + roomCreeps.upgrader; 
+
+        if( total == 0 ) return  [
+            { role: 'builder', 
+                currentWeight: 0, 
+                currentQuote: 0, 
+                targetQuote: this.rolebalancing.builder,
+                requirement: 100 
+            },
+            { role: 'upgrader', 
+                currentWeight: 0, 
+                currentQuote: 0, 
+                targetQuote: this.rolebalancing.upgrader,
+                requirement: 100 
+            },
+            { role: 'harvester', 
+                currentWeight: 1, 
+                currentQuote: 1, 
+                targetQuote: this.rolebalancing.harvester,
+                requirement: 100 
+            }
+        ];
 
         var builderQuote = roomCreeps.builder*100 / total;
         var harvesterQuote = roomCreeps.harvester*100 / total; 
         var upgraderQuote = roomCreeps.upgrader*100 / total;
         var builderRequirement = this.rolebalancing.builder - builderQuote;
         var harvesterRequirement = this.rolebalancing.harvester - harvesterQuote; 
-        var upgraderRequirement = this.rolebalancing.upgrader - upgrader;
+        var upgraderRequirement = this.rolebalancing.upgrader - upgraderQuote;
 
         var roles = [
             { role: 'builder', 
                 currentWeight: roomCreeps.builder, 
                 currentQuote: builderQuote, 
-                targetQuote: rolebalancing.builder,
+                targetQuote: this.rolebalancing.builder,
                 requirement: builderRequirement 
             },
             { role: 'upgrader', 
                 currentWeight: roomCreeps.upgrader, 
                 currentQuote: upgraderQuote, 
-                targetQuote: rolebalancing.upgrader,
+                targetQuote: this.rolebalancing.upgrader,
                 requirement: upgraderRequirement 
             },
             { role: 'harvester', 
                 currentWeight: roomCreeps.harvester, 
                 currentQuote: harvesterQuote, 
-                targetQuote: rolebalancing.harvester,
+                targetQuote: this.rolebalancing.harvester,
                 requirement: harvesterRequirement 
             }
         ];
@@ -42,18 +68,18 @@ var mod = {
         });
         return roles;
     }, 
-    creepSetup: function(role, maxenergy){
+    creepSetup: function(spawn){
         var build = {
             setup: 'worker',
             cost: 0,
             parts: []
         }
         var simpleCost = 
-            self.partCost.work +
-            self.partCost.carry +
-            self.partCost.move;
+            this.partCost.work +
+            this.partCost.carry +
+            this.partCost.move;
 
-        var multi = Math.floor(energy / simpleCost);
+        var multi = Math.floor(spawn.room.energyAvailable / simpleCost);
         build.cost = simpleCost * multi;
 
         for (var iWork = 0; iWork < multi; iWork++) {

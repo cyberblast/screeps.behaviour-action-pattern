@@ -24,43 +24,40 @@ var creeps = {
           creep.room.memory.sources[creep.memory.source].creeps.push(creep.id);
 
         if (creep.memory.role == 'harvester') {
-          creep.room.memory.creeps.harvester += creep.memory.build.cost;
+          creep.room.memory.creeps.harvester += creep.memory.cost;
         }
         if (creep.memory.role == 'upgrader') {
-          creep.room.memory.creeps.upgrader += creep.memory.build.cost;
+          creep.room.memory.creeps.upgrader += creep.memory.cost;
         }
         if (creep.memory.role == 'builder') {
-          creep.room.memory.creeps.builder += creep.memory.build.cost;
+          creep.room.memory.creeps.builder += creep.memory.cost;
         }
       }
     }
     // assign role behaviour
     for (var name in Memory.creeps) {
+      var hasRole = false;
       var creep = Game.creeps[name];
         if (creep.memory.role == 'harvester') {
-          if( !this.role.harvester.run(creep) ){
-            if( !this.role.builder.run(creep) ) {
-              this.role.upgrader.run(creep);
-            }
-          }
+          this.role.harvester.run(creep);
         }
         else if (creep.memory.role == 'upgrader') {
-          if( !this.role.upgrader.run(creep) ) {
-            if( !this.role.harvester.run(creep) ) {
-              this.role.builder.run(creep);
-            }
-          }
+          this.role.upgrader.run(creep);
         }
         else if (creep.memory.role == 'builder') {
-          if( !this.role.builder.run(creep) ){
-            if( !this.role.harvester.run(creep) ) {
-              this.role.upgrader.run(creep);
+          this.role.builder.run(creep);
+        } 
+                
+        if(!creep.memory.role) {
+          var nextRole = strategy.nextRole(creep.room);
+          for( var iRole = 0; iRole < nextRole.length; iRole ++ ) {
+            var role = this.role[nextRole[0].role]; 
+            if(role.run(creep)){
+              creep.room.memory.creeps[nextRole[iRole].role] += creep.memory.cost;
+              creep.memory.role = nextRole[iRole].role;
+              break;
             }
           }
-        } else {
-          var nextRole = strategy.nextRole(creep.room);
-          var role;
-          for( var iRole = 0, role = this.role[nextRole[iRole].role]; !role.run(creep) && iRole < nextRole.length; iRole++ );
         }
       }
   }
