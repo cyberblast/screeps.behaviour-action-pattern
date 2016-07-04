@@ -51,73 +51,57 @@ var creeps = {
       return this.worker(energy);
     }
   },
-  count: {
-    harvester: 0,
-    upgrader: 0,
-    builder: 0,
-    total: 0,
-    sum: function () {
-      this.total = this.harvester + this.upgrader + this.builder;
-    },
-    upgraderQuote: function () {
-      return (this.total == 0) ? 0 : 100 * this.upgrader / this.total;
-    },
-    harvesterQuote: function () {
-      return (this.total == 0) ? 0 : 100 * this.harvester / this.total;
-    },
-    builderQuote: function () {
-      return (this.total == 0) ? 0 : 100 * this.builder / this.total;
-    }
-  },
-  initCreeps: function (resetMemory) {
-    this.count.harvester = 0;
-    this.count.upgrader = 0;
-    this.count.builder = 0;
+  inventory: function(){
     for (var name in Memory.creeps) {
       var creep = Game.creeps[name];
       if (!creep) {
-        var id = Memory.creeps[name].id;
-        var source = Memory.creeps[name].source;
-        if (source != null) {
-          var sourceObj = Game.getObjectById(source);
-          if (sourceObj && sourceObj.room.memory.sources[source]) {
-            var index = sourceObj.room.memory.sources[source].creeps.indexOf(id);
-            if (index > -1) sourceObj.room.memory.sources[source].creeps.splice(index);
-          }
-        }
-        delete Memory.creeps[name];
         console.log('Clearing non-existing creep memory:', name);
+        delete Memory.creeps[name];
       } else {
         if (!creep.memory.id)
-          creep.memory.id = creep.id;
-        if(resetMemory){
-          creep.memory.source = null;
-        }
+        creep.memory.id = creep.id; // bug @ createCreep Workaround
 
         if (creep.memory.role == 'harvester') {
-          if( !creeps.role.harvester.run(creep) )
-            creeps.role.builder.run(creep);
-          creeps.count.harvester += creep.memory.build.cost;
+          room.memory.creeps.harvester += creep.memory.build.cost;
         }
         if (creep.memory.role == 'upgrader') {
-          if( !creeps.role.upgrader.run(creep) )
-            creeps.role.harvester.run(creep);
-          creeps.count.upgrader += creep.memory.build.cost;
+          room.memory.creeps.upgrader += creep.memory.build.cost;
         }
         if (creep.memory.role == 'builder') {
-          if( !creeps.role.builder.run(creep) )
-            creeps.role.harvester.run(creep);
-          creeps.count.builder += creep.memory.build.cost;
+          room.memory.creeps.builder += creep.memory.build.cost;
         }
       }
     }
   },
+  init: function () {
+    for (var name in Memory.creeps) {
+      var creep = Game.creeps[name];
+        if (creep.memory.role == 'harvester') {
+          if( !creep.role.harvester.run(creep) )
+            creep.role.builder.run(creep);
+        }
+        if (creep.memory.role == 'upgrader') {
+          if( !creep.role.upgrader.run(creep) )
+            creep.role.harvester.run(creep);
+        }
+        if (creep.memory.role == 'builder') {
+          if( !creep.role.builder.run(creep) )
+            creep.role.harvester.run(creep);
+        }
+      }
+  },
   breed: function (spawn) {
     if (spawn.room.memory.maxSourceCreeps > spawn.room.find(FIND_CREEPS).length) {
-      creeps.count.sum();
+
+      var roomCreeps = spawn.room.memory.creeps;
+      var total = roomCreeps.harvester + roomCreeps.builder + roomCreeps.upgrader; 
+      var harvesterQuote = spawn.room.memory.creeps.harvester / total; 
+      var upgraderQuote = spawn.room.memory.creeps.upgrader / total;
+
       var role = 'builder';
-      if (creeps.count.harvesterQuote() < creeps.balancing.harvester) role = 'harvester';
-      else if (creeps.count.upgraderQuote() < creeps.balancing.upgrader) role = 'upgrader';
+      if (harvesterQuote < this.balancing.harvester) role = 'harvester';
+      else if (upgraderQuote < this.balancing.upgrader) role = 'upgrader';
+
       creeps.createCreep(spawn, role, spawn.room.energyAvailable);
     } else console.log('Max Room creep count reached!');
   },
@@ -125,9 +109,8 @@ var creeps = {
     var build = this.builds.get(role, energy);
     if (build.parts.length > 0) {
       var newName = spawn.createCreep(build.parts, undefined, { role: role, build: build, source: null });
-      //Memory.creeps[newName].id = Game.creeps[newName].id;
-      creeps.count[role] += build.cost; //creeps.count[role] += size.weight;
-      console.log('Spawning new ' + role + ': ' + newName);
+      spawn.room.memory.creeps[role] += build.cost;
+      console.log('Spawning new ' + role + ' for ' + build.cost + ': ' + newName);
     }
   }
 }

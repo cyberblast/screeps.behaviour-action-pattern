@@ -1,12 +1,10 @@
 var mod = {
-    init: function(room, force){
-        var spawns = room.find(FIND_MY_SPAWNS);
-        if(!room.memory.sources || spawns.length != room.memory.spawns.count ||  force) {
+    init: function(){
+        for(var iRoom in Game.rooms){
             room.memory.sources = {};
-            room.memory.spawns = {};
-            room.memory.spawns.count = spawns.length;
             room.memory.maxSourceCreeps = 0;
             
+            // Sources in Room
             var allSources = room.find(FIND_SOURCES);//.concat(room.find(FIND_MINERALS));
             for(var iSource in allSources){
                 var source = allSources[iSource];
@@ -19,6 +17,7 @@ var mod = {
                 var nextSpawn = null;
                 var nextSpawnDistance = null;
                 
+                var spawns = room.find(FIND_MY_SPAWNS);
                 for(var iSpawn in spawns){
                     var distance = this.distance(spawns[iSpawn], source);
                     if( nextSpawnDistance == null || distance < nextSpawnDistance) {
@@ -30,8 +29,15 @@ var mod = {
                 room.memory.sources[source.id].nextSpawn = nextSpawn;
                 room.memory.sources[source.id].nextSpawnDistance = nextSpawnDistance;
                 room.memory.sources[source.id].maxCreeps = nextSpawnDistance/4.5;
-                room.memory.maxSourceCreeps += room.memory.sources[source.id].maxCreeps;
+                room.memory.maxSourceCreeps += room.memory.sources[source.id].maxCreeps; 
             }
+
+            // Creeps in Room
+            room.memory.creeps = {
+                harvester: 0,
+                upgrader: 0,
+                builder: 0 
+            };
         }
     },
     distance: function(a, b){
