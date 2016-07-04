@@ -1,7 +1,9 @@
-var loop = require('loop');
-var resetMemory = false;
+var room = require('room');
+var creep = require('creep');
+var spawn = require('creep');
 
 module.exports.loop = function () {
-    loop.run(resetMemory);
-    resetMemory = false;
+    room.loop();
+    creep.loop();
+    spawn.loop();
 };

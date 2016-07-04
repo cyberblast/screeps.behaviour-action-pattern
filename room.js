@@ -1,6 +1,7 @@
 var mod = {
-    init: function(){
+    loop: function(){
         for(var iRoom in Game.rooms){
+            var room = Game.rooms[iRoom];
             room.memory.sources = {};
             room.memory.maxSourceCreeps = 0;
             

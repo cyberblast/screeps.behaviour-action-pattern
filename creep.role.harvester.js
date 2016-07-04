@@ -13,11 +13,11 @@ var roleHarvester = {
 	            var sourceId = this.getResourceId(creep.room);
 	            if( sourceId != null ){
                     source = Game.getObjectById(sourceId);
-                    creep.room.memory.sources[source.id].creeps.push(creep.id);
-                    creep.memory.source = source.id;
+                    creep.room.memory.sources[sourceId].creeps.push(creep.id);
+                    creep.memory.source = sourceId;
 	            } else console.log('No Source found for creep ' + creep.name);
 	        } 
-            
+
             if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(source);
             }
@@ -49,7 +49,7 @@ var roleHarvester = {
         for(var iSource in room.memory.sources){
             var source = room.memory.sources[iSource];
             console.log('source' + iSource + ' creeps:' + source.creeps.length + ' of ' + source.maxCreeps);
-            if( source.creeps.length < source.maxCreeps && Game.getObjectById(iSource).energy > 100) return iSource;
+            if( (source.creeps.length < source.maxCreeps) && (Game.getObjectById(iSource).energy > 100)) return iSource;
         } return null;
 	}
 };
