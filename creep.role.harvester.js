@@ -48,7 +48,7 @@ var roleHarvester = {
 	getResourceId: function(room){
         for(var iSource in room.memory.sources){
             var source = room.memory.sources[iSource];
-            console.log('source' + iSource + ' creeps:' + source.creeps.length + ' of ' + source.maxCreeps);
+            //console.log('source' + iSource + ' creeps:' + source.creeps.length + ' of ' + source.maxCreeps);
             if( (source.creeps.length < Math.floor(source.maxCreeps)) && (Game.getObjectById(iSource).energy > 100)) 
                 return iSource;
         } return null;
