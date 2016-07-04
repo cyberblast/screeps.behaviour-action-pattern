@@ -87,6 +87,9 @@ var creeps = {
                 console.log('Clearing non-existing creep memory:', name);
             }
             else {
+              if (!Memory.creeps[newName])
+                Memory.creeps[newName].id = creep.id;
+
                 if(creep.memory.role == 'harvester') {
                     creeps.role.harvester.run(creep);
                     creeps.count.harvester++;
@@ -115,7 +118,7 @@ var creeps = {
         var build = this.builds.get(role, energy);
         if( build.length > 0 ){
             var newName = spawn.createCreep(build, undefined, {role: role, build: build, source: null});
-            Memory.creeps[newName].id = Game.creeps[newName].id;
+            //Memory.creeps[newName].id = Game.creeps[newName].id;
             creeps.count[role] += size.weight;
             console.log('Spawning new ' + size.name + ' ' + role + ': ' + newName);
         }
