@@ -5,6 +5,7 @@ var creeps = {
     builder: require('creep.role.builder')
   },
   loop: function () {
+    // inventory
     for (var name in Memory.creeps) {
       var creep = Game.creeps[name];
       if (!creep) {
@@ -12,7 +13,7 @@ var creeps = {
         delete Memory.creeps[name];
       } else {
         if (!creep.memory.id)
-        creep.memory.id = creep.id; // bug @ createCreep Workaround
+          creep.memory.id = creep.id; // bug @ createCreep Workaround
 
         if (creep.memory.role == 'harvester') {
           creep.room.memory.creeps.harvester += creep.memory.build.cost;
@@ -26,20 +27,30 @@ var creeps = {
         if( creep.memory.source != null && creep.room.memory.sources[creep.memory.source])
           creep.room.memory.sources[creep.memory.source].creeps.push(creep.id);
       }
-    };
+    }
+    // assign role behaviour
     for (var name in Memory.creeps) {
       var creep = Game.creeps[name];
         if (creep.memory.role == 'harvester') {
-          if( !this.role.harvester.run(creep) )
-            this.role.builder.run(creep);
+          if( !this.role.harvester.run(creep) ){
+            if( !this.role.builder.run(creep) ) {
+              this.role.upgrader.run(creep);
+            }
+          }
         }
         if (creep.memory.role == 'upgrader') {
-          if( !this.role.upgrader.run(creep) )
-            this.role.harvester.run(creep);
+          if( !this.role.upgrader.run(creep) ) {
+            if( !this.role.harvester.run(creep) ) {
+              this.role.builder.run(creep);
+            }
+          }
         }
         if (creep.memory.role == 'builder') {
-          if( !this.role.builder.run(creep) )
-            this.role.harvester.run(creep);
+          if( !this.role.builder.run(creep) ){
+            if( !this.role.harvester.run(creep) ) {
+              this.role.upgrader.run(creep);
+            }
+          }
         }
       }
   }

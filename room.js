@@ -30,10 +30,9 @@ var mod = {
                 room.memory.sources[source.id].nextSpawn = nextSpawn;
                 room.memory.sources[source.id].nextSpawnDistance = nextSpawnDistance;
                 room.memory.sources[source.id].maxCreeps = nextSpawnDistance/4.5;
+                // TODO: Calculate MaxCreep depending on fastest path to spawn 
                 room.memory.maxSourceCreeps += room.memory.sources[source.id].maxCreeps; 
             }
-
-            // Creeps in Room
             room.memory.creeps = {
                 harvester: 0,
                 upgrader: 0,

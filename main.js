@@ -1,9 +1,9 @@
-var room = require('room');
-var creep = require('creep');
-var spawn = require('creep');
+var rooms = require('room');
+var creeps = require('creep');
+var spawns = require('spawn');
 
 module.exports.loop = function () {
-    room.loop();
-    creep.loop();
-    spawn.loop();
+    rooms.loop();
+    creeps.loop();
+    spawns.loop();
 };

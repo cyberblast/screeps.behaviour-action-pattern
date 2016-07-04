@@ -2,7 +2,7 @@
 var mod = {
     loop: function(){
         for(var iSpawn in Game.spawns){
-            creeps.breed(Game.spawns[iSpawn]);
+            this.breed(Game.spawns[iSpawn]);
         }
     },
   balancing: {
@@ -58,7 +58,7 @@ var mod = {
       else if (upgraderQuote < this.balancing.upgrader) role = 'upgrader';
 
       this.createCreep(spawn, role, spawn.room.energyAvailable);
-    } else console.log('Max Room creep count reached!');
+    }
   },
   createCreep: function (spawn, role, energy) {
     var build = this.builds.get(role, energy);
@@ -67,7 +67,6 @@ var mod = {
       for( var son = 1; name == null || Game.creeps[name]; son++ ) {
         name = role + '.' + build.cost + '.' + son;
       }
-      console.log(name);
       var newName = spawn.createCreep(build.parts, name, { role: role, build: build, source: null });
       spawn.room.memory.creeps[role] += build.cost;
       console.log('Spawning new ' + role + ' for ' + build.cost + ': ' + newName);
