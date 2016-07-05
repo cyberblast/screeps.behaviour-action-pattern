@@ -1,5 +1,5 @@
 var mod = {
-    run: function(creep){
+    run: function(creep, state){
         creep.memory.action = 'upgrading';
         var ramparts = creep.room.find();
         // Todo: first upgrade ramparts to same level of controller

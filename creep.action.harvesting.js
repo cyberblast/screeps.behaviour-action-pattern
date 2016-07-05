@@ -1,18 +1,18 @@
 var mod = {
-    run: function(creep){
-        creep.memory.action = 'harvesting';        
+    run: function(creep, state){    
         var source = null;
 
-        if( creep.memory.source != null) // has source target
+        if( creep.memory.target != null && creep.memory.targetType == 'source') // has source target
             source = Game.getObjectById(creep.memory.source);
 
-        if( source == null) { // need source target
-            var sourceId = this.getResourceId(creep.room);
+        if( !source ) { // need source target
+            var sourceId = this.getResourceId(creep, state);
             if( sourceId != null ){
                 source = Game.getObjectById(sourceId);
-                creep.room.memory.sources[sourceId].creeps.push(creep.id);
-                creep.memory.source = sourceId;
-            } else console.log('No Source found for creep ' + creep.name);
+                creep.memory.target = sourceId;
+                creep.memory.targetType = 'source';
+                // TODO: Update State
+            } else console.log('No free energy source found for creep ' + creep.name);
         } 
 
         if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
@@ -20,13 +20,17 @@ var mod = {
         }
         return true;
     },
-	getResourceId: function(room){
-        for(var iSource in room.memory.sources){
-            var source = room.memory.sources[iSource];
-            //console.log('source' + iSource + ' creeps:' + source.creeps.length + ' of ' + source.maxCreeps);
-            if( (source.creeps.length < Math.floor(source.maxCreeps)) && (Game.getObjectById(iSource).energy > 100)) 
-                return iSource;
-        } return null;
+	getResourceId: function(creep, state){
+        var roomSources = state.rooms[creep.room.id].sources;
+        var targetId = null;
+        var energy = -1;
+        roomSources.foreach(source => function(source){
+            if( site.creeps.length+1 <= source.maxCreeps && source.energy > energy){
+                targetId = source.id;
+                energy = source.energy;
+            }
+        });
+        return targetId;
 	}
 }
 

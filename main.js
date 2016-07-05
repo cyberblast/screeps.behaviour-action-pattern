@@ -1,12 +1,13 @@
-var rooms = require('room');
-var creeps = require('creep');
-var spawns = require('spawn');
-var towers = require('tower');
-var strategy = require('strategy.growth');
+var modules = {
+    status: require('status'),
+    creeps: require('creep'),
+    spawns: require('spawn'),
+    towers: require('tower')
+}
 
 module.exports.loop = function () {
-    rooms.loop();
-    creeps.loop(strategy);
-    spawns.loop(strategy);
-    towers.loop();
+    var state = modules.status.load();
+    creeps.loop(state);
+    spawns.loop(state);
+    towers.loop(state);
 };
