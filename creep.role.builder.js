@@ -1,7 +1,9 @@
 var roleBuilder = {
     actions: {
+        upgrading: require('creep.action.upgrading'), 
         building: require('creep.action.building'), 
-        harvest: require('creep.action.harvesting')
+        storing: require('creep.action.storing'), 
+        harvesting: require('creep.action.harvesting')
     },
     run: function(creep) {
 
@@ -21,11 +23,19 @@ var roleBuilder = {
                 }
                 creep.memory.source = null;
 	        }
-            return this.actions.building.run(creep);
+            
+            if( !this.actions.building.run(creep) ) {
+                if( !this.actions.upgrading.run(creep) ) {
+                    if( !this.actions.storing.run(creep) ){
+                        console.log(creep.name + ' idle!');
+                    }
+                }
+            }
 	    } else {
             // energy required   
-            return this.actions.harvesting.run(creep);
+            this.actions.harvesting.run(creep);
         }
+        return true;
 	}
 };
 
