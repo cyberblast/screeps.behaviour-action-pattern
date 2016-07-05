@@ -7,7 +7,7 @@ var roleHarvester = {
     },
     run: function(creep) {
         
-	    if(creep.memory.action == 'upgrading' || creep.memory.action == 'storing' || creep.memory.action == 'building' && creep.carry.energy == 0) { 
+	    if((creep.memory.action == 'upgrading' || creep.memory.action == 'storing' || creep.memory.action == 'building') && creep.carry.energy == 0) { 
             // finished work, get some energy
             creep.memory.action = 'harvesting';
             //creep.memory.role = null;
@@ -24,22 +24,25 @@ var roleHarvester = {
                 }
                 creep.memory.source = null;
 	        }
+            if(creep.memory.cost)
+                creep.room.memory.creeps[creep.memory.role] -= creep.memory.cost;
             creep.memory.action = null;
             creep.memory.role = null;
             return false;
 	    } 
 
         if(creep.memory.action == null){
-            if( creep.memory.role == 'builder') creep.memory.action == 'building';
-            if( creep.memory.role == 'harvester') creep.memory.action == 'storing';
-            if( creep.memory.role == 'upgrader') creep.memory.action == 'upgrading';
+            if( creep.carry.energy < creep.carryCapacity ) creep.memory.action = 'harvesting';
+            else if( creep.memory.role == 'builder') creep.memory.action = 'building';
+            else if( creep.memory.role == 'harvester') creep.memory.action = 'storing';
+            else if( creep.memory.role == 'upgrader') creep.memory.action = 'upgrading';
         }
 
         if(creep.memory.action == 'harvesting'){
             return this.actions.harvesting.run(creep); 
         }
 
-        busy = true;
+        var busy = true;
         if(creep.memory.action == 'storing' || !busy)
             busy = this.actions.storing.run(creep);
 

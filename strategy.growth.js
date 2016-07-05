@@ -1,10 +1,10 @@
 var mod = {
     minBuildEnergy: 200, 
-    maxSpawnCount: 12,
+    maxSpawnCount: 13,
     rolebalancing: {
         harvester: 40,
-        upgrader: 20,
-        builder: 40
+        builder: 40,
+        upgrader: 20
     }, 
     partCost: {
       work: 100,

@@ -24,14 +24,16 @@ var creeps = {
         if( creep.memory.source != null && creep.room.memory.sources[creep.memory.source])
           creep.room.memory.sources[creep.memory.source].creeps.push(creep.id);
 
-        if (creep.memory.role == 'harvester') {
-          creep.room.memory.creeps.harvester += creep.memory.cost;
-        }
-        if (creep.memory.role == 'upgrader') {
-          creep.room.memory.creeps.upgrader += creep.memory.cost;
-        }
-        if (creep.memory.role == 'builder') {
-          creep.room.memory.creeps.builder += creep.memory.cost;
+        if(creep.memory.cost){
+            if (creep.memory.role == 'harvester') {
+              creep.room.memory.creeps.harvester += creep.memory.cost;
+            }
+            if (creep.memory.role == 'upgrader') {
+              creep.room.memory.creeps.upgrader += creep.memory.cost;
+            }
+            if (creep.memory.role == 'builder') {
+              creep.room.memory.creeps.builder += creep.memory.cost;
+            }
         }
       }
     }
@@ -42,10 +44,10 @@ var creeps = {
                 
         if(!creep.memory.role) {
           var nextRole = strategy.nextRole(creep.room);
-          this.role.worker.run(creep);
-          creep.room.memory.creeps[nextRole[iRole].role] += creep.memory.cost;
-          creep.memory.role = nextRole[iRole].role;
+          creep.room.memory.creeps[nextRole[0].role] += creep.memory.cost;
+          creep.memory.role = nextRole[0].role;
         }
+          this.role.worker.run(creep);
       }
   }
 }
