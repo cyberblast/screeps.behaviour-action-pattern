@@ -64,7 +64,7 @@ var mod = {
             }
         ];
         roles.sort(function(a, b) {
-            return b.builderRequirement - a.builderRequirement;
+            return b.requirement - a.requirement;
         });
         return roles;
     }, 

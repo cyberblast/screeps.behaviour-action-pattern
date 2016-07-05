@@ -2,7 +2,8 @@ var creeps = {
   role: {
     harvester: require('creep.role.harvester'),
     upgrader: require('creep.role.upgrader'),
-    builder: require('creep.role.builder')
+    builder: require('creep.role.builder'), 
+    worker: require('creep.behaviour.worker')
   },
   loop: function (strategy) {
     // inventory
@@ -38,26 +39,12 @@ var creeps = {
     for (var name in Memory.creeps) {
       var hasRole = false;
       var creep = Game.creeps[name];
-        if (creep.memory.role == 'harvester') {
-          this.role.harvester.run(creep);
-        }
-        else if (creep.memory.role == 'upgrader') {
-          this.role.upgrader.run(creep);
-        }
-        else if (creep.memory.role == 'builder') {
-          this.role.builder.run(creep);
-        } 
                 
         if(!creep.memory.role) {
           var nextRole = strategy.nextRole(creep.room);
-          for( var iRole = 0; iRole < nextRole.length; iRole ++ ) {
-            var role = this.role[nextRole[0].role]; 
-            if(role.run(creep)){
-              creep.room.memory.creeps[nextRole[iRole].role] += creep.memory.cost;
-              creep.memory.role = nextRole[iRole].role;
-              break;
-            }
-          }
+          this.role.worker.run(creep);
+          creep.room.memory.creeps[nextRole[iRole].role] += creep.memory.cost;
+          creep.memory.role = nextRole[iRole].role;
         }
       }
   }

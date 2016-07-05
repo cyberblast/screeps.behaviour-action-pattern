@@ -23,20 +23,25 @@ var roleBuilder = {
                 }
                 creep.memory.source = null;
 	        }
-            
-            if( !this.actions.building.run(creep) ) {
-                if( !this.actions.upgrading.run(creep) ) {
-                    if( !this.actions.storing.run(creep) ){
-                        console.log(creep.name + ' idle!');
-                    }
-                }
-            }
-	    } else {
+            this.build(creep);
+	    } 
+        else if(creep.memory.action == 'building')
+            this.build(creep);        
+        else {
             // energy required   
             this.actions.harvesting.run(creep);
         }
         return true;
-	}
+	}, 
+    build: function(creep){
+        if( !this.actions.building.run(creep) ) {
+            if( !this.actions.upgrading.run(creep) ) {
+                if( !this.actions.storing.run(creep) ){
+                    console.log(creep.name + ' idle!');
+                }
+            }
+        }
+    }
 };
 
 module.exports = roleBuilder;

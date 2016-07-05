@@ -1,6 +1,6 @@
 var mod = {
     run: function(creep){
-        creep.memory.action == 'harvesting';        
+        creep.memory.action = 'harvesting';        
         var source = null;
 
         if( creep.memory.source != null) // has source target

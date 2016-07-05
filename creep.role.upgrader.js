@@ -23,20 +23,26 @@ var roleUpgrader = {
                 }
                 creep.memory.source = null;
 	        }
-
-            if( !this.actions.upgrading.run(creep) ) {
-                if( !this.actions.building.run(creep) ) {
-                    if( !this.actions.storing.run(creep) ){
-                        console.log(creep.name + ' idle!');
-                    }
-                }
-            }
-	    } else {
+            this.upgrade(creep);        
+	    }
+        else if(creep.memory.action == 'upgrading')
+            this.upgrade(creep);        
+        else {
             // energy required   
             this.actions.harvesting.run(creep);
         }
-        return true;
-	}
+        return true; 
+	}, 
+    upgrade: function(creep){
+        if( !this.actions.upgrading.run(creep) ) {
+            if( !this.actions.building.run(creep) ) {
+                if( !this.actions.storing.run(creep) ){
+                    console.log(creep.name + ' idle!');
+                }
+            }
+        }
+    }
+
 };
 
 module.exports = roleUpgrader;
