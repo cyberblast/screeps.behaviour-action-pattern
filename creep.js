@@ -3,18 +3,14 @@ var creeps = {
     worker: require('creep.behaviour.worker')
   },
   loop: function (state) {
-    state.rooms.foreach(
-      room => function(room){
-        room.creepId.foreach(
-          creepId => function(creepId) {
+    state.rooms.forEach(function(room){
+        room.creepId.forEach(function(creepId) {
 
             var creep = Game.getObjectById(creepId);
             var behaviour = creeps.behaviour[state.memory.creeps[creep.name].setup];
             behaviour.drive(creep, state, roomId);            
-          }
-        );
-      }
-    );
+        }); 
+    });
   }
 }
 

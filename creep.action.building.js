@@ -47,7 +47,7 @@ var mod = {
         var roomSites = state.rooms[creep.room.id].constructionSites;
         var targetId = null;
         var completion = -1;
-        roomSites.foreach(site => function(site){
+        roomSites.forEach(function(site){
             if( site.creeps.length+1 <= site.maxCreeps && site.completion > completion){
                 targetId = site.id;
                 completion = site.completion;
@@ -59,7 +59,7 @@ var mod = {
         var roomSites = state.rooms[creep.room.id].repairableSites;
         var targetId = null;
         var damage = -1;
-        roomSites.foreach(site => function(site){
+        roomSites.forEach(function(site){
             if( site.creeps.length+1 <= site.maxCreeps && site.damage > damage){
                 targetId = site.id;
                 damage = site.damage;

@@ -7,7 +7,7 @@ var modules = {
 
 module.exports.loop = function () {
     var state = modules.status.load();
-    creeps.loop(state);
-    spawns.loop(state);
-    towers.loop(state);
+    modules.creeps.loop(state);
+    modules.spawns.loop(state);
+    modules.towers.loop(state);
 };

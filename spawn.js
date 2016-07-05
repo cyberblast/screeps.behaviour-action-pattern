@@ -1,16 +1,16 @@
 
 var mod = {
     self: this,
-    loop: function(strategy){
+    loop: function(state){
         for(var iSpawn in Game.spawns){
-            this.createCreep(Game.spawns[iSpawn], strategy);
+            this.createCreep(Game.spawns[iSpawn], state);
         }
     },
-    createCreep: function(spawn, strategy){
-        if (spawn.room.energyAvailable > strategy.minBuildEnergy && 
-            spawn.room.find(FIND_CREEPS).length < strategy.maxSpawnCount) {
+    createCreep: function(spawn, state){
+        if (spawn.room.energyAvailable > state.minBuildEnergy && 
+            spawn.room.find(FIND_CREEPS).length < state.maxSpawnCount) {
 
-            var build = strategy.creepSetup(spawn);
+            var build = this.creepSetup(spawn, state);
             if (build && build.parts.length > 0) {
                 var name = null;
                 for( var son = 1; name == null || Game.creeps[name]; son++ ) {
@@ -21,6 +21,32 @@ var mod = {
                 console.log('Spawning ' + newName);
             }
         }
+    }, 
+    creepSetup: function(spawn, state){
+        // TODO: Let STATE decide which creep to build
+        var build = {
+            setup: 'worker',
+            cost: 0,
+            parts: []
+        }
+        var simpleCost = 
+            state.partCost.work +
+            state.partCost.carry +
+            state.partCost.move;
+
+        var multi = Math.floor(spawn.room.energyAvailable / simpleCost);
+        build.cost = simpleCost * multi;
+
+        for (var iWork = 0; iWork < multi; iWork++) {
+            build.parts.push(WORK);
+        }
+        for (var iCarry = 0; iCarry < multi; iCarry++) {
+            build.parts.push(CARRY);
+        }
+        for (var iMove = 0; iMove < multi; iMove++) {
+            build.parts.push(MOVE);
+        }
+        return build;
     }
 };
 

@@ -16,10 +16,10 @@ var mod = {
         // load rooms
         for(var iRoom in Game.rooms){
             var room = Game.rooms[iRoom];
-            state.roomId.push(room.id);
+            state.roomId.push(room.name);
 
             var roomState = {
-                id: room.id,
+                name: room.name,
                 constructionSiteId: [], 
                 constructionSites: [],
                 repairableSiteId: [],
@@ -42,23 +42,20 @@ var mod = {
             };
 
             // load construction sites
-            room.find(FIND_CONSTRUCTION_SITES).forEach(
-                site => function(site){
-                    roomState.constructionSiteId.push(site.id);
-                    roomState.constructionSites[site.id] = {
-                        id: site.id, 
-                        creeps: [], 
-                        maxCreeps: 1, 
-                        completion: site.progress*100 / site.progressTotal
-                    };
-                }
-            );
+            room.find(FIND_CONSTRUCTION_SITES).forEach(function(site){
+                roomState.constructionSiteId.push(site.id);
+                roomState.constructionSites[site.id] = {
+                    id: site.id, 
+                    creeps: [], 
+                    maxCreeps: 1, 
+                    completion: site.progress*100 / site.progressTotal
+                };
+            });
 
             // load damages structures
             room.find(FIND_STRUCTURES, {
                 filter: (structure) => structure.hits < structure.hitsMax
-            }).forEach(
-                site => function(site){
+            }).forEach(function(site){
                     roomState.repairableSiteId.push(site.id);
                     roomState.repairableSites[site.id] = {
                         id: site.id, 
@@ -71,7 +68,7 @@ var mod = {
             
             // load sources
             room.find(FIND_SOURCES).forEach(
-                source => function(source){
+                function(source){
                     roomState.sourceId.push(source.id);
                     roomState.sources[source.id] = {
                         id: source.id, 
@@ -133,22 +130,22 @@ var mod = {
             roomState.missingEnergyQuote = (1- (room.energyAvailable/room.energyCapacityAvailable))*100;
             roomState.ticksToDowngrade = room.controller.ticksToDowngrade;
 
-            state.rooms[room.id] = setActionRequirement(roomState);
+            state.rooms[room.id] = this.setActionRequirement(roomState);
         }
         return state;
     },
     setActionRequirement: function(roomState){
 
-        state.creepActionRequirement.storing = state.creepAction.storing && state.nonHarvestingWorkers > 0 ? 
-            state.missingEnergyQuote / (state.creepAction.storing / state.nonHarvestingWorkers) : 
+        roomState.creepActionRequirement.storing = roomState.creepAction.storing && roomState.nonHarvestingWorkers > 0 ? 
+            roomState.missingEnergyQuote / (roomState.creepAction.storing / roomState.nonHarvestingWorkers) : 
             100;
 
-        state.creepActionRequirement.building = state.creepAction.building ? 
-            (state.constructionSiteId.length + state.repairableSiteId.length - state.creepAction.building)*100 / state.creepId.length : 
+        roomState.creepActionRequirement.building = roomState.creepAction.building ? 
+            (roomState.constructionSiteId.length + roomState.repairableSiteId.length - roomState.creepAction.building)*100 / roomState.creepId.length : 
             100;
             
-        state.creepActionRequirement.upgrading = state.creepAction.upgrading && state.nonHarvestingWorkers > 0 && state.ticksToDowngrade > 0 ? 
-            (1 - (state.ticksToDowngrade/50000))*100 : 
+        roomState.creepActionRequirement.upgrading = roomState.creepAction.upgrading && roomState.nonHarvestingWorkers > 0 && roomState.ticksToDowngrade > 0 ? 
+            (1 - (roomState.ticksToDowngrade/50000))*100 : 
             100;
     }
 }

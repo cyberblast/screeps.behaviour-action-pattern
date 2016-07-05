@@ -24,7 +24,7 @@ var mod = {
         var roomSources = state.rooms[creep.room.id].sources;
         var targetId = null;
         var energy = -1;
-        roomSources.foreach(source => function(source){
+        roomSources.forEach(function(source){
             if( site.creeps.length+1 <= source.maxCreeps && source.energy > energy){
                 targetId = source.id;
                 energy = source.energy;
