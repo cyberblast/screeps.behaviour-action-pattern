@@ -3,8 +3,15 @@ var mod = {
         creep.memory.action = 'building';      
         var target = null;
 
-        if( creep.memory.target != null && (creep.memory.targetType == 'constructionSite' || creep.memory.targetType == 'repairableSite')) 
-            target = Game.getObjectById(creep.memory.source);
+        if( creep.memory.target != null && (creep.memory.targetType == 'constructionSite' || creep.memory.targetType == 'repairableSite')) {
+            target = Game.getObjectById(creep.memory.target);
+            if( target && (  
+                (creep.memory.targetType == 'constructionSite' && !target.progress) || 
+                (creep.memory.targetType == 'repairableSite' && (target.hits == target.hitsMax))
+            )){
+                target = null; 
+            } 
+        }
 
         if( !target ) { 
             var targetId = this.getConstructionId(creep, state);

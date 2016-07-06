@@ -25,7 +25,7 @@ var work = {
         if(creepMemory.action == null){
             if( creep.carry.energy < creep.carryCapacity ) 
                 creepMemory.action = 'harvesting';
-            else {
+            else {debugger;
                 var action;
                 var required = -1;
                 for( var iAction in state.rooms[roomId].creepActionRequirement) {

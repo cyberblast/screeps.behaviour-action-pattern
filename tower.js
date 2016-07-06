@@ -21,6 +21,7 @@ var mod = {
             if(closestHostile) {
                 tower.attack(closestHostile);
             }
+            // TODO: Reparatur kurz bevor eine Struktur zerbricht...
         }
     }
 }

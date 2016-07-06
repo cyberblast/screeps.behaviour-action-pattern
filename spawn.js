@@ -17,13 +17,12 @@ var mod = {
                     name = build.setup + '.' + build.cost + '.' + son;
                 }
                 var newName = spawn.createCreep(build.parts, name, build);
-                //spawn.room.memory.creeps[role] += build.cost;
                 console.log('Spawning ' + newName);
             }
         }
     }, 
     creepSetup: function(spawn, state){
-        // TODO: Let STATE decide which creep to build
+        // TODO: Ermitteln welcher Typ gebaut werden soll
         var build = {
             setup: 'worker',
             cost: 0,
