@@ -44,27 +44,29 @@ var mod = {
         return true;
 	},
 	getConstructionId: function(creep, state){
-        var roomSites = state.rooms[creep.room.id].constructionSites;
+        var roomSites = state.rooms[creep.room.name].constructionSites;
         var targetId = null;
         var completion = -1;
-        roomSites.forEach(function(site){
+        for( var newTargetId in roomSites ) {
+            var site = roomSites[newTargetId];
             if( site.creeps.length+1 <= site.maxCreeps && site.completion > completion){
                 targetId = site.id;
                 completion = site.completion;
             }
-        });
+        };
         return targetId;
 	},
 	getRepairId: function(creep, state){
-        var roomSites = state.rooms[creep.room.id].repairableSites;
+        var roomSites = state.rooms[creep.room.name].repairableSites;
         var targetId = null;
         var damage = -1;
-        roomSites.forEach(function(site){
+        for( var newTargetId in roomSites ) {
+            var site = roomSites[newTargetId];
             if( site.creeps.length+1 <= site.maxCreeps && site.damage > damage){
                 targetId = site.id;
                 damage = site.damage;
             }
-        });
+        };
         return targetId;
 	}
 }

@@ -21,11 +21,11 @@ var mod = {
             var roomState = {
                 name: room.name,
                 constructionSiteId: [], 
-                constructionSites: [],
+                constructionSites: {},
                 repairableSiteId: [],
-                repairableSites: [],
+                repairableSites: {},
                 sourceId:[], 
-                sources:[],
+                sources:{},
                 creepId: [],
                 creepSetup: {
                 },
@@ -130,7 +130,7 @@ var mod = {
             roomState.missingEnergyQuote = (1- (room.energyAvailable/room.energyCapacityAvailable))*100;
             roomState.ticksToDowngrade = room.controller.ticksToDowngrade;
 
-            state.rooms[room.id] = this.setActionRequirement(roomState);
+            state.rooms[iRoom] = this.setActionRequirement(roomState);
         }
         return state;
     },
@@ -147,6 +147,7 @@ var mod = {
         roomState.creepActionRequirement.upgrading = roomState.creepAction.upgrading && roomState.nonHarvestingWorkers > 0 && roomState.ticksToDowngrade > 0 ? 
             (1 - (roomState.ticksToDowngrade/50000))*100 : 
             100;
+        return roomState;
     }
 }
 

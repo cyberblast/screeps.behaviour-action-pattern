@@ -21,15 +21,17 @@ var mod = {
         return true;
     },
 	getResourceId: function(creep, state){
-        var roomSources = state.rooms[creep.room.id].sources;
+        var roomSources = state.rooms[creep.room.name].sources;
         var targetId = null;
         var energy = -1;
-        roomSources.forEach(function(source){
-            if( site.creeps.length+1 <= source.maxCreeps && source.energy > energy){
-                targetId = source.id;
+        // TODO: gleichmäßig verteilen
+        for( var newTargetId in roomSources ) {
+            var site = roomSources[newTargetId];
+            if( site.creeps.length+1 <= site.maxCreeps && site.energy > energy){
+                targetId = site.id;
                 energy = source.energy;
             }
-        });
+        };
         return targetId;
 	}
 }

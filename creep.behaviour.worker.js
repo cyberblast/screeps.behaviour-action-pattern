@@ -12,14 +12,14 @@ var work = {
             // finished work, get some energy
             creepMemory.action = 'harvesting';
             creepMemory.target = null;
-            creepMemory.targertType = null;
+            creepMemory.targetType = null;
 	    }
 	    else if(creepMemory.action == 'harvesting' && creep.carry.energy == creep.carryCapacity) { 
             // finished harvesting
             // TODO: Update State
             creepMemory.action = null;
             creepMemory.target = null;
-            creepMemory.targertType = null;
+            creepMemory.targetType = null;
 	    } 
 
         if(creepMemory.action == null){
