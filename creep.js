@@ -9,7 +9,7 @@ var creeps = {
 
             var creep = Game.getObjectById(creepId);
             var behaviour = creeps.behaviour[state.memory.creeps[creep.name].setup];
-            behaviour.drive(creep, state, roomName);            
+            behaviour.run(creep, state, roomName);            
         }); 
     });
   }

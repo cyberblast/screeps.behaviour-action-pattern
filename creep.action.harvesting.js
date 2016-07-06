@@ -1,32 +1,19 @@
 var mod = {
-    run: function(creep, state){    
-        var source = null;
 
-        if( creep.memory.target != null && creep.memory.targetType == 'source') {// has source target
-            source = Game.getObjectById(creep.memory.target);
-            if( source && source.energy == 0 ){
-                source = null;
-                creep.memory.target = null;
-                creep.memory.targetType = null;
-            }
-        }
-
-        if( !source ) { // need source target
-            var sourceId = this.getResourceId(creep, state);
-            if( sourceId != null ){
-                source = Game.getObjectById(sourceId);
-                creep.memory.target = sourceId;
-                creep.memory.targetType = 'source';
-                // TODO: Update State
-            } else console.log('No free energy source found for creep ' + creep.name);
-        } 
-
-        if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(source);
-        }
-        return true;
+    getTargetId: function(target){ 
+        return target.id;
     },
-	getResourceId: function(creep, state){
+
+    getTargetById: function(id){
+        return Game.getObjectById(id);
+    },
+
+    isValidTarget: function(target){
+        return (target && target.energy && target.energy > 0);
+    }, 
+
+    newTarget: function(creep, state){ 
+        /*
         var roomSources = state.rooms[creep.room.name].sources;
         var targetId = null;
         var energy = -1;
@@ -34,14 +21,37 @@ var mod = {
         // TODO: gleichmäßig verteilen?
         for( var newTargetId in roomSources ) {
             var site = roomSources[newTargetId];
-            if( site.creeps.length+1 <= site.maxCreeps && site.creeps.length < assigned && site.energy > 0 ){//&& site.energy > energy){
+            if( site.creeps.length+1 <= site.maxCreeps // source is not crowded 
+                && site.creeps.length < assigned // has less creeps digging
+                && site.energy > 0 ){ // is not empty
                 targetId = site.id;
                 energy = site.energy;
                 assigned = site.creeps.length;
+                state.rooms[creep.room.name].sources[newTargetId].creeps.push(creep.id);
             }
-        };
-        return targetId;
-	}
+        }
+        return Game.getObjectById(targetId);     
+        */
+        
+        var roomSources = state.rooms[creep.room.name].sources;
+        return creep.findClosestByPath(FIND_SOURCES, {
+            filter: function(object){ 
+                return object.energy > 0 && (!roomSources[object.id] || roomSources[object.id].creeps.length+1 <= roomSources[object.id].maxCreeps); 
+            }
+        });   
+    }, 
+
+    step: function(creep, target){      
+        if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(source);
+        }
+    }, 
+
+    error: {
+        noTarget: function(creep, state){
+            if(state.debug) console.log( creep.name + ' > "Energy sources are overcrowded! :("');
+        }
+    }
 }
 
 module.exports = mod;

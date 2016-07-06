@@ -7,8 +7,8 @@ var mod = {
         }
     },
     createCreep: function(spawn, state){
-        if (spawn.room.energyAvailable > state.minBuildEnergy && 
-            spawn.room.find(FIND_CREEPS).length < state.maxSpawnCount) {
+        if (spawn.room.energyAvailable > state.rooms[spawn.room.name].minCreepSize && 
+            state.rooms[spawn.room.name].creepId.length < state.rooms[spawn.room.name].maxWorkerCount) {
 
             var build = this.creepSetup(spawn, state);
             if (build && build.parts.length > 0) {
@@ -17,7 +17,9 @@ var mod = {
                     name = build.setup + '.' + build.cost + '.' + son;
                 }
                 var newName = spawn.createCreep(build.parts, name, build);
-                console.log('Spawning ' + newName);
+                console.log(name == newName ? 
+                    spawn.name + ' spends a new minion and calls it "' + newName + '"': 
+                    spawn.name + ' fails to supply with new offspring. They call it "' + newName + '"';
             }
         }
     }, 

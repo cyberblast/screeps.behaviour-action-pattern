@@ -9,32 +9,32 @@ var mod = {
     },
 
     isValidTarget: function(target){
-        return target && target.progress;
+        return (target && target.hits && target.hits < target.hitsMax);
     }, 
 
     newTarget: function(creep, state){
-        var roomSites = state.rooms[creep.room.name].constructionSites;
+        var roomSites = state.rooms[creep.room.name].repairableSites;
         var targetId = null;
-        var completion = -1;
+        var damage = -1;
         for( var newTargetId in roomSites ) {
             var site = roomSites[newTargetId];
-            if( site.creeps.length+1 <= site.maxCreeps && site.completion > completion){
+            if( site.creeps.length+1 <= site.maxCreeps && site.damage > damage){
                 targetId = site.id;
-                completion = site.completion;
+                damage = site.damage;
             }
         }
         return Game.getObjectById(targetId);
     }, 
 
     step: function(creep, target){       
-        if(creep.build(target) == ERR_NOT_IN_RANGE) {
+        if(creep.repair(target) == ERR_NOT_IN_RANGE) {
             creep.moveTo(target);
-        }
+        } 
     }, 
 
     error: {
         noTarget: function(creep, state){
-            if(state.debug) console.log( creep.name + ' > "There\'s nothing to build."');
+            if(state.debug) console.log( creep.name + ' > "There\'s nothing to repair."');
         }
     }
 }

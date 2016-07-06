@@ -1,14 +1,11 @@
 var mod = {
 
     getTargetId: function(target){ 
-        if(target.name) return target.name;
         return target.id;
     },
 
     getTargetById: function(id){
-        var obj = Game.getObjectById(id);
-        if( !obj ) obj = Game.spawns[id];
-        return obj;
+        return Game.getObjectById(id);
     },
 
     isValidTarget: function(target){
@@ -16,21 +13,24 @@ var mod = {
     }, 
 
     newTarget: function(creep, state){ 
-        var target = creep.findClosestByPath(FIND_MY_SPAWNS, {
-            filter: function(object){ 
-                return object.energy < object.energyCapacity; 
-            }
+        // TODO: find initial in STATE
+        targets = creep.room.find(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return (structure.structureType == STRUCTURE_TOWER && structure.energy < structure.energyCapacity);
+                }
         });
-
+        if(targets.length > 0) {
+            return targets[0];
+        } 
+        return null;
+        /* // Not required for towers... (expensive)
         if( !target ){
             target = creep.findClosestByPath(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity);
+                    return (structure.structureType == STRUCTURE_TOWER && structure.energy < structure.energyCapacity);
                 }
             });
-        }
-
-        return target;
+        }*/
     }, 
 
     step: function(creep, target){    
@@ -41,10 +41,9 @@ var mod = {
 
     error: {
         noTarget: function(creep, state){
-            if(state.debug) console.log( creep.name + ' > "Can\'t store this energy."');
+            if(state.debug) console.log( creep.name + ' > "There\'s nothing to fuel."');
         }
     }
 }
-
 
 module.exports = mod;
