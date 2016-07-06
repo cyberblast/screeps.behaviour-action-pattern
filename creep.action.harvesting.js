@@ -2,8 +2,14 @@ var mod = {
     run: function(creep, state){    
         var source = null;
 
-        if( creep.memory.target != null && creep.memory.targetType == 'source') // has source target
-            source = Game.getObjectById(creep.memory.source);
+        if( creep.memory.target != null && creep.memory.targetType == 'source') {// has source target
+            source = Game.getObjectById(creep.memory.target);
+            if( source && source.energy == 0 ){
+                source = null;
+                creep.memory.target = null;
+                creep.memory.targetType = null;
+            }
+        }
 
         if( !source ) { // need source target
             var sourceId = this.getResourceId(creep, state);
@@ -24,12 +30,14 @@ var mod = {
         var roomSources = state.rooms[creep.room.name].sources;
         var targetId = null;
         var energy = -1;
-        // TODO: gleichmäßig verteilen
+        var assigned = 999;
+        // TODO: gleichmäßig verteilen?
         for( var newTargetId in roomSources ) {
             var site = roomSources[newTargetId];
-            if( site.creeps.length+1 <= site.maxCreeps && site.energy > energy){
+            if( site.creeps.length+1 <= site.maxCreeps && site.creeps.length < assigned && site.energy > 0 ){//&& site.energy > energy){
                 targetId = site.id;
-                energy = source.energy;
+                energy = site.energy;
+                assigned = site.creeps.length;
             }
         };
         return targetId;

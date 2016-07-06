@@ -1,8 +1,8 @@
 var mod = {
     load: function(){
         var state = {
-            minBuildEnergy: 200, 
-            maxSpawnCount: 13,
+            minBuildEnergy: 200, // TODO: Anhand EnergyQuote & SpawnCountQuote ermitteln (-> Roomstate)
+            maxSpawnCount: 13, // TODO: Basiswert + Anzahl Sourcen (-> Roomstate)
             partCost: {
                 work: 100,
                 carry: 50,
@@ -32,9 +32,9 @@ var mod = {
                 creepAction: {
                 },
                 creepActionRequirement: {
-                    storing: 100, 
-                    building: 100, 
-                    upgrading: 100
+                    storing: 50, 
+                    building: 50, 
+                    upgrading: 50
                 },
                 missingEnergyQuote: 100, 
                 nonHarvestingWorkers: 0, 
@@ -47,7 +47,7 @@ var mod = {
                 roomState.constructionSites[site.id] = {
                     id: site.id, 
                     creeps: [], 
-                    maxCreeps: 1, 
+                    maxCreeps: 4, 
                     completion: site.progress*100 / site.progressTotal
                 };
             });
@@ -112,13 +112,13 @@ var mod = {
                     if( creepTarget && creepTargetType ){
                         if( setup == "worker") {
 
-                            if( action == "harvesting" && creepTargetType == "source" )
+                            if( action == "harvesting" && creepTargetType == "source" && roomState.sources[creepTarget])
                                 roomState.sources[creepTarget].creeps.push(creep.id);
 
                             else if( action == "building"){
-                                if( creepTargetType == "constructionSite" )
+                                if( creepTargetType == "constructionSite" && roomState.constructionSites[creepTarget])
                                     roomState.constructionSites[creepTarget].creeps.push(creep.id);
-                                else if( creepTargetType == "repairableSite" )
+                                else if( creepTargetType == "repairableSite" && roomState.repairableSites[creepTarget])
                                     roomState.repairableSites[creepTarget].creeps.push(creep.id);
                             }
                         }
@@ -127,27 +127,25 @@ var mod = {
             }
 
             // load attributes
+            // TODO: Mehr einzelne var machen - macht die formeln lesbarer
             roomState.missingEnergyQuote = (1- (room.energyAvailable/room.energyCapacityAvailable))*100;
             roomState.ticksToDowngrade = room.controller.ticksToDowngrade;
 
-            state.rooms[iRoom] = this.setActionRequirement(roomState);
+            roomState.creepActionRequirement.storing = room.energyAvailable < state.minBuildEnergy ? 90 : 
+                (roomState.creepAction.storing && roomState.nonHarvestingWorkers > 0 ? 
+                    roomState.missingEnergyQuote / (roomState.creepAction.storing / roomState.nonHarvestingWorkers) : 
+                    roomState.missingEnergyQuote);
+
+            roomState.creepActionRequirement.building = roomState.creepId.length > 0 ? 
+                (roomState.constructionSiteId.length + roomState.repairableSiteId.length - (roomState.creepAction.building ? roomState.creepAction.building : 0))*100 / roomState.creepId.length : 
+                50;
+            if( roomState.creepActionRequirement.building > 80 ) roomState.creepActionRequirement.building = 80;
+                
+            roomState.creepActionRequirement.upgrading = (1 - (roomState.ticksToDowngrade/50000))*100;
+
+            state.rooms[iRoom] = roomState;
         }
         return state;
-    },
-    setActionRequirement: function(roomState){
-
-        roomState.creepActionRequirement.storing = roomState.creepAction.storing && roomState.nonHarvestingWorkers > 0 ? 
-            roomState.missingEnergyQuote / (roomState.creepAction.storing / roomState.nonHarvestingWorkers) : 
-            100;
-
-        roomState.creepActionRequirement.building = roomState.creepAction.building ? 
-            (roomState.constructionSiteId.length + roomState.repairableSiteId.length - roomState.creepAction.building)*100 / roomState.creepId.length : 
-            100;
-            
-        roomState.creepActionRequirement.upgrading = roomState.creepAction.upgrading && roomState.nonHarvestingWorkers > 0 && roomState.ticksToDowngrade > 0 ? 
-            (1 - (roomState.ticksToDowngrade/50000))*100 : 
-            100;
-        return roomState;
     }
 }
 
