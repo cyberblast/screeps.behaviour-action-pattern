@@ -24,13 +24,13 @@ var mod = {
         } 
         return null;
         /* // Not required for towers... (expensive)
-        if( !target ){
-            target = creep.findClosestByPath(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_TOWER && structure.energy < structure.energyCapacity);
-                }
-            });
-        }*/
+        //if( !target ){
+        //    target = creep.findClosestByPath(FIND_STRUCTURES, {
+        //        filter: (structure) => {
+        //            return (structure.structureType == STRUCTURE_TOWER && structure.energy < structure.energyCapacity);
+        //        }
+        //    });
+        //}*/
     }, 
 
     step: function(creep, target){    
@@ -41,7 +41,7 @@ var mod = {
 
     error: {
         noTarget: function(creep, state){
-            if(state.debug) console.log( creep.name + ' > "There\'s nothing to fuel."');
+            if(state.debug) console.log( creep.name + ' > "There is nothing to fuel."');
         }
     }
 }

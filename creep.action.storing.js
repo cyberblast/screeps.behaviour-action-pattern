@@ -16,14 +16,14 @@ var mod = {
     }, 
 
     newTarget: function(creep, state){ 
-        var target = creep.findClosestByPath(FIND_MY_SPAWNS, {
+        var target = creep.pos.findClosestByPath(FIND_MY_SPAWNS, {
             filter: function(object){ 
                 return object.energy < object.energyCapacity; 
             }
         });
 
         if( !target ){
-            target = creep.findClosestByPath(FIND_STRUCTURES, {
+            target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
                 filter: (structure) => {
                     return (structure.structureType == STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity);
                 }
@@ -41,7 +41,7 @@ var mod = {
 
     error: {
         noTarget: function(creep, state){
-            if(state.debug) console.log( creep.name + ' > "Can\'t store this energy."');
+            if(state.debug) console.log( creep.name + ' > "Can not store this energy."');
         }
     }
 }

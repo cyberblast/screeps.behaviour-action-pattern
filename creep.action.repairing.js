@@ -34,7 +34,7 @@ var mod = {
 
     error: {
         noTarget: function(creep, state){
-            if(state.debug) console.log( creep.name + ' > "There\'s nothing to repair."');
+            if(state.debug) console.log( creep.name + ' > "There is nothing to repair."');
         }
     }
 }

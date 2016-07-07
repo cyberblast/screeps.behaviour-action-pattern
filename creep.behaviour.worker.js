@@ -7,7 +7,7 @@ var work = {
         fueling: require('creep.action.fueling'),
         repairing: require('creep.action.repairing')
     },
-    run: function(creep, state, roomId) {
+    run: function(creep, state) {
         
         // Last Action completed / No more energy
 	    if( creep.carry.energy == 0 && creep.memory.action != 'harvesting') { 
@@ -22,7 +22,7 @@ var work = {
         // Assign next Action
         var actionName = creep.memory.action;
         if(!actionName){
-            actionName = assignAction(creep, state);
+            actionName = this.assignAction(creep, state);
         }
 
         if( actionName ) {
@@ -46,11 +46,13 @@ var work = {
 
             // Do some work
             if( target ){
-                creep.memory.target = action.getTagetId(target.id);
+                creep.memory.target = action.getTargetId(target.id);
+                action.step(creep, target);
                 // TODO: Update State
 
             // No Valid Target
             } else {
+                action.error.noTarget(creep, state);
                 this.idle(creep);
             }
         }
@@ -70,8 +72,8 @@ var work = {
         //else { // energy full
             var action = null;
             var required = -1;
-            for( var iAction in state.rooms[roomId].creepActionRequirement) {
-                var newRequired = state.rooms[roomId].creepActionRequirement[iAction];
+            for( var iAction in state.rooms[creep.room.name].creepActionRequirement) {
+                var newRequired = state.rooms[creep.room.name].creepActionRequirement[iAction];
                 if( newRequired > required ){
                     required = newRequired;
                     action = iAction;
@@ -82,7 +84,7 @@ var work = {
         return action;
     }, 
     idle: function(creep){
-        action.error.noTarget(creep, state);
+        creep.memory.action = null;
         creep.memory.target = null;
         // Move away from source etc...
         var idlePole = Game.flags['IdlePole'];

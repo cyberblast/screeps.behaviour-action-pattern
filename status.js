@@ -16,12 +16,12 @@ var mod = {
         for(var iRoom in Game.rooms){
             var room = Game.rooms[iRoom];
             state.roomId.push(room.name);
-            room.id = room.name;
+            //room.id = room.name;
 
             var roomState = {
                 name: room.name,
                 minCreepSize: room.energyCapacityAvailable/2,
-                maxWorkerCount: 15, // TODO: Ermitteln aus Konstante + Anzahl Sourcen + zerfallende Strukturen + unfertige Strukturen
+                maxWorkerCount: 14, // TODO: Ermitteln aus Konstante + Anzahl Sourcen + zerfallende Strukturen + unfertige Strukturen
                 constructionSiteId: [], 
                 constructionSites: {},
                 repairableSiteId: [],
@@ -36,7 +36,8 @@ var mod = {
                 creepActionRequirement: {
                     storing: 50, 
                     building: 50, 
-                    upgrading: 50
+                    upgrading: 50, 
+                    repairing: 50
                 },
                 missingEnergyQuote: 100, 
                 nonHarvestingWorkers: 0, 
@@ -86,11 +87,11 @@ var mod = {
             for (var name in memCreeps) {
                 // clean memory for died creep
                 var creep = Game.creeps[name];
-                creep.id = creep.name;
                 if (!creep) {
-                    console.log('Clearing non-existing creep memory:', name);
+                    console.log(room.name + ' > Goodbye ', name);
                     delete Memory.creeps[name];
                 } else {
+                    //creep.id = creep.name;
                     roomState.creepId.push(creep.id);
 
                     var setup = memCreeps[creep.name].setup;
@@ -112,6 +113,7 @@ var mod = {
                     if( creepTarget ){//&& creepTargetType ){
                         if( setup == "worker") {
                             // TODO: Hier nötig oder wird das in der Action gemacht?
+                            // TODO: Vielleicht einfach nur Object ID und darauf registrierte creeps => generischer
 
                             if( action == "harvesting" && roomState.sources[creepTarget])
                                 roomState.sources[creepTarget].creeps.push(creep.id);
@@ -121,38 +123,60 @@ var mod = {
                             
                             else if( action == "repairing" && roomState.repairableSites[creepTarget] )
                                 roomState.repairableSites[creepTarget].creeps.push(creep.id);
-                            }
                         }
                     }
                 }
             }
-
-            // load attributes
-            // TODO: Mehr einzelne var machen - macht die formeln lesbarer
-            roomState.missingEnergyQuote = (1- (room.energyAvailable/room.energyCapacityAvailable))*100;
-            roomState.ticksToDowngrade = room.controller.ticksToDowngrade;
-
-            // Storing
-            roomState.creepActionRequirement.storing = room.energyAvailable < roomState.minCreepSize ? 90 : 
-                (roomState.creepAction.storing && roomState.nonHarvestingWorkers > 0 ? 
-                    roomState.missingEnergyQuote / (roomState.creepAction.storing / roomState.nonHarvestingWorkers) : 
-                    roomState.missingEnergyQuote);
-
-            // Building
-            roomState.creepActionRequirement.building = roomState.creepId.length > 0 ? 
-                (roomState.constructionSiteId.length + roomState.repairableSiteId.length - (roomState.creepAction.building ? roomState.creepAction.building : 0))*100 / roomState.creepId.length : 
-                50;
-            if( roomState.creepActionRequirement.building > 80 ) roomState.creepActionRequirement.building = 80;
-            // TODO: Repairing
-
-            // TODO: Fueling //Tower Loading
-            
-            // Upgrading
-            roomState.creepActionRequirement.upgrading = (1 - (roomState.ticksToDowngrade/50000))*100;
-
-            state.rooms[iRoom] = roomState;
         }
+
+        // load attributes
+        // TODO: Mehr einzelne var machen - macht die formeln lesbarer
+        roomState.missingEnergyQuote = (1- (room.energyAvailable/room.energyCapacityAvailable))*100;
+        roomState.ticksToDowngrade = room.controller.ticksToDowngrade;
+        var storerQuote;
+        var builderQuote;
+        var upgraderQuote;
+        var repairerQuote;
+        if( roomState.nonHarvestingWorkers == 0 ) {
+            upgraderQuote = 0;
+            builderQuote = 0;
+            storerQuote = 0;
+            repairerQuote = 0;
+        } else {
+            storerQuote = (roomState.creepAction.building ? roomState.creepAction.building : 0)/roomState.nonHarvestingWorkers;
+            builderQuote = (roomState.creepAction.repairing ? roomState.creepAction.repairing : 0)/roomState.nonHarvestingWorkers;
+            upgraderQuote = (roomState.creepAction.upgrading ? roomState.creepAction.upgrading : 0)/roomState.nonHarvestingWorkers;
+            repairerQuote = (roomState.creepAction.repairing ? roomState.creepAction.repairing : 0)/roomState.nonHarvestingWorkers;
+        }
+
+        // Storing
+        roomState.creepActionRequirement.storing = room.energyAvailable < roomState.minCreepSize ? 90 : // 90 until min filling reached 
+                roomState.missingEnergyQuote * this.bender(0.2, (1-storerQuote), 0.08);
+
+        // Building       
+        var constructionSiteCountQuote = roomState.constructionSiteId.length / 10;
+        constructionSiteCountQuote = constructionSiteCountQuote > 1 ? 1 : constructionSiteCountQuote;
+        roomState.creepActionRequirement.building = 
+            roomState.constructionSiteId.length > 0 ? 40 + (1 - builderQuote) * 28 * this.bender(0.2, constructionSiteCountQuote): 0;
+        
+        // Repairing       
+        var reparationSiteCountQuote = roomState.repairableSiteId.length / 10;
+        reparationSiteCountQuote = reparationSiteCountQuote > 1 ? 1 : reparationSiteCountQuote;
+        roomState.creepActionRequirement.repairing = 
+            roomState.repairableSiteId.length > 0 ? 40 + (1 - builderQuote) * 28 * this.bender(0.2, reparationSiteCountQuote): 0;
+
+        // TODO: Fueling //Tower Loading
+        
+        // Upgrading
+        roomState.creepActionRequirement.upgrading = (25 + ((1 - (roomState.ticksToDowngrade/50000))*75) ) * this.bender(0.2, (1-upgraderQuote));
+
+        if(state.debug) console.log('Requirements: ' + JSON.stringify(roomState.creepActionRequirement));
+        state.rooms[iRoom] = roomState;
         return state;
+    }, 
+
+    bender: function(deviation, quote, shift = 0){
+        return (1-deviation) + (quote * deviation * 2) + shift;
     }
 }
 

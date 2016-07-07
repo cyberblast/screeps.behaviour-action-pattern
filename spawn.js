@@ -18,8 +18,8 @@ var mod = {
                 }
                 var newName = spawn.createCreep(build.parts, name, build);
                 console.log(name == newName ? 
-                    spawn.name + ' spends a new minion and calls it "' + newName + '"': 
-                    spawn.name + ' fails to supply with new offspring. They call it "' + newName + '"';
+                    spawn.name + ' > Good morning ' + newName + '!': 
+                    spawn.name + ' > "Offspring failed. They call it "' + newName + '".');
             }
         }
     }, 

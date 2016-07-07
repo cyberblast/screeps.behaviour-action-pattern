@@ -34,7 +34,7 @@ var mod = {
         */
         
         var roomSources = state.rooms[creep.room.name].sources;
-        return creep.findClosestByPath(FIND_SOURCES, {
+        return creep.pos.findClosestByPath(FIND_SOURCES, {
             filter: function(object){ 
                 return object.energy > 0 && (!roomSources[object.id] || roomSources[object.id].creeps.length+1 <= roomSources[object.id].maxCreeps); 
             }
@@ -42,8 +42,8 @@ var mod = {
     }, 
 
     step: function(creep, target){      
-        if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(source);
+        if(creep.harvest(target) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(target);
         }
     }, 
 

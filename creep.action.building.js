@@ -5,7 +5,7 @@ var mod = {
     },
 
     getTargetById: function(id){
-        return Game.getObjectById(creep.memory.target);
+        return Game.getObjectById(id);
     },
 
     isValidTarget: function(target){
@@ -34,7 +34,7 @@ var mod = {
 
     error: {
         noTarget: function(creep, state){
-            if(state.debug) console.log( creep.name + ' > "There\'s nothing to build."');
+            if(state.debug) console.log( creep.name + ' > "There is nothing to build."');
         }
     }
 }

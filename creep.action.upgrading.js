@@ -13,7 +13,7 @@ var mod = {
     }, 
 
     newTarget: function(creep, state){
-        return creep.room.controller
+        return creep.room.controller;
     }, 
 
     step: function(creep, target){       
@@ -24,20 +24,8 @@ var mod = {
 
     error: {
         noTarget: function(creep, state){
-            if(state.debug) console.log( creep.name + ' > "There\'s nothing to build."');
+            if(state.debug) console.log( creep.name + ' > "There is nothing to build."');
         }
-    }
-}
-
-var mod = {
-    run: function(creep, state){
-        creep.memory.action = 'upgrading';
-        // var ramparts = creep.room.find();
-        // Todo: first upgrade ramparts to same level of controller
-        if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(creep.room.controller);
-        }
-        return true;
     }
 }
 
