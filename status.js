@@ -63,7 +63,7 @@ var mod = {
             room.find(FIND_STRUCTURES, {
                 filter: (structure) => structure.hits < structure.hitsMax
             }).forEach(function(site){
-                    if( site.structureType in prio){
+                    if( prio.includes(site.structureType) ){
                         roomState.repairableSiteIdPrio.push(site.id);
                         roomState.repairableSitesPrio[site.id] = {
                             id: site.id, 
@@ -179,7 +179,7 @@ var mod = {
         var reparationSiteCountQuote = (roomState.repairableSiteId.length/4)+roomState.repairableSiteIdPrio.length / 10;
         reparationSiteCountQuote = reparationSiteCountQuote > 1 ? 1 : reparationSiteCountQuote;
         roomState.creepActionRequirement.repairing = 
-            roomState.repairableSiteId.length+roomState.repairableSiteIdPrio.length > 0 ? 35 + (1 - builderQuote) * 28 * this.bender(0.3, reparationSiteCountQuote, -0.15): 0;
+            roomState.repairableSiteId.length+roomState.repairableSiteIdPrio.length > 0 ? 35 + (1 - builderQuote) * 28 * this.bender(0.1, reparationSiteCountQuote): 0;
 
         // TODO: Fueling //Tower Loading
         
@@ -188,6 +188,8 @@ var mod = {
 
         if(state.debug) console.log(room.name + ' > Population: ' + JSON.stringify(roomState.creepAction));
         if(state.debug) console.log(room.name + ' > New Wishlist: ' + JSON.stringify(roomState.creepActionRequirement));
+        if(state.debug) console.log(room.name + ' > Damaged buildings (important/other): ' + roomState.repairableSiteIdPrio.length + ' / ' + roomState.repairableSiteId.length);
+        
         
         state.rooms[iRoom] = roomState;
         return state;
