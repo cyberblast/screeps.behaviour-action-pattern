@@ -20,7 +20,7 @@ var mod = {
 
             var roomState = {
                 name: room.name,
-                minCreepSize: room.energyCapacityAvailable/2,
+                minCreepSize: (room.energyCapacityAvailable/2),
                 maxWorkerCount: 14, // TODO: Ermitteln aus Konstante + Anzahl Sourcen + zerfallende Strukturen + unfertige Strukturen
                 constructionSiteId: [], 
                 constructionSites: {},
