@@ -24,6 +24,8 @@ var mod = {
                 maxWorkerCount: 14, // TODO: Ermitteln aus Konstante + Anzahl Sourcen + zerfallende Strukturen + unfertige Strukturen
                 constructionSiteId: [], 
                 constructionSites: {},
+                repairableSiteIdPrio: [],
+                repairableSitesPrio: {},
                 repairableSiteId: [],
                 repairableSites: {},
                 sourceId:[], 
@@ -55,17 +57,29 @@ var mod = {
                 };
             });
 
+
+            var prio = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTROLLER];    
             // load repairable structures
             room.find(FIND_STRUCTURES, {
                 filter: (structure) => structure.hits < structure.hitsMax
             }).forEach(function(site){
-                    roomState.repairableSiteId.push(site.id);
-                    roomState.repairableSites[site.id] = {
-                        id: site.id, 
-                        creeps: [], 
-                        maxCreeps: 1, 
-                        damage: (1- (site.hits/site.hitsMax))*100
-                    };
+                    if( site.structureType in prio){
+                        roomState.repairableSiteIdPrio.push(site.id);
+                        roomState.repairableSitesPrio[site.id] = {
+                            id: site.id, 
+                            creeps: [], 
+                            maxCreeps: 1, 
+                            damage: (1- (site.hits/site.hitsMax))*100
+                        };
+                    } else {
+                        roomState.repairableSiteId.push(site.id);
+                        roomState.repairableSites[site.id] = {
+                            id: site.id, 
+                            creeps: [], 
+                            maxCreeps: 1, 
+                            damage: (1- (site.hits/site.hitsMax))*100
+                        };
+                    }
                 }
             );
             
@@ -88,7 +102,7 @@ var mod = {
                 // clean memory for died creep
                 var creep = Game.creeps[name];
                 if (!creep) {
-                    console.log(room.name + ' > Goodbye ', name);
+                    console.log(room.name + ' > Goodbye',name);
                     delete Memory.creeps[name];
                 } else {
                     //creep.id = creep.name;
@@ -112,7 +126,7 @@ var mod = {
                     //var creepTargetType = memCreeps[creep.name].targetType;
                     if( creepTarget ){//&& creepTargetType ){
                         if( setup == "worker") {
-                            // TODO: Hier nötig oder wird das in der Action gemacht?
+                            // TODO: Hier noetig oder wird das in der Action gemacht?
                             // TODO: Vielleicht einfach nur Object ID und darauf registrierte creeps => generischer
 
                             if( action == "harvesting" && roomState.sources[creepTarget])
@@ -122,6 +136,8 @@ var mod = {
                                 roomState.constructionSites[creepTarget].creeps.push(creep.id);
                             
                             else if( action == "repairing" && roomState.repairableSites[creepTarget] )
+                                roomState.repairableSites[creepTarget].creeps.push(creep.id);
+                            else if( action == "repairing" && roomState.repairableSitesPrio[creepTarget] )
                                 roomState.repairableSites[creepTarget].creeps.push(creep.id);
                         }
                     }
@@ -151,26 +167,28 @@ var mod = {
 
         // Storing
         roomState.creepActionRequirement.storing = room.energyAvailable < roomState.minCreepSize ? 90 : // 90 until min filling reached 
-                roomState.missingEnergyQuote * this.bender(0.2, (1-storerQuote), 0.08);
+                roomState.missingEnergyQuote * this.bender(0.2, (1-storerQuote));
 
         // Building       
         var constructionSiteCountQuote = roomState.constructionSiteId.length / 10;
         constructionSiteCountQuote = constructionSiteCountQuote > 1 ? 1 : constructionSiteCountQuote;
         roomState.creepActionRequirement.building = 
-            roomState.constructionSiteId.length > 0 ? 40 + (1 - builderQuote) * 28 * this.bender(0.2, constructionSiteCountQuote): 0;
+            roomState.constructionSiteId.length > 0 ? 40 + (1 - builderQuote) * 28 * this.bender(0.5, constructionSiteCountQuote, -0.3): 0;
         
         // Repairing       
-        var reparationSiteCountQuote = roomState.repairableSiteId.length / 10;
+        var reparationSiteCountQuote = (roomState.repairableSiteId.length/4)+roomState.repairableSiteIdPrio.length / 10;
         reparationSiteCountQuote = reparationSiteCountQuote > 1 ? 1 : reparationSiteCountQuote;
         roomState.creepActionRequirement.repairing = 
-            roomState.repairableSiteId.length > 0 ? 40 + (1 - builderQuote) * 28 * this.bender(0.2, reparationSiteCountQuote): 0;
+            roomState.repairableSiteId.length+roomState.repairableSiteIdPrio.length > 0 ? 35 + (1 - builderQuote) * 28 * this.bender(0.3, reparationSiteCountQuote, -0.15): 0;
 
         // TODO: Fueling //Tower Loading
         
         // Upgrading
         roomState.creepActionRequirement.upgrading = (25 + ((1 - (roomState.ticksToDowngrade/50000))*75) ) * this.bender(0.2, (1-upgraderQuote));
 
-        if(state.debug) console.log('Requirements: ' + JSON.stringify(roomState.creepActionRequirement));
+        if(state.debug) console.log(room.name + ' > Population: ' + JSON.stringify(roomState.creepAction));
+        if(state.debug) console.log(room.name + ' > New Wishlist: ' + JSON.stringify(roomState.creepActionRequirement));
+        
         state.rooms[iRoom] = roomState;
         return state;
     }, 

@@ -18,7 +18,7 @@ var mod = {
         var targetId = null;
         var energy = -1;
         var assigned = 999;
-        // TODO: gleichmäßig verteilen?
+        // TODO: gleichmaessig verteilen?
         for( var newTargetId in roomSources ) {
             var site = roomSources[newTargetId];
             if( site.creeps.length+1 <= site.maxCreeps // source is not crowded 
@@ -44,7 +44,8 @@ var mod = {
     step: function(creep, target){      
         if(creep.harvest(target) == ERR_NOT_IN_RANGE) {
             creep.moveTo(target);
-        }
+            return "moveTo";
+        } return "harvest";
     }, 
 
     error: {

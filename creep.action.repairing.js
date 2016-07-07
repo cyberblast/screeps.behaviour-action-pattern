@@ -5,7 +5,7 @@ var mod = {
     },
 
     getTargetById: function(id){
-        return Game.getObjectById(creep.memory.target);
+        return Game.getObjectById(id);
     },
 
     isValidTarget: function(target){
@@ -13,7 +13,10 @@ var mod = {
     }, 
 
     newTarget: function(creep, state){
-        var roomSites = state.rooms[creep.room.name].repairableSites;
+        var roomSites;
+        if(state.rooms[creep.room.name].repairableSiteIdPrio.length > 0)
+            roomSites = state.rooms[creep.room.name].repairableSitesPrio;
+        else roomSites = state.rooms[creep.room.name].repairableSites;
         var targetId = null;
         var damage = -1;
         for( var newTargetId in roomSites ) {
@@ -29,7 +32,8 @@ var mod = {
     step: function(creep, target){       
         if(creep.repair(target) == ERR_NOT_IN_RANGE) {
             creep.moveTo(target);
-        } 
+            return "moveTo";
+        } return "repair";
     }, 
 
     error: {

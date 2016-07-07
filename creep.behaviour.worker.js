@@ -26,7 +26,7 @@ var work = {
         }
 
         if( actionName ) {
-            var action = this.actions[creep.memory.action];
+            var action = this.actions[actionName];
             var target = null;
 
             // Validate target from memory
@@ -46,8 +46,8 @@ var work = {
 
             // Do some work
             if( target ){
-                creep.memory.target = action.getTargetId(target.id);
-                action.step(creep, target);
+                creep.memory.target = action.getTargetId(target);
+                creep.memory.step = action.step(creep, target);
                 // TODO: Update State
 
             // No Valid Target

@@ -36,12 +36,13 @@ var mod = {
     step: function(creep, target){    
         if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
             creep.moveTo(target);
-        }
+            return "moveTo";
+        } return "transfer";
     }, 
 
     error: {
         noTarget: function(creep, state){
-            if(state.debug) console.log( creep.name + ' > "Can not store this energy."');
+            if(state.debug) console.log( creep.name + ' > "Can not store energy."');
         }
     }
 }

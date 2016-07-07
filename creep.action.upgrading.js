@@ -5,7 +5,7 @@ var mod = {
     },
 
     getTargetById: function(id){
-        return Game.getObjectById(creep.memory.target);
+        return Game.getObjectById(id);
     },
 
     isValidTarget: function(target){
@@ -19,7 +19,8 @@ var mod = {
     step: function(creep, target){       
         if(creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
             creep.moveTo(target);
-        }
+            return "moveTo";
+        } return "upgradeController";
     }, 
 
     error: {
