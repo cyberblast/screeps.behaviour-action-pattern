@@ -29,14 +29,9 @@ var mod = {
             } 
 
             // Repair
-            if( tower.energy > tower.energyCapacity * 0.8 ) {
-                var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
-                    filter: (structure) => structure.hits < structure.hitsMax
-                });
-                if(closestDamagedStructure) {
-                    tower.repair(closestDamagedStructure);
-                    return;
-                }    
+            if( (tower.room.repairableSites.count > 0) && (tower.energy > (tower.energyCapacity * 0.8)) ) {
+                tower.repair(tower.room.repairableSites[tower.room.repairableSites.order[0]]);
+                return;
             }
         }
     }
