@@ -1,13 +1,16 @@
 var modules = {
-    status: require('status'),
+    global: require('global'),
+    extensions: require('extensions'),
     creeps: require('creep'),
     spawns: require('spawn'),
     towers: require('tower')
 }
 
 module.exports.loop = function () {
-    var state = modules.status.load();
-    modules.creeps.loop(state);
-    modules.spawns.loop(state);
-    modules.towers.loop(state);
+    modules.global.init();
+    modules.extensions.init();
+    
+    modules.creeps.loop();
+    modules.spawns.loop();
+    modules.towers.loop();
 };
