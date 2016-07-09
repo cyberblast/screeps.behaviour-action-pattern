@@ -1,5 +1,7 @@
 var mod = {
 
+    name: 'storing',
+    
     getTargetId: function(target){ 
         if(target.name) return target.name;
         return target.id;
@@ -12,20 +14,23 @@ var mod = {
     },
 
     isValidTarget: function(target){
-        return (target && target.energy && target.energy < target.energyCapacity);
+        return (target && target.energy && target.energy < target.energyCapacity) && (!target.creeps || target.creeps.length < 3);
     }, 
 
-    newTarget: function(creep, state){ 
-        var target = creep.pos.findClosestByPath(FIND_MY_SPAWNS, {
-            filter: function(object){ 
-                return object.energy < object.energyCapacity; 
+    newTarget: function(creep){ 
+        var target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return (structure.structureType == STRUCTURE_EXTENSION || 
+                    structure.structureType == STRUCTURE_SPAWN ) 
+                    && structure.energy < structure.energyCapacity;
             }
         });
-
-        if( !target ){
+        if( !target ) {
             target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
                 filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity);
+                    return (structure.structureType == STRUCTURE_TOWER || 
+                        structure.structureType == STRUCTURE_NUKER ) 
+                        && structure.energy < structure.energyCapacity;
                 }
             });
         }
@@ -33,16 +38,16 @@ var mod = {
         return target;
     }, 
 
-    step: function(creep, target){    
-        if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(target);
+    step: function(creep){    
+        if(creep.transfer(creep.target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(creep.target);
             return "moveTo";
         } return "transfer";
     }, 
 
     error: {
         noTarget: function(creep, state){
-            if(state.debug) console.log( creep.name + ' > "Can not store energy."');
+            if(DEBUG) console.log( creep.name + ' > "Can not store energy."');
         }
     }
 }

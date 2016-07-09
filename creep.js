@@ -2,10 +2,11 @@ var creeps = {
   behaviour: {
     worker: require('creep.behaviour.worker')
   },
-  loop: function (state) {
+  loop: function () {
     for(var creepName in Game.creeps){
-        var behaviour = creeps.behaviour[state.memory.creeps[creepName].setup];
-        behaviour.run(Game.creeps[creepName], state);
+        var creep = Game.creeps[creepName];
+        var behaviour = creeps.behaviour[creep.memory.setup];
+        behaviour.run(creep);
     }
   }
 }

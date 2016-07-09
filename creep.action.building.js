@@ -1,4 +1,6 @@
 var mod = {
+    
+    name: 'building',
 
     getTargetId: function(target){ 
         return target.id;
@@ -9,33 +11,32 @@ var mod = {
     },
 
     isValidTarget: function(target){
-        return target && target.progress;
+        return target && target.progress && target.id in target.room.constructionSites && (!target.creeps || target.creeps.length < 3);
     }, 
 
-    newTarget: function(creep, state){
-        var roomSites = state.rooms[creep.room.name].constructionSites;
-        var targetId = null;
-        var completion = -1;
-        for( var newTargetId in roomSites ) {
-            var site = roomSites[newTargetId];
-            if( site.creeps.length+1 <= site.maxCreeps && site.completion > completion){
-                targetId = site.id;
-                completion = site.completion;
+    newTarget: function(creep){
+        var room = creep.room;
+        var site = null;
+        room.constructionSites.order.every(id => {
+            if( room.constructionSites[id].creeps.length < 3 ){
+                site = room.constructionSites[id];
+                return false;
             }
-        }
-        return Game.getObjectById(targetId);
+            return true;
+        });
+        return site;
     }, 
 
-    step: function(creep, target){       
-        if(creep.build(target) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(target);
+    step: function(creep){       
+        if(creep.build(creep.target) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(creep.target);
             return "moveTo";
-        }return "build";
+        } return "build";
     }, 
 
     error: {
-        noTarget: function(creep, state){
-            if(state.debug) console.log( creep.name + ' > "There is nothing to build."');
+        noTarget: function(creep){
+            if(DEBUG) console.log( creep.name + ' > "There is nothing to build."');
         }
     }
 }

@@ -20,8 +20,8 @@ var mod = {
 
             var roomState = {
                 name: room.name,
-                minCreepSize: (room.energyCapacityAvailable/2),
-                maxWorkerCount: 14, // TODO: Ermitteln aus Konstante + Anzahl Sourcen + zerfallende Strukturen + unfertige Strukturen
+                minCreepSize: room.energyCapacityAvailable/2,
+                maxWorkerCount: 11, // TODO: Ermitteln aus Konstante + Anzahl Sourcen + zerfallende Strukturen + unfertige Strukturen ODER Historie 'crowded source' vs 'freie Plätze an Sources'
                 constructionSiteId: [], 
                 constructionSites: {},
                 repairableSiteIdPrio: [],
@@ -61,7 +61,7 @@ var mod = {
             var prio = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTROLLER];    
             // load repairable structures
             room.find(FIND_STRUCTURES, {
-                filter: (structure) => structure.hits < structure.hitsMax
+                filter: (structure) => structure.hits < structure.hitsMax*0.5
             }).forEach(function(site){
                     if( prio.includes(site.structureType) ){
                         roomState.repairableSiteIdPrio.push(site.id);
@@ -90,11 +90,12 @@ var mod = {
                     roomState.sources[source.id] = {
                         id: source.id, 
                         creeps: [], 
-                        maxCreeps: 5, 
+                        maxCreeps: (source.id == '' ? 2 : 6), // TODO: Anhand der Anzahl der offenen Felder (kein Fels) um die Source bestimmen (-> Memory) 
                         energy: source.energy
                     };
                 }
             );
+            
             
             // load creeps
             var memCreeps = state.memory.creeps;
@@ -138,16 +139,27 @@ var mod = {
                             else if( action == "repairing" && roomState.repairableSites[creepTarget] )
                                 roomState.repairableSites[creepTarget].creeps.push(creep.id);
                             else if( action == "repairing" && roomState.repairableSitesPrio[creepTarget] )
-                                roomState.repairableSites[creepTarget].creeps.push(creep.id);
+                                roomState.repairableSitesPrio[creepTarget].creeps.push(creep.id);
                         }
                     }
                 }
             }
         }
+        
+        roomState.minCreepSize *= this.bender(0.75, (roomState.creepId.length/roomState.maxWorkerCount), -0.125);
 
         // load attributes
         // TODO: Mehr einzelne var machen - macht die formeln lesbarer
-        roomState.missingEnergyQuote = (1- (room.energyAvailable/room.energyCapacityAvailable))*100;
+        
+        var towerEnergy = 0;
+        var towerCapacity = 0;
+        var towers = room.find(
+        FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}});
+        towers.forEach(tower => {towerEnergy += tower.energy; towerCapacity += energyCapacity;});
+        
+        roomState.missingEnergyQuote = (1- ((room.energyAvailable+towerEnergy)/(room.energyCapacityAvailable+towerCapacity)))*100;
+        roomState.missingEnergy = (room.energyCapacityAvailable+towerCapacity) - (room.energyAvailable+towerEnergy);
+        //roomState.missingEnergyQuote = (1- (room.energyAvailable/room.energyCapacityAvailable))*100;
         roomState.ticksToDowngrade = room.controller.ticksToDowngrade;
         var storerQuote;
         var builderQuote;
@@ -166,7 +178,7 @@ var mod = {
         }
 
         // Storing
-        roomState.creepActionRequirement.storing = room.energyAvailable < roomState.minCreepSize ? 90 : // 90 until min filling reached 
+        roomState.creepActionRequirement.storing = room.energyAvailable < roomState.minCreepSize || room.energyAvailable < 200 ? 90 : // 90 until min filling reached 
                 roomState.missingEnergyQuote * this.bender(0.2, (1-storerQuote));
 
         // Building       
@@ -178,17 +190,16 @@ var mod = {
         // Repairing       
         var reparationSiteCountQuote = (roomState.repairableSiteId.length/4)+roomState.repairableSiteIdPrio.length / 10;
         reparationSiteCountQuote = reparationSiteCountQuote > 1 ? 1 : reparationSiteCountQuote;
-        roomState.creepActionRequirement.repairing = 
-            roomState.repairableSiteId.length+roomState.repairableSiteIdPrio.length > 0 ? 35 + (1 - builderQuote) * 28 * this.bender(0.1, reparationSiteCountQuote): 0;
+        roomState.creepActionRequirement.repairing = roomState.repairableSiteId.length+roomState.repairableSiteIdPrio.length > 0 ? 35 + (1 - builderQuote) * 28 * this.bender(0.2, reparationSiteCountQuote, -0.2): 0;
 
         // TODO: Fueling //Tower Loading
         
         // Upgrading
         roomState.creepActionRequirement.upgrading = (25 + ((1 - (roomState.ticksToDowngrade/50000))*75) ) * this.bender(0.2, (1-upgraderQuote));
 
-        if(state.debug) console.log(room.name + ' > Population: ' + JSON.stringify(roomState.creepAction));
-        if(state.debug) console.log(room.name + ' > New Wishlist: ' + JSON.stringify(roomState.creepActionRequirement));
-        if(state.debug) console.log(room.name + ' > Damaged buildings (important/other): ' + roomState.repairableSiteIdPrio.length + ' / ' + roomState.repairableSiteId.length);
+        //if(state.debug) console.log(room.name + ' > Population: ' + JSON.stringify(roomState.creepAction));
+        //if(state.debug) console.log(room.name + ' > New Wishlist: ' + JSON.stringify(roomState.creepActionRequirement));
+        //if(state.debug) console.log(room.name + ' > Damaged buildings (important/other): ' + roomState.repairableSiteIdPrio.length + ' / ' + roomState.repairableSiteId.length);
         
         
         state.rooms[iRoom] = roomState;

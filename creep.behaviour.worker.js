@@ -4,88 +4,122 @@ var work = {
         upgrading: require('creep.action.upgrading'), 
         building: require('creep.action.building'), 
         storing: require('creep.action.storing'), 
-        fueling: require('creep.action.fueling'),
         repairing: require('creep.action.repairing')
     },
-    run: function(creep, state) {
-        
+    run: function(creep) {debugger;
         // Last Action completed / No more energy
 	    if( creep.carry.energy == 0 && creep.memory.action != 'harvesting') { 
-            this.workCompleted(creep);
+            creep.memory.action = 'harvesting';
+            creep.memory.target = null;
 	    }
 
         // Harvesting completed / energy refilled
 	    else if(creep.memory.action == 'harvesting' && creep.carry.energy == creep.carryCapacity) { 
-            this.energyRefilled(creep);
+            creep.memory.action = null;
+            creep.memory.target = null;
 	    } 
 
-        // Assign next Action
-        var actionName = creep.memory.action;
-        if(!actionName){
-            actionName = this.assignAction(creep, state);
-        }
-
-        if( actionName ) {
-            var action = this.actions[actionName];
-            var target = null;
-
-            // Validate target from memory
+        // Has assigned Action
+        if( creep.memory.action ){
+            creep.action = this.actions[creep.memory.action];
+            
+            // take target from memory
             if( creep.memory.target != null ) {
-                // get 'name'd and generic 'id'entified items
-                target = action.getTargetById(creep.memory.target);
-                if( !action.isValidTarget(target) ){ 
-                    target = null;
-                    creep.memory.target = null;
-                }
+                creep.target = creep.action.getTargetById(creep.memory.target);
             }
-
-            // Assign new target
-            if( !target ) {
-                target = action.newTarget(creep, state);
+                
+            // validate target or new
+            if( !creep.action.isValidTarget(creep.target) ){ 
+                // invalid. try to find a new one...
+                creep.target = creep.action.newTarget(creep);
             }
-
-            // Do some work
-            if( target ){
-                creep.memory.target = action.getTargetId(target);
-                creep.memory.step = action.step(creep, target);
-                // TODO: Update State
-
-            // No Valid Target
-            } else {
-                action.error.noTarget(creep, state);
-                this.idle(creep);
+            
+            if( creep.target ){
+                // target ok. memorize
+                creep.memory.target = creep.action.getTargetId(creep.target);
+            }
+            else {
+                // no more valid target found for old memorized action!
+                creep.memory.action = null;
+                creep.memory.target = null;
+                creep.action = null;
+                creep.target = null;
             }
         }
+        
+        // Assign next Action
+        if( !creep.action ) {
+            this.nextAction(creep);
+        }
+
+        // Do some work
+        if( creep.action && creep.target ) {
+            if( !creep.target.creeps ) 
+                creep.target.creeps = [];
+            creep.target.creeps.push(creep.name);
+            creep.memory.step = creep.action.step(creep);
+            // TODO: Update State
+
+        } else {
+            // action.error.noTarget(creep);
+            this.idle(creep);
+        }
     }, 
-    workCompleted: function(creep){
-        creep.memory.action = 'harvesting';
+    nextAction: function(creep){
         creep.memory.target = null;
+        creep.target = null;
+        var maxPerJob = _.max([3,creep.room.creeps.length/3]);
+        
+        // urgent upgrading 
+        if( creep.room.ticksToDowngrade < 2000 ) {
+            if( this.assignAction(creep, this.actions.upgrading) ) 
+                return;
+        }
+        
+        // Storing
+        if( creep.room.energyAvailable < creep.room.energyCapacityAvailable && 
+        (!creep.room.activities.storing || creep.room.activities.storing < maxPerJob)) {
+            if( this.assignAction(creep, this.actions.storing) ) 
+                return;
+        }
+        
+        // Building
+        if( creep.room.constructionSites.count > 0 && 
+        (!creep.room.activities.building || creep.room.activities.building < maxPerJob)) { 
+            if( this.assignAction(creep, this.actions.building) ) 
+                return;
+        }
+        
+        // Repairing
+        if( creep.room.creepRepairableSites.count > 0 && 
+        (!creep.room.activities.repairing || creep.room.activities.repairing < maxPerJob)){
+            if( this.assignAction(creep, this.actions.repairing) ) 
+                return;
+        }
+        
+        // Default: upgrading
+        this.assignAction(creep, this.actions.upgrading);
     }, 
-    energyRefilled: function(creep){
-        // TODO: Update state, remove creep from old targets register
-        creep.memory.action = null;
-        creep.memory.target = null;
-    }, 
-    assignAction: function(creep, state){
-        //if( creep.carry.energy < creep.carryCapacity ) // need energy
-        //    creep.memory.action = 'harvesting';
-        //else { // energy full
-            var action = null;
-            var required = -1;
-            for( var iAction in state.rooms[creep.room.name].creepActionRequirement) {
-                var newRequired = state.rooms[creep.room.name].creepActionRequirement[iAction];
-                if( newRequired > required ){
-                    required = newRequired;
-                    action = iAction;
-                }
-            }
-            creep.memory.action = action;
-        //}
-        return action;
-    }, 
+    assignAction: function(creep, action){
+        creep.action = action;
+        creep.target = action.newTarget(creep);
+        
+        if( creep.target ) {
+            creep.memory.action = action.name;
+            creep.memory.target = action.getTargetId(creep.target);
+            return true;
+        } 
+        
+        creep.action = null;
+        creep.target = null;
+        return false;
+    },
     idle: function(creep){
+        console.log('idle creep!')
         creep.memory.action = null;
         creep.memory.target = null;
+        creep.action = null;
+        creep.target = null;
         // Move away from source etc...
         var idlePole = Game.flags['IdlePole'];
         if(idlePole) creep.moveTo(idlePole);

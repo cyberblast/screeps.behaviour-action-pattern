@@ -1,16 +1,17 @@
 
 var mod = {
     self: this,
-    loop: function(state){
+    loop: function(){
         for(var iSpawn in Game.spawns){
-            this.createCreep(Game.spawns[iSpawn], state);
+            this.createCreep(Game.spawns[iSpawn]);
         }
     },
-    createCreep: function(spawn, state){
-        if (spawn.room.energyAvailable > state.rooms[spawn.room.name].minCreepSize && 
-            state.rooms[spawn.room.name].creepId.length < state.rooms[spawn.room.name].maxWorkerCount) {
+    createCreep: function(spawn){
+        var room = spawn.room;
+        if (room.energyAvailable > room.energyCapacityAvailable/2 && 
+            room.creeps.length < room.sourceAccessibleFields + (room.sources.length*2)) {
 
-            var build = this.creepSetup(spawn, state);
+            var build = this.creepSetup(spawn);
             if (build && build.parts.length > 0) {
                 var name = null;
                 for( var son = 1; name == null || Game.creeps[name]; son++ ) {
@@ -23,7 +24,7 @@ var mod = {
             }
         }
     }, 
-    creepSetup: function(spawn, state){
+    creepSetup: function(spawn){
         // TODO: Ermitteln welcher Typ gebaut werden soll
         var build = {
             setup: 'worker',
@@ -31,9 +32,9 @@ var mod = {
             parts: []
         }
         var simpleCost = 
-            state.partCost.work +
-            state.partCost.carry +
-            state.partCost.move;
+            PART_COSTS.work +
+            PART_COSTS.carry +
+            PART_COSTS.move;
 
         var multi = Math.floor(spawn.room.energyAvailable / simpleCost);
         build.cost = simpleCost * multi;

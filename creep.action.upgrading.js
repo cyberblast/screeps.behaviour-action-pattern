@@ -1,5 +1,7 @@
 var mod = {
 
+    name: 'upgrading',
+    
     getTargetId: function(target){ 
         return target.id;
     },
@@ -16,16 +18,16 @@ var mod = {
         return creep.room.controller;
     }, 
 
-    step: function(creep, target){       
-        if(creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(target);
+    step: function(creep){       
+        if(creep.upgradeController(creep.target) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(creep.target);
             return "moveTo";
         } return "upgradeController";
     }, 
 
     error: {
-        noTarget: function(creep, state){
-            if(state.debug) console.log( creep.name + ' > "There is nothing to build."');
+        noTarget: function(creep){
+            if(DEBUG) console.log( creep.name + ' > "There is nothing to build."');
         }
     }
 }
