@@ -10,30 +10,66 @@ var mod = {
         return Game.getObjectById(id);
     },
 
+    isValidAction: function(creep){
+        return ( creep.carry.energy < creep.carryCapacity && creep.room.sourceEnergyAvailable > 0 && (creep.memory.action == 'harvesting' || creep.carry.energy == 0));
+    },
+
     isValidTarget: function(target){
-        return (target && target.energy && target.energy > 0) && (!target.creeps || target.creeps.length < target.accessibleFields+2);
+        var valid = ((!!target) && target.energy && target.energy > 0) && 
+            (!target.creeps || ( !target.accessibleFields && target.creeps.length < 1 ) || target.creeps.length < target.accessibleFields*1.5);
+            return valid;
     }, 
 
+    isAddableAction: function(creep){
+        return true;
+    },
+
     newTarget: function(creep){ 
-        // TODO: Nicht naheste Quelle, sondern vollste??? 
-        return creep.pos.findClosestByPath(FIND_SOURCES, {
-            filter: function(source){ 
-                return source.energy > 0 && source.creeps.length < source.accessibleFields+2; 
+        var target = null;
+        var room = creep.room;
+        room.sources.every(source => {
+            var valid = this.isValidTarget(source);
+            if( valid ){
+                target = source;
+                return false;
             }
-        });   
+            return true;
+        });
+        if( target == null && creep.room.storage && creep.room.storage.store.energy > 0){
+            target = creep.room.storage;
+        }
+        if( target == null && DEBUG ) this.error(creep, ERR_NOT_FOUND);
+        return target;
     }, 
 
     step: function(creep){      
-        if(creep.harvest(creep.target) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(creep.target);
+        var result;
+        if( creep.target.store ){
+            result = creep.target.transfer(creep, RESOURCE_ENERGY, _.min([creep.target.store.energy, creep.carryCapacity-(_.sum(creep.carry))]));
+        } 
+        else result = creep.harvest(creep.target);
+        
+        if( result == ERR_NOT_IN_RANGE ) {
+            result = creep.moveTo(creep.target);
+            if ( result != OK ) {
+                if( result = ERR_NO_PATH && Game.flags['IdlePole']){
+                    creep.moveTo(Game.flags['IdlePole']);
+                } else if( DEBUG ) this.error(creep, result);
+            }
             return "moveTo";
-        } return "harvest";
+        }
+        if ( result == OK ) {
+            return "harvest";
+        }
+            
+        this.error(creep, result);
+        creep.memory.action = null;
+        creep.memory.target = null;
+        return 'error';
     }, 
 
-    error: {
-        noTarget: function(creep){
-            if(DEBUG) console.log( creep.name + ' > "Energy sources are overcrowded! :("');
-        }
+    error: function(creep, code) {
+        console.log( creep.name + ' > Failed ' + this.name + ' (' + errorCode(code) + ')\ntarget: ' + creep.memory.target);
     }
 }
 

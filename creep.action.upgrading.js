@@ -10,9 +10,17 @@ var mod = {
         return Game.getObjectById(id);
     },
 
+    isValidAction: function(creep){
+        return creep.carry.energy > 0 && creep.room.sourceEnergyAvailable > 0;
+    },
+
     isValidTarget: function(target){
         return target && target.progress;
     }, 
+
+    isAddableAction: function(creep){
+        return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
+    },
 
     newTarget: function(creep, state){
         return creep.room.controller;

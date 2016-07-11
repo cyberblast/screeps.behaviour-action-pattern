@@ -3,24 +3,26 @@ var mod = {
     self: this,
     loop: function(){
         for(var iSpawn in Game.spawns){
-            this.createCreep(Game.spawns[iSpawn]);
+            var spawn = Game.spawns[iSpawn];
+            if( !spawn.spawning )
+                this.createCreep(spawn);
         }
     },
     createCreep: function(spawn){
         var room = spawn.room;
         if (room.energyAvailable > room.energyCapacityAvailable/2 && 
-            room.creeps.length < room.sourceAccessibleFields + (room.sources.length*2)) {
+            room.population.worker.count < (room.sourceAccessibleFields + (room.sources.length)) && 
+            room.population.worker.weight < (room.sources.length * 4000) ) { 
 
             var build = this.creepSetup(spawn);
             if (build && build.parts.length > 0) {
-                var name = null;
-                for( var son = 1; name == null || Game.creeps[name]; son++ ) {
-                    name = build.setup + '.' + build.cost + '.' + son;
+                for( var son = 1; build.id == null || Game.creeps[build.id]; son++ ) {
+                    build.id = build.setup + '.' + build.cost + '.' + son;
                 }
-                var newName = spawn.createCreep(build.parts, name, build);
-                console.log(name == newName ? 
+                var newName = spawn.createCreep(build.parts, build.id, build);
+                console.log(build.id == newName ? 
                     spawn.name + ' > Good morning ' + newName + '!': 
-                    spawn.name + ' > "Offspring failed. They call it "' + newName + '".');
+                    spawn.name + ' > Offspring failed. They call it "' + errorCode(newName) + '".');
             }
         }
     }, 
@@ -29,7 +31,9 @@ var mod = {
         var build = {
             setup: 'worker',
             cost: 0,
-            parts: []
+            parts: [], 
+            mother: spawn.name, 
+            id: null
         }
         var simpleCost = 
             PART_COSTS.work +

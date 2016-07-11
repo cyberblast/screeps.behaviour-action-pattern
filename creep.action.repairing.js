@@ -10,9 +10,17 @@ var mod = {
         return Game.getObjectById(id);
     },
 
+    isValidAction: function(creep){
+        return (creep.carry.energy > 0 && creep.room.creepRepairableSites.count > 0 );
+    },
+
     isValidTarget: function(target){
-        return target && target.hits && target.hits < target.hitsMax && target.id in target.room.repairableSites && (!target.creeps || target.creeps.length < 3);
+        return target && target.hits && target.hits < target.hitsMax && target.id in target.room.repairableSites && (!target.creeps || target.creeps.length < 1);
     }, 
+
+    isAddableAction: function(creep){
+        return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
+    },
 
     newTarget: function(creep){
         var room = creep.room;

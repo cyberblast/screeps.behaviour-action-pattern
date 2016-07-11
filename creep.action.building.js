@@ -9,10 +9,18 @@ var mod = {
     getTargetById: function(id){
         return Game.getObjectById(id);
     },
+    
+    isValidAction: function(creep){
+        return ( creep.carry.energy > 0 && creep.room.constructionSites.count > 0 );
+    },
 
     isValidTarget: function(target){
-        return target && target.progress && target.id in target.room.constructionSites && (!target.creeps || target.creeps.length < 3);
+        return (target && target.progress && target.id in target.room.constructionSites);
     }, 
+    
+    isAddableAction: function(creep){
+        return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
+    },
 
     newTarget: function(creep){
         var room = creep.room;

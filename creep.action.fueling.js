@@ -1,6 +1,6 @@
 var mod = {
 
-    name: 'storing',
+    name: 'fueling',
     
     getTargetId: function(target){ 
         if(target.name) return target.name;
@@ -14,14 +14,12 @@ var mod = {
     },
 
     isValidAction: function(creep){
-        var valid =(creep.carry.energy > 0 && creep.room.storage && 
-        ((!!creep.room.activities.upgrading) && creep.room.activities.upgrading >= 2) &&
-        creep.room.sourceEnergyAvailable > 0);
-        return valid;
+        //console.log('creep.room.towerFreeCapacity ' + creep.room.towerFreeCapacity + ' creep.room.activities.fueling ' + creep.room.activities.fueling );
+        return ( creep.carry.energy > 0 && creep.room.towerFreeCapacity > 0 );
     },
 
     isValidTarget: function(target){
-        return ((!!target) && target.store && target.sum < target.storeCapacity) && (!target.creeps || target.creeps.length < 2);
+        return (target && target.energy && target.energy < target.energyCapacity) && (!target.creeps || target.creeps.length < 2);
     }, 
 
     isAddableAction: function(creep){
@@ -29,9 +27,16 @@ var mod = {
     },
 
     newTarget: function(creep){ 
-        if( this.isValidTarget(creep.room.storage) )
-            return creep.room.storage;
-        return null;
+        var target = null;
+        var room = creep.room;
+        room.towers.every(tower => { // TODO: include Nuker
+            if( this.isValidTarget(tower) ){
+                target = tower;
+                return false;
+            }
+            return true;
+        });
+        return target;
     }, 
 
     step: function(creep){    

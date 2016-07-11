@@ -1,6 +1,6 @@
 var mod = {
 
-    name: 'storing',
+    name: 'feeding',
     
     getTargetId: function(target){ 
         if(target.name) return target.name;
@@ -14,14 +14,11 @@ var mod = {
     },
 
     isValidAction: function(creep){
-        var valid =(creep.carry.energy > 0 && creep.room.storage && 
-        ((!!creep.room.activities.upgrading) && creep.room.activities.upgrading >= 2) &&
-        creep.room.sourceEnergyAvailable > 0);
-        return valid;
+        return ( creep.carry.energy > 0 && creep.room.energyAvailable < creep.room.energyCapacityAvailable );
     },
 
     isValidTarget: function(target){
-        return ((!!target) && target.store && target.sum < target.storeCapacity) && (!target.creeps || target.creeps.length < 2);
+        return (target && target.energy && target.energy < target.energyCapacity) && (!target.creeps || target.creeps.length < 1);
     }, 
 
     isAddableAction: function(creep){
@@ -29,9 +26,15 @@ var mod = {
     },
 
     newTarget: function(creep){ 
-        if( this.isValidTarget(creep.room.storage) )
-            return creep.room.storage;
-        return null;
+        var target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return (structure.structureType == STRUCTURE_EXTENSION || 
+                    structure.structureType == STRUCTURE_SPAWN ) 
+                    && structure.energy < structure.energyCapacity;
+            }
+        });
+
+        return target;
     }, 
 
     step: function(creep){    
