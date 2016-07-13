@@ -3,7 +3,7 @@ var mod = {
     name: 'storing',
     
     getTargetId: function(target){ 
-        if(target.name) return target.name;
+        //if(target.name) return target.name;
         return target.id;
     },
 
@@ -14,36 +14,48 @@ var mod = {
     },
 
     isValidAction: function(creep){
-        var valid =(creep.carry.energy > 0 && creep.room.storage && 
-        ((!!creep.room.activities.upgrading) && creep.room.activities.upgrading >= 2) &&
-        creep.room.sourceEnergyAvailable > 0);
-        return valid;
+        return ( _.sum(creep.carry) > 0 && creep.room.storage != null && 
+        ( _.sum(creep.carry) > creep.carry.energy || (
+        (creep.room.activities.upgrading != null && (creep.room.activities.upgrading >= 2)) &&
+        creep.room.sourceEnergyAvailable > 0)));
     },
-
-    isValidTarget: function(target){
-        return ((!!target) && target.store && target.sum < target.storeCapacity) && (!target.creeps || target.creeps.length < 2);
-    }, 
 
     isAddableAction: function(creep){
         return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
     },
 
+    isValidTarget: function(target){
+        return ((target != null) && (target.store != null) && target.sum < target.storeCapacity);
+    }, 
+
+    isAddableTarget: function(target){ 
+        return (target.creeps == null || target.creeps.length < 2);
+    }, 
+
     newTarget: function(creep){ 
-        if( this.isValidTarget(creep.room.storage) )
+        if( this.isValidTarget(creep.room.storage) && this.isAddableTarget(creep.room.storage) )
             return creep.room.storage;
         return null;
     }, 
 
     step: function(creep){    
-        if(creep.transfer(creep.target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(creep.target);
-            return "moveTo";
-        } return "transfer";
-    }, 
-
-    error: {
-        noTarget: function(creep, state){
-            if(DEBUG) console.log( creep.name + ' > "Can not store energy."');
+        var moveResult = creep.moveTo(creep.target);
+        var workResult;
+        for(var resourceType in creep.carry) {
+        	workResult = creep.transfer(creep.target, resourceType);
+        }
+        // var workResult = creep.transfer(creep.target, RESOURCE_ENERGY);
+        if(workResult == OK || moveResult == OK)
+            return;
+        
+        if( moveResult == ERR_NO_PATH && Game.flags['IdlePole']){// get out of the way
+            creep.moveTo(Game.flags['IdlePole']);
+            return;
+        } 
+        if( !( [ERR_TIRED, ERR_NO_PATH].indexOf(moveResult) > -1 ) ) {
+            if( DEBUG ) logError(creep, moveResult);
+            creep.memory.action = null;
+            creep.memory.target = null;
         }
     }
 }

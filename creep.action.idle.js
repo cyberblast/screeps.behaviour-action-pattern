@@ -1,6 +1,6 @@
 var mod = {
 
-    name: 'pickup',
+    name: 'idle',
     
     getTargetId: function(target){ 
         return target.id;
@@ -11,41 +11,32 @@ var mod = {
     },
 
     isValidAction: function(creep){
-        return ( creep.carry.energy < creep.carryCapacity );
+        return true;
     },
 
     isValidTarget: function(target){
-        return (target && target.amount && (!target.creeps || target.creeps < 1));
+        return true;
+    }, 
+
+    newTarget: function(creep){
+        return Game.flags['IdlePole'];
     }, 
 
     isAddableAction: function(creep){
-        return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
+        return true;
     },
 
-    newTarget: function(creep){ 
-        var target = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-        if( target == null ) target = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY);
-        return target;
+    isAddableTarget: function(target){ // target is valid to be given to an additional creep
+        return true;
     }, 
 
-    step: function(creep){      
-        var result;
-        if( creep.pickup(creep.target) == ERR_NOT_IN_RANGE ) {
-            creep.moveTo(creep.target);
-            return "moveTo";
-        }
-        if ( result == OK ) {
-            return "harvest";
-        }
-            
-        this.error(creep, result);
-        creep.memory.action = null;
+    step: function(creep){       
+        //if(DEBUG) console.log(creep.name + ' is idle!');
         creep.memory.target = null;
-        return 'error';
-    }, 
-
-    error: function(creep, code) {
-        console.log( creep.name + ' > Failed ' + this.name + ' (' + errorCode(code) + ')\ntarget: ' + creep.memory.target);
+        creep.memory.action = null;
+        if(creep.target && creep.pos != creep.target.pos) {
+            creep.moveTo(creep.target);
+        } 
     }
 }
 

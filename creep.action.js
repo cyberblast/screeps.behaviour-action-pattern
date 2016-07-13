@@ -1,6 +1,6 @@
 var mod = {
 
-    name: 'upgrading',
+    name: null,
     
     getTargetId: function(target){ 
         return target.id;
@@ -11,11 +11,15 @@ var mod = {
     },
 
     isValidAction: function(creep){
-        return creep.carry.energy > 0 && creep.room.sourceEnergyAvailable > 0;
+        return true;
     },
 
     isValidTarget: function(target){
-        return (target != null ) && ( target.progress != null );
+        return (target != null);
+    }, 
+
+    newTarget: function(creep){
+        return null;
     }, 
 
     isAddableAction: function(creep){
@@ -26,13 +30,9 @@ var mod = {
         return true;
     }, 
 
-    newTarget: function(creep, state){
-        return creep.room.controller;
-    }, 
-
-    step: function(creep){       
+    step: function(creep){     
         var moveResult = creep.moveTo(creep.target);
-        var workResult = creep.upgradeController(creep.target);
+        var workResult = this.work(creep);
         if(workResult == OK || moveResult == OK)
             return;
         
@@ -45,6 +45,10 @@ var mod = {
             creep.memory.action = null;
             creep.memory.target = null;
         }
+    }, 
+    
+    work: function(creep){
+        return ERR_INVALID_ARGS;
     }
 }
 

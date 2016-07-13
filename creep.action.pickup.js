@@ -1,6 +1,6 @@
 var mod = {
 
-    name: 'upgrading',
+    name: 'pickup',
     
     getTargetId: function(target){ 
         return target.id;
@@ -11,28 +11,34 @@ var mod = {
     },
 
     isValidAction: function(creep){
-        return creep.carry.energy > 0 && creep.room.sourceEnergyAvailable > 0;
+        return ( _.sum(creep.carry) < creep.carryCapacity );
     },
 
     isValidTarget: function(target){
-        return (target != null ) && ( target.progress != null );
+        return (target != null && target.amount != null && target.amount > 0);
     }, 
 
     isAddableAction: function(creep){
-        return true;
+        return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
     },
 
     isAddableTarget: function(target){ // target is valid to be given to an additional creep
-        return true;
+        return (!target.creeps || target.creeps.length < 2);
     }, 
 
-    newTarget: function(creep, state){
-        return creep.room.controller;
+    newTarget: function(creep){ 
+        var target = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
+            filter: (o) => this.isAddableTarget(o)
+        });
+        if( target == null ) target = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY, {
+            filter: (o) => this.isAddableTarget(o)
+        });
+        return target;
     }, 
 
     step: function(creep){       
         var moveResult = creep.moveTo(creep.target);
-        var workResult = creep.upgradeController(creep.target);
+        var workResult = creep.pickup(creep.target);
         if(workResult == OK || moveResult == OK)
             return;
         

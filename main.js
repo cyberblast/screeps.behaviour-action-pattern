@@ -11,6 +11,8 @@ module.exports.loop = function () {
     modules.extensions.init();
     
     modules.creeps.loop();
-    modules.spawns.loop();
+        
+    if( Game.time % 10 == 0 ) 
+        modules.spawns.loop();
     modules.towers.loop();
 };

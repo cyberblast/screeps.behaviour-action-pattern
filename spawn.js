@@ -1,6 +1,9 @@
-
 var mod = {
     self: this,
+    template: [
+        require('creep.setup.worker'),
+        require('creep.setup.defender')
+    ],
     loop: function(){
         for(var iSpawn in Game.spawns){
             var spawn = Game.spawns[iSpawn];
@@ -9,10 +12,26 @@ var mod = {
         }
     },
     createCreep: function(spawn){
+        for(var iTemplate = 0; iTemplate < this.template.length; iTemplate++) {
+            var set = this.template[iTemplate];
+            
+            if( set.isValidSetup(spawn) ){
+                var params =  set.buildParams(spawn);
+                var newName = spawn.createCreep(params.parts, params.id, params);
+                console.log(set.id == newName || errorCode(newName) == undefined ? 
+                    spawn.name + ' > Good morning ' + newName + '!': 
+                    spawn.name + ' > Offspring failed. They call it "' + errorCode(newName) + '".');
+                
+                return;
+            }
+        }
+        return;
+        
         var room = spawn.room;
-        if (room.energyAvailable > room.energyCapacityAvailable/2 && 
-            room.population.worker.count < (room.sourceAccessibleFields + (room.sources.length)) && 
-            room.population.worker.weight < (room.sources.length * 4000) ) { 
+        if (room.energyAvailable > room.energyCapacityAvailable/2 && (
+            !room.population.worker || (
+            room.population.worker.count < (room.sourceAccessibleFields + (room.sources.length*1.5))  && 
+            room.population.worker.weight < (room.sources.length * 3400)))) { 
 
             var build = this.creepSetup(spawn);
             if (build && build.parts.length > 0) {
@@ -40,7 +59,7 @@ var mod = {
             PART_COSTS.carry +
             PART_COSTS.move;
 
-        var multi = Math.floor(spawn.room.energyAvailable / simpleCost);
+        var multi = _.min([Math.floor(spawn.room.energyAvailable / simpleCost), 6]);
         build.cost = simpleCost * multi;
 
         for (var iWork = 0; iWork < multi; iWork++) {

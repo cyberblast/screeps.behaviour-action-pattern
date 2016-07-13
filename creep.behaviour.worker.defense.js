@@ -8,7 +8,7 @@ var work = {
         feeding: require('creep.action.feeding'),
         fueling: require('creep.action.fueling'),
         idle: require('creep.action.idle'),
-        pickup: require('creep.action.pickup'),
+        //pickup: require('creep.action.pickup'),
         provisioning: require('creep.action.provisioning')
     },
     run: function(creep) {
@@ -22,7 +22,7 @@ var work = {
         if( creep.memory.action ){
             creep.action = this.actions[creep.memory.action];
             
-            if( creep.action.isValidAction(creep) ){
+            if( creep.action && creep.action.isValidAction(creep) ){
                 // take target from memory
                 if( creep.memory.target != null ) {
                     creep.target = creep.action.getTargetById(creep.memory.target);
@@ -88,9 +88,8 @@ var work = {
             }
             
             var priority = [
-                this.actions.pickup,
-                this.actions.harvesting,
-                this.actions.provisioning];
+                this.actions.provisioning,
+                this.actions.harvesting];
                 
             for(var iAction = 0; iAction < priority.length; iAction++) {
                 
@@ -113,11 +112,10 @@ var work = {
             }
             
             var priority = [
-                this.actions.pickup,
                 this.actions.feeding, 
+                this.actions.fueling, 
                 this.actions.repairing, 
                 this.actions.building, 
-                this.actions.fueling, 
                 this.actions.storing, 
                 this.actions.upgrading];
             

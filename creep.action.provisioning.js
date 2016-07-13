@@ -1,38 +1,41 @@
 var mod = {
 
-    name: 'upgrading',
+    name: 'provisioning',
     
     getTargetId: function(target){ 
+        //if(target.name) return target.name;
         return target.id;
     },
 
     getTargetById: function(id){
-        return Game.getObjectById(id);
+        var obj = Game.getObjectById(id);
+        if( !obj ) obj = Game.spawns[id];
+        return obj;
     },
 
     isValidAction: function(creep){
-        return creep.carry.energy > 0 && creep.room.sourceEnergyAvailable > 0;
+        return ( creep.carry.energy < creep.carryCapacity && (creep.room.energyAvailable < creep.room.energyCapacityAvailable || creep.room.towerFreeCapacity > 500 ));
+    },
+
+    isAddableAction: function(creep){
+        return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
     },
 
     isValidTarget: function(target){
-        return (target != null ) && ( target.progress != null );
+        return ( (target != null) && (target.store != null) && (target.store.energy > 0) );
     }, 
-
-    isAddableAction: function(creep){
-        return true;
-    },
 
     isAddableTarget: function(target){ // target is valid to be given to an additional creep
-        return true;
+        return (!target.creeps || target.creeps.length < 2);
     }, 
 
-    newTarget: function(creep, state){
-        return creep.room.controller;
+    newTarget: function(creep){ 
+        return creep.room.storage;
     }, 
 
-    step: function(creep){       
+    step: function(creep){   
         var moveResult = creep.moveTo(creep.target);
-        var workResult = creep.upgradeController(creep.target);
+        var workResult = creep.target.transfer(creep, RESOURCE_ENERGY);
         if(workResult == OK || moveResult == OK)
             return;
         
@@ -47,5 +50,6 @@ var mod = {
         }
     }
 }
+
 
 module.exports = mod;

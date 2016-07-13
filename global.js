@@ -4,8 +4,14 @@ var mod = {
         global.PART_COSTS = {
             work: 100,
             carry: 50,
-            move: 50
+            move: 50, 
+            attack: 80, 
+            ranged_attack: 150, 
+            heal: 250, 
+            claim: 600, 
+            tough: 10
         };
+        global.LIMIT_CREEP_REPAIRING = 1000;
         global.errorCode = function(code){
             var codes = {
                 0: 'OK',
@@ -24,7 +30,13 @@ var mod = {
                 14: 'ERR_RCL_NOT_ENOUGH',
                 15: 'ERR_GCL_NOT_ENOUGH'};
             return codes[code*-1];
-        }
+        };
+        global.logError = function(creep, code) {
+            if(creep) creep.say(errorCode(code))
+;            var message = errorCode(code) + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
+            console.log( message );
+            Game.notify( message, 120 );
+        };
     }
 }
 
