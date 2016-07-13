@@ -45,14 +45,15 @@ var setup = {
         }
         return memory;
     }, 
-    minEnergyCapacityAvailable: function(spawn){ return 1; }, // 1 = full
+    minEnergyAvailable: function(spawn){ return 1; }, // 1 = full
     maxCount: function(spawn){ return 0; }, 
     maxWeight: function(spawn){ return 0; },
     isValidSetup: function(spawn){
         var room = spawn.room;
         var population = room.population[this.type];
         
-        return (room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyCapacityAvailable(spawn)) && (
+        return (room.energyAvailable >= this.defaultBodyCosts && 
+            room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn)) && (
             !population || (
             population.count < this.maxCount(spawn)  && 
             population.weight < this.maxWeight(spawn))));

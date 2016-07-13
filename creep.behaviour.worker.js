@@ -22,7 +22,7 @@ var work = {
         if( creep.memory.action ){
             creep.action = this.actions[creep.memory.action];
             
-            if( creep.action.isValidAction(creep) ){
+            if( creep.action && creep.action.isValidAction(creep) ){
                 // take target from memory
                 if( creep.memory.target != null ) {
                     creep.target = creep.action.getTargetById(creep.memory.target);
@@ -87,10 +87,15 @@ var work = {
                     return;
             }
             
-            var priority = [
+            var priority;
+            if( creep.room.situation.invasion ) priority = [
+                this.actions.provisioning,
+                this.actions.harvesting];
+            else priority = [
                 this.actions.pickup,
                 this.actions.harvesting,
                 this.actions.provisioning];
+
                 
             for(var iAction = 0; iAction < priority.length; iAction++) {
                 
@@ -112,7 +117,15 @@ var work = {
                     return;
             }
             
-            var priority = [
+            var priority;
+            if( creep.room.situation.invasion ) priority = [
+                this.actions.feeding, 
+                this.actions.fueling, 
+                this.actions.repairing, 
+                this.actions.building, 
+                this.actions.storing, 
+                this.actions.upgrading];
+            else priority = [
                 this.actions.pickup,
                 this.actions.feeding, 
                 this.actions.repairing, 

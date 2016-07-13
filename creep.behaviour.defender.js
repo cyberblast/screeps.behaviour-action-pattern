@@ -1,35 +1,33 @@
 var work = {
     actions: {
-        guarding: require('creep.action.guarding')
+        guarding: require('creep.action.guarding'),
+        defending: require('creep.action.defending.ranged')
     },
-    run: function(creep) {
-        if( creep.memory.action != 'guarding' ){
+    setAction: function(creep, actionName) {
+        if( creep.memory.action != actionName ){
             if( creep.memory.action )
                 creep.room.activities[creep.memory.action]--;
-            creep.memory.action = 'guarding';
+            creep.memory.action = actionName;
             creep.memory.target = null;
         }
-        creep.action = this.actions.guarding;
+        creep.action = this.actions[actionName];
+    },
+    run: function(creep) {
+        if( creep.room.situatioon.invasion )
+            this.setAction(creep, 'defending');
+        else 
+            this.setAction(creep, 'guarding');
         
-        /*
-        if( creep.memory.target != null ) {
-            creep.target = creep.action.getTargetById(creep.memory.target);
-        }
-        
-        if( !creep.action.isValidTarget(creep.target) ){ 
-            // invalid. try to find a new one...
-            */
             creep.target = creep.action.newTarget(creep);
-        //}
-        
-        if( creep.target ){
-            // target ok. memorize
-            if( !creep.target.creeps ) 
-                creep.target.creeps = [];
-            if( !(creep.name in creep.target.creeps) ) 
-                creep.target.creeps.push(creep.name);
-            creep.memory.target = creep.action.getTargetId(creep.target);
-            creep.action.step(creep);
+            
+            if( creep.target ){
+                if( !creep.target.creeps ) 
+                    creep.target.creeps = [];
+                if( !(creep.name in creep.target.creeps) ) 
+                    creep.target.creeps.push(creep.name);
+                creep.memory.target = creep.action.getTargetId(creep.target);
+                creep.action.step(creep);
+            }
         }
     }
 };

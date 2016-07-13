@@ -4,7 +4,7 @@ setup.type = 'defender';
 setup.body = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, RANGED_ATTACK, MOVE, RANGED_ATTACK, MOVE, RANGED_ATTACK, MOVE]; 
 setup.defaultBodyCosts = 650;
 setup.maxMulti = 2;
-setup.minEnergyCapacityAvailable = function(){
+setup.minEnergyAvailable = function(){
     return 0.8;
 }
 setup.maxCount = function(spawn){

@@ -2,9 +2,9 @@ var mod = {
     self: this,
     loop: function(strategy){
         for(var iRoom in Game.rooms){
-            var towers = Game.rooms[iRoom].find(
-            FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}});
-            towers.forEach(tower => this.run(tower));
+            //var towers = Game.rooms[iRoom].find(
+            //FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}});
+            Game.rooms[iRoom].towers.forEach(tower => this.run(tower));
         }
     }, 
     run: function(tower){
@@ -28,7 +28,7 @@ var mod = {
                 return;
             } 
             // Repair
-            if( (tower.room.repairableSites.count > 0) && (tower.energy > (tower.energyCapacity * 0.8)) ) {
+            if( (tower.room.repairableSites.count > 0) && (tower.energy > (tower.energyCapacity * (1-(0.2/tower.room.towers.length)))) ) {
                 for( var iSite = 0; iSite < tower.room.repairableSites.count; iSite++){
                     var site = tower.room.repairableSites[tower.room.repairableSites.order[iSite]];
                     if(site.towers == null || site.towers.length == 0){

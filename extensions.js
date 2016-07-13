@@ -131,6 +131,12 @@ var mod = {
             if(this.storage && this.storage.store){
                 this.storage.sum = _.sum(this.storage.store);
             }
+
+            // Situation
+            this.situation = {
+                noEnergy: self.sourceEnergyAvailable, 
+                invasion: self.hostiles.length > 0
+            }
             
             // Memory
             this.setMemory = function(obj){
@@ -157,11 +163,19 @@ var mod = {
                 });
                 if( this.memory.history.length > 100 )
                     this.memory.history.splice(0, this.memory.history.length-100);
+
                 if( Game.time % 500 == 0 ){
-                    var message = 'History: ';
-                    for( var iMem = 0; iMem < this.memory.history.length; iMem++ ){
-                        var record = this.memory.history[iMem];
-                        message += '<br/>' + record.time + '> Storage: ' + record.store;
+                    var firstRecord = JSON.parse( this.memory.history[0].store );
+                    var lastRecord = JSON.parse( this.memory.history[0].store );
+                    var message = 'Storage development over the last 500 ticks: <br/>';
+                    for( var type in firstRecord ){ // changed & depleted
+                        var dif = (lastRecord[type] ? lastRecord[type] - firstRecord[type] : firstRecord[type] * -1);
+                        message += type + ': ' + (dif > 0 ? '+' : '' ) + dif;  
+                    }
+                    // new
+                    for( var type in lastRecord ){
+                        if(!firstRecord[type])
+                            message += type + ': ' + lastRecord[type];  
                     }
                     Game.notify(message);
                 }

@@ -88,11 +88,20 @@ var work = {
     nextAction: function(creep){
         creep.memory.target = null;
         creep.target = null;
-        var priority = [
-            this.actions.storing,
-            this.actions.pickup,
-            this.actions.feeding, 
-            this.actions.repairing];
+
+        var priority;
+        if( creep.room.situation.invasion ) 
+            priority = [
+                this.actions.storing,
+                this.actions.feeding, 
+                this.actions.fueling, 
+                this.actions.repairing];
+        else            
+            priority = [
+                this.actions.storing,
+                this.actions.pickup,
+                this.actions.feeding, 
+                this.actions.repairing];
         
         for(var iAction = 0; iAction < priority.length; iAction++) {
             
