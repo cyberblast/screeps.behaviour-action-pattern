@@ -26,24 +26,6 @@ var mod = {
             }
         }
         return;
-        
-        var room = spawn.room;
-        if (room.energyAvailable > room.energyCapacityAvailable/2 && (
-            !room.population.worker || (
-            room.population.worker.count < (room.sourceAccessibleFields + (room.sources.length*1.5))  && 
-            room.population.worker.weight < (room.sources.length * 3400)))) { 
-
-            var build = this.creepSetup(spawn);
-            if (build && build.parts.length > 0) {
-                for( var son = 1; build.id == null || Game.creeps[build.id]; son++ ) {
-                    build.id = build.setup + '.' + build.cost + '.' + son;
-                }
-                var newName = spawn.createCreep(build.parts, build.id, build);
-                console.log(build.id == newName ? 
-                    spawn.name + ' > Good morning ' + newName + '!': 
-                    spawn.name + ' > Offspring failed. They call it "' + errorCode(newName) + '".');
-            }
-        }
     }, 
     creepSetup: function(spawn){
         // TODO: Ermitteln welcher Typ gebaut werden soll
