@@ -134,7 +134,7 @@ var mod = {
 
             // Situation
             this.situation = {
-                noEnergy: self.sourceEnergyAvailable, 
+                noEnergy: self.sourceEnergyAvailable == 0, 
                 invasion: self.hostiles.length > 0
             }
             
