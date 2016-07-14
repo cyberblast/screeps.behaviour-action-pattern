@@ -65,8 +65,11 @@ var work = {
             }
 
             // if !Controller.owner try claim or reserve
-
             var controller = creep.room.controller;
+            console.log('Controller owner: ' + controller.owner);
+            if( !controller.owner ){
+
+            }
             // if controller.owner = self => harvest & upgrade 
 
         }
