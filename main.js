@@ -1,18 +1,9 @@
-var modules = {
-    global: require('global'),
-    extensions: require('extensions'),
-    creeps: require('creep'),
-    spawns: require('spawn'),
-    towers: require('tower')
-}
-
 module.exports.loop = function () {
-    modules.global.init();
-    modules.extensions.init();
+    require('global').init();
+    require('extensions').init();
     
-    modules.creeps.loop();
-        
+    MODULES.creep.loop();        
     if( Game.time % 10 == 0 ) 
-        modules.spawns.loop();
-    modules.towers.loop();
+        MODULES.spawn.loop();
+    MODULES.tower.loop();
 };

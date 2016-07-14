@@ -22,11 +22,11 @@ var mod = {
                     claimer: require('creep.behaviour.claimer'),
                     conqueror: require('creep.behaviour.conqueror'),
                     defender: require('creep.behaviour.defender'),
-                    worker: _assign(require('creep.behaviour.worker'), {
+                    worker: _.assign(require('creep.behaviour.worker'), {
                         noEnergy: require('creep.behaviour.worker.noEnergy')
                     })
                 }, 
-                setup: _assign(require('creep.setup'), {
+                setup: _.assign(require('creep.setup'), {
                     claimer: require('creep.setup.claimer'),
                     conqueror: require('creep.setup.conqueror'),
                     defender: require('creep.setup.defender'),
@@ -34,12 +34,12 @@ var mod = {
                 })
             }), 
             extensions: require('extensions'),
-            room: {},
             spawn: require('spawn'), 
             tower: require('tower')
         };
 
         global.STRATEGY = 'defensive';
+        global.CHATTY = true;
         global.DEBUG = true;
         global.PART_COSTS = {
             work: 100,
@@ -52,7 +52,7 @@ var mod = {
             tough: 10
         };
         global.LIMIT_CREEP_REPAIRING = 1000;
-        global.errorCode = function(code){
+        global.ERROR_CODE = function(code){
             var codes = {
                 0: 'OK',
                 1: 'ERR_NOT_OWNER',
@@ -71,7 +71,7 @@ var mod = {
                 15: 'ERR_GCL_NOT_ENOUGH'};
             return codes[code*-1];
         };
-        global.logError = function(creep, code) {
+        global.ERROR_LOG = function(creep, code) {
             if(creep) creep.say(errorCode(code));
             var message = errorCode(code) + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
             console.log( message );

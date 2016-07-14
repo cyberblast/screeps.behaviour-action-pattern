@@ -1,4 +1,4 @@
-var setup = {
+var mod = {
     type: null,
     body: [], 
     defaultBodyCosts: 0, 
@@ -60,4 +60,4 @@ var setup = {
     }
 }
 
-module.exports = setup;
+module.exports = mod;

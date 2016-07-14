@@ -3,14 +3,11 @@ var mod = {
     name: 'storing',
     
     getTargetId: function(target){ 
-        //if(target.name) return target.name;
-        return target.id;
+        return target.id || target.name;
     },
 
     getTargetById: function(id){
-        var obj = Game.getObjectById(id);
-        if( !obj ) obj = Game.spawns[id];
-        return obj;
+        return Game.getObjectById(id) || Game.spawns[id];
     },
 
     isValidAction: function(creep){

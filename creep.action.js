@@ -3,11 +3,11 @@ var mod = {
     name: null,
     
     getTargetId: function(target){ 
-        return target.id;
+        return target.id || target.name;
     },
 
     getTargetById: function(id){
-        return Game.getObjectById(id);
+        return Game.getObjectById(id) || Game.spawns[id];
     },
 
     isValidAction: function(creep){
@@ -31,6 +31,7 @@ var mod = {
     }, 
 
     step: function(creep){     
+        if(CHATTY) creep.say(this.name);
         var moveResult = creep.moveTo(creep.target);
         var workResult = this.work(creep);
         if(workResult == OK || moveResult == OK)

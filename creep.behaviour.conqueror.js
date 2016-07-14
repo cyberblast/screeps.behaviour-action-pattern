@@ -1,9 +1,4 @@
 var work = {
-    actions: {
-        idle: require('creep.action.idle'),
-        guarding: require('creep.action.harvesting'),
-        defending: require('creep.action.upgrading')
-    },
     setAction: function(creep, actionName) {
         if( creep.memory.action != actionName ){
             if( creep.memory.action )
@@ -11,7 +6,7 @@ var work = {
             creep.memory.action = actionName;
             creep.memory.target = null;
         }
-        creep.action = this.actions[actionName];
+        creep.action = MODULES.creep.action[actionName];
     },
     run: function(creep) {
         var claimFlag = Game.flags['Claim'];
@@ -78,10 +73,7 @@ var work = {
             }
 
             this.setAction(creep, 'idle');
-        }
-
-
-       
+        }       
 
         creep.target = creep.action.newTarget(creep);        
         if( creep.target ){
