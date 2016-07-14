@@ -150,7 +150,9 @@ var mod = {
             this.hostileIds.forEach( function(id){
                 if( !(id in self.memory.hostileIds) ){
                     var creep = Game.getObjectById(id);
-                    Game.notify('Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room <a href="https://screeps.com/a/#!/room/' + self.name + '">' + self.name + '</a> at ' + Game.time + ' ticks.');//<br/>Body: ' + JSON.stringify(creep.body));
+                    var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room <a href="https://screeps.com/a/#!/room/' + self.name + '">' + self.name + '</a> at ' + Game.time + ' ticks.'
+                    Game.notify(message);//<br/>Body: ' + JSON.stringify(creep.body));
+                    console.log(message);
                 }
             });
             this.memory.hostileIds = this.hostileIds;
@@ -167,10 +169,10 @@ var mod = {
                 if( Game.time % 1000 == 0 ){
                     var firstRecord = JSON.parse( this.memory.history[0].store );
                     var lastRecord = JSON.parse( this.memory.history[this.memory.history.length-1].store );
-                    var message = 'Storage development over the last 1000 ticks: <br/>';
+                    var message = '<b>Storage report</b> (difference to before 1000 Ticks) <br/>';
                     for( var type in firstRecord ){ // changed & depleted
                         var dif = (lastRecord[type] ? lastRecord[type] - firstRecord[type] : firstRecord[type] * -1);
-                        message += type + ': ' + firstRecord[type] + ' (' + (dif > 0 ? '+' : '' ) + dif + ')<br/>';  
+                        message += type + ': ' + (lastRecord[type]?lastRecord[type]:0) + ' (' + (dif > -1 ? '+' : '' ) + dif + ')<br/>';  
                     }
                     // new
                     for( var type in lastRecord ){
@@ -178,6 +180,7 @@ var mod = {
                             message += type + ': ' + lastRecord[type] + ' (' + lastRecord[type] + ')<br/>';  
                     }
                     Game.notify(message);
+                    console.log(message);
                 }
             }
             
