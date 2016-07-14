@@ -1,5 +1,45 @@
 var mod = {
     init: function(){
+        global.MODULES = {
+            creep: _.assign(require('creep'), {
+                action: _.assign(require('creep.action'), {
+                    building: require('creep.action.building'), 
+                    defending: {
+                        ranged: require('creep.action.defending.ranged')
+                    }, 
+                    feeding: require('creep.action.feeding'), 
+                    fueling: require('creep.action.fueling'), 
+                    guarding: require('creep.action.guarding'), 
+                    harvesting: require('creep.action.harvesting'),
+                    idle: require('creep.action.idle'), 
+                    picking: require('creep.action.picking'), 
+                    repairing: require('creep.action.repairing'), 
+                    storing: require('creep.action.storing'), 
+                    upgrading: require('creep.action.upgrading'), 
+                    withdrawing: require('creep.action.withdrawing')
+                }),
+                behaviour: {
+                    claimer: require('creep.behaviour.claimer'),
+                    conqueror: require('creep.behaviour.conqueror'),
+                    defender: require('creep.behaviour.defender'),
+                    worker: _assign(require('creep.behaviour.worker'), {
+                        noEnergy: require('creep.behaviour.worker.noEnergy')
+                    })
+                }, 
+                setup: _assign(require('creep.setup'), {
+                    claimer: require('creep.setup.claimer'),
+                    conqueror: require('creep.setup.conqueror'),
+                    defender: require('creep.setup.defender'),
+                    worker: require('creep.setup.worker'),
+                })
+            }), 
+            extensions: require('extensions'),
+            room: {},
+            spawn: require('spawn'), 
+            tower: require('tower')
+        };
+
+        global.STRATEGY = 'defensive';
         global.DEBUG = true;
         global.PART_COSTS = {
             work: 100,
@@ -32,8 +72,8 @@ var mod = {
             return codes[code*-1];
         };
         global.logError = function(creep, code) {
-            if(creep) creep.say(errorCode(code))
-;            var message = errorCode(code) + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
+            if(creep) creep.say(errorCode(code));
+            var message = errorCode(code) + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
             console.log( message );
             Game.notify( message, 120 );
         };

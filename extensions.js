@@ -150,7 +150,7 @@ var mod = {
             this.hostileIds.forEach( function(id){
                 if( !self.memory.hostileIds.includes(id) ){
                     var creep = Game.getObjectById(id);
-                    var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room' + self.name + ' at ' + Game.time + ' ticks.'
+                    var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
                     Game.notify(message);//<br/>Body: ' + JSON.stringify(creep.body));
                     console.log(message);
                 }

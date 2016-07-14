@@ -77,8 +77,6 @@ var work = {
                 return;
             }
 
-            // TODO: if controller.owner = self => harvest & upgrade 
-
             this.setAction(creep, 'idle');
         }
 

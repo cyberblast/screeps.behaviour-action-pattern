@@ -1,10 +1,10 @@
 var mod = {
     self: this,
-    template: [
+    template: STRATEGY == 'defensive' ? [
         require('creep.setup.worker'),
         require('creep.setup.defender'),
         require('creep.setup.conqueror'),
-    ],
+    ] : [],
     loop: function(){
         for(var iSpawn in Game.spawns){
             var spawn = Game.spawns[iSpawn];

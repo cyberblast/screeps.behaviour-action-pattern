@@ -20,12 +20,12 @@ var mod = {
             delete Memory.creeps[creepName];
         } else { 
             if(creep.spawning) return;
-                if( !behaviour.common[creep.memory.setup]) return;
+            if( !behaviour.common[creep.memory.setup]) return;
 
-                if( creep.room.situation.noEnergy )
-                    behaviour.noEnergy[creep.memory.setup].run(creep);
-                else 
-                    behaviour.common[creep.memory.setup].run(creep);
+            if( creep.room.situation.noEnergy )
+                behaviour.noEnergy[creep.memory.setup].run(creep);
+            else 
+                behaviour.common[creep.memory.setup].run(creep);
         }
     }
   }
