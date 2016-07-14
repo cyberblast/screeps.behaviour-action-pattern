@@ -22,6 +22,7 @@ action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 
 action.step = function(creep){     
+    if(CHATTY) creep.say(this.name);
     if(creep.target && creep.pos != creep.target.pos) {
         var moveResult = creep.moveTo(creep.target);
         if( moveResult == OK )

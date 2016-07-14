@@ -17,6 +17,7 @@ action.newTarget = function(creep){
     });
 };
 action.step = function(creep) {
+    if(CHATTY) creep.say(this.name);
     creep.memory.target = null;
     creep.memory.action = null;
     if(creep.target && creep.pos != creep.target.pos) {

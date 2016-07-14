@@ -3,10 +3,10 @@ var action = _.cloneDeep(require('creep.action'));
 action.name = 'upgrading';
 
 action.isValidAction = function(creep){
-    return (target != null ) && ( target.progress != null );
+    return creep.carry.energy > 0 && creep.room.sourceEnergyAvailable > 0;
 };
 action.isValidTarget = function(target){
-    return ((target != null) && (target.store != null) && target.sum < target.storeCapacity);
+    return (target != null ) && ( target.progress != null );
 };   
 action.isAddableAction = function(creep){
     return true;

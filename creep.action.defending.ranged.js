@@ -30,6 +30,7 @@ var mod = {
             // move towards enemy
             // else if range < max range
             // move away from enemy
+            if(CHATTY) creep.say(this.name);
             var range = creep.pos.getRangeTo(creep.target);
             //creep.say(range);
             if( range > 3 ){

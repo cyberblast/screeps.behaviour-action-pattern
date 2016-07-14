@@ -19,30 +19,3 @@ action.work = function(creep){
 };
 
 module.exports = action;
-
-var mod = {
-
-    newTarget: function(creep){ 
-        return creep.room.storage;
-    }, 
-
-    step: function(creep){   
-        var moveResult = creep.moveTo(creep.target);
-        var workResult = creep.withdraw(creep.target, RESOURCE_ENERGY);
-        if(workResult == OK || moveResult == OK)
-            return;
-        
-        if( moveResult == ERR_NO_PATH && Game.flags['IdlePole']){// get out of the way
-            creep.moveTo(Game.flags['IdlePole']);
-            return;
-        } 
-        if( !( [ERR_TIRED, ERR_NO_PATH].indexOf(moveResult) > -1 ) ) {
-            if( DEBUG ) logError(creep, moveResult);
-            creep.memory.action = null;
-            creep.memory.target = null;
-        }
-    }
-}
-
-
-module.exports = mod;
