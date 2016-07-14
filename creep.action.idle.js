@@ -19,14 +19,14 @@ var mod = {
     }, 
 
     newTarget: function(creep){
-        return Game.flags['IdlePole'];
+        return Game.flags['IdlePole']; // TODO: by color to define more than one (for each room)
     }, 
 
     isAddableAction: function(creep){
         return true;
     },
 
-    isAddableTarget: function(target){ // target is valid to be given to an additional creep
+    isAddableTarget: function(target){ 
         return true;
     }, 
 

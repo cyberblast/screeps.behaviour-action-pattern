@@ -1,11 +1,13 @@
 var behaviour = {
   common: {
     worker: require('creep.behaviour.worker'),
-    defender: require('creep.behaviour.defender')
+    defender: require('creep.behaviour.defender'),
+    conqueror: require('creep.behaviour.conqueror')
   },
   noEnergy: {
     worker: require('creep.behaviour.worker.noEnergy'),
-    defender: require('creep.behaviour.defender')
+    defender: require('creep.behaviour.defender'),
+    conqueror: require('creep.behaviour.conqueror')
   }
 }
 
