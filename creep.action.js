@@ -23,11 +23,11 @@ var mod = {
     }, 
 
     isAddableAction: function(creep){
-        return true;
+        return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
     },
-
+    maxPerTarget: 1,
     isAddableTarget: function(target){ // target is valid to be given to an additional creep
-        return true;
+        return (!target.creeps || target.creeps.length < this.maxPerTarget);
     }, 
 
     step: function(creep){     

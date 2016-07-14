@@ -43,7 +43,7 @@ var work = {
             var actions = creep.room.situation.invasion ?
             [MODULES.creep.action.withdrawing,
                 MODULES.creep.action.harvesting] : 
-            [MODULES.creep.action.pickup,
+            [MODULES.creep.action.picking,
                 MODULES.creep.action.harvesting,
                 MODULES.creep.action.withdrawing];
                 

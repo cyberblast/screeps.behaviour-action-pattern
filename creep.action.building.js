@@ -5,14 +5,8 @@ action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 && creep.room.constructionSites.count > 0 );
 };
 action.isValidTarget = function(target){
-    return (target != null && target.progress != null && target.id in target.room.constructionSites);
-};    
-action.isAddableAction = function(creep){
-    return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
-};
-action.isAddableTarget = function(target){ 
-    return target.creeps.length < 3;
-};
+    return (target != null && target.progress != null && target.room.constructionSites.includes(target.id));
+};  
 action.newTarget = function(creep){
     var room = creep.room;
     var site = null;

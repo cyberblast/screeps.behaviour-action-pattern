@@ -10,6 +10,8 @@ var mod = {
                 target.hits != null && 
                 target.my == false );
         }; 
+        action.isAddableAction = function(){ return true; };
+        action.isAddableTarget = function(){ return true; };
         
         action.newTarget = function(creep){
             var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
@@ -44,9 +46,9 @@ var mod = {
             
             // attack
             var targets = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
-            if(targets.length > 2) {
+            if(targets.length > 2) { // TODO: calc damage dealt
+                if(CHATTY) creep.say('MassAttack');
                 creep.rangedMassAttack();
-                creep.say('rangedMassAttack');
             }
             if(targets.length > 0){
                 creep.rangedAttack(targets[0]);

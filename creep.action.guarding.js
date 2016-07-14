@@ -2,10 +2,6 @@ var action = _.cloneDeep(require('creep.action'));
 
 action.name = 'guarding';
 
-action.isAddableTarget = function(target){ 
-    return (target.creeps == null || target.creeps.length < 1);
-}; 
-
 action.newTarget = function(creep){ 
     var flags = _.sortBy(creep.room.find(FIND_FLAGS, {
             filter: function(flag){ 
@@ -22,6 +18,8 @@ action.newTarget = function(creep){
     if( flags ) return flags[0];
     return null;
 };
+action.isAddableAction = function(){ return true; };
+action.isAddableTarget = function(){ return true; };
 
 action.step = function(creep){     
     if(creep.target && creep.pos != creep.target.pos) {
