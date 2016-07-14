@@ -150,7 +150,7 @@ var mod = {
             this.hostileIds.forEach( function(id){
                 if( !(id in self.memory.hostileIds) ){
                     var creep = Game.getObjectById(id);
-                    Game.notify('Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room <a href="https://screeps.com/a/#!/room/' + this.name + '">' + this.name + '</a> at ' + Game.time + '.<br/>Body: ' + JSON.stringify(creep.body));
+                    Game.notify('Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room <a href="https://screeps.com/a/#!/room/' + self.name + '">' + self.name + '</a> at ' + Game.time + ' ticks.');//<br/>Body: ' + JSON.stringify(creep.body));
                 }
             });
             this.memory.hostileIds = this.hostileIds;
@@ -164,18 +164,18 @@ var mod = {
                 if( this.memory.history.length > 100 )
                     this.memory.history.splice(0, this.memory.history.length-100);
 
-                if( Game.time % 500 == 0 ){
+                if( Game.time % 1000 == 0 ){
                     var firstRecord = JSON.parse( this.memory.history[0].store );
-                    var lastRecord = JSON.parse( this.memory.history[0].store );
-                    var message = 'Storage development over the last 500 ticks: <br/>';
+                    var lastRecord = JSON.parse( this.memory.history[this.memory.history.length-1].store );
+                    var message = 'Storage development over the last 1000 ticks: <br/>';
                     for( var type in firstRecord ){ // changed & depleted
                         var dif = (lastRecord[type] ? lastRecord[type] - firstRecord[type] : firstRecord[type] * -1);
-                        message += type + ': ' + (dif > 0 ? '+' : '' ) + dif;  
+                        message += type + ': ' + firstRecord[type] + ' (' + (dif > 0 ? '+' : '' ) + dif + ')<br/>';  
                     }
                     // new
                     for( var type in lastRecord ){
                         if(!firstRecord[type])
-                            message += type + ': ' + lastRecord[type];  
+                            message += type + ': ' + lastRecord[type] + ' (' + lastRecord[type] + ')<br/>';  
                     }
                     Game.notify(message);
                 }
