@@ -105,7 +105,7 @@ var mod = {
                     }
                 }
             });
-            this.maxPerJob = _.max([2,self.creeps.length/3.1]);
+            this.maxPerJob = _.max([1,self.creeps.length/3.1]);
             log += '\n - ' + this.creeps.length + ' creeps \n     ' + JSON.stringify(this.activities) + '\n     ' + JSON.stringify(this.population);
             
             this.towers = [];
@@ -148,44 +148,46 @@ var mod = {
                 history: []
             });
             this.hostileIds.forEach( function(id){
-                if( !(id in self.memory.hostileIds) ){
+                if( !self.memory.hostileIds.includes(id) ){
                     var creep = Game.getObjectById(id);
-                    var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room <a href="https://screeps.com/a/#!/room/' + self.name + '">' + self.name + '</a> at ' + Game.time + ' ticks.'
+                    var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room' + self.name + ' at ' + Game.time + ' ticks.'
                     Game.notify(message);//<br/>Body: ' + JSON.stringify(creep.body));
                     console.log(message);
                 }
             });
             this.memory.hostileIds = this.hostileIds;
             
-            if( this.storage && Game.time % 100 == 0 ) {
+            if( this.storage && Game.time % 1000 == 0 ) {
                 if( !this.memory.history ) this.memory.history = [];
                 this.memory.history.push({
-                    time: Game.time, 
+                    tick: Game.time, 
+                    time: (new Date(Date.now() + 7200000)).toLocaleString(),
                     store: JSON.stringify(this.storage.store)
                 });
-                if( this.memory.history.length > 100 )
+                if( this.memory.history.length > 10 )
                     this.memory.history.splice(0, this.memory.history.length-100);
-
-                if( Game.time % 1000 == 0 ){
-                    var firstRecord = JSON.parse( this.memory.history[0].store );
-                    var lastRecord = JSON.parse( this.memory.history[this.memory.history.length-1].store );
-                    var message = '<b>Storage report</b> (difference to before 1000 Ticks) <br/>';
-                    for( var type in firstRecord ){ // changed & depleted
-                        var dif = (lastRecord[type] ? lastRecord[type] - firstRecord[type] : firstRecord[type] * -1);
-                        message += type + ': ' + (lastRecord[type]?lastRecord[type]:0) + ' (' + (dif > -1 ? '+' : '' ) + dif + ')<br/>';  
-                    }
-                    // new
-                    for( var type in lastRecord ){
-                        if(!firstRecord[type])
-                            message += type + ': ' + lastRecord[type] + ' (' + lastRecord[type] + ')<br/>';  
-                    }
-                    Game.notify(message);
-                    console.log(message);
-                }
+                this.createReport(true);
             }
             
             this.setMemory(this.memory);
         };
+        
+        Room.prototype.createReport = function(mail){
+                var firstRecord = JSON.parse( this.memory.history[0].store );
+                var lastRecord = this.storage.store;
+                var message = '<b>Storage report</b><br/>' + (new Date(Date.now() + 7200000)).toLocaleString() + ' (' + this.memory.history[0].time + ')<br/>';
+                for( var type in firstRecord ){ // changed & depleted
+                    var dif = (lastRecord[type] ? lastRecord[type] - firstRecord[type] : firstRecord[type] * -1);
+                    message += type + ': ' + (lastRecord[type]?lastRecord[type]:0) + ' (' + (dif > -1 ? '+' : '' ) + dif + ')<br/>';  
+                }
+                // new
+                for( var type in lastRecord ){
+                    if(!firstRecord[type])
+                        message += type + ': ' + lastRecord[type] + ' (' + lastRecord[type] + ')<br/>';  
+                }
+                if( mail ) Game.notify(message);
+                console.log(message);
+        }
         
         _.forEach(Game.rooms, function(room, name){
             room.init();

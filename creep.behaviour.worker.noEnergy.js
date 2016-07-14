@@ -9,7 +9,7 @@ var work = {
         fueling: require('creep.action.fueling'),
         idle: require('creep.action.idle'),
         pickup: require('creep.action.pickup'),
-        provisioning: require('creep.action.provisioning')
+        withdrawing: require('creep.action.withdrawing')
     },
     run: function(creep) {
         if( !creep.room.storage || creep.room.storage.energy == 0 ){
@@ -69,7 +69,7 @@ var work = {
                 
             if( creep.carry.energy == 0 && creep.memory.action != 'pickup') {
                 var moveResult = creep.moveTo(creep.room.storage);
-                var workResult = creep.room.storage.transfer(creep, RESOURCE_ENERGY);
+                var workResult = creep.withdraw(creep.room.storage, RESOURCE_ENERGY);
                 if(workResult == OK || moveResult == OK)
                     return;
                 

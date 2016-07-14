@@ -1,6 +1,6 @@
 var mod = {
 
-    name: 'provisioning',
+    name: 'withdrawing',
     
     getTargetId: function(target){ 
         //if(target.name) return target.name;
@@ -35,7 +35,7 @@ var mod = {
 
     step: function(creep){   
         var moveResult = creep.moveTo(creep.target);
-        var workResult = creep.target.transfer(creep, RESOURCE_ENERGY);
+        var workResult = creep.withdraw(creep.target, RESOURCE_ENERGY);
         if(workResult == OK || moveResult == OK)
             return;
         

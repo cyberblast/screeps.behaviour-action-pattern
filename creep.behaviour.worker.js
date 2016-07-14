@@ -9,11 +9,11 @@ var work = {
         fueling: require('creep.action.fueling'),
         idle: require('creep.action.idle'),
         pickup: require('creep.action.pickup'),
-        provisioning: require('creep.action.provisioning')
+        withdrawing: require('creep.action.withdrawing')
     },
     run: function(creep) {
         // Harvesting completed / energy refilled
-	    if(creep.memory.action == 'idle' || (_.sum(creep.carry) == creep.carryCapacity && (creep.memory.action == 'harvesting' || creep.memory.action == 'pickup' || creep.memory.action == 'provisioning'))) {
+	    if(creep.memory.action == 'idle' || (_.sum(creep.carry) == creep.carryCapacity && (creep.memory.action == 'harvesting' || creep.memory.action == 'pickup' || creep.memory.action == 'withdrawing'))) {
             creep.memory.action = null;
             creep.memory.target = null;
 	    } 
@@ -79,7 +79,7 @@ var work = {
         creep.target = null;
         
         // Last Action completed / No more energy
-	    if( creep.carry.energy == 0 && creep.memory.action != 'harvesting' && creep.memory.action != 'pickup' && creep.memory.action != 'provisioning') { 
+	    if( creep.carry.energy == 0 && creep.memory.action != 'harvesting' && creep.memory.action != 'pickup' && creep.memory.action != 'withdrawing') { 
 	        if( creep.memory.action != null ) creep.room.activities[creep.memory.action]--;
 	        
             if( _.sum(creep.carry) > creep.carry.energy ) {
@@ -89,12 +89,12 @@ var work = {
             
             var priority;
             if( creep.room.situation.invasion ) priority = [
-                this.actions.provisioning,
+                this.actions.withdrawing,
                 this.actions.harvesting];
             else priority = [
                 this.actions.pickup,
                 this.actions.harvesting,
-                this.actions.provisioning];
+                this.actions.withdrawing];
 
                 
             for(var iAction = 0; iAction < priority.length; iAction++) {

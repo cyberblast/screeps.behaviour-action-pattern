@@ -2,7 +2,8 @@ var mod = {
     self: this,
     template: [
         require('creep.setup.worker'),
-        require('creep.setup.defender')
+        require('creep.setup.defender'),
+        require('creep.setup.claimer'),
     ],
     loop: function(){
         for(var iSpawn in Game.spawns){
