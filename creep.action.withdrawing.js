@@ -1,33 +1,26 @@
+var action = _.cloneDeep(require('creep.action'));
+
+action.name = 'withdrawing';
+
+action.isValidAction = function(creep){
+    return ( creep.carry.energy < creep.carryCapacity && 
+    (creep.room.energyAvailable < creep.room.energyCapacityAvailable || 
+    creep.room.towerFreeCapacity > 500 ));
+};
+action.isValidTarget = function(target){
+    return ( (target != null) && (target.store != null) && (target.store.energy > 0) );
+};  
+action.maxPerTarget = 2;
+action.newTarget = function(creep){
+    return creep.room.storage;
+};
+action.work = function(creep){
+    return creep.withdraw(creep.target, RESOURCE_ENERGY);
+};
+
+module.exports = action;
+
 var mod = {
-
-    name: 'withdrawing',
-    
-    getTargetId: function(target){ 
-        //if(target.name) return target.name;
-        return target.id;
-    },
-
-    getTargetById: function(id){
-        var obj = Game.getObjectById(id);
-        if( !obj ) obj = Game.spawns[id];
-        return obj;
-    },
-
-    isValidAction: function(creep){
-        return ( creep.carry.energy < creep.carryCapacity && (creep.room.energyAvailable < creep.room.energyCapacityAvailable || creep.room.towerFreeCapacity > 500 ));
-    },
-
-    isAddableAction: function(creep){
-        return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
-    },
-
-    isValidTarget: function(target){
-        return ( (target != null) && (target.store != null) && (target.store.energy > 0) );
-    }, 
-
-    isAddableTarget: function(target){ // target is valid to be given to an additional creep
-        return (!target.creeps || target.creeps.length < 2);
-    }, 
 
     newTarget: function(creep){ 
         return creep.room.storage;

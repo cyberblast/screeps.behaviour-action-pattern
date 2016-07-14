@@ -31,7 +31,7 @@ var mod = {
             // else if range < max range
             // move away from enemy
             var range = creep.pos.getRangeTo(creep.target);
-            creep.say(range);
+            //creep.say(range);
             if( range > 3 ){
                 var path = creep.room.findPath(creep.pos, creep.target.pos);
                 var isRampart = _.some( creep.room.lookForAt(LOOK_STRUCTURES, path[0].x, path[0].y), {'structureType': STRUCTURE_RAMPART });

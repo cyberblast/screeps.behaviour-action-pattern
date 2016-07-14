@@ -1,43 +1,27 @@
-var mod = {
+var action = _.cloneDeep(require('creep.action'));
 
-    name: 'idle',
-    
-    getTargetId: function(target){ 
-        return target.id;
-    },
+action.name = 'idle';
 
-    getTargetById: function(id){
-        return Game.getObjectById(id);
-    },
+action.isAddableAction = function(creep){
+    return true;
+};
 
-    isValidAction: function(creep){
-        return true;
-    },
+action.isAddableTarget = function(target){ 
+    return true;
+}; 
 
-    isValidTarget: function(target){
-        return true;
-    }, 
+action.newTarget = function(creep){
+    var self = this;
+    return creep.room.constructionSites.order.find(function(id){
+        self.isAddableTarget(creep.room.constructionSites[id])
+    });
+};
+action.step = function(creep) {
+    creep.memory.target = null;
+    creep.memory.action = null;
+    if(creep.target && creep.pos != creep.target.pos) {
+        creep.moveTo(creep.target);
+    } 
+};
 
-    newTarget: function(creep){
-        return Game.flags['IdlePole']; // TODO: by color to define more than one (for each room)
-    }, 
-
-    isAddableAction: function(creep){
-        return true;
-    },
-
-    isAddableTarget: function(target){ 
-        return true;
-    }, 
-
-    step: function(creep){       
-        //if(DEBUG) console.log(creep.name + ' is idle!');
-        creep.memory.target = null;
-        creep.memory.action = null;
-        if(creep.target && creep.pos != creep.target.pos) {
-            creep.moveTo(creep.target);
-        } 
-    }
-}
-
-module.exports = mod;
+module.exports = action;

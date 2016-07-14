@@ -1,6 +1,7 @@
 var action = _.cloneDeep(require('creep.action'));
 
 action.name = 'harvesting';
+
 action.isValidAction = function(creep){
     return ( creep.carry.energy < creep.carryCapacity && 
     creep.room.sourceEnergyAvailable > 0 && 

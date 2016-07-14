@@ -8,16 +8,10 @@ action.isValidTarget = function(target){
     return (target != null && target.progress != null && target.room.constructionSites.includes(target.id));
 };  
 action.newTarget = function(creep){
-    var room = creep.room;
-    var site = null;
-    room.constructionSites.order.every(id => {
-        if( this.isAddableTarget(room.constructionSites[id]) ){
-            site = room.constructionSites[id];
-            return false;
-        }
-        return true;
+    var self = this;
+    return creep.room.constructionSites.order.find(function(id){
+        self.isAddableTarget(creep.room.constructionSites[id])
     });
-    return site;
 };
 action.work = function(creep){
     return creep.build(creep.target);

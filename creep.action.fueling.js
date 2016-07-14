@@ -8,8 +8,9 @@ action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };   
 action.newTarget = function(creep){
-    return room.towers.find(function(tower) { // TODO: include Nuker
-        tower.energy < tower.energyCapacity && this.isAddableTarget(tower) 
+    var self = this;
+    return creep.room.towers.find(function(tower) { // TODO: include Nuker
+        tower.energy < tower.energyCapacity && self.isAddableTarget(tower) 
     });
 };
 action.work = function(creep){
