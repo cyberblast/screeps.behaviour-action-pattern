@@ -17,12 +17,12 @@ var work = {
         var claimFlag = Game.flags['Claim'];
         // if no claim flag => Idle
         if( !claimFlag ){
-            creep.say('Set "Claim" Flag');
+            creep.say('Set Claim');
             this.setAction(creep, 'idle');
         }
         else {
             // Move to room with Flag "Claim"
-            if( creep.room.name != claimFlag.room.name ){
+            if( !claimFlag.room || creep.room.name != claimFlag.room.name ){
                 creep.say('Approaching');
                 creep.moveTo(claimFlag);
                 creep.target = claimFlag;
@@ -66,12 +66,20 @@ var work = {
 
             // if !Controller.owner try claim or reserve
             var controller = creep.room.controller;
-            console.log('Controller owner: ' + controller.owner);
             if( !controller.owner ){
-
+                creep.say('Claiming');
+                var moveResult = creep.moveTo(controller);
+                // TODO: Break Wall / Rampart
+                var workResult = creep.claimController(controller);
+                if( workResult == ERR_GCL_NOT_ENOUGH ){
+                    workResult = creep.reserveController(controller);
+                }
+                return;
             }
-            // if controller.owner = self => harvest & upgrade 
 
+            // TODO: if controller.owner = self => harvest & upgrade 
+
+            this.setAction(creep, 'idle');
         }
 
 
