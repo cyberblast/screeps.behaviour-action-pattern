@@ -24,7 +24,7 @@ var mod = {
             defender: require('creep.behaviour.defender'),
             worker: require('creep.behaviour.worker')
         };
-        global.MODULES.creep.behaviour.noEnergy = require('creep.behaviour.worker.noEnergy');
+        global.MODULES.creep.behaviour.worker.noEnergy = require('creep.behaviour.worker.noEnergy');
         global.MODULES.creep.setup = {
             claimer: require('creep.setup.claimer'),
             conqueror: require('creep.setup.conqueror'), 
