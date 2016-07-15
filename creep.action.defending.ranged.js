@@ -1,7 +1,7 @@
 
 var mod = {
     get: function(){
-        var action = _.cloneDeep(require('creep.action'));
+        var action = new MODULES.creep.ability();
         action.name = 'defending.ranged';
         
         action.isValidTarget = function(target){
