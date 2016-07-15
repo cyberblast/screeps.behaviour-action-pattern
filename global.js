@@ -1,42 +1,39 @@
 var mod = {
     init: function(){
-        global.MODULES = {
-            creep: _.assign(require('creep'), {
-                action: {
-                    building: require('creep.action.building'), 
-                    defending: {
-                        ranged: require('creep.action.defending.ranged')
-                    }, 
-                    feeding: require('creep.action.feeding'), 
-                    fueling: require('creep.action.fueling'), 
-                    guarding: require('creep.action.guarding'), 
-                    harvesting: require('creep.action.harvesting'),
-                    idle: require('creep.action.idle'), 
-                    picking: require('creep.action.picking'), 
-                    repairing: require('creep.action.repairing'), 
-                    storing: require('creep.action.storing'), 
-                    upgrading: require('creep.action.upgrading'), 
-                    withdrawing: require('creep.action.withdrawing')
-                },
-                behaviour: {
-                    claimer: require('creep.behaviour.claimer'),
-                    conqueror: require('creep.behaviour.conqueror'),
-                    defender: require('creep.behaviour.defender'),
-                    worker: _.assign(require('creep.behaviour.worker'), {
-                        noEnergy: require('creep.behaviour.worker.noEnergy')
-                    })
-                }, 
-                setup: _.assign(require('creep.setup'), {
-                    claimer: require('creep.setup.claimer'),
-                    conqueror: require('creep.setup.conqueror'),
-                    defender: require('creep.setup.defender'),
-                    worker: require('creep.setup.worker'),
-                })
-            }), 
-            extensions: require('extensions'),
-            spawn: require('spawn'), 
-            tower: require('tower')
+        global.MODULES = {};
+        global.MODULES.creep = require('creep');
+        global.MODULES.creep.action = {
+            building: require('creep.action.building'), 
+            defending: {
+                ranged: require('creep.action.defending.ranged')
+            }, 
+            feeding: require('creep.action.feeding'), 
+            fueling: require('creep.action.fueling'), 
+            guarding: require('creep.action.guarding'), 
+            harvesting: require('creep.action.harvesting'),
+            idle: require('creep.action.idle'), 
+            picking: require('creep.action.picking'), 
+            repairing: require('creep.action.repairing'), 
+            storing: require('creep.action.storing'), 
+            upgrading: require('creep.action.upgrading'), 
+            withdrawing: require('creep.action.withdrawing')
         };
+        global.MODULES.creep.behaviour = {
+            claimer: require('creep.behaviour.claimer'),
+            conqueror: require('creep.behaviour.conqueror'),
+            defender: require('creep.behaviour.defender'),
+            worker: require('creep.behaviour.worker')
+        };
+        global.MODULES.creep.behaviour.noEnergy = require('creep.behaviour.worker.noEnergy');
+        global.MODULES.creep.setup = require('creep.setup');
+        global.MODULES.creep.setup.claimer = require('creep.setup.claimer');
+        global.MODULES.creep.setup.conqueror = require('creep.setup.conqueror');
+        global.MODULES.creep.setup.defender = require('creep.setup.defender');
+        global.MODULES.creep.setup.worker = require('creep.setup.worker');
+        
+        global.MODULES.extensions = require('extensions');
+        global.MODULES.spawn = require('spawn'); 
+        global.MODULES.tower = require('tower');
 
         global.STRATEGY = 'defensive';
         global.CHATTY = true;
