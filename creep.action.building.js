@@ -1,4 +1,4 @@
-var action = _.cloneDeep(require('creep.action'));
+var action = new MODULES.creep.ability();
 
 action.name = 'building';
 action.isValidAction = function(creep){

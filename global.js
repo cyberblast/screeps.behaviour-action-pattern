@@ -2,7 +2,7 @@ var mod = {
     init: function(){
         global.MODULES = {
             creep: _.assign(require('creep'), {
-                action: _.assign(require('creep.action'), {
+                action: {
                     building: require('creep.action.building'), 
                     defending: {
                         ranged: require('creep.action.defending.ranged')
@@ -17,7 +17,7 @@ var mod = {
                     storing: require('creep.action.storing'), 
                     upgrading: require('creep.action.upgrading'), 
                     withdrawing: require('creep.action.withdrawing')
-                }),
+                },
                 behaviour: {
                     claimer: require('creep.behaviour.claimer'),
                     conqueror: require('creep.behaviour.conqueror'),
