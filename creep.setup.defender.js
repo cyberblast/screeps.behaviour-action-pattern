@@ -1,4 +1,4 @@
-var setup = _.cloneDeep(require('creep.setup'));
+var setup = new MODULES.creep.template();
 
 setup.type = 'defender';
 setup.body = [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, RANGED_ATTACK, MOVE, RANGED_ATTACK, MOVE, RANGED_ATTACK, MOVE]; 

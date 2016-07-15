@@ -1,4 +1,4 @@
-var setup = _.cloneDeep(require('creep.setup'));
+var setup = new MODULES.creep.template();
 
 setup.type = 'conqueror';
 setup.body = [CLAIM, ATTACK, MOVE, MOVE];

@@ -50,6 +50,67 @@ var mod = {
         this.work = function(creep){
             return ERR_INVALID_ARGS;
         };
+    },    
+    template: function(){
+        this.type = null;
+        this.body = []; 
+        this.defaultBodyCosts = 0; 
+        this.maxMulti = 6;
+        this.bodyCosts = function(body){
+            var costs = 0;
+            body.forEach(function(part){
+                costs += PART_COSTS[part];
+            });
+            return costs;
+        };
+        this.multi = function(spawn){ 
+            return _.min([Math.floor(spawn.room.energyAvailable / this.defaultBodyCosts), this.maxMulti]) 
+        }; 
+        this.multiplicationPartwise = true,
+        this.setParamParts = function(spawn){
+            var parts = [];
+            var multi = this.multi(spawn);
+            if( this.multiplicationPartwise ) {
+                for( var iPart = 0; iPart < this.body.length; iPart ++ ){
+                    for( var iMulti = 0; iMulti < multi; iMulti++){
+                        parts[parts.length] = this.body[iPart];
+                    }
+                }
+            } else {
+                for (var iMulti = 0; iMulti < multi; iMulti++) {
+                    parts = parts.concat(this.body);
+                }
+            }
+            return parts;
+        };
+        this.buildParams = function(spawn){
+            var memory = {
+                id: null, 
+                parts: []
+            };
+            
+            memory.setup = this.type;
+            memory.parts = this.setParamParts(spawn);
+            memory.cost = this.bodyCosts(memory.parts);  
+            memory.mother = spawn.name;
+            for( var son = 1; memory.id == null || Game.creeps[memory.id]; son++ ) {
+                memory.id = this.type + '-' + memory.cost + '-' + son;
+            }
+            return memory;
+        }; 
+        this.minEnergyAvailable = function(spawn){ return 1; }; // 1 = full
+        this.maxCount = function(spawn){ return 0; }; 
+        this.maxWeight = function(spawn){ return 0; };
+        this.isValidSetup = function(spawn){
+            var room = spawn.room;
+            var population = room.population[this.type];
+            
+            return (room.energyAvailable >= this.defaultBodyCosts && 
+                room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn)) && (
+                !population || (
+                population.count < this.maxCount(spawn)  && 
+                population.weight < this.maxWeight(spawn))));
+        };
     },
   setAction: function(creep, actionName) {
       if( creep.memory.action != actionName ){
