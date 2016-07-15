@@ -33,7 +33,7 @@ action.step = function(creep){
             return;
         } 
         if( !( [ERR_TIRED, ERR_NO_PATH].indexOf(moveResult) > -1 ) ) {
-            if( DEBUG ) logError(creep, moveResult);
+            if( DEBUG ) ERROR_LOG(creep, moveResult);
             creep.memory.action = null;
             creep.memory.target = null;
         }

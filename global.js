@@ -25,12 +25,6 @@ var mod = {
             worker: require('creep.behaviour.worker')
         };
         global.MODULES.creep.behaviour.noEnergy = require('creep.behaviour.worker.noEnergy');
-        /*global.MODULES.creep.setup = require('creep.setup');
-        global.MODULES.creep.setup.claimer = require('creep.setup.claimer');
-        global.MODULES.creep.setup.conqueror = require('creep.setup.conqueror');
-        global.MODULES.creep.setup.defender = require('creep.setup.defender');
-        global.MODULES.creep.setup.worker = require('creep.setup.worker');
-        */
         global.MODULES.creep.setup = {
             claimer: require('creep.setup.claimer'),
             conqueror: require('creep.setup.conqueror'), 
@@ -76,8 +70,8 @@ var mod = {
             return codes[code*-1];
         };
         global.ERROR_LOG = function(creep, code) {
-            if(creep) creep.say(errorCode(code));
-            var message = errorCode(code) + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
+            if(creep) creep.say(ERROR_CODE(code));
+            var message = ERROR_CODE(code) + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
             console.log( message );
             Game.notify( message, 120 );
         };
