@@ -1,4 +1,4 @@
-var action = new MODULES.creep.ability();
+var action = new MODULES.creep.Action();
 
 action.name = 'fueling';
 action.isValidAction = function(creep){
@@ -9,9 +9,14 @@ action.isValidTarget = function(target){
 };   
 action.newTarget = function(creep){
     var self = this;
-    return creep.room.towers.find(function(tower) { // TODO: include Nuker
-        tower.energy < tower.energyCapacity && self.isAddableTarget(tower) 
+    var t = creep.room.towers.find(function(tower) { // TODO: include Nuker
+        return tower.energy < tower.energyCapacity && self.isAddableTarget(tower);
     });
+    return t;
+};
+action.isAddableTarget = function(target){ 
+    return (!target.creeps || target.creeps.length < this.maxPerTarget) && 
+    ((target.energy < target.energyCapacity * (1-(0.16/target.room.towers.length))) || target.room.situation.invasion);
 };
 action.work = function(creep){
     return creep.transfer(creep.target, RESOURCE_ENERGY);

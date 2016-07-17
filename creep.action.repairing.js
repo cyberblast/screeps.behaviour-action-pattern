@@ -1,4 +1,4 @@
-var action = new MODULES.creep.ability();
+var action = new MODULES.creep.Action();
 
 action.name = 'repairing';
 
@@ -13,7 +13,7 @@ action.isValidTarget = function(target){
 action.newTarget = function(creep){
     var self = this;
     return creep.room.creepRepairableSites.order.find(function(id){
-        self.isAddableTarget(creep.room.creepRepairableSites[id])
+        return self.isAddableTarget(creep.room.creepRepairableSites[id])
     });
 };
 action.work = function(creep){

@@ -1,4 +1,4 @@
-var action = new MODULES.creep.ability();
+var action = new MODULES.creep.Action();
 
 action.name = 'upgrading';
 

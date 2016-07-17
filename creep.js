@@ -1,5 +1,5 @@
 var mod = {
-    ability: function(){
+    Action: function(){
         this.name = null;
         
         this.getTargetId = function(target){ 
@@ -31,7 +31,7 @@ var mod = {
 
         this.step = function(creep){     
             if(CHATTY) creep.say(this.name);
-            var moveResult = creep.moveTo(creep.target);
+            var moveResult = creep.moveTo(creep.target, {reusePath: 2});
             var workResult = this.work(creep);
             if(workResult == OK || moveResult == OK)
                 return;
@@ -51,11 +51,12 @@ var mod = {
             return ERR_INVALID_ARGS;
         };
     },    
-    template: function(){
+    Setup: function(){
         this.type = null;
         this.body = []; 
         this.defaultBodyCosts = 0; 
         this.maxMulti = 6;
+        this.globalMeasurement = false;
         this.bodyCosts = function(body){
             var costs = 0;
             body.forEach(function(part){
@@ -64,9 +65,9 @@ var mod = {
             return costs;
         };
         this.multi = function(spawn){ 
-            return _.min([Math.floor(spawn.room.energyAvailable / this.defaultBodyCosts), this.maxMulti]) 
+            return _.min([Math.floor(spawn.room.energyAvailable / this.defaultBodyCosts), this.maxMulti]);
         }; 
-        this.multiplicationPartwise = true,
+        this.multiplicationPartwise = true;
         this.setParamParts = function(spawn){
             var parts = [];
             var multi = this.multi(spawn);
@@ -92,7 +93,8 @@ var mod = {
             memory.setup = this.type;
             memory.parts = this.setParamParts(spawn);
             memory.cost = this.bodyCosts(memory.parts);  
-            memory.mother = spawn.name;
+            memory.mother = spawn.name; 
+            memory.home = spawn.room.name;
             for( var son = 1; memory.id == null || Game.creeps[memory.id]; son++ ) {
                 memory.id = this.type + '-' + memory.cost + '-' + son;
             }
@@ -103,24 +105,26 @@ var mod = {
         this.maxWeight = function(spawn){ return 0; };
         this.isValidSetup = function(spawn){
             var room = spawn.room;
-            var population = room.population[this.type];
+            var population = this.globalMeasurement ? Game.population[this.type] : room.population[this.type];
+            var maxCount = this.maxCount(spawn);
+            var maxWeight = this.maxWeight(spawn);
             
             return (room.energyAvailable >= this.defaultBodyCosts && 
-                room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn)) && (
-                !population || (
-                population.count < this.maxCount(spawn)  && 
-                population.weight < this.maxWeight(spawn))));
+                room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn)) && maxCount > 0 && maxWeight > 0 && (
+                (!population) || (
+                population.count < maxCount && 
+                population.weight < maxWeight)));
         };
     },
-  setAction: function(creep, actionName) {
-      if( creep.memory.action != actionName ){
-          if( creep.memory.action )
-              creep.room.activities[creep.memory.action]--;
-          creep.memory.action = actionName;
-          creep.memory.target = null;
-      }
-      creep.action = MODULES.creep.action[actionName];
-  },   
+    setAction: function(creep, actionName) {
+        if( creep.memory.action != actionName ){
+            if( creep.memory.action )
+                creep.room.activities[creep.memory.action]--;
+            creep.memory.action = actionName;
+        }
+        creep.memory.target = null;
+        creep.action = MODULES.creep.action[actionName];
+    },   
     validateMemoryAction: function(creep){
         creep.action = MODULES.creep.action[creep.memory.action];
 
@@ -176,12 +180,7 @@ var mod = {
             console.log(Memory.creeps[creepName].mother + ' > Good night ' + creepName + '!');
             delete Memory.creeps[creepName];
         } 
-        else if( !creep.spawning ) { 
-            if( creep.room.situation.noEnergy && creep.memory.setup == 'worker')
-                MODULES.creep.behaviour.worker.noEnergy.run(creep);
-            else
-                MODULES.creep.behaviour[creep.memory.setup].run(creep);
-        }
+        else creep.run();
     }
   }
 }

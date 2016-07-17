@@ -9,7 +9,9 @@ var mod = {
     },
     createCreep: function(spawn){
         [MODULES.creep.setup.worker, 
-        MODULES.creep.setup.defender].forEach(function(set) {
+        MODULES.creep.setup.melee,
+        MODULES.creep.setup.ranger,
+        MODULES.creep.setup.claimer].forEach(function(set) {
             if( !spawn.busy && set.isValidSetup(spawn) ){
                 var params =  set.buildParams(spawn);
                 var newName = spawn.createCreep(params.parts, params.id, params);

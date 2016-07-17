@@ -1,20 +1,25 @@
-var setup = new MODULES.creep.template();
+var setup = new MODULES.creep.Setup();
 
 setup.type = 'claimer';
 setup.body = [CLAIM, MOVE];
 setup.defaultBodyCosts = 650;
 setup.maxMulti = 1;
+setup.globalMeasurement = true;
 setup.minEnergyAvailable = function(){
     return 0.9;
 }
-setup.sValidSetup = function(spawn){
+setup.isValidSetup = function(spawn){ return false;
     var room = spawn.room;    
     var globalClaimers = _.countBy(Memory.creeps, 'setup').claimer;
     var flag = Game.flags['Claim'];
-    return (room.energyAvailable >= this.defaultBodyCosts && 
+    var valid = (room.energyAvailable >= this.defaultBodyCosts && 
         room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn)) && 
-        flag != null && globalClaimers != null && globalClaimers < 2 
+        flag != null && (globalClaimers == null || globalClaimers < 0) 
     );
+    return valid;
 }
-
+setup.maxCount = function(spawn){ return 0; }, 
+setup.maxWeight = function(spawn){
+    return 700;
+}
 module.exports = setup;

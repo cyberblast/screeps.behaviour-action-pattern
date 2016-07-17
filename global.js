@@ -4,14 +4,19 @@ var mod = {
         global.MODULES.creep = require('creep');
         global.MODULES.creep.action = {
             building: require('creep.action.building'), 
+            claim: require('creep.action.claim'), 
             defending: {
-                ranged: require('creep.action.defending.ranged')
+                ranged: require('creep.action.defending.ranged'),
+                melee: require('creep.action.defending.melee')
             }, 
             feeding: require('creep.action.feeding'), 
             fueling: require('creep.action.fueling'), 
             guarding: require('creep.action.guarding'), 
             harvesting: require('creep.action.harvesting'),
             idle: require('creep.action.idle'), 
+            melee: {
+                invading: require('creep.action.melee.invading')
+            },
             picking: require('creep.action.picking'), 
             repairing: require('creep.action.repairing'), 
             storing: require('creep.action.storing'), 
@@ -21,14 +26,16 @@ var mod = {
         global.MODULES.creep.behaviour = {
             claimer: require('creep.behaviour.claimer'),
             conqueror: require('creep.behaviour.conqueror'),
-            defender: require('creep.behaviour.defender'),
+            melee: require('creep.behaviour.melee'),
+            ranger: require('creep.behaviour.ranger'),
             worker: require('creep.behaviour.worker')
         };
         global.MODULES.creep.behaviour.worker.noEnergy = require('creep.behaviour.worker.noEnergy');
         global.MODULES.creep.setup = {
             claimer: require('creep.setup.claimer'),
             conqueror: require('creep.setup.conqueror'), 
-            defender: require('creep.setup.defender'),
+            melee: require('creep.setup.melee'),
+            ranger: require('creep.setup.ranger'),
             worker: require('creep.setup.worker')
         };
         
@@ -69,6 +76,18 @@ var mod = {
                 15: 'ERR_GCL_NOT_ENOUGH'};
             return codes[code*-1];
         };
+        global.FLAG_COLOR = {
+            invade: COLOR_RED,
+            melee: COLOR_PURPLE,
+            ranger: COLOR_BLUE,
+            //COLOR_CYAN,
+            idle: COLOR_GREEN,
+            defense: COLOR_YELLOW,
+            destroy: COLOR_ORANGE,
+            //COLOR_BROWN,
+            //COLOR_GREY,
+            claim: COLOR_WHITE
+        }
         global.ERROR_LOG = function(creep, code) {
             if(creep) creep.say(ERROR_CODE(code));
             var message = ERROR_CODE(code) + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;

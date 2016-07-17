@@ -3,6 +3,8 @@ var mod = {
         //if(DEBUG) console.log('Tick: ' + Game.time ); 
         var log = '';
         
+        Game.population = {};
+        
         Source.prototype.init = function() {
             var fields = this.room.lookForAtArea(LOOK_TERRAIN, this.pos.y-1, this.pos.x-1, this.pos.y+1, this.pos.x+1, true);
             this.accessibleFields = 9-_.countBy( fields , "terrain" ).wall;
@@ -91,6 +93,16 @@ var mod = {
                     this.population[setup].count++;
                     this.population[setup].weight += creep.memory.cost;
                 }
+                if(!Game.population[setup]){
+                    Game.population[setup] = {
+                        weight: creep.memory.cost, 
+                        count : 1
+                    };
+                }
+                else {
+                    Game.population[setup].count++;
+                    Game.population[setup].weight += creep.memory.cost;
+                }
                 if( creep.memory.action ){
                     var action = creep.memory.action;
                 } else action = 'idle';
@@ -144,8 +156,7 @@ var mod = {
                 Memory.rooms[this.name] = obj;
             }
             this.memory = (Memory.rooms && Memory.rooms[this.name] ? Memory.rooms[this.name] : { 
-                hostileIds : [], 
-                history: []
+                hostileIds : []
             });
             this.hostileIds.forEach( function(id){
                 if( !self.memory.hostileIds.includes(id) ){
@@ -155,9 +166,23 @@ var mod = {
                     console.log(message);
                 }
             });
+            this.memory.hostileIds.forEach( function(id){
+                if( !self.memory.hostileIds.includes(id) ){
+                    var message = 'Hostile intruder ' + id  + ' is gone'; 
+                    Game.notify(message);
+                    console.log(message);
+                }
+            });
             this.memory.hostileIds = this.hostileIds;
             
             if( this.storage && Game.time % 1000 == 0 ) {
+                this.sendReport(true);
+                this.memory.storageReport = {
+                    tick: Game.time, 
+                    time: new Date(Date.now() + 7200000).getTime(),
+                    store: JSON.stringify(this.storage.store)
+                };
+                /*
                 if( !this.memory.history ) this.memory.history = [];
                 this.memory.history.push({
                     tick: Game.time, 
@@ -165,32 +190,59 @@ var mod = {
                     store: JSON.stringify(this.storage.store)
                 });
                 if( this.memory.history.length > 10 )
-                    this.memory.history.splice(0, this.memory.history.length-100);
-                this.createReport(true);
+                    this.memory.history.splice(0, this.memory.history.length-10);
+                */
             }
             
             this.setMemory(this.memory);
         };
         
-        Room.prototype.createReport = function(mail){
-                var firstRecord = JSON.parse( this.memory.history[0].store );
-                var lastRecord = this.storage.store;
-                var message = '<b>Storage report</b><br/>' + (new Date(Date.now() + 7200000)).toLocaleString() + ' (' + this.memory.history[0].time + ')<br/>';
-                for( var type in firstRecord ){ // changed & depleted
-                    var dif = (lastRecord[type] ? lastRecord[type] - firstRecord[type] : firstRecord[type] * -1);
-                    message += type + ': ' + (lastRecord[type]?lastRecord[type]:0) + ' (' + (dif > -1 ? '+' : '' ) + dif + ')<br/>';  
+        Room.prototype.sendReport = function(mail){
+                if( !this.memory.storageReport ) return;
+                var memoryRecord = JSON.parse( this.memory.storageReport.store );
+                var currentRecord = this.storage.store;
+                var now = new Date(Date.now() + 7200000);
+                var message = '<b>Storage report</b><br/>' + now.toLocaleString() + ' (' + parseInt((now.getTime() - this.memory.storageReport.time)/60000) + ' minutes dif)<br/>';
+                for( var type in memoryRecord ){ // changed & depleted
+                    var dif = (currentRecord[type] ? currentRecord[type] - memoryRecord[type] : memoryRecord[type] * -1);
+                    message += type + ': ' + (currentRecord[type] || 0) + ' (' + (dif > -1 ? '+' : '' ) + dif + ')<br/>';  
                 }
                 // new
-                for( var type in lastRecord ){
-                    if(!firstRecord[type])
-                        message += type + ': ' + lastRecord[type] + ' (' + lastRecord[type] + ')<br/>';  
+                for( var type in currentRecord ){
+                    if(!memoryRecord[type])
+                        message += type + ': ' + currentRecord[type] + ' (' + currentRecord[type] + ')<br/>';  
                 }
                 if( mail ) Game.notify(message);
                 console.log(message);
         }
         
+        Creep.prototype.getBehaviour = function(){
+            if(this.memory.setup) {
+                return MODULES.creep.behaviour[this.memory.setup];
+                /*
+                if( this.room.situation.noEnergy && this.memory.setup == 'worker'){
+                    return MODULES.creep.behaviour.worker.noEnergy;
+                }
+                else if( creep.memory.setup == 'ranger' ){
+                    if( this.room.situation.invasion )
+                        return 
+                } else {
+                }
+                */
+            }
+            return null;
+        };
+        
+        Creep.prototype.run = function(){
+            if( !this.spawning ){
+                var behaviour = this.getBehaviour();
+                if( behaviour ) behaviour.run(this);
+            }
+        }
+        
         _.forEach(Game.rooms, function(room, name){
-            room.init();
+            //if( room.controller.my )
+                room.init();
         });
         //if(DEBUG) console.log(log); 
     }

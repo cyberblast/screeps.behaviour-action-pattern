@@ -1,17 +1,19 @@
-var action = new MODULES.creep.ability();
+var action = new MODULES.creep.Action();
 
 action.name = 'building';
 action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 && creep.room.constructionSites.count > 0 );
 };
 action.isValidTarget = function(target){
-    return (target != null && target.progress != null && target.room.constructionSites.includes(target.id));
+    return (target != null && target.progress != null && target.room.constructionSites.order.includes(target.id));
 };  
 action.newTarget = function(creep){
     var self = this;
-    return creep.room.constructionSites.order.find(function(id){
-        self.isAddableTarget(creep.room.constructionSites[id])
+    var id = creep.room.constructionSites.order.find(function(id){
+        return self.isAddableTarget(creep.room.constructionSites[id])
     });
+    if( id ) return creep.room.constructionSites[id];
+    else return null;
 };
 action.work = function(creep){
     return creep.build(creep.target);

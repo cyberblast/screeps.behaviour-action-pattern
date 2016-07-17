@@ -27,18 +27,6 @@ var mod = {
                     casualty.towers.push(tower.id);
                 return;
             } 
-            // Repair
-            if( (tower.room.repairableSites.count > 0) && (tower.energy > (tower.energyCapacity * (1-(0.2/tower.room.towers.length)))) ) {
-                for( var iSite = 0; iSite < tower.room.repairableSites.count; iSite++){
-                    var site = tower.room.repairableSites[tower.room.repairableSites.order[iSite]];
-                    if(site.towers == null || site.towers.length == 0){
-                        if( site.towers == null )site.towers = [];
-                            site.towers.push(tower.id);
-                        tower.repair(site);
-                        return;
-                    }
-                }
-            }
             // Attack
             var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
                 filter: function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
@@ -53,6 +41,18 @@ var mod = {
                 tower.attack(closestHostile);
                 return;
             } 
+            // Repair
+            if( (tower.room.repairableSites.count > 0) && (tower.energy > (tower.energyCapacity * (1-(0.2/tower.room.towers.length)))) ) {
+                for( var iSite = 0; iSite < tower.room.repairableSites.count; iSite++){
+                    var site = tower.room.repairableSites[tower.room.repairableSites.order[iSite]];
+                    if(site.towers == null || site.towers.length == 0){
+                        if( site.towers == null )site.towers = [];
+                            site.towers.push(tower.id);
+                        tower.repair(site);
+                        return;
+                    }
+                }
+            }
         }
     }
 }

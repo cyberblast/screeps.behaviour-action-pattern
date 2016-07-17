@@ -1,4 +1,4 @@
-var setup = new MODULES.creep.template();
+var setup = new MODULES.creep.Setup();
 
 setup.type = 'worker';
 setup.body = [CARRY, WORK, MOVE];
@@ -15,15 +15,3 @@ setup.maxWeight = function(spawn){
 }
 
 module.exports = setup;
-
-/*
-
-setup.isValidSetup = function(spawn){
-    var room = spawn.room;
-    
-    return (room.energyAvailable > room.energyCapacityAvailable/2 && (
-        !room.population.worker || (
-        room.population.worker.count < (room.sourceAccessibleFields + (room.sources.length*1.5))  && 
-        room.population.worker.weight < (room.sources.length * 3400))));
-}
-*/
