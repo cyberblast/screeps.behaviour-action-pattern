@@ -2,10 +2,10 @@ var work = {
     run: function(creep) {
         var assignment;
         if( creep.room.controller.my && creep.room.situation.invasion )
-            assignment = MODULES.creep.assignActionWithTarget(creep, MODULES.creep.action.defending.melee);
+            assignment = MODULES.creep.assignActionWithTarget(creep, MODULES.creep.action.defending);
         else {
             var flag = _.find(Game.flags, {'color': FLAG_COLOR.destroy }) || _.find(Game.flags, {'color': FLAG_COLOR.invade });
-            if( flag ) assignment = MODULES.creep.assignActionWithTarget(creep, MODULES.creep.action.melee.invading);
+            if( flag ) assignment = MODULES.creep.assignActionWithTarget(creep, MODULES.creep.action.invading);
             else assignment = MODULES.creep.assignActionWithTarget(creep, MODULES.creep.action.guarding);
         }
         if( !assignment ) MODULES.creep.assignActionWithTarget(creep, MODULES.creep.action.idle);

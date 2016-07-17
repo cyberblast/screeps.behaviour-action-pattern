@@ -1,22 +1,20 @@
 var mod = {
     init: function(){
+        global.CHATTY = true;
+        global.DEBUG = true;
+        global.LIMIT_CREEP_REPAIRING = 1000;
         global.MODULES = {};
         global.MODULES.creep = require('creep');
         global.MODULES.creep.action = {
             building: require('creep.action.building'), 
             claim: require('creep.action.claim'), 
-            defending: {
-                ranged: require('creep.action.defending.ranged'),
-                melee: require('creep.action.defending.melee')
-            }, 
+            defending: require('creep.action.defending'),
             feeding: require('creep.action.feeding'), 
             fueling: require('creep.action.fueling'), 
             guarding: require('creep.action.guarding'), 
             harvesting: require('creep.action.harvesting'),
-            idle: require('creep.action.idle'), 
-            melee: {
-                invading: require('creep.action.melee.invading')
-            },
+            idle: require('creep.action.idle'),
+            invading: require('creep.action.invading'),
             picking: require('creep.action.picking'), 
             repairing: require('creep.action.repairing'), 
             storing: require('creep.action.storing'), 
@@ -25,15 +23,14 @@ var mod = {
         };
         global.MODULES.creep.behaviour = {
             claimer: require('creep.behaviour.claimer'),
-            conqueror: require('creep.behaviour.conqueror'),
+            healer: require('creep.behaviour.healer'),
             melee: require('creep.behaviour.melee'),
             ranger: require('creep.behaviour.ranger'),
             worker: require('creep.behaviour.worker')
         };
-        global.MODULES.creep.behaviour.worker.noEnergy = require('creep.behaviour.worker.noEnergy');
         global.MODULES.creep.setup = {
             claimer: require('creep.setup.claimer'),
-            conqueror: require('creep.setup.conqueror'), 
+            healer: require('creep.setup.healer'), 
             melee: require('creep.setup.melee'),
             ranger: require('creep.setup.ranger'),
             worker: require('creep.setup.worker')
@@ -43,9 +40,7 @@ var mod = {
         global.MODULES.spawn = require('spawn'); 
         global.MODULES.tower = require('tower');
 
-        global.STRATEGY = 'defensive';
-        global.CHATTY = true;
-        global.DEBUG = true;
+        //global.STRATEGY = 'defensive';
         global.PART_COSTS = {
             work: 100,
             carry: 50,
@@ -56,7 +51,6 @@ var mod = {
             claim: 600, 
             tough: 10
         };
-        global.LIMIT_CREEP_REPAIRING = 1000;
         global.ERROR_CODE = function(code){
             var codes = {
                 0: 'OK',

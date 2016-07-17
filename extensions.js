@@ -16,6 +16,16 @@ var mod = {
             var self = this;
             //this.id = this.name;
             
+            // Map Memory
+            this.memory = (Memory.rooms && Memory.rooms[this.name] ? Memory.rooms[this.name] : { 
+                hostileIds : []
+            });
+            // Memory Setter
+            this.setMemory = function(obj){
+                if( !Memory.rooms ) Memory.rooms = {};
+                Memory.rooms[this.name] = obj;
+            }
+            
             // Construction Sites
             this.constructionSites = {
                 order: [], // ids, ordered descending by remaining progress
@@ -147,32 +157,27 @@ var mod = {
             // Situation
             this.situation = {
                 noEnergy: self.sourceEnergyAvailable == 0, 
-                invasion: self.hostiles.length > 0
+                invasion: false
             }
             
-            // Memory
-            this.setMemory = function(obj){
-                if( !Memory.rooms ) Memory.rooms = {};
-                Memory.rooms[this.name] = obj;
+            if( this.controller.my ){
+                this.situation.invasion = this.hostiles.length > 0;
+                this.hostileIds.forEach( function(id){
+                    if( !self.memory.hostileIds.includes(id) ){
+                        var creep = Game.getObjectById(id);
+                        var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
+                        Game.notify(message);
+                        console.log(message);
+                    }
+                });
+                this.memory.hostileIds.forEach( function(id){
+                    if( !self.hostileIds.includes(id) ){
+                        var message = 'Hostile intruder ' + id  + ' is gone'; 
+                        Game.notify(message);
+                        console.log(message);
+                    }
+                });
             }
-            this.memory = (Memory.rooms && Memory.rooms[this.name] ? Memory.rooms[this.name] : { 
-                hostileIds : []
-            });
-            this.hostileIds.forEach( function(id){
-                if( !self.memory.hostileIds.includes(id) ){
-                    var creep = Game.getObjectById(id);
-                    var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
-                    Game.notify(message);//<br/>Body: ' + JSON.stringify(creep.body));
-                    console.log(message);
-                }
-            });
-            this.memory.hostileIds.forEach( function(id){
-                if( !self.memory.hostileIds.includes(id) ){
-                    var message = 'Hostile intruder ' + id  + ' is gone'; 
-                    Game.notify(message);
-                    console.log(message);
-                }
-            });
             this.memory.hostileIds = this.hostileIds;
             
             if( this.storage && Game.time % 1000 == 0 ) {
