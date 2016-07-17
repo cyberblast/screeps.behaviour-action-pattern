@@ -1,6 +1,7 @@
 var action = new MODULES.creep.Action();
 
 action.name = 'defending';
+action.reusePath = 0;
 
 action.isValidTarget = function(target){
     return (

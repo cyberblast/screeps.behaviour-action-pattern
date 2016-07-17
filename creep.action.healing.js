@@ -1,6 +1,7 @@
 var action = new MODULES.creep.Action();
 
 action.name = 'healing';
+action.reusePath = 0;
 
 action.isValidTarget = function(target){
     return (

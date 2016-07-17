@@ -1,6 +1,7 @@
 var action = new MODULES.creep.Action();
 
 action.name = 'idle';
+action.reusePath = 10;
 
 action.isAddableAction = function(creep){
     return true;
@@ -11,23 +12,15 @@ action.isAddableTarget = function(target){
 }; 
 
 action.newTarget = function(creep){
-    var flags = _.sortBy(creep.room.find(FIND_FLAGS, {
-            filter: function(flag){ 
-                return flag.color == FLAG_COLOR.idle;
-            }
-        }), 
-        function(o) { 
-            return (o.creeps ? o.creeps.length : 0); 
-        }
-    );
-    return flags ? flags[0] : null; //Game.flags['IdlePole'];
+    return this.defaultTarget(creep);
 };
+
 action.step = function(creep) {
     if(CHATTY) creep.say(this.name);
     creep.memory.target = null;
     creep.memory.action = null;
     if(creep.target && creep.pos != creep.target.pos) {
-        creep.moveTo(creep.target);
+        creep.moveTo(creep.target, {reusePath: this.reusePath});
     } 
 };
 

@@ -1,6 +1,8 @@
 var action = new MODULES.creep.Action();
 
 action.name = 'fueling';
+action.reusePath = 2;
+
 action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 && creep.room.towerFreeCapacity > 0 );
 };

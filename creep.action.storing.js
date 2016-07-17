@@ -1,6 +1,7 @@
 var action = new MODULES.creep.Action();
 
 action.name = 'storing';
+action.reusePath = 2;
 
 action.isValidAction = function(creep){
     return ( _.sum(creep.carry) > 0 && creep.room.storage != null && 

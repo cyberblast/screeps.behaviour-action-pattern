@@ -1,6 +1,7 @@
 var action = new MODULES.creep.Action();
 
 action.name = 'repairing';
+action.reusePath = 2;
 
 action.isValidAction = function(creep){
     return (creep.carry.energy > 0 && creep.room.creepRepairableSites.count > 0 );
@@ -12,9 +13,11 @@ action.isValidTarget = function(target){
 };   
 action.newTarget = function(creep){
     var self = this;
-    return creep.room.creepRepairableSites.order.find(function(id){
+    var id = creep.room.creepRepairableSites.order.find(function(id){
         return self.isAddableTarget(creep.room.creepRepairableSites[id])
     });
+    if( id ) return creep.room.creepRepairableSites[id];
+    else return null;
 };
 action.work = function(creep){
     return creep.repair(creep.target);

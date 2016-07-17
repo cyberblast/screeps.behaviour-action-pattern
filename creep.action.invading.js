@@ -1,6 +1,7 @@
 var action = new MODULES.creep.Action();
 
 action.name = 'invading';
+action.reusePath = 0;
 
 action.isValidAction = function(){ return true; };
 action.isAddableAction = function(){ return true; };

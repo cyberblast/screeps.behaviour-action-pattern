@@ -207,7 +207,7 @@ var mod = {
                 var memoryRecord = JSON.parse( this.memory.storageReport.store );
                 var currentRecord = this.storage.store;
                 var now = new Date(Date.now() + 7200000);
-                var message = '<b>Storage report</b><br/>' + now.toLocaleString() + ' (' + parseInt((now.getTime() - this.memory.storageReport.time)/60000) + ' minutes dif)<br/>';
+                var message = '<b>Storage report</b> for room ' + this.name + '<br/>' + now.toLocaleString() + ' (' + parseInt((now.getTime() - this.memory.storageReport.time)/60000) + ' minutes dif)<br/>';
                 for( var type in memoryRecord ){ // changed & depleted
                     var dif = (currentRecord[type] ? currentRecord[type] - memoryRecord[type] : memoryRecord[type] * -1);
                     message += type + ': ' + (currentRecord[type] || 0) + ' (' + (dif > -1 ? '+' : '' ) + dif + ')<br/>';  
