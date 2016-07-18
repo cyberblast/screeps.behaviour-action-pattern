@@ -197,7 +197,7 @@ var mod = {
                 var memoryRecord = this.memory.storageReport.store;
                 var currentRecord = this.storage.store;
                 var now = new Date(Date.now() + 7200000);
-                var message = '<b>Storage report</b> for room ' + this.name + '<br/>' + now.toLocaleString() + ' (' + parseInt((now.getTime() - this.memory.storageReport.time)/60000) + ' minutes dif)<br/>';
+                var message = '<b>Storage report</b> (<a href="https://screeps.com/a/#!/room/' + this.name + '">' + this.name + '</a>)<br/>' + now.toLocaleString() + ' (' + parseInt((now.getTime() - this.memory.storageReport.time)/60000) + ' minutes dif)<br/>';
                 for( var type in memoryRecord ){ // changed & depleted
                     var dif = (currentRecord[type] ? currentRecord[type] - memoryRecord[type] : memoryRecord[type] * -1);
                     message += type + ': ' + (currentRecord[type] || 0) + ' (' + (dif > -1 ? '+' : '' ) + dif + ')<br/>';  
@@ -237,17 +237,17 @@ var mod = {
             if( !target.creeps[this.memory.setup] ){
                 target.creeps[this.memory.setup] = [];
             }
-            if( !target.creeps[this.memory.setup].includes(creep.name) ) 
-                target.creeps[this.memory.setup].push(creep.name);
+            if( !target.creeps[this.memory.setup].includes(this.name) ) 
+                target.creeps[this.memory.setup].push(this.name);
         }
         Creep.prototype.unregisterTarget = function(target){   
             if( target == null ) return;
             if( !this.memory.setup ) return;   
             if( !target.creeps ) return;
             if( !target.creeps[this.memory.setup] ) return;
-            if( !target.creeps[this.memory.setup].includes(creep.name) ) return;
+            if( !target.creeps[this.memory.setup].includes(this.name) ) return;
 
-            target.creeps[this.memory.setup].splice(target.creeps[this.memory.setup].indexOf(creep.name), 1);
+            target.creeps[this.memory.setup].splice(target.creeps[this.memory.setup].indexOf(this.name), 1);
         }
         
         _.forEach(Game.rooms, function(room, name){

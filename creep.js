@@ -54,7 +54,7 @@ var mod = {
             return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
         };
         this.isAddableTarget = function(target){ // target is valid to be given to an additional creep
-            return (this.maxPerTarget > 0 && (!target.creeps || !target.creeps[maxPerTargetType] || target.creeps[maxPerTargetType].length < this.maxPerTarget));
+            return (this.maxPerTarget > 0 && (!target.creeps || !target.creeps[this.maxPerTargetType] || target.creeps[this.maxPerTargetType].length < this.maxPerTarget));
         };
 
         this.step = function(creep){     
@@ -195,7 +195,7 @@ var mod = {
             var targetId = creep.action.getTargetId(creep.target);
             creep.unregisterTarget(creep.Target);
             creep.memory.target = targetId;
-            creep.registerTarget(creep.Target);
+            creep.registerTarget(target);
         };
         this.registerAction = function(creep, action){
             if( creep.memory.action )
