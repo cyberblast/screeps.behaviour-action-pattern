@@ -16,7 +16,7 @@ action.newTarget = function(creep){
     return t;
 };
 action.isAddableTarget = function(target){ 
-    return (this.maxPerTarget > 0 && (!target.creeps || !target.creeps[maxPerTargetType] || target.creeps[maxPerTargetType].length < this.maxPerTarget)) && 
+    return (this.maxPerTarget > 0 && (!target.creeps || !target.creeps[this.maxPerTargetType] || target.creeps[this.maxPerTargetType].length < this.maxPerTarget)) && 
     ((target.energy < target.energyCapacity * (1-(0.16/target.room.towers.length))) || target.room.situation.invasion);
 };
 

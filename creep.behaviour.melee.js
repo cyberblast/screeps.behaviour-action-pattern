@@ -7,7 +7,22 @@ behaviour.run = function(creep) {
     else {
         var flag = _.find(Game.flags, {'color': FLAG_COLOR.destroy }) || _.find(Game.flags, {'color': FLAG_COLOR.invade });
         if( flag ) assignment = this.assignActionWithTarget(creep, MODULES.creep.action.invading);
-        else assignment = this.assignActionWithTarget(creep, MODULES.creep.action.guarding);
+        else {
+            if( creep.memory.action ){
+                if( !this.validateMemoryAction(creep) ){
+                    creep.room.activities[creep.memory.action]--;
+                    creep.unregisterTarget(creep.Target);
+                    creep.memory.action = null;
+                    creep.memory.target = null;
+                    creep.action = null;
+                    creep.target = null;
+
+                    assignment = false;
+                } else assignment = true;
+            }
+            if(!assignment)
+                assignment = this.assignActionWithTarget(creep, MODULES.creep.action.guarding);
+        }
     }
     if( !assignment ) this.assignActionWithTarget(creep, MODULES.creep.action.idle);
     
