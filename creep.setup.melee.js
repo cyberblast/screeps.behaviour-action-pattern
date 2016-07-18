@@ -5,6 +5,7 @@ setup.multiBody = [TOUGH, TOUGH, ATTACK, MOVE, MOVE, MOVE];
 setup.minAbsEnergyAvailable = 250;
 setup.maxMulti = 3;
 setup.globalMeasurement = true;
+setup.minControllerLevel = 2;
 setup.minEnergyAvailable = function(){
     return 0.8;
 }

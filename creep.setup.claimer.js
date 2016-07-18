@@ -4,7 +4,9 @@ setup.type = 'claimer';
 setup.multiBody = [CLAIM, MOVE];
 setup.minAbsEnergyAvailable = 650;
 setup.maxMulti = 2;
+setup.minControllerLevel = 4;
 setup.globalMeasurement = true;
+
 setup.minEnergyAvailable = function(){
     return 0.9;
 }

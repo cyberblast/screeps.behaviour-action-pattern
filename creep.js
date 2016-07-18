@@ -86,6 +86,7 @@ var mod = {
         this.multiBody = []; 
         this.minAbsEnergyAvailable = 0; 
         this.maxMulti = 6;
+        this.minControllerLevel = 0;
         this.globalMeasurement = false;
         this.bodyCosts = function(body){
             var costs = 0;
@@ -164,7 +165,7 @@ var mod = {
                 ( maxWeight == null || population.weight < maxWeight)))))) );
             }*/
 
-            if( maxCount == 0 || maxWeight == 0 ) return false;
+            if( maxCount == 0 || maxWeight == 0 || spawn.room.controller.level < this.minControllerLevel) return false;
             return (room.energyAvailable >= this.minAbsEnergyAvailable && 
                 room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn))  && (
                 (!population || (
