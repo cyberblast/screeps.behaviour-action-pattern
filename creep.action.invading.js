@@ -71,6 +71,8 @@ action.newTarget = function(creep){
         if( target ) 
             return target;
     }
+    // no target found
+    flag.remove();
     
     return this.defaultTarget(creep);
 };

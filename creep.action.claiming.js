@@ -16,11 +16,13 @@ action.newTarget = function(creep){
     if( !flag.room || flag.room.name != creep.room.name)
         return flag;
     
-    if( !flag.room.controller.my ) {
+    if( flag.room.controller.my ) {
+        flag.remove();
+        return null;
+    }
+    else {
         return flag.room.controller;
     }
-    
-    return flag;
 }
 
 action.step = function(creep){
