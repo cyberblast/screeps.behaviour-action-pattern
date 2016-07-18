@@ -1,8 +1,8 @@
 var setup = new MODULES.creep.Setup();
 
 setup.type = 'claimer';
-setup.body = [CLAIM, MOVE];
-setup.defaultBodyCosts = 650;
+setup.multiBody = [CLAIM, MOVE];
+setup.minAbsEnergyAvailable = 650;
 setup.maxMulti = 1;
 setup.globalMeasurement = true;
 setup.minEnergyAvailable = function(){

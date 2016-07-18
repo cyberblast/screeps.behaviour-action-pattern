@@ -1,8 +1,8 @@
 var setup = new MODULES.creep.Setup();
 
 setup.type = 'melee';
-setup.body = [TOUGH, TOUGH, ATTACK, MOVE, MOVE, MOVE]; 
-setup.defaultBodyCosts = 250;
+setup.multiBody = [TOUGH, TOUGH, ATTACK, MOVE, MOVE, MOVE]; 
+setup.minAbsEnergyAvailable = 250;
 setup.maxMulti = 4;
 setup.globalMeasurement = true;
 setup.minEnergyAvailable = function(){

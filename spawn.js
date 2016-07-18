@@ -17,10 +17,26 @@ var mod = {
                 var newName = spawn.createCreep(params.parts, params.id, params);
                 if( set.id == newName ){
                     spawn.busy = true;
-                    spawn.room.population[set.setup].count++;
-                    spawn.room.population[set.setup].weight += set.costs;
-                    Game.population[set.setup].count++;
-                    Game.population[set.setup].weight += set.costs;
+                    if(!spawn.room.population[set.setup]){
+                        spawn.room.population[set.setup] = {
+                            weight: set.cost, 
+                            count : 1
+                        };
+                    }
+                    else {
+                        spawn.room.population[set.setup].count++;
+                        spawn.room.population[set.setup].weight += set.cost;
+                    }
+                    if(!Game.population[set.setup]){
+                        Game.population[set.setup] = {
+                            weight: set.cost, 
+                            count : 1
+                        };
+                    }
+                    else {
+                        Game.population[set.setup].count++;
+                        Game.population[set.setup].weight += set.cost;
+                    }
                 }
                 console.log(set.id == newName || ERROR_CODE(newName) == undefined ? 
                     spawn.name + ' > Good morning ' + newName + '!': 

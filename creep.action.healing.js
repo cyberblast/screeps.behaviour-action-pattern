@@ -20,7 +20,8 @@ action.newTarget = function(creep){
         return _.sortBy(injured, function(i){ return i.hits - i.hitsMax; })[0];
     }
     
-    var melees = creep.room.find(FIND_MY_CREEPS, {
+    // TODO: Follow to other rooms (new action?)
+    var melees = creep.room.find(FIND_MY_CREEPS, { // follow
         filter: function(c){ return c.memory.setup == "melee" } 
     });
     if(melees) return melees[0];
@@ -33,7 +34,7 @@ action.newTarget = function(creep){
     var any = creep.room.find(FIND_MY_CREEPS);
     if(any) return any[0];
     
-    return Game.flags['IdlePole'];
+    return this.defaultAction(creep);
 };
 
 action.work = function(creep){

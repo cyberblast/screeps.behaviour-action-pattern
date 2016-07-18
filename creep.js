@@ -25,7 +25,7 @@ var mod = {
             return creep.room.controller;
         };
         this.defaultAction = function(creep){
-            creep.moveTo(creep.target, {reusePath: this.reusePath});
+            creep.moveTo(this.defaultTarget(creep), {reusePath: this.reusePath});
         };
 
         this.getTargetId = function(target){ 
@@ -63,7 +63,7 @@ var mod = {
                 return;
             
             if( moveResult == ERR_NO_PATH ){// get out of the way
-                this.default(creep);
+                this.defaultAction(creep);
                 return;
             } 
             if( !( [ERR_TIRED, ERR_NO_PATH].indexOf(moveResult) > -1 ) ) {
@@ -79,8 +79,9 @@ var mod = {
     },    
     Setup: function(){
         this.type = null;
-        this.body = []; 
-        this.defaultBodyCosts = 0; 
+        this.fixedBody = []; 
+        this.multiBody = []; 
+        this.minAbsEnergyAvailable = 0; 
         this.maxMulti = 6;
         this.globalMeasurement = false;
         this.bodyCosts = function(body){
@@ -91,21 +92,29 @@ var mod = {
             return costs;
         };
         this.multi = function(spawn){ 
-            return _.min([Math.floor(spawn.room.energyAvailable / this.defaultBodyCosts), this.maxMulti]);
+            var fixedCosts = this.bodyCosts(this.fixedBody);
+            var multiCosts = this.bodyCosts(this.multiCosts);
+            return _.min([Math.floor( (spawn.room.energyAvailable-fixedCosts) / multiCosts), this.maxMulti]);
         }; 
         this.multiplicationPartwise = true;
         this.setParamParts = function(spawn){
             var parts = [];
             var multi = this.multi(spawn);
             if( this.multiplicationPartwise ) {
-                for( var iPart = 0; iPart < this.body.length; iPart ++ ){
+                for( var iPart = 0; iPart < this.multiBody.length; iPart ++ ){
                     for( var iMulti = 0; iMulti < multi; iMulti++){
-                        parts[parts.length] = this.body[iPart];
+                        parts[parts.length] = this.multiBody[iPart];
                     }
+                }
+                for( var iPart = 0; iPart < this.fixedBody.length; iPart ++ ){
+                    parts[parts.length] = this.fixedBody[iPart];
                 }
             } else {
                 for (var iMulti = 0; iMulti < multi; iMulti++) {
-                    parts = parts.concat(this.body);
+                    parts = parts.concat(this.multiBody);
+                }
+                for( var iPart = 0; iPart < this.fixedBody.length; iPart ++ ){
+                    parts[parts.length] = this.fixedBody[iPart];
                 }
             }
             return parts;

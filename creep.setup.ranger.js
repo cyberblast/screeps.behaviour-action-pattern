@@ -1,8 +1,8 @@
 var setup = new MODULES.creep.Setup();
 
 setup.type = 'ranger';
-setup.body = [RANGED_ATTACK, MOVE]; 
-setup.defaultBodyCosts = 200;
+setup.multiBody = [RANGED_ATTACK, MOVE]; 
+setup.minAbsEnergyAvailable = 200;
 setup.maxMulti = 4;
 setup.globalMeasurement = true;
 setup.minEnergyAvailable = function(){

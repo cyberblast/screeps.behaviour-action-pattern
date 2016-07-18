@@ -127,7 +127,7 @@ var mod = {
                     }
                 }
             });
-            this.maxPerJob = _.max([1,self.creeps.length/3.1]);
+            this.maxPerJob = _.max([1,(self.population.worker || 0)/3.1]);
             log += '\n - ' + this.creeps.length + ' creeps \n     ' + JSON.stringify(this.activities) + '\n     ' + JSON.stringify(this.population);
             
             this.towers = [];
