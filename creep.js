@@ -176,7 +176,7 @@ var mod = {
             return false;
         };
         this.registerTarget = function(creep, target) {
-            creep.memory.target = action.getTargetId(creep.target);
+            creep.memory.target = creep.action.getTargetId(creep.target);
             if( !creep.target.creeps ) 
                 creep.target.creeps = [];
             if( !creep.target.creeps.includes(creep.name) ) 
@@ -197,7 +197,7 @@ var mod = {
             
             if( creep.target ) {
                 this.registerAction(creep, action);
-                this.registerTarget(creep, target);
+                this.registerTarget(creep, creep.target);
                 return true;
             }
             
