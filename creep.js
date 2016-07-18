@@ -188,18 +188,11 @@ var mod = {
             creep.action = MODULES.creep.action[creep.memory.action];
 
             if( creep.action && creep.action.isValidAction(creep) ){
-                // take target from memory
-                /*
-                if( creep.memory.target != null ) {
-                    creep.target = creep.action.getTargetById(creep.memory.target);
-                }
-                */
-                
                 // validate target or new
                 if( !creep.action.isValidTarget(creep.target) || 
                 (creep.action.maxTargetLease && (Game.time-creep.memory.targetAssignmentTime) > creep.action.maxTargetLease )){ 
                     // invalid. try to find a new one...
-                    creep.unregisterTarget(creep.Target);
+                    creep.unregisterTarget();
                     var target = creep.action.newTarget(creep);
                     if( target ) {
                         creep.registerTarget(target);

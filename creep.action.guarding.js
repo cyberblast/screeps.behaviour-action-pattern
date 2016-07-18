@@ -10,7 +10,6 @@ action.newTarget = function(creep){
         function(o) { 
             var occupation = ( o.creeps && o.creeps[creep.memory.setup] ? o.creeps[creep.memory.setup].length : 0);
             var distance = creep.pos.getRangeTo(o);
-            console.log((occupation + (distance == Infinity ? 0.9 : distance/100)));
             return (occupation + (distance == Infinity ? 0.9 : distance/100));
         }
     );

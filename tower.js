@@ -29,14 +29,15 @@ var mod = {
             } 
 
             // Attack
+            /*
             var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
                 filter: function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
             });
             if(closestHostile) {
                 tower.attack(closestHostile);
                 return;
-            }             
-            closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+            }*/            
+            var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
             if(closestHostile) {
                 tower.attack(closestHostile);
                 return;

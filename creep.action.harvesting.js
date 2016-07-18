@@ -12,7 +12,7 @@ action.isValidTarget = function(target){
 };   
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(target){ 
-    return (!target.creeps || !target.creeps[this.maxPerTargetType] || target.creeps[this.maxPerTargetType].length < (target.accessibleFields*1.5));
+    return (!target.creeps || !target.creeps.worker || target.creeps.worker.length < (target.accessibleFields*1.5));
 };
 
 action.newTarget = function(creep){
@@ -21,7 +21,7 @@ action.newTarget = function(creep){
     for( var iSource = 0; iSource < creep.room.sources.length; iSource++ ){
         var source = creep.room.sources[iSource];
         if( this.isValidTarget(source) && this.isAddableTarget(source) && (source.creeps == null || source.creeps.worker == null || source.creeps.worker.length < sourceGuests )){
-            sourceGuests = source.creeps == null || source.creeps.worker == null ? 0 : source.creeps.worker.length;
+            sourceGuests = (source.creeps == null || source.creeps.worker == null) ? 0 : source.creeps.worker.length;
             target = source;
         }
     }

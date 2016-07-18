@@ -3,8 +3,8 @@ var behaviour = new MODULES.creep.Behaviour();
 behaviour.run = function(creep) {
     // Harvesting completed / energy refilled
     if(creep.memory.action == 'idle' || (_.sum(creep.carry) == creep.carryCapacity && (creep.memory.action == 'harvesting' || creep.memory.action == 'pickup' || creep.memory.action == 'withdrawing'))) {
+        creep.unregisterTarget();
         creep.memory.action = null;
-        creep.memory.target = null;
     } 
 
     // Has assigned Action
@@ -12,9 +12,7 @@ behaviour.run = function(creep) {
         if( !this.validateMemoryAction(creep) ){
             creep.room.activities[creep.memory.action]--;
             creep.memory.action = null;
-            creep.memory.target = null;
             creep.action = null;
-            creep.target = null;
         }
     }
     
@@ -30,8 +28,7 @@ behaviour.run = function(creep) {
 };
 
 behaviour.nextAction = function(creep){
-    creep.memory.target = null;
-    creep.target = null;
+    creep.unregisterTarget();
     
     // Last Action completed / No more energy
     if( creep.carry.energy == 0 && creep.memory.action != 'harvesting' && creep.memory.action != 'pickup' && creep.memory.action != 'withdrawing') { 
