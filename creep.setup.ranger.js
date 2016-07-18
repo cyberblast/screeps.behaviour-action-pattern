@@ -3,7 +3,7 @@ var setup = new MODULES.creep.Setup();
 setup.type = 'ranger';
 setup.multiBody = [RANGED_ATTACK, MOVE]; 
 setup.minAbsEnergyAvailable = 200;
-setup.maxMulti = 4;
+setup.maxMulti = 3;
 setup.globalMeasurement = true;
 setup.minEnergyAvailable = function(){
     return 0.8;
