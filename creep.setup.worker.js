@@ -9,7 +9,7 @@ setup.minEnergyAvailable = function(){
     return 0.5;
 };
 setup.maxCount = function(spawn){
-    return (spawn.room.sourceAccessibleFields + (spawn.room.sources.length*2));
+    return ((spawn.room.sourceAccessibleFields*1.2) + (spawn.room.sources.length*2));
 };
 setup.maxWeight = function(spawn){
     return (spawn.room.sources.length * 3000);

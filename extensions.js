@@ -125,10 +125,7 @@ var mod = {
                     this.activities[action] = 1;
                 else this.activities[action]++;
                 if( creep.memory.target ){
-                    creep.target = Game.getObjectById(creep.memory.target) || Game.spawns[creep.memory.target];
-                    if( creep.target != null ){
-                        creep.registerTarget(creep.target);
-                    }
+                    creep.target = Game.getObjectById(creep.memory.target) || Game.spawns[creep.memory.target] || Game.flags[creep.memory.target];
                 }
             });
             this.maxPerJob = _.max([1,(self.population.worker || 0)/3.1]);
@@ -228,8 +225,32 @@ var mod = {
             }
         }
 
-        Creep.prototype.registerTarget = function(target){  
+        Creep.prototype.unregisterTarget = function(){   
+            var target = this.target;
+            // unassign
+            this.target = null;
+            this.memory.target = null;
+            this.memory.targetAssignmentTime = null;
+            // unregister
+            if( !this.memory.setup || !target) return;   
+            if( !target.creeps ) return;
+            if( !target.creeps[this.memory.setup] ) return;
+            if( !target.creeps[this.memory.setup].includes(this.name) ) return;
+
+            target.creeps[this.memory.setup].splice(target.creeps[this.memory.setup].indexOf(this.name), 1);
+        }
+        Creep.prototype.registerTarget = function(target){ 
+            //precondition 
             if( target == null ) return;
+            //unregister
+            var targetId = target.id || target.name;
+            if( this.target != target || this.memory.target != targetId)
+                this.unregisterTarget();
+            //assign
+            this.target = target;
+            this.memory.targetAssignmentTime = Game.time;
+            this.memory.target = targetId;
+            //register
             if( !this.memory.setup ) return;   
             if( !target.creeps ) {
                 target.creeps = {};
@@ -239,15 +260,6 @@ var mod = {
             }
             if( !target.creeps[this.memory.setup].includes(this.name) ) 
                 target.creeps[this.memory.setup].push(this.name);
-        }
-        Creep.prototype.unregisterTarget = function(target){   
-            if( target == null ) return;
-            if( !this.memory.setup ) return;   
-            if( !target.creeps ) return;
-            if( !target.creeps[this.memory.setup] ) return;
-            if( !target.creeps[this.memory.setup].includes(this.name) ) return;
-
-            target.creeps[this.memory.setup].splice(target.creeps[this.memory.setup].indexOf(this.name), 1);
         }
         
         _.forEach(Game.rooms, function(room, name){

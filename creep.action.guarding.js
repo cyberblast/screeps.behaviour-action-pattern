@@ -3,11 +3,15 @@ var action = new MODULES.creep.Action();
 action.name = 'guarding';
 action.reusePath = 10;
 action.ignoreCreeps = true;
+action.maxTargetLease = 12;
 
 action.newTarget = function(creep){ 
     var flags = _.sortBy(_.filter(Game.flags, function(f){ return f.color == FLAG_COLOR.defense; }), 
         function(o) { 
-            return ( o.creeps && o.creeps[creep.memory.setup] ? o.creeps[creep.memory.setup].length : 0) + (creep.pos.getRangeTo(o)/100); 
+            var occupation = ( o.creeps && o.creeps[creep.memory.setup] ? o.creeps[creep.memory.setup].length : 0);
+            var distance = creep.pos.getRangeTo(o);
+            console.log((occupation + (distance == Infinity ? 0.9 : distance/100)));
+            return (occupation + (distance == Infinity ? 0.9 : distance/100));
         }
     );
     if( flags && flags.length > 0 ) return flags[0];

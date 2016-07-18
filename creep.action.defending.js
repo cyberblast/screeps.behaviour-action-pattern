@@ -6,6 +6,7 @@ action.ignoreCreeps = true;
 
 action.isValidTarget = function(target){
     return (
+        target &&
         target.hits != null && 
         target.hits > 0 &&
         target.my == false );
