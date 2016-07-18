@@ -13,6 +13,7 @@ var mod = {
             fueling: require('creep.action.fueling'), 
             guarding: require('creep.action.guarding'), 
             harvesting: require('creep.action.harvesting'),
+            healing: require('creep.action.healing'),
             idle: require('creep.action.idle'),
             invading: require('creep.action.invading'),
             picking: require('creep.action.picking'), 

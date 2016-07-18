@@ -150,8 +150,8 @@ var mod = {
             return (room.energyAvailable >= this.minAbsEnergyAvailable && 
                 room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn)) && maxCount > 0 && maxWeight > 0 && (
                 (!population) || (
-                population.count < maxCount && 
-                population.weight < maxWeight)));
+                (!maxCount || population.count < maxCount) && 
+                (!maxWeight || population.weight < maxWeight))));
         };
     },
     Behaviour: function(){
