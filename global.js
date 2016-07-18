@@ -7,7 +7,7 @@ var mod = {
         global.MODULES.creep = require('creep');
         global.MODULES.creep.action = {
             building: require('creep.action.building'), 
-            claim: require('creep.action.claim'), 
+            claiming: require('creep.action.claiming'), 
             defending: require('creep.action.defending'),
             feeding: require('creep.action.feeding'), 
             fueling: require('creep.action.fueling'), 

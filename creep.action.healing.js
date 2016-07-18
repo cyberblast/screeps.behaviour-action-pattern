@@ -17,7 +17,7 @@ action.newTarget = function(creep){
         filter: function(c){ return c.hits < c.hitsMax } 
     });
     if(injured){
-        return _.sortBy(injured, function(i){ return (i.hitsMax - i.hits) * -1; })[0];
+        return _.sortBy(injured, function(i){ return i.hits - i.hitsMax; })[0];
     }
     
     var melees = creep.room.find(FIND_MY_CREEPS, {
@@ -36,22 +36,16 @@ action.newTarget = function(creep){
     return Game.flags['IdlePole'];
 };
 
-action.step = function(creep){
-    if(CHATTY) creep.say(this.name);
-    var path = creep.room.findPath(creep.pos, creep.target.pos);
-    // not standing in rampart or next step is rampart as well
-    if( !_.some( creep.room.lookForAt(LOOK_STRUCTURES, creep.pos.x, creep.pos.y), {'structureType': STRUCTURE_RAMPART } )  || 
-        _.some( creep.room.lookForAt(LOOK_STRUCTURES, path[0].x, path[0].y), {'structureType': STRUCTURE_RAMPART })
-    ){
-            creep.move(path[0].direction);
-    } 
-    
-    // attack
-    if( creep.attack(creep.target) == ERR_NOT_IN_RANGE ) {
-        var targets = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 1);
-        if( targets.length > 0)
-            creep.attack(targets[0]);
+action.work = function(creep){
+    if( creep.target.hits < creep.target.hitsMax ){
+        if( creep.pos.isNearTo(creep.target) ){
+            return creep.heal(creep.target);
+        }
+        if(creep.pos.inRangeTo(creep.target, 3)) {
+            return creep.rangedHeal(target);
+        }
+        return OK;
     }
-}
+};
 
 module.exports = action;

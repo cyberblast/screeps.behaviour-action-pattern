@@ -25,7 +25,7 @@ var mod = {
             return creep.room.controller;
         };
         this.defaultAction = function(creep){
-            creep.moveTo(this.defaultTarget, {reusePath: this.reusePath});
+            creep.moveTo(creep.target, {reusePath: this.reusePath});
         };
 
         this.getTargetId = function(target){ 

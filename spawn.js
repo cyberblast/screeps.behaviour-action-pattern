@@ -15,14 +15,16 @@ var mod = {
             if( !spawn.busy && set.isValidSetup(spawn) ){
                 var params =  set.buildParams(spawn);
                 var newName = spawn.createCreep(params.parts, params.id, params);
-                console.log(set.id == newName || ERROR_CODE(newName) == undefined ? 
-                    spawn.name + ' > Good morning ' + newName + '!': 
-                    spawn.name + ' > Offspring failed. They call it "' + ERROR_CODE(newName) + '".');
                 if( set.id == newName ){
                     spawn.busy = true;
                     spawn.room.population[set.setup].count++;
                     spawn.room.population[set.setup].weight += set.costs;
+                    Game.population[set.setup].count++;
+                    Game.population[set.setup].weight += set.costs;
                 }
+                console.log(set.id == newName || ERROR_CODE(newName) == undefined ? 
+                    spawn.name + ' > Good morning ' + newName + '!': 
+                    spawn.name + ' > Offspring failed. They call it "' + ERROR_CODE(newName) + '".');
             }
         });
     }

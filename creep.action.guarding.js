@@ -4,10 +4,13 @@ action.name = 'guarding';
 action.reusePath = 10;
 
 action.newTarget = function(creep){ 
-    var flags = _.sortBy(_.filter(Game.flags, function(f){ return f.color == FLAG_COLOR.defense; }), 
+    var flags = _.sortBy(_.filter(Game.flags, function(f){ return f.color == FLAG_COLOR.defense; }), [
         function(o) { 
             return (o.creeps ? o.creeps.length : 0); 
-        }
+        }, 
+        function(o) {
+            return creep.pos.getRangeTo(o);
+        }]
     );
     if( flags && flags.length > 0 ) return flags[0];
     return null;
@@ -15,14 +18,18 @@ action.newTarget = function(creep){
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 
+action.work = function(creep){
+    return OK;
+};
+/*
 action.step = function(creep){     
     if(CHATTY) creep.say(this.name);
     if(!creep.target){
-        creep.moveTo(Game.flags['IdlePole']);
+        this.defaultAction(creep);
         return;
     }
     if(creep.target && creep.pos != creep.target.pos) {
-        var moveResult = creep.moveTo(creep.target, {reusePath:15});
+        var moveResult = creep.moveTo(creep.target, {reusePath: this.reusePath});
         
         if( moveResult == OK )
             return;
@@ -38,5 +45,6 @@ action.step = function(creep){
         }
     }
 };
+*/
 
 module.exports = action;

@@ -1,6 +1,6 @@
 var action = new MODULES.creep.Action();
 
-action.name = 'claim';
+action.name = 'claiming';
 action.reusePath = 10;
 
 action.isValidTarget = function(target){ return true; }; 

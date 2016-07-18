@@ -4,7 +4,7 @@ action.name = 'withdrawing';
 action.reusePath = 2;
 
 action.isValidAction = function(creep){
-    return ( creep.carry.energy < creep.carryCapacity && 
+    return ( creep.room.storage && creep.carry.energy < creep.carryCapacity && 
     (creep.room.energyAvailable < creep.room.energyCapacityAvailable || 
     creep.room.towerFreeCapacity > 500 ));
 };

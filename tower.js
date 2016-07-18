@@ -1,6 +1,6 @@
 var mod = {
     self: this,
-    loop: function(strategy){
+    loop: function(){
         for(var iRoom in Game.rooms){
             //var towers = Game.rooms[iRoom].find(
             //FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}});
@@ -27,6 +27,7 @@ var mod = {
                     casualty.towers.push(tower.id);
                 return;
             } 
+
             // Attack
             var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
                 filter: function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
@@ -34,13 +35,13 @@ var mod = {
             if(closestHostile) {
                 tower.attack(closestHostile);
                 return;
-            } 
-            
+            }             
             closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
             if(closestHostile) {
                 tower.attack(closestHostile);
                 return;
             } 
+
             // Repair
             if( (tower.room.repairableSites.count > 0) && (tower.energy > (tower.energyCapacity * (1-(0.2/tower.room.towers.length)))) ) {
                 for( var iSite = 0; iSite < tower.room.repairableSites.count; iSite++){
