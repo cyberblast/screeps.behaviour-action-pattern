@@ -18,7 +18,11 @@ var mod = {
                 console.log(set.id == newName || ERROR_CODE(newName) == undefined ? 
                     spawn.name + ' > Good morning ' + newName + '!': 
                     spawn.name + ' > Offspring failed. They call it "' + ERROR_CODE(newName) + '".');
-                spawn.busy = true;
+                if( set.id == newName ){
+                    spawn.busy = true;
+                    spawn.room.population[set.setup].count++;
+                    spawn.room.population[set.setup].weight += set.costs;
+                }
             }
         });
     }
