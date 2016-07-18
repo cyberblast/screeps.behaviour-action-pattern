@@ -27,19 +27,6 @@ action.newTarget = function(creep){
 
 action.step = function(creep){
     if(CHATTY) creep.say(this.name);
-    /*
-    var target = creep.action.newTarget(creep);
-    if( target ){
-        if( creep.target && creep.target != target && creep.target.creeps && creep.target.creeps.includes(creep.name) )
-            creep.target.creeps.splice(creep.target.creeps.indexOf(creep.name), 1);
-        creep.target = target;        
-        if( !creep.target.creeps ) 
-            creep.target.creeps = [];
-        if( !(creep.name in creep.target.creeps) ) 
-            creep.target.creeps.push(creep.name);
-        creep.memory.target = creep.action.getTargetId(creep.target);
-    }
-    */
     
     if( creep.target.color ){
         creep.say('Approaching');

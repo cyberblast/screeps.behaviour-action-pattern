@@ -3,7 +3,8 @@ var mod = {
         this.name = null;
         this.reusePath = 5;
         this.ignoreCreeps = false;
-        this.maxPerTarget = 1,
+        this.maxPerTarget = 1;
+        this.maxPerTargetType = 'worker';
         
         this.defaultTarget = function(creep){
             var flags = _.sortBy(creep.room.find(FIND_FLAGS, {
@@ -53,7 +54,7 @@ var mod = {
             return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
         };
         this.isAddableTarget = function(target){ // target is valid to be given to an additional creep
-            return (!target.creeps || target.creeps.length < this.maxPerTarget);
+            return (this.maxPerTarget > 0 && (!target.creeps || !target.creeps[maxPerTargetType] || target.creeps[maxPerTargetType].length < this.maxPerTarget));
         };
 
         this.step = function(creep){     
@@ -146,12 +147,13 @@ var mod = {
             var population = this.globalMeasurement ? Game.population[this.type] : room.population[this.type];
             var maxCount = this.maxCount(spawn);
             var maxWeight = this.maxWeight(spawn);
+            if( maxCount == 0 || maxWeight == 0 ) return false;
             
             return (room.energyAvailable >= this.minAbsEnergyAvailable && 
-                room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn)) && maxCount > 0 && maxWeight > 0 && (
-                (!population) || (
-                (!maxCount || population.count < maxCount) && 
-                (!maxWeight || population.weight < maxWeight))));
+                room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn))  && (
+                (!population || (
+                ( maxCount == null || population.count < maxCount) && 
+                ( maxWeight == null || population.weight < maxWeight)))));
         };
     },
     Behaviour: function(){
@@ -161,6 +163,7 @@ var mod = {
                     creep.room.activities[creep.memory.action]--;
                 creep.memory.action = actionName;
             }
+            creep.unregisterTarget(creep.Target);
             creep.memory.target = null;
             creep.action = MODULES.creep.action[actionName];
         }; 
@@ -176,6 +179,7 @@ var mod = {
                 // validate target or new
                 if( !creep.action.isValidTarget(creep.target) ){ 
                     // invalid. try to find a new one...
+                    creep.unregisterTarget(creep.Target);
                     creep.target = creep.action.newTarget(creep);
                 }
                 
@@ -188,11 +192,10 @@ var mod = {
             return false;
         };
         this.registerTarget = function(creep, target) {
-            creep.memory.target = creep.action.getTargetId(creep.target);
-            if( !creep.target.creeps ) 
-                creep.target.creeps = [];
-            if( !creep.target.creeps.includes(creep.name) ) 
-                creep.target.creeps.push(creep.name);
+            var targetId = creep.action.getTargetId(creep.target);
+            creep.unregisterTarget(creep.Target);
+            creep.memory.target = targetId;
+            creep.registerTarget(creep.Target);
         };
         this.registerAction = function(creep, action){
             if( creep.memory.action )
@@ -205,6 +208,7 @@ var mod = {
         };
         this.assignActionWithTarget = function(creep, action){
             creep.action = action;
+            creep.unregisterTarget(creep.Target);
             creep.target = action.newTarget(creep);
             
             if( creep.target ) {

@@ -5,6 +5,9 @@ action.name = 'picking';
 action.isValidAction = function(creep){
     return ( _.sum(creep.carry) < creep.carryCapacity );
 };
+action.isAddableAction = function(creep){
+    return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob+1);
+};
 action.isValidTarget = function(target){
     return (target != null && target.amount != null && target.amount > 0);
 };   

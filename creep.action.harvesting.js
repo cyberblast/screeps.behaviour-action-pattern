@@ -12,9 +12,9 @@ action.isValidTarget = function(target){
 };   
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(target){ 
-        return (!target.creeps || 
-        target.creeps.length < target.accessibleFields*1.5);
-    }
+    return (!target.creeps || !target.creeps[maxPerTargetType] || target.creeps[maxPerTargetType].length < target.accessibleFields*1.5);
+};
+
 action.newTarget = function(creep){
     var target = null;
     var sourceGuests = 999;

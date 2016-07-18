@@ -1,7 +1,27 @@
 var mod = {
     init: function(){
-        //if(DEBUG) console.log('Tick: ' + Game.time ); 
-        var log = '';
+
+        Object.defineProperty(Structure.prototype, 'memory', {
+            configurable: true,
+            get: function() {
+                if(_.isUndefined(Memory.structures)) {
+                    Memory.structures = {};
+                }
+                if(!_.isObject(Memory.structures)) {
+                    return undefined;
+                }
+                return Memory.structures[this.id] = Memory.structures[this.id] || {};
+            },
+            set: function(value) {
+                if(_.isUndefined(Memory.structures)) {
+                    Memory.structures = {};
+                }
+                if(!_.isObject(Memory.structures)) {
+                    throw new Error('Could not set memory extension for structures');
+                }
+                Memory.structures[this.id] = value;
+            }
+        });
         
         Game.population = {};
         
@@ -12,26 +32,15 @@ var mod = {
         
         Room.prototype.init = function(){
             // Room
-            log += 'Extending Room "' + this.name + '":';
             var self = this;
             //this.id = this.name;
-            
-            // Map Memory
-            this.memory = (Memory.rooms && Memory.rooms[this.name] ? Memory.rooms[this.name] : { 
-                hostileIds : []
-            });
-            // Memory Setter
-            this.setMemory = function(obj){
-                if( !Memory.rooms ) Memory.rooms = {};
-                Memory.rooms[this.name] = obj;
-            }
             
             // Construction Sites
             this.constructionSites = {
                 order: [], // ids, ordered descending by remaining progress
                 count: 0
             };
-            _.sortBy(this.find(FIND_CONSTRUCTION_SITES), 
+            _.sortBy(this.find(FIND_MY_CONSTRUCTION_SITES), 
                 function(o) { 
                     return o.progress * -1; 
                 }).forEach(function(site){
@@ -40,7 +49,6 @@ var mod = {
                     self.constructionSites.count++;
                     self.constructionSites[site.id] = site; 
                 });
-            log += '\n - ' + this.constructionSites.count + ' construction sites';
             
             // Sources
             this.sourceAccessibleFields = 0;
@@ -55,7 +63,6 @@ var mod = {
                     self.sourceAccessibleFields += source.accessibleFields;
                     self.sourceEnergyAvailable += source.energy;
                 });
-            log += '\n - ' + this.sourceAccessibleFields + ' source access fields';
             
             // RepairableSites
             var coreStructures = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTROLLER];  
@@ -67,7 +74,7 @@ var mod = {
                 order: [], 
                 count: 0
             }
-            _.sortBy(this.find(FIND_STRUCTURES, {
+            _.sortBy(this.find(FIND_MY_STRUCTURES, {
                 filter: (structure) => structure.hits < structure.hitsMax
             }), function(o) { 
                 return o.hits; 
@@ -82,8 +89,6 @@ var mod = {
                     self.creepRepairableSites[struct.id] = struct;
                 }
             });
-                    
-            log += '\n - ' + this.repairableSites.count + ' damaged sites (' + this.creepRepairableSites.count + ' important)';
             
             // Creeps
             this.activities = {}; // of creeps
@@ -120,15 +125,13 @@ var mod = {
                     this.activities[action] = 1;
                 else this.activities[action]++;
                 if( creep.memory.target ){
-                    creep.target = Game.getObjectById(creep.memory.target);
+                    creep.target = Game.getObjectById(creep.memory.target) || Game.spawns[creep.memory.target];
                     if( creep.target != null ){
-                        if( !creep.target.creeps ) creep.target.creeps = [];
-                            creep.target.creeps.push(creep.name);
+                        creep.registerTarget(creep.target);
                     }
                 }
             });
             this.maxPerJob = _.max([1,(self.population.worker || 0)/3.1]);
-            log += '\n - ' + this.creeps.length + ' creeps \n     ' + JSON.stringify(this.activities) + '\n     ' + JSON.stringify(this.population);
             
             this.towers = [];
             this.towerFreeCapacity = 0;
@@ -140,7 +143,6 @@ var mod = {
                 self.towers.push(struct);
                 self.towerFreeCapacity += (struct.energyCapacity - struct.energy);
             });
-            log += '\n - ' + this.towers.length + ' towers with ' + this.towerFreeCapacity + ' free capacity';
             
             this.hostiles = this.find(FIND_HOSTILE_CREEPS);
             this.hostileIds = _.map(this.hostiles, 'id');
@@ -160,7 +162,7 @@ var mod = {
                 invasion: false
             }
             
-            if( this.controller.my ){
+            if( this.controller.my && this.memory.hostileIds ){
                 this.situation.invasion = this.hostiles.length > 0;
                 this.hostileIds.forEach( function(id){
                     if( !self.memory.hostileIds.includes(id) ){
@@ -185,26 +187,14 @@ var mod = {
                 this.memory.storageReport = {
                     tick: Game.time, 
                     time: new Date(Date.now() + 7200000).getTime(),
-                    store: JSON.stringify(this.storage.store)
+                    store: this.storage.store
                 };
-                /*
-                if( !this.memory.history ) this.memory.history = [];
-                this.memory.history.push({
-                    tick: Game.time, 
-                    time: (new Date(Date.now() + 7200000)).toLocaleString(),
-                    store: JSON.stringify(this.storage.store)
-                });
-                if( this.memory.history.length > 10 )
-                    this.memory.history.splice(0, this.memory.history.length-10);
-                */
             }
-            
-            this.setMemory(this.memory);
         };
         
         Room.prototype.sendReport = function(mail){
                 if( !this.memory.storageReport ) return;
-                var memoryRecord = JSON.parse( this.memory.storageReport.store );
+                var memoryRecord = this.memory.storageReport.store;
                 var currentRecord = this.storage.store;
                 var now = new Date(Date.now() + 7200000);
                 var message = '<b>Storage report</b> for room ' + this.name + '<br/>' + now.toLocaleString() + ' (' + parseInt((now.getTime() - this.memory.storageReport.time)/60000) + ' minutes dif)<br/>';
@@ -221,35 +211,49 @@ var mod = {
                 console.log(message);
         }
         
-        Creep.prototype.getBehaviour = function(){
-            if(this.memory.setup) {
-                return MODULES.creep.behaviour[this.memory.setup];
-                /*
-                if( this.room.situation.noEnergy && this.memory.setup == 'worker'){
-                    return MODULES.creep.behaviour.worker.noEnergy;
+        Object.defineProperty(Creep.prototype, 'behaviour', {
+            configurable: true,
+            get: function() {
+                if(this.memory.setup) {
+                    return MODULES.creep.behaviour[this.memory.setup];
                 }
-                else if( creep.memory.setup == 'ranger' ){
-                    if( this.room.situation.invasion )
-                        return 
-                } else {
-                }
-                */
+                return null;
             }
-            return null;
-        };
+        });
         
         Creep.prototype.run = function(){
             if( !this.spawning ){
-                var behaviour = this.getBehaviour();
+                var behaviour = this.behaviour;
                 if( behaviour ) behaviour.run(this);
             }
+        }
+
+        Creep.prototype.registerTarget = function(target){  
+            if( target == null ) return;
+            if( !this.memory.setup ) return;   
+            if( !target.creeps ) {
+                target.creeps = {};
+            }
+            if( !target.creeps[this.memory.setup] ){
+                target.creeps[this.memory.setup] = [];
+            }
+            if( !target.creeps[this.memory.setup].includes(creep.name) ) 
+                target.creeps[this.memory.setup].push(creep.name);
+        }
+        Creep.prototype.unregisterTarget = function(target){   
+            if( target == null ) return;
+            if( !this.memory.setup ) return;   
+            if( !target.creeps ) return;
+            if( !target.creeps[this.memory.setup] ) return;
+            if( !target.creeps[this.memory.setup].includes(creep.name) ) return;
+
+            target.creeps[this.memory.setup].splice(target.creeps[this.memory.setup].indexOf(creep.name), 1);
         }
         
         _.forEach(Game.rooms, function(room, name){
             //if( room.controller.my )
                 room.init();
         });
-        //if(DEBUG) console.log(log); 
     }
 }
 
