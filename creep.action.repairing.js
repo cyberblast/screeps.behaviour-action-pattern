@@ -1,7 +1,7 @@
 var action = new MODULES.creep.Action();
 
 action.name = 'repairing';
-action.reusePath = 2;
+action.ignoreCreeps = true;
 
 action.isValidAction = function(creep){
     return (creep.carry.energy > 0 && creep.room.creepRepairableSites.count > 0 );

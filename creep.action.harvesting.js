@@ -1,7 +1,6 @@
 var action = new MODULES.creep.Action();
 
 action.name = 'harvesting';
-action.reusePath = 2;
 
 action.isValidAction = function(creep){
     return ( creep.carry.energy < creep.carryCapacity && 

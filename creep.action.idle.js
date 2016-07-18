@@ -2,6 +2,7 @@ var action = new MODULES.creep.Action();
 
 action.name = 'idle';
 action.reusePath = 10;
+action.ignoreCreeps = true;
 
 action.isAddableAction = function(creep){
     return true;

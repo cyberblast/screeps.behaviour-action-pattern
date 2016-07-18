@@ -2,6 +2,8 @@ var mod = {
     Action: function(){
         this.name = null;
         this.reusePath = 5;
+        this.ignoreCreeps = false;
+        this.maxPerTarget = 1,
         
         this.defaultTarget = function(creep){
             var flags = _.sortBy(creep.room.find(FIND_FLAGS, {
@@ -25,7 +27,7 @@ var mod = {
             return creep.room.controller;
         };
         this.defaultAction = function(creep){
-            creep.moveTo(this.defaultTarget(creep), {reusePath: this.reusePath});
+            creep.moveTo(this.defaultTarget(creep), {reusePath: this.reusePath, ignoreCreeps: this.ignoreCreeps});
         };
 
         this.getTargetId = function(target){ 
@@ -50,14 +52,13 @@ var mod = {
         this.isAddableAction = function(creep){
             return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
         };
-        this.maxPerTarget = 1,
         this.isAddableTarget = function(target){ // target is valid to be given to an additional creep
             return (!target.creeps || target.creeps.length < this.maxPerTarget);
         };
 
         this.step = function(creep){     
             if(CHATTY) creep.say(this.name);
-            var moveResult = creep.moveTo(creep.target, {reusePath: this.reusePath});
+            var moveResult = creep.moveTo(creep.target, {reusePath: this.reusePath, ignoreCreeps: this.ignoreCreeps});
             var workResult = this.work(creep);
             if(workResult == OK || moveResult == OK)
                 return;
@@ -86,14 +87,16 @@ var mod = {
         this.globalMeasurement = false;
         this.bodyCosts = function(body){
             var costs = 0;
-            body.forEach(function(part){
-                costs += PART_COSTS[part];
-            });
+            if( body ){
+                body.forEach(function(part){
+                    costs += PART_COSTS[part];
+                });
+            }
             return costs;
         };
         this.multi = function(spawn){ 
             var fixedCosts = this.bodyCosts(this.fixedBody);
-            var multiCosts = this.bodyCosts(this.multiCosts);
+            var multiCosts = this.bodyCosts(this.multiBody);
             return _.min([Math.floor( (spawn.room.energyAvailable-fixedCosts) / multiCosts), this.maxMulti]);
         }; 
         this.multiplicationPartwise = true;
@@ -144,7 +147,7 @@ var mod = {
             var maxCount = this.maxCount(spawn);
             var maxWeight = this.maxWeight(spawn);
             
-            return (room.energyAvailable >= this.defaultBodyCosts && 
+            return (room.energyAvailable >= this.minAbsEnergyAvailable && 
                 room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn)) && maxCount > 0 && maxWeight > 0 && (
                 (!population) || (
                 population.count < maxCount && 

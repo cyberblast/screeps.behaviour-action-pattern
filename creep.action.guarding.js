@@ -2,6 +2,7 @@ var action = new MODULES.creep.Action();
 
 action.name = 'guarding';
 action.reusePath = 10;
+action.ignoreCreeps = true;
 
 action.newTarget = function(creep){ 
     var flags = _.sortBy(_.filter(Game.flags, function(f){ return f.color == FLAG_COLOR.defense; }), 

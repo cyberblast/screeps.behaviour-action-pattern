@@ -1,7 +1,6 @@
 var action = new MODULES.creep.Action();
 
 action.name = 'feeding';
-action.reusePath = 2;
 
 action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 && creep.room.energyAvailable < creep.room.energyCapacityAvailable );

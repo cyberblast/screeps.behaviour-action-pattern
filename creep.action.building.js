@@ -1,7 +1,8 @@
 var action = new MODULES.creep.Action();
 
 action.name = 'building';
-action.reusePath = 2;
+action.ignoreCreeps = true;
+
 action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 && creep.room.constructionSites.count > 0 );
 };

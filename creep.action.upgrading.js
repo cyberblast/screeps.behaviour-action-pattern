@@ -1,7 +1,7 @@
 var action = new MODULES.creep.Action();
 
 action.name = 'upgrading';
-action.reusePath = 2;
+action.ignoreCreeps = true;
 
 action.isValidAction = function(creep){
     return creep.carry.energy > 0 && creep.room.sourceEnergyAvailable > 0;
