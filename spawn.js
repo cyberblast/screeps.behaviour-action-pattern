@@ -16,30 +16,30 @@ var mod = {
             if( !spawn.busy && set.isValidSetup(spawn) ){
                 var params =  set.buildParams(spawn);
                 var newName = spawn.createCreep(params.parts, params.id, params);
-                if( set.id == newName ){
+                if( params.id == newName ){
                     spawn.busy = true;
-                    if(!spawn.room.population[set.setup]){
-                        spawn.room.population[set.setup] = {
-                            weight: set.cost, 
+                    if(!spawn.room.population[params.setup]){
+                        spawn.room.population[params.setup] = {
+                            weight: params.cost, 
                             count : 1
                         };
                     }
                     else {
-                        spawn.room.population[set.setup].count++;
-                        spawn.room.population[set.setup].weight += set.cost;
+                        spawn.room.population[params.setup].count++;
+                        spawn.room.population[params.setup].weight += params.cost;
                     }
-                    if(!Game.population[set.setup]){
-                        Game.population[set.setup] = {
-                            weight: set.cost, 
+                    if(!Game.population[params.setup]){
+                        Game.population[params.setup] = {
+                            weight: params.cost, 
                             count : 1
                         };
                     }
                     else {
-                        Game.population[set.setup].count++;
-                        Game.population[set.setup].weight += set.cost;
+                        Game.population[params.setup].count++;
+                        Game.population[params.setup].weight += params.cost;
                     }
                 }
-                console.log(set.id == newName || ERROR_CODE(newName) == undefined ? 
+                console.log(params.id == newName || ERROR_CODE(newName) == undefined ? 
                     spawn.name + ' > Good morning ' + newName + '!': 
                     spawn.name + ' > Offspring failed: ' + ERROR_CODE(newName));
             }
