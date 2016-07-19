@@ -74,11 +74,10 @@ var mod = {
                 order: [], 
                 count: 0
             }
-            _.sortBy(this.find(FIND_MY_STRUCTURES, {
-                filter: (structure) => structure.hits < structure.hitsMax
-            }), function(o) { 
-                return o.hits; 
-            }).forEach(function(struct){
+            _.sortBy(this.find(FIND_STRUCTURES, {
+                filter: (structure) => structure.hits < structure.hitsMax }), 
+                'hits'
+            ).forEach(function(struct){
                 struct.creeps = [];
                 self.repairableSites.order.push(struct.id);
                 self.repairableSites.count++;

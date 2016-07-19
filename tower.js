@@ -28,6 +28,21 @@ var mod = {
                 return;
             } 
 
+            // urgend Repair
+            if( (tower.room.creepRepairableSites.count > 0) ) {
+                for( var iSite = 0; iSite < tower.room.creepRepairableSites.count; iSite++){
+                    var site = tower.room.creepRepairableSites[tower.room.creepRepairableSites.order[iSite]];
+                    
+                    if(site.towers == null || site.towers.length == 0){
+                        if( site.towers == null ) 
+                            site.towers = [];
+                        site.towers.push(tower.id);
+                        tower.repair(site);
+                        return;
+                    }
+                }
+            }
+            
             // Attack
             /*
             var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
@@ -47,9 +62,11 @@ var mod = {
             if( (tower.room.repairableSites.count > 0) && (tower.energy > (tower.energyCapacity * (1-(0.2/tower.room.towers.length)))) ) {
                 for( var iSite = 0; iSite < tower.room.repairableSites.count; iSite++){
                     var site = tower.room.repairableSites[tower.room.repairableSites.order[iSite]];
+                    
                     if(site.towers == null || site.towers.length == 0){
-                        if( site.towers == null )site.towers = [];
-                            site.towers.push(tower.id);
+                        if( site.towers == null ) 
+                            site.towers = [];
+                        site.towers.push(tower.id);
                         tower.repair(site);
                         return;
                     }
