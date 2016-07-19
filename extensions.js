@@ -189,30 +189,40 @@ var mod = {
             }
             this.memory.hostileIds = this.hostileIds;
             
-            if( this.storage && Game.time % 1000 == 0 ) {
+            if( Game.time % TIME_REPORT == 0 ) {
                 this.sendReport(true);
-                this.memory.storageReport = {
+                this.memory.report = {
                     tick: Game.time, 
                     time: new Date(Date.now() + 7200000).getTime(),
-                    store: this.storage.store
+                    store: this.storage ? this.storage.store : null, 
+                    controllerProgress: this.controller.progress, 
+                    controllerProgressTotal: this.controller.progressTotal
                 };
             }
         };
         
         Room.prototype.sendReport = function(mail){
-                if( !this.memory.storageReport ) return;
-                var memoryRecord = this.memory.storageReport.store;
-                var currentRecord = this.storage.store;
+                if( !this.memory.report ) return;
                 var now = new Date(Date.now() + 7200000);
-                var message = '<b>Storage report</b> (<a href="https://screeps.com/a/#!/room/' + this.name + '">' + this.name + '</a>)<br/>' + now.toLocaleString() + ' (' + parseInt((now.getTime() - this.memory.storageReport.time)/60000) + ' minutes dif)<br/>';
-                for( var type in memoryRecord ){ // changed & depleted
-                    var dif = (currentRecord[type] ? currentRecord[type] - memoryRecord[type] : memoryRecord[type] * -1);
-                    message += type + ': ' + (currentRecord[type] || 0) + ' (' + (dif > -1 ? '+' : '' ) + dif + ')<br/>';  
-                }
-                // new
-                for( var type in currentRecord ){
-                    if(!memoryRecord[type])
-                        message += type + ': ' + currentRecord[type] + ' (' + currentRecord[type] + ')<br/>';  
+                var message = '<h4><b>Status report <a href="https://screeps.com/a/#!/room/' + this.name + '">' + this.name + '</a></b></h4>' + now.toLocaleString() + ' (' + parseInt((now.getTime() - this.memory.report.time)/60000) + ' minutes dif)<br/>';
+                
+                message += "<u>Controller</u><br/>";
+                var cdif = this.controller.progress < this.memory.report.controllerProgress ? (this.memory.report.controllerProgressTotal - this.memory.report.controllerProgress) + this.controller.progress : (this.controller.progress - this.memory.report.controllerProgress); 
+                message += '   Level ' + this.controller.level + ', ' + this.controller.progress + '/' + this.controller.progressTotal + ' (+' + cdif + ')<br/>';
+
+                if( this.storage && this.memory.report.store ){
+                    var memoryStoreRecord = this.memory.report.store;
+                    var currentRecord = this.storage.store;
+                    message += "<u>Storage</u><br/>";
+                    for( var type in memoryStoreRecord ){ // changed & depleted
+                        var dif = (currentRecord[type] ? currentRecord[type] - memoryStoreRecord[type] : memoryStoreRecord[type] * -1);
+                        message += '   ' + type + ': ' + (currentRecord[type] || 0) + ' (' + (dif > -1 ? '+' : '' ) + dif + ')<br/>';  
+                    }
+                    // new
+                    for( var type in currentRecord ){
+                        if(!memoryStoreRecord[type])
+                            message += '   ' + type + ': ' + currentRecord[type] + ' (' + currentRecord[type] + ')<br/>';  
+                    }
                 }
                 if( mail ) Game.notify(message);
                 console.log(message);

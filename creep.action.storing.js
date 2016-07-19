@@ -6,7 +6,7 @@ action.isValidAction = function(creep){
     return ( creep.room.storage != null && _.sum(creep.carry) > 0 && 
     ( _.sum(creep.carry) > creep.carry.energy || (
     (creep.room.activities.upgrading != null && (creep.room.activities.upgrading >= 1)) &&
-    creep.room.sourceEnergyAvailable > 0 && creep.room.storage.store.energy < 500001)));
+    creep.room.sourceEnergyAvailable > 0 && creep.room.storage.store.energy <= LIMIT_STORAGE_ENERGY)));
 };
 action.isValidTarget = function(target){
     return ((target != null) && (target.store != null) && target.sum < target.storeCapacity);

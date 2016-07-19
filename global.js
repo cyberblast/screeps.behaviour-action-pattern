@@ -3,6 +3,8 @@ var mod = {
         global.CHATTY = true;
         global.DEBUG = true;
         global.LIMIT_CREEP_REPAIRING = 1000;
+        global.LIMIT_STORAGE_ENERGY = 800000;
+        global.TIME_REPORT = 5000;
         global.MODULES = {};
         global.MODULES.creep = require('creep');
         global.MODULES.creep.action = {
@@ -73,8 +75,8 @@ var mod = {
         };
         global.FLAG_COLOR = {
             invade: COLOR_RED,
-            melee: COLOR_PURPLE,
-            ranger: COLOR_BLUE,
+            //melee: COLOR_PURPLE,
+            //ranger: COLOR_BLUE,
             //COLOR_CYAN,
             idle: COLOR_GREEN,
             defense: COLOR_YELLOW,
