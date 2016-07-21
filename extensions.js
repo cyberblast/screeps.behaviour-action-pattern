@@ -87,7 +87,7 @@ var mod = {
                 }
             });
             
-            this.maxPerJob = _.max([1,(self.population.worker ? self.population.worker.count : 0)/3.1]);
+            this.maxPerJob = _.max([1,(self.population && self.population.worker ? self.population.worker.count : 0)/3.1]);
             
             this.towers = [];
             this.towerFreeCapacity = 0;
