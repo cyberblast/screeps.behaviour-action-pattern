@@ -73,7 +73,7 @@ var mod = {
                 var creepName = creep.name;
 
                 // register creep
-                if( creep.ticksToLive > spawning ) {
+                if( creep.ticksToLive === undefined || creep.ticksToLive > spawning ) {
                     this.registerCreepSetup(room, setup, cost);
                 }
                 this.registerCreepActivity(room, creep, setup, action, targetId);
