@@ -22,7 +22,7 @@ var mod = {
             Game.population[setup].weight += cost;
         }
     },
-    registerCreepActivity: function(room, setup, action, targetId, creepName){
+    registerCreepActivity: function(room, creep, setup, action, targetId){
         if( room.activities === undefined ) room.activities = {};
         if(room.activities[action] === undefined )
             room.activities[action] = 1;
@@ -35,8 +35,8 @@ var mod = {
                 if( target.creeps[setup] === undefined){
                     target.creeps[setup] = [];
                 }
-                if( !target.creeps[setup].includes(creepName) ) 
-                    creep.target.creeps[setup].push(creepName);
+                if( !target.creeps[setup].includes(creep.name) ) 
+                    target.creeps[setup].push(creep.name);
                 // TODO: also register weight
                 
                 creep.target = target;
@@ -76,7 +76,7 @@ var mod = {
                 if( creep.ticksToLive > spawning ) {
                     this.registerCreepSetup(room, setup, cost);
                 }
-                this.registerCreepActivity(room, setup, action, targetId, creepName);
+                this.registerCreepActivity(room, creep, setup, action, targetId);
             }
         }            
     }
