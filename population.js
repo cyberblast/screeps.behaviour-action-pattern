@@ -3,7 +3,7 @@ var mod = {
         if(room.population === undefined) room.population = {};
         if(room.population[setup] === undefined){
             room.population[setup] = {
-                weight: creep.memory.cost, 
+                weight: cost, 
                 count : 1
             };
         }
