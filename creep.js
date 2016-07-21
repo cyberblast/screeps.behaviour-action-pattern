@@ -127,8 +127,13 @@ var mod = {
         };
         this.buildParams = function(spawn){
             var memory = {
+                setup: null,
                 id: null, 
-                parts: []
+                parts: [], 
+                cost: 0, 
+                mother: null, 
+                home: null, 
+                spawning: 1
             };
             
             memory.setup = this.type;
@@ -234,7 +239,14 @@ var mod = {
                 console.log(Memory.creeps[creepName].mother + ' > Good night ' + creepName + '!');
                 delete Memory.creeps[creepName];
             } 
-            else creep.run();
+            else {
+                if( creep.spawning ) {
+                    if( creep.memory.spawning === undefined )
+                        creep.memory.spawning = 1;
+                    else creep.memory.spawning++;
+                }
+                else creep.run();
+            }
         }
     }
 }

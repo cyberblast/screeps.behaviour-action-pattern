@@ -1,5 +1,5 @@
 var mod = {
-    init: function(){
+    loop: function(){
 
         Object.defineProperty(Structure.prototype, 'memory', {
             configurable: true,
@@ -22,8 +22,6 @@ var mod = {
                 Memory.structures[this.id] = value;
             }
         });
-        
-        Game.population = {};
         
         Source.prototype.init = function() {
             var fields = this.room.lookForAtArea(LOOK_TERRAIN, this.pos.y-1, this.pos.x-1, this.pos.y+1, this.pos.x+1, true);
@@ -89,55 +87,7 @@ var mod = {
                 }
             });
             
-            // Creeps
-            this.activities = {}; // of creeps
-            this.population = {};
-            this.creeps = this.find(FIND_MY_CREEPS);
-            this.creeps.forEach((creep) => {
-                var setup = 'unknown';
-                if( creep.memory.setup )
-                    setup = creep.memory.setup;
-                if(!this.population[setup]){
-                    this.population[setup] = {
-                        weight: creep.memory.cost, 
-                        count : 1
-                    };
-                }
-                else {
-                    this.population[setup].count++;
-                    this.population[setup].weight += creep.memory.cost;
-                }
-                if(!Game.population[setup]){
-                    Game.population[setup] = {
-                        weight: creep.memory.cost, 
-                        count : 1
-                    };
-                }
-                else {
-                    Game.population[setup].count++;
-                    Game.population[setup].weight += creep.memory.cost;
-                }
-                if( creep.memory.action ){
-                    var action = creep.memory.action;
-                } else action = 'idle';
-                if(!this.activities[action])
-                    this.activities[action] = 1;
-                else this.activities[action]++;
-                if( creep.memory.target ){
-                    creep.target = Game.getObjectById(creep.memory.target) || Game.spawns[creep.memory.target] || Game.flags[creep.memory.target];
-                    if( creep.target && creep.memory.setup){
-                        if( !creep.target.creeps ) {
-                            creep.target.creeps = {};
-                        }
-                        if( !creep.target.creeps[creep.memory.setup] ){
-                            creep.target.creeps[creep.memory.setup] = [];
-                        }
-                        if( !creep.target.creeps[creep.memory.setup].includes(creep.name) ) 
-                            creep.target.creeps[creep.memory.setup].push(creep.name);
-                    }
-                }
-            });
-            this.maxPerJob = _.max([1,(self.population.worker.count || 0)/3.1]);
+            this.maxPerJob = _.max([1,(self.population.worker ? self.population.worker.count : 0)/3.1]);
             
             this.towers = [];
             this.towerFreeCapacity = 0;
@@ -174,14 +124,14 @@ var mod = {
                     if( !self.memory.hostileIds.includes(id) ){
                         var creep = Game.getObjectById(id);
                         var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
-                        Game.notify(message);
+                        Game.notify(message, INTRUDER_REPORT_DELAY);
                         console.log(message);
                     }
                 });
                 this.memory.hostileIds.forEach( function(id){
                     if( !self.hostileIds.includes(id) ){
-                        var message = 'Hostile intruder ' + id  + ' is gone'; 
-                        Game.notify(message);
+                        var message = 'Hostile intruder ' + id  + ' gone at ' + Game.time + ' ticks.'; 
+                        Game.notify(message, INTRUDER_REPORT_DELAY);
                         console.log(message);
                     }
                 });
@@ -281,12 +231,7 @@ var mod = {
             }
             if( !target.creeps[this.memory.setup].includes(this.name) ) 
                 target.creeps[this.memory.setup].push(this.name);
-        }
-        
-        _.forEach(Game.rooms, function(room, name){
-            //if( room.controller.my )
-                room.init();
-        });
+        }        
     }
 }
 

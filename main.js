@@ -1,7 +1,7 @@
 module.exports.loop = function () {
     require('global').init();
-    require('extensions').init();
-    
+    MODULES.extensions.loop();    
+    MODULES.population.loop();
     MODULES.creep.loop();        
     if( Game.time % 10 == 0 ) 
         MODULES.spawn.loop();
