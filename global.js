@@ -15,7 +15,7 @@ var mod = {
             defense: COLOR_YELLOW,  // point to gather troops
             destroy: COLOR_ORANGE, // destroy whats standing here
             //COLOR_BROWN,
-            //COLOR_GREY,
+            settle: COLOR_GREY, // send pioneers to build spawn
             claim: COLOR_WHITE // claim this room
         };
         global.MODULES = {};
@@ -33,6 +33,7 @@ var mod = {
             invading: require('creep.action.invading'),
             picking: require('creep.action.picking'), 
             repairing: require('creep.action.repairing'), 
+            settling: require('creep.action.settling'), 
             storing: require('creep.action.storing'), 
             upgrading: require('creep.action.upgrading'), 
             withdrawing: require('creep.action.withdrawing')
@@ -41,6 +42,7 @@ var mod = {
             claimer: require('creep.behaviour.claimer'),
             healer: require('creep.behaviour.healer'),
             melee: require('creep.behaviour.melee'),
+            pioneer: require('creep.behaviour.pioneer'),
             ranger: require('creep.behaviour.ranger'),
             worker: require('creep.behaviour.worker')
         };
@@ -48,6 +50,7 @@ var mod = {
             claimer: require('creep.setup.claimer'),
             healer: require('creep.setup.healer'), 
             melee: require('creep.setup.melee'),
+            pioneer: require('creep.setup.pioneer'),
             ranger: require('creep.setup.ranger'),
             worker: require('creep.setup.worker')
         };

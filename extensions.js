@@ -99,6 +99,9 @@ var mod = {
                 self.towers.push(struct);
                 self.towerFreeCapacity += (struct.energyCapacity - struct.energy);
             });
+
+            // Spawns
+            this.spawns = this.find(FIND_MY_SPAWNS);
             
             this.hostiles = this.find(FIND_HOSTILE_CREEPS);
             this.hostileIds = _.map(this.hostiles, 'id');

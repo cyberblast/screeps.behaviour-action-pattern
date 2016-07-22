@@ -16,7 +16,7 @@ var mod = {
         ].forEach(function(set) {
             if( !spawn.busy && set.isValidSetup(spawn) ){
                 var params =  set.buildParams(spawn);
-                if( DEBUG ) console.log(spawn.name + ' > Spawning new ' + params.setup + ' @ ' + (Game.population[params.setup] ? Game.population[params.setup].count : 0) + ' total already existing');
+                //if( DEBUG ) console.log(spawn.name + ' > Spawning new ' + params.setup + ' @ ' + (Game.population[params.setup] ? Game.population[params.setup].count : 0) + ' total already existing');
                 var newName = spawn.createCreep(params.parts, params.id, params);
                 if( params.id == newName ){
                     spawn.busy = true;
@@ -26,7 +26,7 @@ var mod = {
                 console.log(params.id == newName || ERROR_CODE(newName) === undefined ? 
                     spawn.name + ' > Good morning ' + newName + '!': 
                     spawn.name + ' > Offspring failed: ' + ERROR_CODE(newName));
-                if( DEBUG ) console.log(spawn.name + ' > New total population of ' + params.setup + ': ' + (Game.population[params.setup] ? Game.population[params.setup].count : 0) + '<br/> ');
+                //if( DEBUG ) console.log(spawn.name + ' > New total population of ' + params.setup + ': ' + (Game.population[params.setup] ? Game.population[params.setup].count : 0) + '<br/> ');
             }
         });
     }

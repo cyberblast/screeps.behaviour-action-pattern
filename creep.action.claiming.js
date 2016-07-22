@@ -17,7 +17,7 @@ action.newTarget = function(creep){
         return flag;
     
     if( flag.room.controller.my ) {
-        flag.remove();
+        flag.setColor(FLAG_COLOR.settle);
         return null;
     }
     else {
