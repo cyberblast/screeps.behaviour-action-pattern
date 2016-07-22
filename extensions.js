@@ -187,9 +187,9 @@ var mod = {
             }
         });
         
-        Creep.prototype.run = function(){
+        Creep.prototype.run = function(behaviour){
             if( !this.spawning ){
-                var behaviour = this.behaviour;
+                if(!behaviour) behaviour = this.behaviour;
                 if( behaviour ) behaviour.run(this);
             }
         }

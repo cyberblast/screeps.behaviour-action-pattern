@@ -1,7 +1,7 @@
 var action = new MODULES.creep.Action();
 
-action.name = 'claiming';
-action.reusePath = 10;
+action.name = 'settling';
+action.reusePath = 15;
 
 action.isValidTarget = function(target){ return true; }; 
 action.isAddableAction = function(){ return true; };
@@ -12,17 +12,9 @@ action.newTarget = function(creep){
     if( !flag ){
         return null;
     }
-
+ 
     if( !flag.room || flag.room.name != creep.room.name)
-        return flag;
-    
-    if( flag.room.controller.my ) {
-        flag.remove();
-        return null;
-    }
-    else {
-        return flag.room.controller;
-    }
+        return flag;    
 }
 
 action.step = function(creep){
@@ -35,19 +27,6 @@ action.step = function(creep){
     }
     
     var moveResult = creep.moveTo(creep.target, {reusePath: this.reusePath});
-    var workResult;
-    if( creep.target.owner && !creep.target.my ){
-        workResult = creep.attackController(creep.target);
-        // creep.say('Attacking');
-    }
-    else {
-        workResult = creep.claimController(creep.target);
-        // creep.say('Claiming');
-    }
-    if( workResult == ERR_GCL_NOT_ENOUGH ){
-        workResult = creep.reserveController(creep.target);
-        // creep.say('Reserving');
-    }
 }
 
 module.exports = action;

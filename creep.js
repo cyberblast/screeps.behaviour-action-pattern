@@ -88,6 +88,7 @@ var mod = {
         this.maxMulti = 6;
         this.minControllerLevel = 0;
         this.globalMeasurement = false;
+        this.multiplicationPartwise = true;
         this.bodyCosts = function(body){
             var costs = 0;
             if( body ){
@@ -102,7 +103,6 @@ var mod = {
             var multiCosts = this.bodyCosts(this.multiBody);
             return _.min([Math.floor( (spawn.room.energyAvailable-fixedCosts) / multiCosts), this.maxMulti]);
         }; 
-        this.multiplicationPartwise = true;
         this.setParamParts = function(spawn){
             var parts = [];
             var multi = this.multi(spawn);
