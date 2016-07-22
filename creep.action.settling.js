@@ -8,7 +8,12 @@ action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 
 action.newTarget = function(creep){
-    var flag = _.find(Game.flags, {'color': FLAG_COLOR.claim });    
+    var flag = undefined;
+    if( creep.memory.setup == 'claimer') 
+        flag = _.find(Game.flags, {'color': FLAG_COLOR.claim });
+    if( creep.memory.setup == 'pioneer') 
+        flag = _.find(Game.flags, {'color': FLAG_COLOR.settle });
+
     if( !flag ){
         return null;
     }
