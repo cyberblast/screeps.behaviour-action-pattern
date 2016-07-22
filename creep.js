@@ -59,7 +59,7 @@ var mod = {
         };
 
         this.step = function(creep){     
-            if(CHATTY) creep.say(this.name);
+            if(CHATTY) creep.say(this.name, SAY_PUBLIC);
             var moveResult = creep.moveTo(creep.target, {reusePath: this.reusePath, ignoreCreeps: this.ignoreCreeps});
             var workResult = this.work(creep);
             if(workResult == OK || moveResult == OK)

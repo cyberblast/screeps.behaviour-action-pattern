@@ -1,6 +1,7 @@
 var mod = {
     init: function(){
-        global.CHATTY = false; // creeps like talking (say what they do)
+        global.CHATTY = false; // creeps like talking 
+        global.SAY_PUBLIC = true; // creeps talk public
         global.DEBUG = true; // gimme some more details
         global.LIMIT_CREEP_REPAIRING = 1000; // urgent repair when hits below
         global.LIMIT_STORAGE_ENERGY = 600000; // stop storing energy when reached

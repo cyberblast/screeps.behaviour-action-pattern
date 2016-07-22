@@ -11,7 +11,7 @@ setup.minEnergyAvailable = function(){
     return 0.9;
 }
 setup.maxCount = function(spawn){
-    return _.filter(Game.flags, function(flag){return flag.color == FLAG_COLOR.claim && flag.room.controller.reservation.ticksToEnd < 4000}).length;
+    return _.filter(Game.flags, function(flag){return flag.color == FLAG_COLOR.claim && (!flag.room || flag.room.controller.reservation.ticksToEnd < 4000)}).length;
 }
 setup.maxWeight = function(spawn){
     return null;//1300;
