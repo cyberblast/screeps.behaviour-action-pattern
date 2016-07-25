@@ -28,10 +28,10 @@ var mod = {
             this.accessibleFields = 9-_.countBy( fields , "terrain" ).wall;
         };
         
+        Room.prototype.population = {};
         Room.prototype.init = function(){
             // Room
             var self = this;
-            this.population = {};
             this.sourceAccessibleFields = 0;
             this.sourceEnergyAvailable = 0;
             this.sources = [];            
