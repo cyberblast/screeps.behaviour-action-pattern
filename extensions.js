@@ -31,13 +31,26 @@ var mod = {
         Room.prototype.init = function(){
             // Room
             var self = this;
-            //this.id = this.name;
-            
-            // Construction Sites
+            this.population = {};
+            this.sourceAccessibleFields = 0;
+            this.sourceEnergyAvailable = 0;
+            this.sources = [];            
             this.constructionSites = {
                 order: [], // ids, ordered descending by remaining progress
                 count: 0
             };
+            this.repairableSites = {
+                order: [], 
+                count: 0
+            }
+            this.creepRepairableSites = {
+                order: [], 
+                count: 0
+            }
+            this.towers = [];
+            this.towerFreeCapacity = 0;
+
+            // Construction Sites
             _.sortBy(this.find(FIND_MY_CONSTRUCTION_SITES), 
                 function(o) { 
                     return o.progress * -1; 
@@ -49,9 +62,6 @@ var mod = {
                 });
             
             // Sources
-            this.sourceAccessibleFields = 0;
-            this.sourceEnergyAvailable = 0;
-            this.sources = [];
             _.sortBy(this.find(FIND_SOURCES), 
                 function(o) { 
                     o.init();
@@ -64,14 +74,6 @@ var mod = {
             
             // RepairableSites
             var coreStructures = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTROLLER];  
-            this.repairableSites = {
-                order: [], 
-                count: 0
-            }
-            this.creepRepairableSites = {
-                order: [], 
-                count: 0
-            }
             _.sortBy(this.find(FIND_STRUCTURES, {
                 filter: (structure) => structure.hits < structure.hitsMax }), 
                 'hits'
@@ -89,8 +91,7 @@ var mod = {
             
             this.maxPerJob = _.max([1,(self.population && self.population.worker ? self.population.worker.count : 0)/3.1]);
             
-            this.towers = [];
-            this.towerFreeCapacity = 0;
+            // Towers
             _.sortBy(this.find(FIND_MY_STRUCTURES, {
                 filter: {structureType: STRUCTURE_TOWER}
             }), function(o) { 
@@ -103,6 +104,7 @@ var mod = {
             // Spawns
             this.spawns = this.find(FIND_MY_SPAWNS);
             
+            // Hostiles
             this.hostiles = this.find(FIND_HOSTILE_CREEPS);
             this.hostileIds = _.map(this.hostiles, 'id');
             this.hostilesHeal = this.find(FIND_HOSTILE_CREEPS, {
@@ -111,6 +113,7 @@ var mod = {
                 }
             });
             
+            // storage
             if(this.storage && this.storage.store){
                 this.storage.sum = _.sum(this.storage.store);
             }
@@ -178,7 +181,7 @@ var mod = {
                 }
                 if( mail ) Game.notify(message);
                 console.log(message);
-        }
+        };
         
         Object.defineProperty(Creep.prototype, 'behaviour', {
             configurable: true,
@@ -195,7 +198,7 @@ var mod = {
                 if(!behaviour) behaviour = this.behaviour;
                 if( behaviour ) behaviour.run(this);
             }
-        }
+        };
 
         Creep.prototype.unregisterTarget = function(){   
             var target = this.target;
@@ -210,7 +213,7 @@ var mod = {
             if( !target.creeps[this.memory.setup].includes(this.name) ) return;
 
             target.creeps[this.memory.setup].splice(target.creeps[this.memory.setup].indexOf(this.name), 1);
-        }
+        };
         Creep.prototype.registerTarget = function(target){ 
             if( !target ) console.log(JSON.stringify(this.memory));
             //precondition 
@@ -234,7 +237,7 @@ var mod = {
             }
             if( !target.creeps[this.memory.setup].includes(this.name) ) 
                 target.creeps[this.memory.setup].push(this.name);
-        }        
+        };       
     }
 }
 
