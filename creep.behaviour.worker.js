@@ -1,59 +1,97 @@
-var roleHarvester = {
-    actions: {
-        upgrading: require('creep.action.upgrading'), 
-        building: require('creep.action.building'), 
-        storing: require('creep.action.storing'), 
-        harvesting: require('creep.action.harvesting')
-    },
-    run: function(creep) {
-        
-	    if((creep.memory.action == 'upgrading' || creep.memory.action == 'storing' || creep.memory.action == 'building') && creep.carry.energy == 0) { 
-            // finished work, get some energy
-            creep.memory.action = 'harvesting';
-            //creep.memory.role = null;
-            return false;
-	    }
+var behaviour = new MODULES.creep.Behaviour();
 
-	    if(creep.memory.action == 'harvesting' && creep.carry.energy == creep.carryCapacity) { 
-            // finished harvesting
-            // clear harvest source target
-            if( creep.memory.source != null){ 
-                if(creep.room.memory.sources[creep.memory.source]) {
-                    var index = creep.room.memory.sources[creep.memory.source].creeps.indexOf(creep.id);
-                    if( index > -1 ) creep.room.memory.sources[creep.memory.source].creeps.splice(index);
-                }
-                creep.memory.source = null;
-	        }
-            if(creep.memory.cost)
-                creep.room.memory.creeps[creep.memory.role] -= creep.memory.cost;
+behaviour.run = function(creep) {
+    // Harvesting completed / energy refilled
+    if(creep.memory.action == 'idle' || (_.sum(creep.carry) == creep.carryCapacity && (creep.memory.action == 'harvesting' || creep.memory.action == 'pickup' || creep.memory.action == 'withdrawing'))) {
+        creep.unregisterTarget();
+        creep.memory.action = null;
+    } 
+
+    // Has assigned Action
+    if( creep.memory.action ){
+        if( !this.validateMemoryAction(creep) ){
+            creep.room.activities[creep.memory.action]--;
             creep.memory.action = null;
-            creep.memory.role = null;
-            return false;
-	    } 
-
-        if(creep.memory.action == null){
-            if( creep.carry.energy < creep.carryCapacity ) creep.memory.action = 'harvesting';
-            else if( creep.memory.role == 'builder') creep.memory.action = 'building';
-            else if( creep.memory.role == 'harvester') creep.memory.action = 'storing';
-            else if( creep.memory.role == 'upgrader') creep.memory.action = 'upgrading';
+            creep.action = null;
         }
+    }
+    
+    // Assign next Action
+    if( !creep.memory.action ) {
+        this.nextAction(creep);
+    }
 
-        if(creep.memory.action == 'harvesting'){
-            return this.actions.harvesting.run(creep); 
-        }
-
-        var busy = true;
-        if(creep.memory.action == 'storing' || !busy)
-            busy = this.actions.storing.run(creep);
-
-        if(creep.memory.action == 'building' || !busy)
-            busy = this.actions.building.run(creep);
-
-        if(creep.memory.action == 'upgrading' || !busy)
-            busy = this.actions.upgrading.run(creep);
-
-        return busy;
-	}
+    // Do some work
+    if( creep.action && creep.target ) {
+        creep.action.step(creep);
+    } 
 };
 
-module.exports = roleHarvester;
+behaviour.nextAction = function(creep){
+    creep.unregisterTarget();
+    
+    // Last Action completed / No more energy
+    if( creep.carry.energy == 0 && creep.memory.action != 'harvesting' && creep.memory.action != 'pickup' && creep.memory.action != 'withdrawing') { 
+        if( creep.memory.action != null ) creep.room.activities[creep.memory.action]--;
+        
+        if( _.sum(creep.carry) > creep.carry.energy ) {
+            if( this.assignActionWithTarget(creep, MODULES.creep.action.storing) ) 
+                return;
+        }
+        
+        var actions = creep.room.situation.invasion ?
+        [MODULES.creep.action.withdrawing,
+            MODULES.creep.action.harvesting] : 
+        [MODULES.creep.action.picking,
+            MODULES.creep.action.harvesting,
+            MODULES.creep.action.withdrawing];
+            
+        for(var iAction = 0; iAction < actions.length; iAction++) {                
+            if(actions[iAction].isValidAction(creep) && 
+            actions[iAction].isAddableAction(creep) && 
+            this.assignActionWithTarget(creep, actions[iAction]))
+                return;
+        }
+        
+        // idle
+        this.assignActionWithTarget(creep, MODULES.creep.action.idle);
+    }
+    
+    else {	        
+        // urgent upgrading 
+        if( creep.room.ticksToDowngrade < 2000 ) {
+            if( this.assignActionWithTarget(creep, MODULES.creep.action.upgrading) ) 
+                return;
+        }
+        
+        var priority;
+        if( creep.room.situation.invasion ) priority = [
+            MODULES.creep.action.feeding, 
+            MODULES.creep.action.fueling, 
+            MODULES.creep.action.repairing, 
+            MODULES.creep.action.building, 
+            MODULES.creep.action.storing, 
+            MODULES.creep.action.upgrading];
+        else priority = [
+            MODULES.creep.action.picking,
+            MODULES.creep.action.feeding, 
+            MODULES.creep.action.repairing, 
+            MODULES.creep.action.building, 
+            MODULES.creep.action.fueling, 
+            MODULES.creep.action.storing, 
+            MODULES.creep.action.upgrading];
+        
+        for(var iAction = 0; iAction < priority.length; iAction++) {
+            
+            if(priority[iAction].isValidAction(creep) && 
+            priority[iAction].isAddableAction(creep) && 
+            this.assignActionWithTarget(creep, priority[iAction]))
+                return;
+        }
+        
+        // idle
+        this.assignActionWithTarget(creep, MODULES.creep.action.idle);
+    }
+};
+
+module.exports = behaviour;

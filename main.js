@@ -1,12 +1,10 @@
-var rooms = require('room');
-var creeps = require('creep');
-var spawns = require('spawn');
-var towers = require('tower');
-var strategy = require('strategy.growth');
-
 module.exports.loop = function () {
-    rooms.loop();
-    creeps.loop(strategy);
-    spawns.loop(strategy);
-    towers.loop();
+    require('global').init();
+    MODULES.extensions.loop();  
+    MODULES.population.loop();  
+    MODULES.room.loop();  
+    MODULES.creep.loop();        
+    if( Game.time % 10 == 0 ) 
+        MODULES.spawn.loop();
+    MODULES.tower.loop();
 };

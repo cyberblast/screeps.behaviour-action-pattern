@@ -1,33 +1,34 @@
-var mod = {
-    run: function(creep){
-        creep.memory.action = 'harvesting';        
-        var source = null;
+var action = new MODULES.creep.Action();
 
-        if( creep.memory.source != null) // has source target
-            source = Game.getObjectById(creep.memory.source);
+action.name = 'harvesting';
 
-        if( source == null) { // need source target
-            var sourceId = this.getResourceId(creep.room);
-            if( sourceId != null ){
-                source = Game.getObjectById(sourceId);
-                creep.room.memory.sources[sourceId].creeps.push(creep.id);
-                creep.memory.source = sourceId;
-            } else console.log('No Source found for creep ' + creep.name);
-        } 
+action.isValidAction = function(creep){
+    return ( creep.carry.energy < creep.carryCapacity && 
+    creep.room.sourceEnergyAvailable > 0 && 
+    (creep.memory.action == 'harvesting' || creep.carry.energy == 0));
+};
+action.isValidTarget = function(target){
+    return (target != null && target.energy != null && target.energy > 0);
+};   
+action.isAddableAction = function(){ return true; };
+action.isAddableTarget = function(target){ 
+    return (!target.creeps || !target.creeps.worker || target.creeps.worker.length < (target.accessibleFields*1.5));
+};
 
-        if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(source);
+action.newTarget = function(creep){
+    var target = null;
+    var sourceGuests = 999;
+    for( var iSource = 0; iSource < creep.room.sources.length; iSource++ ){
+        var source = creep.room.sources[iSource];
+        if( this.isValidTarget(source) && this.isAddableTarget(source) && (source.creeps == null || source.creeps.worker == null || source.creeps.worker.length < sourceGuests )){
+            sourceGuests = (source.creeps == null || source.creeps.worker == null) ? 0 : source.creeps.worker.length;
+            target = source;
         }
-        return true;
-    },
-	getResourceId: function(room){
-        for(var iSource in room.memory.sources){
-            var source = room.memory.sources[iSource];
-            //console.log('source' + iSource + ' creeps:' + source.creeps.length + ' of ' + source.maxCreeps);
-            if( (source.creeps.length < Math.floor(source.maxCreeps)) && (Game.getObjectById(iSource).energy > 100)) 
-                return iSource;
-        } return null;
-	}
-}
+    }
+    return target;
+};
+action.work = function(creep){
+    return creep.harvest(creep.target);
+};
 
-module.exports = mod;
+module.exports = action;

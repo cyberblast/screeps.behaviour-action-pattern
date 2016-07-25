@@ -1,28 +1,24 @@
-var mod = {
-    run: function(creep){
-        creep.memory.action = 'building';      
-        var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
-            
-        if(targets.length) {
-            if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(targets[0]);
-            }
-            return true;
-        } else {
-            var closestDamagedStructure = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-                filter: (structure) => structure.hits < structure.hitsMax
-            });
-        
-            if(closestDamagedStructure) {
-                if(creep.repair(closestDamagedStructure) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(closestDamagedStructure);
-                }
-            }
-            return true;
-        } 
-        creep.memory.action = null;
-        return false;
-	}
-}
+var action = new MODULES.creep.Action();
 
-module.exports = mod;
+action.name = 'building';
+action.ignoreCreeps = true;
+
+action.isValidAction = function(creep){
+    return ( creep.carry.energy > 0 && creep.room.constructionSites.count > 0 );
+};
+action.isValidTarget = function(target){
+    return (target != null && target.progress != null && target.room.constructionSites.order.includes(target.id));
+};  
+action.newTarget = function(creep){
+    var self = this;
+    var id = creep.room.constructionSites.order.find(function(id){
+        return self.isAddableTarget(creep.room.constructionSites[id])
+    });
+    if( id ) return creep.room.constructionSites[id];
+    else return null;
+};
+action.work = function(creep){
+    return creep.build(creep.target);
+};
+
+module.exports = action;

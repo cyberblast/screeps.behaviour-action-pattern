@@ -1,26 +1,34 @@
-
 var mod = {
     self: this,
-    loop: function(strategy){
+    loop: function(){
         for(var iSpawn in Game.spawns){
-            this.createCreep(Game.spawns[iSpawn], strategy);
+            var spawn = Game.spawns[iSpawn];
+            if( !spawn.spawning )
+                this.createCreep(spawn);
         }
     },
-    createCreep: function(spawn, strategy){
-        if (spawn.room.energyAvailable > strategy.minBuildEnergy && 
-            spawn.room.find(FIND_CREEPS).length < strategy.maxSpawnCount) {
-
-            var build = strategy.creepSetup(spawn);
-            if (build && build.parts.length > 0) {
-                var name = null;
-                for( var son = 1; name == null || Game.creeps[name]; son++ ) {
-                    name = build.setup + '.' + build.cost + '.' + son;
+    createCreep: function(spawn){
+        [MODULES.creep.setup.worker, 
+        MODULES.creep.setup.claimer, 
+        MODULES.creep.setup.melee,
+        MODULES.creep.setup.ranger
+        //MODULES.creep.setup.healer
+        ].forEach(function(set) {
+            if( !spawn.busy && set.isValidSetup(spawn) ){
+                var params =  set.buildParams(spawn);
+                //if( DEBUG ) console.log(spawn.name + ' > Spawning new ' + params.setup + ' @ ' + (Game.population[params.setup] ? Game.population[params.setup].count : 0) + ' total already existing');
+                var newName = spawn.createCreep(params.parts, params.id, params);
+                if( params.id == newName ){
+                    spawn.busy = true;
+                    MODULES.population.registerCreepSetup(spawn.room, params.setup, params.cost);
                 }
-                var newName = spawn.createCreep(build.parts, name, build);
-                //spawn.room.memory.creeps[role] += build.cost;
-                console.log('Spawning ' + newName);
+                
+                console.log(params.id == newName || ERROR_CODE(newName) === undefined ? 
+                    spawn.name + ' > Good morning ' + newName + '!': 
+                    spawn.name + ' > Offspring failed: ' + ERROR_CODE(newName));
+                //if( DEBUG ) console.log(spawn.name + ' > New total population of ' + params.setup + ': ' + (Game.population[params.setup] ? Game.population[params.setup].count : 0) + '<br/> ');
             }
-        }
+        });
     }
 };
 
