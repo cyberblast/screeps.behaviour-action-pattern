@@ -152,7 +152,7 @@ An Action can only be assigned, if there is also a valid target. Most Actions li
         * Upgrading
         * Idle
 
-
+ 
 *// TODO*
 
 ### 2.2. Claimer  
