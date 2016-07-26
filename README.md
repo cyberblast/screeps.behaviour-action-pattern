@@ -18,11 +18,11 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
 
 ## Contents
 
-**1. Description**
+[**1. Description**](https://github.com/cyberblast/screeps.behaviour-action-pattern#1-description)
 
   About this repository and background of the general approach
 
-**2. Creep Types**
+[**2. Creep Types**](https://github.com/cyberblast/screeps.behaviour-action-pattern#2-creep-types)
 
   Description of Setup & Behaviour of each Creep type
   1. Worker
@@ -32,7 +32,7 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
   5. Ranger  
   6. Healer
 
-**3. Actions**
+[**3. Actions**](https://github.com/cyberblast/screeps.behaviour-action-pattern#3-actions)
 
   Description of each Action a creep can do
   1. Building
@@ -52,7 +52,7 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
   15. Upgrading
   16. Withdrawing
 
-**4. Settings & Tuning**
+[**4. Settings & Tuning**](https://github.com/cyberblast/screeps.behaviour-action-pattern#4-settings--tuning)
 
   1. Params  
   List of global parameters
@@ -60,10 +60,9 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
   2. How to adjust Population  
   ( e.g. of workers or guards )
 
-**5. Current State & Perspective**
+[**5. Current State & Perspective**](https://github.com/cyberblast/screeps.behaviour-action-pattern#5-current-state--perspective)
 
 #  
-
 
 ## 1. Description
 
@@ -75,7 +74,7 @@ Every creep is determinated and limited by its body parts, as they can't be chan
 
 Each creep type needs two aspects to take care of: *Setup* (prebuild) and *Behaviour* (postbuild).
 
-While the behaviour of each creep type may be completely different, each single activity a creep does can be described regardless of its type or behaviour and different creep types may also do the same actions (e.g. move to a flag in a different room or be idle and wait one loop). 
+While the behaviour of each creep type may be completely different, each single action a creep does can be described regardless of its type or behaviour and different creep types may also do the same actions (e.g. move to a flag in a different room or be idle and wait one loop - of course this doesn't work with all creep types & all actions). 
 In other words: *Behaviour* defines which *Action* has to be done, respecting the current situation, and is tailored to the creeps body.  
 
 __*Setup*__ coordinates which and how many body parts a creep has and how many creeps (of that type) may be build.
@@ -86,7 +85,7 @@ __*Action*__ describes a certain order or task a single creep is currently worki
 
 ## 2. Creep Types
 
-The list of creep types reflects only the current state of development and is surely not complete. On the other hand it's also a matter of taste, valuation or experience which and how or how many different creeps are needed. So this list may never be complete. 
+The list of creep types reflects only the current state of development and is not complete. On the other hand it's also a matter of taste, valuation, experience or opinion which and how or how many different creeps are needed. So this list may never be complete (or you may want to add your own types). 
 
 Some words to spawning and sizing of creeps: 
 The spawn will always try to build as many and as big creeps as possible. Thus each Setup contains limitations how big or how many creeps it is allowed to produce. 
@@ -171,4 +170,20 @@ An Action can only be assigned, if there is also a valid target. Most Actions li
 
 ## 5. Current State & Perspective
 
-*// TODO*
+The whole project is completely unfinished and may also be unstable.
+Feel free to get your own fork or use parts of the code, but always at your own risk.
+
+This is a game. A hobby. I am doing this for fun. I don't feel responsible for anything this code does with your game neither do I feel any responsibility to advance further with the development - if I go on with the development it will be just for fun! 
+
+The current state of this project reflects my current game play advancement. There are large gaps which still need to be filled.  
+There are a lot of structure types not yet utilized and still some actions and creep types missing. 
+Full automatism (e.g. build roads & structures) would also be nice, but still far from reached.  
+
+Another big point missing is a macro strategy. Most current advancement is still focusing on micro management (within a single room) or handling of certain tasks (like manual set flags). Decisions and tasks relating to the whole colony and player interaction will become more and more important. 
+
+I don't know how much time I can spend and how fast this will develop and will appreciate any help and contribution to this project. 
+
+Have a good time! 
+
+[cyberblast](https://github.com/cyberblast/screeps.behaviour-action-pattern)
+2016 July
