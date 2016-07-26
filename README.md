@@ -25,12 +25,12 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
 [**2. Creep Types**](https://github.com/cyberblast/screeps.behaviour-action-pattern#2-creep-types)
 
   Description of Setup & Behaviour of each Creep type  
-  [1. Worker](https://github.com/cyberblast/screeps.behaviour-action-pattern#21-worker)  
-  2. Claimer  
-  3. Pioneer
-  4. Melee  
-  5. Ranger  
-  6. Healer
+  [2.1. Worker](https://github.com/cyberblast/screeps.behaviour-action-pattern#21-worker)  
+  2.2. Claimer  
+  2.3. Pioneer
+  2.4. Melee  
+  2.5. Ranger  
+  2.6. Healer
 
 [**3. Actions**](https://github.com/cyberblast/screeps.behaviour-action-pattern#3-actions)
 
