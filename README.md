@@ -1,6 +1,6 @@
-Please have a look at the [Wiki](https://github.com/cyberblast/screeps.behaviour-action-pattern/wiki/About-this-repository)!
+__Please have a look at the [Wiki](https://github.com/cyberblast/screeps.behaviour-action-pattern/wiki/About-this-repository)!__
 
-### Readme Wiki V1 still under construction...
+Wiki V1 still under construction:
 
 - [x] About the repository
 - [x] Description & General Principle
