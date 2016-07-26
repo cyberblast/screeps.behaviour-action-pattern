@@ -14,7 +14,7 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
   - [ ] Healer
 - [ ] Actions
 - [ ] Settings
-- [ ] Status
+- [x] Status
 
 ## Contents
 
@@ -24,8 +24,8 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
 
 [**2. Creep Types**](https://github.com/cyberblast/screeps.behaviour-action-pattern#2-creep-types)
 
-  Description of Setup & Behaviour of each Creep type
-  1. Worker
+  Description of Setup & Behaviour of each Creep type  
+  [1. Worker](https://github.com/cyberblast/screeps.behaviour-action-pattern#21-worker)  
   2. Claimer  
   3. Pioneer
   4. Melee  
