@@ -88,12 +88,12 @@ Some words to the spawning and sizing of creeps:
 The spawn will always try to build as many and as big creeps as possible (in the current loop). Thus each Setup contains limitations how big or how many creeps it is allowed to produce. 
 
 A regular probe of the spawn will occur every 10 loops. It will then check if it's possible to produce a new creep using this order:   
-\1. worker  
-\2. claimer  
-\3. pioneer (not yet)  
-\4. melee  
-\5. ranger  
-\6. healer (not yet)  
+1. worker  
+2. claimer  
+3. pioneer (not yet)  
+4. melee  
+5. ranger  
+6. healer (not yet)  
 
 Some words about target assignment for Actions: 
 An Action can only be assigned, if there is also a valid target. Most Actions limit target assignments to a certain amount of max creeps (e.g. only one creep per construction site).
