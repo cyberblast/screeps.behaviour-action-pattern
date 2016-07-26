@@ -2,7 +2,13 @@
 Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
 
 #*Readme still under construction...*
-*// TODO: write some content & finish this file*
+
+- [x] TOC
+- [ ] Intro
+- [ ] Creep Types
+- [ ] Actions
+- [ ] Settings
+- [ ] Status
 
 ## Contents
 
