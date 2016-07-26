@@ -1,6 +1,3 @@
-# screeps.behaviour-action-pattern
-Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
-
 ### Readme V1 still under construction...
 
 - [x] TOC
@@ -24,7 +21,8 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
 
 [**2. Creep Types**](https://github.com/cyberblast/screeps.behaviour-action-pattern#2-creep-types)
 
-  Description of Setup & Behaviour of each Creep type  
+  Description of Setup & Behaviour of each Creep type
+
   [2.1. Worker](https://github.com/cyberblast/screeps.behaviour-action-pattern#21-worker)  
   2.2. Claimer  
   2.3. Pioneer  
@@ -34,7 +32,8 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
 
 [**3. Actions**](https://github.com/cyberblast/screeps.behaviour-action-pattern#3-actions)
 
-  Description of each Action a creep can do  
+  Description of each Action a creep can do
+
   3.1. Building  
   3.2. Claiming  
   3.3. Defending  
@@ -151,8 +150,7 @@ Some words about target assignment for Actions:
         * Building
         * Storing
         * Upgrading
-        * Idle  
-            
+        * Idle
 
     > To differenciate beyond the flat list of priorities, each Action has its own limitations when it is valid.  
     > e.g. storing is only valid when there is at least one creep already upgrading etc.
@@ -166,6 +164,7 @@ Some words about target assignment for Actions:
 ### 2.5. Ranger
 *// TODO*  
 ### 2.6. Healer
+*// TODO*  
 
 ## 3. Actions
 
@@ -192,5 +191,5 @@ I don't know how much time I can spend and how fast this will develop and will a
 
 Have a good time! 
 
-[cyberblast](https://github.com/cyberblast/screeps.behaviour-action-pattern)
+[cyberblast](https://github.com/cyberblast/screeps.behaviour-action-pattern)  
 2016 July
