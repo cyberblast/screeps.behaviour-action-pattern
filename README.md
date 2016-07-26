@@ -6,45 +6,53 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
 
 ## Contents
 
-1. Intro & Description 
+**1. Intro & Description**
 
   About this repository
-2. Creep Types
+
+**2. Creep Types**
 
   Description of Setup ( body, spawning ) & Behaviour of the different Creep kinds. 
-  * Worker
-  * Melee
-  * Ranger
-  * Healer
-  * Claimer
-  * Pioneer
-3. Actions
+  1. Worker
+  2. Melee
+  3. Ranger
+  4. Healer
+  5. Claimer
+  6. Pioneer
+
+**3. Actions**
 
   Description of each Action a creep can do
-  * Building
-  * Claiming
-  * Defending
-  * Feeding
-  * Fueling
-  * Guarding
-  * Harvesting
-  * Healing
-  * Idle
-  * Invading
-  * Picking
-  * Repairing
-  * Settling
-  * Storing
-  * Upgrading
-  * Withdrawing
-4. Settings & Tuning
-  * Params
+  1. Building
+  2. Claiming
+  3. Defending
+  4. Feeding
+  5. Fueling
+  6. Guarding
+  7. Harvesting
+  8. Healing
+  9. Idle
+  10. Invading
+  11. Picking
+  12. Repairing
+  13. Settling
+  14. Storing
+  15. Upgrading
+  16. Withdrawing
+
+**4. Settings & Tuning**
+
+  1. Params
 
     List of global parameters
-  * How to adjust Population
+  2. How to adjust Population
 
     ( e.g. of workers or guards )
-5. Current State & Perspective
+
+**5. Current State & Perspective**
+
+
+
 
 ##1. Intro & Description
 
