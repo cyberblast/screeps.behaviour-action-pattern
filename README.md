@@ -6,11 +6,11 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
 * TOC
 * Intro / Description
 * Creep Types
-  * Body & Setup, Spawning
+  * Setup ( Body, Spawning )
   * Behaviour
 * Actions
 * Flags ( Giving Orders )
-* Params
-* Tuning
+* Settings & Tuning
+  * Params
   * How to adjust population (e.g. workers or guards)
 * Current State & Perspective
