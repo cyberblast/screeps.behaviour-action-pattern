@@ -6,9 +6,11 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
 
 ## Contents
 
-1. Intro & Description
-  About this repository.
+1. Intro & Description 
+
+  About this repository
 2. Creep Types
+
   Description of Setup ( body, spawning ) & Behaviour of the different Creep kinds. 
   * Worker
   * Melee
@@ -17,6 +19,7 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
   * Claimer
   * Pioneer
 3. Actions
+
   Description of each Action a creep can do
   * Building
   * Claiming
@@ -36,9 +39,11 @@ Behaviour-Action Pattern for "Screeps" Game @ https://screeps.com/
   * Withdrawing
 4. Settings & Tuning
   * Params
-  List of global parameters
+
+    List of global parameters
   * How to adjust Population
-  ( e.g. of workers or guards )
+
+    ( e.g. of workers or guards )
 5. Current State & Perspective
 
 ##1. Intro & Description
