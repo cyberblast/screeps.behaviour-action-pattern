@@ -5,10 +5,10 @@ action.reusePath = 10;
 
 action.isValidTarget = function(target){ return true; }; 
 action.isAddableAction = function(){ return true; };
-action.isAddableTarget = function(){ return true; };
+action.isAddableTarget = function(){ return true; }; 
 
 action.newTarget = function(creep){
-    var flag = _.find(Game.flags, {'color': FLAG_COLOR.claim });    
+    var flag = _.find(Game.flags, {'color': FLAG_COLOR.claim });    // TODO: Limit to 1 creep per flag or even distribution
     if( !flag ){
         return null;
     }
