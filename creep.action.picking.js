@@ -6,7 +6,7 @@ action.isValidAction = function(creep){
     return ( _.sum(creep.carry) < creep.carryCapacity );
 };
 action.isAddableAction = function(creep){
-    return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob+1);
+    return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob+1); // TODO: compare amount with carry size of assigned creeps
 };
 action.isValidTarget = function(target){
     return (target != null && target.amount != null && target.amount > 0);

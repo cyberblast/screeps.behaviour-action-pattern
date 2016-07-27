@@ -85,7 +85,6 @@ action.step = function(creep){
 action.setup = {
     melee: function(creep){        
         if( creep.target.color ){
-            creep.say('Approaching');
             creep.moveTo(creep.target, {reusePath: 15});
             return;
         }
@@ -96,7 +95,6 @@ action.setup = {
     }, 
     ranger: function(creep){     
         if( creep.target.color ){
-            creep.say('Approaching');
             creep.moveTo(creep.target, {reusePath: 15});
             return;
         }
