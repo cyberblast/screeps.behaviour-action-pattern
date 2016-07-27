@@ -29,7 +29,6 @@ action.step = function(creep){
     if(CHATTY) creep.say(this.name);
     
     if( creep.target.color ){
-        // creep.say('Approaching');
         creep.moveTo(creep.target);
         return;
     }
@@ -38,15 +37,12 @@ action.step = function(creep){
     var workResult;
     if( creep.target.owner && !creep.target.my ){
         workResult = creep.attackController(creep.target);
-        // creep.say('Attacking');
     }
     else {
         workResult = creep.claimController(creep.target);
-        // creep.say('Claiming');
     }
     if( workResult == ERR_GCL_NOT_ENOUGH ){
         workResult = creep.reserveController(creep.target);
-        // creep.say('Reserving');
     }
 }
 
