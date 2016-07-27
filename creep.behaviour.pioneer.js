@@ -10,7 +10,7 @@ behaviour.run = function(creep) {
     }
 
     if( flag && (!flag.room || flag.room.name != creep.room.name) ){
-        this.assignActionWithTarget(creep, MODULES.creep.action.settling);
+        this.assignAction(creep, MODULES.creep.action.settling);
         return;
     } 
 

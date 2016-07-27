@@ -217,11 +217,11 @@ var mod = {
                 creep.room.activities[action] = 1;
             else creep.room.activities[action]++;
         };
-        this.assignActionWithTarget = function(creep, action){
+        this.assignAction = function(creep, action, target){
             creep.action = action;
-            var target = action.newTarget(creep);
+            if( target === undefined ) target = action.newTarget(creep);
             
-            if( target ) {
+            if( target !== undefined ) {
                 this.registerAction(creep, action);
                 creep.registerTarget(target);
                 return true;
