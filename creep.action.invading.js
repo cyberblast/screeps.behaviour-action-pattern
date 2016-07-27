@@ -38,18 +38,38 @@ action.newTarget = function(creep){
         return this.defaultTarget(creep);
     }
     
-    if( !flag.room.controller.my ) { //attack healer
-        var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
+    if( !flag.room.controller.my ) {
+        
+        //attack healer
+        var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
             filter: function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
         });
-        if(!closestHostile) { // attack nearest
-            closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        } 
-        if( closestHostile ) 
-            return closestHostile;
+        if( target ) 
+            return target;
+
+        //attack attacker
+        target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
+            filter: function(hostile){ return _.some(hostile.body, function(part){return part.type == ATTACK || part.type == RANGED_ATTACK}); } 
+        });
+        if( target ) 
+            return target;
+
+        // attack tower
+        target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
+            filter: (structure) => {
+                return structure.structureType == STRUCTURE_TOWER;
+            }
+        });
+        if( target ) 
+            return target;
+
+        // attack remaining creeps
+        closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        if( target ) 
+            return target;
         
         // attack spawn
-        var target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
+        target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
             filter: (structure) => {
                 return structure.structureType == STRUCTURE_SPAWN;
             }
