@@ -6,7 +6,7 @@ behaviour.run = function(creep) {
         assignment = this.assignAction(creep, MODULES.creep.action.healing);
     else {
         var flag = _.find(Game.flags, {'color': FLAG_COLOR.destroy }) || _.find(Game.flags, {'color': FLAG_COLOR.invade });
-        if( flag ) assignment = this.assignAction(creep, MODULES.creep.action.healing); // bug - settle
+        if( flag ) assignment = this.assignAction(creep, MODULES.creep.action.settling, flag); 
         else {
             if( creep.memory.action ){
                 if( !this.validateMemoryAction(creep) ){
