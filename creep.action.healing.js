@@ -23,6 +23,7 @@ action.newTarget = function(creep){
     }
     
     // TODO: Follow to other rooms (new action?)
+    // TODO: max one healer per creep or equal distribution 
     var melees = creep.room.find(FIND_MY_CREEPS, { // follow
         filter: function(c){ return c.memory.setup == "melee" } 
     });

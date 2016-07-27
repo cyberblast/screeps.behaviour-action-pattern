@@ -13,7 +13,7 @@ setup.maxCount = function(spawn){
     return _.filter(Game.flags, {'color': FLAG_COLOR.defense }).length;
 }
 setup.maxWeight = function(spawn){
-    return null; //1000;
+    return 0; // blocked
 }
 
 module.exports = setup;

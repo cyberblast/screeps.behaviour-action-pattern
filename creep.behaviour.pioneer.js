@@ -1,7 +1,7 @@
 var behaviour = new MODULES.creep.Behaviour();
 
 behaviour.run = function(creep) {    
-    var flag = _.find(Game.flags, {'color': FLAG_COLOR.settle });   
+    var flag = _.find(Game.flags, {'color': FLAG_COLOR.settle });   // TODO: limit to 3 per flag or equal distribution
     if( flag.room && flag.room.controller.my ) {
         if( flag.room.spawns && flag.room.spawns.length > 0 )
             flag.remove();
