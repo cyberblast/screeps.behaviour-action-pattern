@@ -6,7 +6,7 @@ var mod = {
         global.LIMIT_CREEP_REPAIRING = 1000; // urgent repair when hits below
         global.LIMIT_STORAGE_ENERGY = 500000; // stop storing energy when reached
         global.TIME_REPORT = 8000; // ticks between room reports
-        global.INTRUDER_REPORT_DELAY = 4000; // ticks between intruder reports
+        global.INTRUDER_REPORT_DELAY = 360; // minutes between intruder reports
         global.FLAG_COLOR = {
             invade: COLOR_RED, // destroy everything enemy in the room
             //melee: COLOR_PURPLE,
