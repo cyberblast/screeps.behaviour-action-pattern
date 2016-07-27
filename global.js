@@ -62,7 +62,6 @@ var mod = {
         global.MODULES.spawn = require('spawn'); 
         global.MODULES.tower = require('tower');
 
-        //global.STRATEGY = 'defensive';
         global.PART_COSTS = {
             work: 100,
             carry: 50,
