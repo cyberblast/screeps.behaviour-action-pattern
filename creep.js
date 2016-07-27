@@ -221,7 +221,7 @@ var mod = {
             creep.action = action;
             if( target === undefined ) target = action.newTarget(creep);
             
-            if( target !== undefined ) {
+            if( target != undefined ) {
                 this.registerAction(creep, action);
                 creep.registerTarget(target);
                 return true;

@@ -215,12 +215,12 @@ var mod = {
             target.creeps[this.memory.setup].splice(target.creeps[this.memory.setup].indexOf(this.name), 1);
         };
         Creep.prototype.registerTarget = function(target){ 
-            if( !target ) console.log(JSON.stringify(this.memory));
+            //if( !target ) console.log(JSON.stringify(this.memory));
             //precondition 
             if( target == null ) return;
             //unregister
             var targetId = target.id || target.name;
-            if( !targetId ) console.log(JSON.stringify(this.memory));
+            //if( !targetId ) console.log(JSON.stringify(this.memory));
             if( this.target != target || this.memory.target != targetId)
                 this.unregisterTarget();
             //assign
