@@ -64,7 +64,7 @@ action.newTarget = function(creep){
             return target;
 
         // attack remaining creeps
-        closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         if( target ) 
             return target;
         
