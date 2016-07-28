@@ -151,7 +151,7 @@ var mod = {
         this.maxWeight = function(spawn){ return 0; };
         this.isValidSetup = function(spawn){
 
-            if( spawn.room.energyAvailable < this.minAbsEnergyAvailable || this.minEnergyAvailable(spawn) < spawn.room.relativeEnergyAvailable ) 
+            if( spawn.room.energyAvailable < this.minAbsEnergyAvailable || spawn.room.relativeEnergyAvailable < this.minEnergyAvailable(spawn) ) 
                 return false;
 
             var maxCount = this.maxCount(spawn);
