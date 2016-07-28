@@ -1,10 +1,11 @@
 var setup = new MODULES.creep.Setup();
 
 setup.type = 'claimer';
-setup.multiBody = [CLAIM,CLAIM, MOVE, MOVE];
-setup.minAbsEnergyAvailable = 650;
-setup.maxMulti = 2;
-setup.minControllerLevel = 5;
+setup.multiBody = [CLAIM, MOVE];
+setup.fixedBody = [CLAIM, CLAIM, MOVE, MOVE];
+setup.minAbsEnergyAvailable = 1300;
+setup.maxMulti = 0;
+setup.minControllerLevel = 4;
 setup.globalMeasurement = true;
 
 setup.minEnergyAvailable = function(){
@@ -18,6 +19,6 @@ setup.maxCount = function(spawn){
             flag.room.controller.reservation.ticksToEnd < 4000)}).length;
 }
 setup.maxWeight = function(spawn){
-    return null;//1300;
+    return null; // TODO: limit regarding to missing reservation points
 }
 module.exports = setup;

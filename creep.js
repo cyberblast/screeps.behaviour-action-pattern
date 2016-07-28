@@ -150,46 +150,28 @@ var mod = {
         this.maxCount = function(spawn){ return 0; }; 
         this.maxWeight = function(spawn){ return 0; };
         this.isValidSetup = function(spawn){
-            var room = spawn.room;
-            var population = this.globalMeasurement ? Game.population[this.type] : room.population[this.type];
-            var maxCount = this.maxCount(spawn);
-            var maxWeight = this.maxWeight(spawn);
-            
-            /*
-            if( this.type == "melee"){
-                console.log("validating melee spawn");
-                console.log("Energy Available: " + (room.energyAvailable >= this.minAbsEnergyAvailable && 
-                room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn))));
-                console.log("population: " + !(!population) );
-                console.log("maxCount: " + maxCount + " population.count: " + population.count + " Count allowance: " + (( maxCount == null || population.count < maxCount) ));
-                console.log("maxWeight: " + maxWeight + " population.weight: " + population.weight + " Weight allowance: " + (( maxWeight == null || population.weight < maxWeight)));
-                console.log("Absolute allowance: " + ((room.energyAvailable >= this.minAbsEnergyAvailable && 
-                room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn))  && (
-                (!population || (
-                ( maxCount == null || population.count < maxCount) && 
-                ( maxWeight == null || population.weight < maxWeight)))))) );
-            }*/
 
-            if( maxCount == 0 || maxWeight == 0 || spawn.room.controller.level < this.minControllerLevel) return false;
-            return (room.energyAvailable >= this.minAbsEnergyAvailable && 
-                room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn))  && (
-                (!population || (
-                ( maxCount == null || population.count < maxCount) && 
-                ( maxWeight == null || population.weight < maxWeight)))));
+            if( spawn.room.energyAvailable < this.minAbsEnergyAvailable || spawn.room.relativeEnergyAvailable < this.minEnergyAvailable(spawn) ) 
+                return false;
+
+            var maxCount = this.maxCount(spawn);
+            var maxWeight = this.maxWeight(spawn);            
+            if( maxCount == 0 || maxWeight == 0 || spawn.room.controller.level < this.minControllerLevel) 
+                return false;
+
+            var population = this.globalMeasurement ? Game.population[this.type] : spawn.room.population[this.type];
+            if( !population ) 
+                return true;
+
+            if( maxCount == null ) 
+                maxCount = Infinity;
+            if( maxWeight == null ) 
+                maxWeight = Infinity;
+                
+            return (population.count < maxCount && population.weight < maxWeight);
         };
     },
     Behaviour: function(){
-        /*
-        this.setAction = function(creep, actionName) {
-            if( creep.memory.action != actionName ){
-                if( creep.memory.action )
-                    creep.room.activities[creep.memory.action]--;
-                creep.memory.action = actionName;
-            }
-            creep.unregisterTarget(creep.Target);
-            creep.memory.target = null;
-            creep.action = MODULES.creep.action[actionName];
-        }; */
         this.validateMemoryAction = function(creep){
             creep.action = MODULES.creep.action[creep.memory.action];
 
@@ -217,11 +199,11 @@ var mod = {
                 creep.room.activities[action] = 1;
             else creep.room.activities[action]++;
         };
-        this.assignActionWithTarget = function(creep, action){
+        this.assignAction = function(creep, action, target){
             creep.action = action;
-            var target = action.newTarget(creep);
+            if( target === undefined ) target = action.newTarget(creep);
             
-            if( target ) {
+            if( target != undefined ) {
                 this.registerAction(creep, action);
                 creep.registerTarget(target);
                 return true;
@@ -233,21 +215,8 @@ var mod = {
         };
     },
     loop: function () {
-        for(var creepName in Memory.creeps){
-            var creep = Game.creeps[creepName];
-            if ( !creep ) {
-                console.log(Memory.creeps[creepName].mother + ' > Good night ' + creepName + '!');
-                delete Memory.creeps[creepName];
-            } 
-            else {
-                if( creep.spawning ) {
-                    if( creep.memory.spawning === undefined )
-                        creep.memory.spawning = 1;
-                    else creep.memory.spawning++;
-                }
-                else creep.run();
-            }
-        }
+        var run = creep => creep.run();
+        _.forEach(Game.creeps, run);
     }
 }
 

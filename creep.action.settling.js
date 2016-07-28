@@ -3,35 +3,18 @@ var action = new MODULES.creep.Action();
 action.name = 'settling';
 action.reusePath = 15;
 
-action.isValidTarget = function(target){ return true; }; 
+action.isValidTarget = function(target){ return target != null; }; 
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
-
-action.newTarget = function(creep){
-    var flag = undefined;
-    if( creep.memory.setup == 'claimer') 
-        flag = _.find(Game.flags, {'color': FLAG_COLOR.claim });
-    if( creep.memory.setup == 'pioneer') 
-        flag = _.find(Game.flags, {'color': FLAG_COLOR.settle });
-
-    if( !flag ){
-        return null;
-    }
- 
-    if( !flag.room || flag.room.name != creep.room.name)
-        return flag;    
-}
+action.newTarget = function(creep){ return null; }
 
 action.step = function(creep){
     if(CHATTY) creep.say(this.name);
     
-    if( creep.target.color ){
-        // creep.say('Approaching');
-        creep.moveTo(creep.target);
+    if( creep.target ){
+        creep.moveTo(creep.target, {reusePath: this.reusePath});
         return;
     }
-    
-    var moveResult = creep.moveTo(creep.target, {reusePath: this.reusePath});
 }
 
 module.exports = action;

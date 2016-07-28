@@ -35,32 +35,46 @@ behaviour.nextAction = function(creep){
         if( creep.memory.action != null ) creep.room.activities[creep.memory.action]--;
         
         if( _.sum(creep.carry) > creep.carry.energy ) {
-            if( this.assignActionWithTarget(creep, MODULES.creep.action.storing) ) 
+            if( this.assignAction(creep, MODULES.creep.action.storing) ) 
                 return;
         }
         
+
+        var actions;
+        if(creep.room.situation.invasion)
+            actions = [MODULES.creep.action.withdrawing, 
+                MODULES.creep.action.harvesting];
+        else if(creep.room.relativeEnergyAvailable < HIVE_ENERGY_URGENT) // empty hive
+            actions = [MODULES.creep.action.picking,
+                MODULES.creep.action.withdrawing,
+                MODULES.creep.action.harvesting];
+        else  // common
+            actions = [MODULES.creep.action.picking,
+                MODULES.creep.action.harvesting,
+                MODULES.creep.action.withdrawing];
+/*
         var actions = creep.room.situation.invasion ?
         [MODULES.creep.action.withdrawing,
             MODULES.creep.action.harvesting] : 
         [MODULES.creep.action.picking,
             MODULES.creep.action.harvesting,
             MODULES.creep.action.withdrawing];
-            
+*/          
         for(var iAction = 0; iAction < actions.length; iAction++) {                
             if(actions[iAction].isValidAction(creep) && 
             actions[iAction].isAddableAction(creep) && 
-            this.assignActionWithTarget(creep, actions[iAction]))
+            this.assignAction(creep, actions[iAction]))
                 return;
         }
         
         // idle
-        this.assignActionWithTarget(creep, MODULES.creep.action.idle);
+        this.assignAction(creep, MODULES.creep.action.idle);
     }
     
     else {	        
         // urgent upgrading 
         if( creep.room.ticksToDowngrade < 2000 ) {
-            if( this.assignActionWithTarget(creep, MODULES.creep.action.upgrading) ) 
+            if( this.assignAction(creep, MODULES.creep.action.upgrading) ) 
                 return;
         }
         
@@ -85,12 +99,12 @@ behaviour.nextAction = function(creep){
             
             if(priority[iAction].isValidAction(creep) && 
             priority[iAction].isAddableAction(creep) && 
-            this.assignActionWithTarget(creep, priority[iAction]))
+            this.assignAction(creep, priority[iAction]))
                 return;
         }
         
         // idle
-        this.assignActionWithTarget(creep, MODULES.creep.action.idle);
+        this.assignAction(creep, MODULES.creep.action.idle);
     }
 };
 

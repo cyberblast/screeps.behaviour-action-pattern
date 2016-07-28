@@ -9,10 +9,11 @@ var mod = {
     },
     createCreep: function(spawn){
         [MODULES.creep.setup.worker, 
-        MODULES.creep.setup.claimer, 
-        MODULES.creep.setup.melee,
-        MODULES.creep.setup.ranger
-        //MODULES.creep.setup.healer
+            MODULES.creep.setup.claimer, 
+            MODULES.creep.setup.pioneer, 
+            MODULES.creep.setup.melee,
+            MODULES.creep.setup.ranger,
+            MODULES.creep.setup.healer
         ].forEach(function(set) {
             if( !spawn.busy && set.isValidSetup(spawn) ){
                 var params =  set.buildParams(spawn);

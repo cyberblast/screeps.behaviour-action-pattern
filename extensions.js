@@ -31,9 +31,10 @@ var mod = {
         Room.prototype.init = function(){
             // Room
             var self = this;
-            this.population = {};
+            if( this.population === undefined ) this.population = {};
             this.sourceAccessibleFields = 0;
             this.sourceEnergyAvailable = 0;
+            this.relativeEnergyAvailable = this.energyCapacityAvailable > 0 ? this.energyAvailable / this.energyCapacityAvailable : 0;
             this.sources = [];            
             this.constructionSites = {
                 order: [], // ids, ordered descending by remaining progress
@@ -75,10 +76,11 @@ var mod = {
             // RepairableSites
             var coreStructures = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTROLLER];  
             _.sortBy(this.find(FIND_STRUCTURES, {
-                filter: (structure) => structure.hits < structure.hitsMax }), 
+                filter: (structure) => structure.hits < structure.hitsMax && structure.hits < TOWER_REPAIR_LIMITS[this.controller.level] && (structure.structureType != STRUCTURE_ROAD || structure.hitsMax - structure.hits > 800 )  }), 
                 'hits'
             ).forEach(function(struct){
                 struct.creeps = [];
+                struct.towers = [];
                 self.repairableSites.order.push(struct.id);
                 self.repairableSites.count++;
                 self.repairableSites[struct.id] = struct;
@@ -215,12 +217,12 @@ var mod = {
             target.creeps[this.memory.setup].splice(target.creeps[this.memory.setup].indexOf(this.name), 1);
         };
         Creep.prototype.registerTarget = function(target){ 
-            if( !target ) console.log(JSON.stringify(this.memory));
+            //if( !target ) console.log(JSON.stringify(this.memory));
             //precondition 
             if( target == null ) return;
             //unregister
             var targetId = target.id || target.name;
-            if( !targetId ) console.log(JSON.stringify(this.memory));
+            //if( !targetId ) console.log(JSON.stringify(this.memory));
             if( this.target != target || this.memory.target != targetId)
                 this.unregisterTarget();
             //assign

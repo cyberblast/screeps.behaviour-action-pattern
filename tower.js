@@ -60,16 +60,13 @@ var mod = {
 
             // Repair
             if( (tower.room.repairableSites.count > 0) && (tower.energy > (tower.energyCapacity * (1-(0.2/tower.room.towers.length)))) ) {
-                for( var iSite = 0; iSite < tower.room.repairableSites.count; iSite++){
-                    var site = tower.room.repairableSites[tower.room.repairableSites.order[iSite]];
-                    
-                    if(site.towers == null || site.towers.length == 0){
-                        if( site.towers == null ) 
-                            site.towers = [];
-                        site.towers.push(tower.id);
-                        tower.repair(site);
-                        return;
-                    }
+                var find = siteId => tower.room.repairableSites[siteId].towers.length == 0;
+                var targetId = _.find(tower.room.repairableSites.order, find);
+                if( targetId ){
+                    var site = tower.room.repairableSites[targetId];
+                    site.towers.push(tower.id);
+                    tower.repair(site);
+                    return;
                 }
             }
         }
