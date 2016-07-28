@@ -159,7 +159,7 @@ var mod = {
             if( maxCount == 0 || maxWeight == 0 || spawn.room.controller.level < this.minControllerLevel) 
                 return false;
 
-            var population = this.globalMeasurement ? Game.population[this.type] : room.population[this.type];
+            var population = this.globalMeasurement ? Game.population[this.type] : spawn.room.population[this.type];
             if( !population ) 
                 return true;
 
