@@ -12,10 +12,10 @@ var mod = {
             2: 10000,
             3: 10000,
             4: 20000,
-            5: 40000,
-            6: 60000,
-            7: 80000,
-            8: null
+            5: 60000,
+            6: 80000,
+            7: 120000,
+            8: Infinity
         };
         global.FLAG_COLOR = {
             invade: COLOR_RED, // destroy everything enemy in the room
