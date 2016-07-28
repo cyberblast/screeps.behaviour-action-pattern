@@ -1,1 +1,1 @@
-### __Please have a look at the [Wiki](https://github.com/cyberblast/screeps.behaviour-action-pattern/wiki/About-this-repository)!__
+### __Please have a look at the [Wiki](https://github.com/cyberblast/screeps.behaviour-action-pattern/wiki)!__
