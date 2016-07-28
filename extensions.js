@@ -34,6 +34,7 @@ var mod = {
             if( this.population === undefined ) this.population = {};
             this.sourceAccessibleFields = 0;
             this.sourceEnergyAvailable = 0;
+            this.relativeEnergyAvailable = this.energyCapacityAvailable > 0 ? this.energyAvailable / this.energyCapacityAvailable : 0;
             this.sources = [];            
             this.constructionSites = {
                 order: [], // ids, ordered descending by remaining progress

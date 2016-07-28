@@ -7,6 +7,7 @@ var mod = {
         global.LIMIT_STORAGE_ENERGY = 500000; // stop storing energy when reached
         global.TIME_REPORT = 8000; // ticks between room reports
         global.INTRUDER_REPORT_DELAY = 360; // minutes between intruder reports
+        global.HIVE_ENERGY_URGENT = 0.3; // prefer withdraw & add more feeding below this relative amount of available energy
         global.FLAG_COLOR = {
             invade: COLOR_RED, // destroy everything enemy in the room
             //melee: COLOR_PURPLE,

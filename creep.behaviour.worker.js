@@ -39,13 +39,27 @@ behaviour.nextAction = function(creep){
                 return;
         }
         
+
+        var actions;
+        if(creep.room.situation.invasion)
+            actions = [MODULES.creep.action.withdrawing, 
+                MODULES.creep.action.harvesting];
+        else if(creep.room.relativeEnergyAvailable < HIVE_ENERGY_URGENT) // empty hive
+            actions = [MODULES.creep.action.picking,
+                MODULES.creep.action.withdrawing,
+                MODULES.creep.action.harvesting];
+        else  // common
+            actions = [MODULES.creep.action.picking,
+                MODULES.creep.action.harvesting,
+                MODULES.creep.action.withdrawing];
+/*
         var actions = creep.room.situation.invasion ?
         [MODULES.creep.action.withdrawing,
             MODULES.creep.action.harvesting] : 
         [MODULES.creep.action.picking,
             MODULES.creep.action.harvesting,
             MODULES.creep.action.withdrawing];
-            
+*/          
         for(var iAction = 0; iAction < actions.length; iAction++) {                
             if(actions[iAction].isValidAction(creep) && 
             actions[iAction].isAddableAction(creep) && 

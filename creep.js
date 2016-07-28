@@ -150,32 +150,25 @@ var mod = {
         this.maxCount = function(spawn){ return 0; }; 
         this.maxWeight = function(spawn){ return 0; };
         this.isValidSetup = function(spawn){
-            var room = spawn.room;
-            var population = this.globalMeasurement ? Game.population[this.type] : room.population[this.type];
-            var maxCount = this.maxCount(spawn);
-            var maxWeight = this.maxWeight(spawn);
-            
-            /*
-            if( this.type == "melee"){
-                console.log("validating melee spawn");
-                console.log("Energy Available: " + (room.energyAvailable >= this.minAbsEnergyAvailable && 
-                room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn))));
-                console.log("population: " + !(!population) );
-                console.log("maxCount: " + maxCount + " population.count: " + population.count + " Count allowance: " + (( maxCount == null || population.count < maxCount) ));
-                console.log("maxWeight: " + maxWeight + " population.weight: " + population.weight + " Weight allowance: " + (( maxWeight == null || population.weight < maxWeight)));
-                console.log("Absolute allowance: " + ((room.energyAvailable >= this.minAbsEnergyAvailable && 
-                room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn))  && (
-                (!population || (
-                ( maxCount == null || population.count < maxCount) && 
-                ( maxWeight == null || population.weight < maxWeight)))))) );
-            }*/
 
-            if( maxCount == 0 || maxWeight == 0 || spawn.room.controller.level < this.minControllerLevel) return false;
-            return (room.energyAvailable >= this.minAbsEnergyAvailable && 
-                room.energyAvailable >= (room.energyCapacityAvailable * this.minEnergyAvailable(spawn))  && (
-                (!population || (
-                ( maxCount == null || population.count < maxCount) && 
-                ( maxWeight == null || population.weight < maxWeight)))));
+            if( spawn.room.energyAvailable < this.minAbsEnergyAvailable || this.minEnergyAvailable(spawn) < spawn.room.relativeEnergyAvailable ) 
+                return false;
+
+            var maxCount = this.maxCount(spawn);
+            var maxWeight = this.maxWeight(spawn);            
+            if( maxCount == 0 || maxWeight == 0 || spawn.room.controller.level < this.minControllerLevel) 
+                return false;
+
+            var population = this.globalMeasurement ? Game.population[this.type] : room.population[this.type];
+            if( !population ) 
+                return true;
+
+            if( maxCount == null ) 
+                maxCount = Infinity;
+            if( maxWeight == null ) 
+                maxWeight = Infinity;
+                
+            return (population.count < maxCount && population.weight < maxWeight);
         };
     },
     Behaviour: function(){
