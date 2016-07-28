@@ -172,17 +172,6 @@ var mod = {
         };
     },
     Behaviour: function(){
-        /*
-        this.setAction = function(creep, actionName) {
-            if( creep.memory.action != actionName ){
-                if( creep.memory.action )
-                    creep.room.activities[creep.memory.action]--;
-                creep.memory.action = actionName;
-            }
-            creep.unregisterTarget(creep.Target);
-            creep.memory.target = null;
-            creep.action = MODULES.creep.action[actionName];
-        }; */
         this.validateMemoryAction = function(creep){
             creep.action = MODULES.creep.action[creep.memory.action];
 
