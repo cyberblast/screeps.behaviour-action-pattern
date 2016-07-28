@@ -6,7 +6,7 @@ setup.fixedBody = [];
 setup.minAbsEnergyAvailable = 200;
 setup.maxMulti = 6;
 setup.minEnergyAvailable = function(){
-    return 0.5;
+    return 0.4;
 };
 setup.maxCount = function(spawn){
     return ((spawn.room.sourceAccessibleFields*1.2) + (spawn.room.sources.length*2));
