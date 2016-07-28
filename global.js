@@ -8,6 +8,15 @@ var mod = {
         global.TIME_REPORT = 8000; // ticks between room reports
         global.INTRUDER_REPORT_DELAY = 360; // minutes between intruder reports
         global.HIVE_ENERGY_URGENT = 0.3; // prefer withdraw & add more feeding below this relative amount of available energy
+        global.TOWER_REPAIR_LIMITS = { // Limits how high structures get repaired by towers, regarding RCL
+            2: 10000,
+            3: 10000,
+            4: 20000,
+            5: 40000,
+            6: 60000,
+            7: 80000,
+            8: null
+        };
         global.FLAG_COLOR = {
             invade: COLOR_RED, // destroy everything enemy in the room
             //melee: COLOR_PURPLE,
