@@ -8,6 +8,13 @@ action.isValidAction = function(creep){
 action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };   
+action.isAddableAction = function(creep){
+    return (!creep.room.activities[this.name] || creep.room.activities[this.name] < creep.room.maxPerJob);
+};
+action.isAddableTarget = function(target){ 
+    return (!target.creeps || !target.creeps[this.maxPerTargetType] || 
+    target.creeps[this.maxPerTargetType].length < (this.maxPerTarget * (target.room.relativeEnergyAvailable < HIVE_ENERGY_URGENT ? 2 : 1) ));
+};
 action.maxPerTarget = 1;
 action.newTarget = function(creep){
     var self = this;
