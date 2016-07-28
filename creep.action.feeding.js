@@ -9,7 +9,7 @@ action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };   
 action.isAddableAction = function(creep){
-    return (!creep.room.activities[this.name] || creep.room.activities[this.name] < (creep.room.maxPerJob * (target.room.relativeEnergyAvailable < HIVE_ENERGY_URGENT ? 2 : 1)) );
+    return (!creep.room.activities[this.name] || creep.room.activities[this.name] < (creep.room.maxPerJob * (creep.room.relativeEnergyAvailable < HIVE_ENERGY_URGENT ? 2 : 1)) );
 };
 action.isAddableTarget = function(target){ 
     return (!target.creeps || !target.creeps[this.maxPerTargetType] || 
