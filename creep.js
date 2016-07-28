@@ -226,21 +226,8 @@ var mod = {
         };
     },
     loop: function () {
-        for(var creepName in Memory.creeps){
-            var creep = Game.creeps[creepName];
-            if ( !creep ) {
-                console.log(Memory.creeps[creepName].mother + ' > Good night ' + creepName + '!');
-                delete Memory.creeps[creepName];
-            } 
-            else {
-                if( creep.spawning ) {
-                    if( creep.memory.spawning === undefined )
-                        creep.memory.spawning = 1;
-                    else creep.memory.spawning++;
-                }
-                else creep.run();
-            }
-        }
+        var run = creep => creep.run();
+        _.forEach(Game.creeps, run);
     }
 }
 
