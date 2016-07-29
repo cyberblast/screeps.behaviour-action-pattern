@@ -23,7 +23,15 @@ action.newTarget = function(creep){
     return target;
 };
 action.work = function(creep){
-    return creep.pickup(creep.target);
+    var result = creep.pickup(creep.target);
+    if( result == OK ){
+        // unregister & clear memory
+        creep.unregisterTarget();
+        creep.room.activities[creep.memory.action]--;
+        creep.memory.action = null;
+        creep.action = null;
+    }
+    return result;
 };
 
 module.exports = action;

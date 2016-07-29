@@ -4,8 +4,9 @@ action.name = 'harvesting';
 
 action.isValidAction = function(creep){
     return ( _.sum(creep.carry) < creep.carryCapacity && 
-    creep.room.sourceEnergyAvailable > 0 && 
-    (creep.memory.action == 'harvesting' || creep.carry.energy == 0));
+    creep.room.sourceEnergyAvailable > 0  
+    // && (creep.memory.action == 'harvesting' || creep.carry.energy == 0)
+    );
 };
 action.isValidTarget = function(target){
     return (target != null && target.energy != null && target.energy > 0);
