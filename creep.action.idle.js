@@ -1,6 +1,5 @@
-var action = new MODULES.creep.Action();
+var action = new Creep.Action('idle');
 
-action.name = 'idle';
 action.reusePath = 10;
 action.ignoreCreeps = true;
 

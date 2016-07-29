@@ -1,4 +1,4 @@
-var behaviour = new MODULES.creep.Behaviour();
+var behaviour = new Creep.Behaviour('ranger');
 
 behaviour.run = function(creep) {
     var assignment;

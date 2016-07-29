@@ -1,15 +1,12 @@
-var action = new MODULES.creep.Action();
+var action = new Creep.Action('healing');
 
-action.name = 'healing';
 action.reusePath = 0;
 
 action.isValidTarget = function(target){
-    return target != null;
-    /*
-    return (
+    return ( target != null &&
         target.hits != null && 
-        //target.hits < target.hitsMax &&
-        target.my == true );*/
+        target.hits < target.hitsMax &&
+        target.my == true );
 }; 
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
@@ -21,20 +18,6 @@ action.newTarget = function(creep){
     if(injured && injured.length > 0){
         return _.sortBy(injured, function(i){ return i.hits - i.hitsMax; })[0];
     }
-    
-    /*
-    // TODO: Follow to other rooms (new action?)
-    // TODO: max one healer per creep or equal distribution 
-    var melees = creep.room.find(FIND_MY_CREEPS, { // follow
-        filter: function(c){ return c.memory.setup == "melee" } 
-    });
-    if(melees) return melees[0];
-    
-    var ranger = creep.room.find(FIND_MY_CREEPS, {
-        filter: function(c){ return c.memory.setup == "ranger" } 
-    });
-    if(ranger) return ranger[0];
-      */  
     return null;
 };
 

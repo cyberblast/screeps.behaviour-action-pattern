@@ -1,6 +1,5 @@
-var action = new MODULES.creep.Action();
+var action = new Creep.Action('invading');
 
-action.name = 'invading';
 action.reusePath = 0;
 
 action.isValidAction = function(){ return true; };
@@ -99,7 +98,7 @@ action.newTarget = function(creep){
     // no target found
     flag.remove();
     
-    return this.defaultTarget(creep);
+    return null;
 };
 
 action.step = function(creep){

@@ -1,6 +1,5 @@
-var setup = new MODULES.creep.Setup();
+var setup = new Creep.Setup('claimer');
 
-setup.type = 'claimer';
 setup.multiBody = [CLAIM, MOVE];
 setup.fixedBody = [CLAIM, MOVE, CLAIM, MOVE];
 setup.minAbsEnergyAvailable = 1300;

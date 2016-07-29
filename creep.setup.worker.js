@@ -1,6 +1,5 @@
-var setup = new MODULES.creep.Setup();
+var setup = new Creep.Setup('worker');
 
-setup.type = 'worker';
 setup.multiBody = [CARRY, WORK, MOVE];
 setup.fixedBody = [];
 setup.minAbsEnergyAvailable = 200;

@@ -1,6 +1,4 @@
-var action = new MODULES.creep.Action();
-
-action.name = 'harvesting';
+var action = new Creep.Action('harvesting');
 
 action.isValidAction = function(creep){
     return ( _.sum(creep.carry) < creep.carryCapacity && 

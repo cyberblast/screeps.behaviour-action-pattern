@@ -1,4 +1,4 @@
-var behaviour = new MODULES.creep.Behaviour();
+var behaviour = new Creep.Behaviour('pioneer');
 
 behaviour.run = function(creep) {    
     // TODO: limit to 3 per flag or equal distribution

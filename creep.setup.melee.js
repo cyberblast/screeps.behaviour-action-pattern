@@ -1,6 +1,5 @@
-var setup = new MODULES.creep.Setup();
+var setup = new Creep.Setup('melee');
 
-setup.type = 'melee';
 setup.multiBody = [TOUGH, MOVE, TOUGH, MOVE, ATTACK, MOVE]; 
 setup.minAbsEnergyAvailable = 250;
 setup.maxMulti = 4;

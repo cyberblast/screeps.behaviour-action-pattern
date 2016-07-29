@@ -1,6 +1,5 @@
-var setup = new MODULES.creep.Setup();
+var setup = new Creep.Setup('ranger');
 
-setup.type = 'ranger';
 setup.multiBody = [RANGED_ATTACK, MOVE]; 
 setup.minAbsEnergyAvailable = 200;
 setup.maxMulti = 2;

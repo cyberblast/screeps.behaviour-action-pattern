@@ -1,4 +1,4 @@
-var behaviour = new MODULES.creep.Behaviour();
+var behaviour = new Creep.Behaviour('privateer');
 
 behaviour.nextAction = function(creep){
     creep.unregisterTarget();

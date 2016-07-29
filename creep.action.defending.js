@@ -1,6 +1,5 @@
-var action = new MODULES.creep.Action();
+var action = new Creep.Action('defending');
 
-action.name = 'defending';
 action.reusePath = 0;
 action.ignoreCreeps = true;
 
@@ -28,10 +27,10 @@ action.newTarget = function(creep){
 
 action.step = function(creep){
     if(CHATTY) creep.say(this.name);
-    this.setup[creep.memory.setup](creep);
+    this.run[creep.memory.setup](creep);
 }
 
-action.setup = {
+action.run = {
     ranger: function(creep) {
         var range = creep.pos.getRangeTo(creep.target);
         if( range > 3 ){

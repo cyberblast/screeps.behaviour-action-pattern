@@ -1,6 +1,5 @@
-var action = new MODULES.creep.Action();
+var action = new Creep.Action('repairing');
 
-action.name = 'repairing';
 action.ignoreCreeps = true;
 
 action.isValidAction = function(creep){

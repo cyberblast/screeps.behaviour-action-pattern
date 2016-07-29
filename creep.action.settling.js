@@ -1,6 +1,5 @@
-var action = new MODULES.creep.Action();
+var action = new Creep.Action('settling');
 
-action.name = 'settling';
 action.reusePath = 15;
 
 action.isValidTarget = function(target){ return target != null; }; 

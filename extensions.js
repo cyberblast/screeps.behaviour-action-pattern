@@ -196,52 +196,7 @@ var mod = {
                 return null;
             }
         });
-        
-        Creep.prototype.run = function(behaviour){
-            if( !this.spawning ){
-                if(!behaviour) behaviour = this.behaviour;
-                if( behaviour ) behaviour.run(this);
-            }
-        };
-
-        Creep.prototype.unregisterTarget = function(){   
-            var target = this.target;
-            // unassign
-            this.target = null;
-            this.memory.target = null;
-            this.memory.targetAssignmentTime = null;
-            // unregister
-            if( !this.memory.setup || !target) return;   
-            if( !target.creeps ) return;
-            if( !target.creeps[this.memory.setup] ) return;
-            if( !target.creeps[this.memory.setup].includes(this.name) ) return;
-
-            target.creeps[this.memory.setup].splice(target.creeps[this.memory.setup].indexOf(this.name), 1);
-        };
-        Creep.prototype.registerTarget = function(target){ 
-            //if( !target ) console.log(JSON.stringify(this.memory));
-            //precondition 
-            if( target == null ) return;
-            //unregister
-            var targetId = target.id || target.name;
-            //if( !targetId ) console.log(JSON.stringify(this.memory));
-            if( this.target != target || this.memory.target != targetId)
-                this.unregisterTarget();
-            //assign
-            this.target = target;
-            this.memory.targetAssignmentTime = Game.time;
-            this.memory.target = targetId;
-            //register
-            if( !this.memory.setup ) return;   
-            if( !target.creeps ) {
-                target.creeps = {};
-            }
-            if( !target.creeps[this.memory.setup] ){
-                target.creeps[this.memory.setup] = [];
-            }
-            if( !target.creeps[this.memory.setup].includes(this.name) ) 
-                target.creeps[this.memory.setup].push(this.name);
-        };       
+         
     }
 }
 

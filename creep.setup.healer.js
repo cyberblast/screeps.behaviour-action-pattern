@@ -1,6 +1,5 @@
-var setup = new MODULES.creep.Setup();
+var setup = new Creep.Setup('healer');
 
-setup.type = 'healer';
 setup.multiBody = [MOVE, HEAL];
 setup.minAbsEnergyAvailable = 300;
 setup.maxMulti = 1;

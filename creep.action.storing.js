@@ -1,6 +1,6 @@
-var action = new MODULES.creep.Action();
+var action = new Creep.Action('storing');
 
-action.name = 'storing';
+action.maxPerTarget = 1;
 
 action.isValidAction = function(creep){
     return ( creep.room.storage != null && _.sum(creep.carry) > 0 && 
@@ -11,7 +11,6 @@ action.isValidAction = function(creep){
 action.isValidTarget = function(target){
     return ((target != null) && (target.store != null) && target.sum < target.storeCapacity);
 };   
-action.maxPerTarget = 1;
 action.newTarget = function(creep){
     if( this.isValidTarget(creep.room.storage) && this.isAddableTarget(creep.room.storage) )
         return creep.room.storage;
