@@ -1,9 +1,6 @@
 var behaviour = new MODULES.creep.Behaviour();
 
 behaviour.run = function(creep) {
-    // TODO: limit to 1 per flag or equal distribution
-    // TODO: Add memorization?
-
     var flag;    
     if( creep.flag )
         flag = creep.flag;
@@ -21,6 +18,8 @@ behaviour.run = function(creep) {
             creep.memory.flag = flags[0].name;
         }
     }
+
+    // TODO: Add Settling
      
     if( !flag || !this.assignAction(creep, MODULES.creep.action.claiming) )
         this.assignAction(creep, MODULES.creep.action.idle);
