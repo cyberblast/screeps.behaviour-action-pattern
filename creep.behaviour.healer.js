@@ -21,6 +21,8 @@ behaviour.run = function(creep) {
                 } else assignment = true;
             }
             if(!assignment)
+                assignment = this.assignAction(creep, MODULES.creep.action.healing);
+            if(!assignment)
                 assignment = this.assignAction(creep, MODULES.creep.action.guarding);
         }
     }

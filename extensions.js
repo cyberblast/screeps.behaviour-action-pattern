@@ -126,23 +126,25 @@ var mod = {
                 invasion: false
             }
             
-            if( this.controller.my && this.memory.hostileIds ){
+            if( this.memory.hostileIds ){
                 this.situation.invasion = this.hostiles.length > 0;
-                this.hostileIds.forEach( function(id){
-                    if( !self.memory.hostileIds.includes(id) ){
-                        var creep = Game.getObjectById(id);
-                        var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
-                        Game.notify(message, INTRUDER_REPORT_DELAY);
-                        console.log(message);
-                    }
-                });
-                this.memory.hostileIds.forEach( function(id){
-                    if( !self.hostileIds.includes(id) ){
-                        var message = 'Hostile intruder ' + id  + ' gone at ' + Game.time + ' ticks.'; 
-                        Game.notify(message, INTRUDER_REPORT_DELAY);
-                        console.log(message);
-                    }
-                });
+                if( this.controller.my ) {
+                    this.hostileIds.forEach( function(id){
+                        if( !self.memory.hostileIds.includes(id) ){
+                            var creep = Game.getObjectById(id);
+                            var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
+                            Game.notify(message, INTRUDER_REPORT_DELAY);
+                            console.log(message);
+                        }
+                    });
+                    this.memory.hostileIds.forEach( function(id){
+                        if( !self.hostileIds.includes(id) ){
+                            var message = 'Hostile intruder ' + id  + ' gone at ' + Game.time + ' ticks.'; 
+                            Game.notify(message, INTRUDER_REPORT_DELAY);
+                            console.log(message);
+                        }
+                    });
+                }
             }
             this.memory.hostileIds = this.hostileIds;
             
