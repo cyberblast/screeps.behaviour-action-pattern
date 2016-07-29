@@ -3,7 +3,7 @@ var action = new MODULES.creep.Action();
 action.name = 'harvesting';
 
 action.isValidAction = function(creep){
-    return ( creep.carry.energy < creep.carryCapacity && 
+    return ( _.sum(creep.carry) < creep.carryCapacity && 
     creep.room.sourceEnergyAvailable > 0 && 
     (creep.memory.action == 'harvesting' || creep.carry.energy == 0));
 };

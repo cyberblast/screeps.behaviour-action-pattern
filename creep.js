@@ -209,6 +209,30 @@ var mod = {
             creep.action = null;
             return false;
         };
+        this.run = function(creep) {    
+            // Has assigned Action
+            if( creep.memory.action ){
+                if( !this.validateMemoryAction(creep)|| creep.memory.action == 'idle' ){ // not valid anymore 
+                    // unregister & clear memory
+                    creep.unregisterTarget();
+                    creep.room.activities[creep.memory.action]--;
+                    creep.memory.action = null;
+                    creep.action = null;
+                }
+            }
+            
+            // Assign next Action
+            if( !creep.memory.action ) {
+                this.nextAction(creep);
+            }
+
+            // Do some work
+            if( creep.action && creep.target ) {
+                creep.action.step(creep);
+            } 
+        };
+        this.nextAction = function(creep){
+        };
     },
     loop: function () {
         var run = creep => creep.run();

@@ -1,45 +1,16 @@
 var behaviour = new MODULES.creep.Behaviour();
 
-behaviour.run = function(creep) {
-    // Harvesting completed / energy refilled
-    if(creep.memory.action == 'idle' || (_.sum(creep.carry) == creep.carryCapacity && (creep.memory.action == 'harvesting' || creep.memory.action == 'pickup' || creep.memory.action == 'withdrawing'))) {
-        creep.unregisterTarget();
-        creep.memory.action = null;
-    } 
-
-    // Has assigned Action
-    if( creep.memory.action ){
-        if( !this.validateMemoryAction(creep) ){
-            creep.room.activities[creep.memory.action]--;
-            creep.memory.action = null;
-            creep.action = null;
-        }
-    }
-    
-    // Assign next Action
-    if( !creep.memory.action ) {
-        this.nextAction(creep);
-    }
-
-    // Do some work
-    if( creep.action && creep.target ) {
-        creep.action.step(creep);
-    } 
-};
-
 behaviour.nextAction = function(creep){
     creep.unregisterTarget();
     
     // Last Action completed / No more energy
     if( creep.carry.energy == 0 && creep.memory.action != 'harvesting' && creep.memory.action != 'pickup' && creep.memory.action != 'withdrawing') { 
-        if( creep.memory.action != null ) creep.room.activities[creep.memory.action]--;
-        
+
         if( _.sum(creep.carry) > creep.carry.energy ) {
             if( this.assignAction(creep, MODULES.creep.action.storing) ) 
                 return;
         }
         
-
         var actions;
         if(creep.room.situation.invasion)
             actions = [MODULES.creep.action.withdrawing, 
