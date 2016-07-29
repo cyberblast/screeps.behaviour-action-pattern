@@ -2,11 +2,12 @@ var setup = new MODULES.creep.Setup();
 
 setup.type = 'claimer';
 setup.multiBody = [CLAIM, MOVE];
-setup.fixedBody = [CLAIM, CLAIM, MOVE, MOVE];
+setup.fixedBody = [CLAIM, MOVE, CLAIM, MOVE];
 setup.minAbsEnergyAvailable = 1300;
 setup.maxMulti = 0;
 setup.minControllerLevel = 4;
 setup.globalMeasurement = true;
+setup.multiplicationPartwise = false;
 
 setup.minEnergyAvailable = function(){
     return 0.9;
