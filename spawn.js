@@ -13,7 +13,8 @@ var mod = {
             MODULES.creep.setup.pioneer, 
             MODULES.creep.setup.melee,
             MODULES.creep.setup.ranger,
-            MODULES.creep.setup.healer
+            MODULES.creep.setup.healer,
+            MODULES.creep.setup.privateer
         ].forEach(function(set) {
             if( !spawn.busy && set.isValidSetup(spawn) ){
                 var params =  set.buildParams(spawn);

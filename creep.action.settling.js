@@ -10,19 +10,16 @@ action.newTarget = function(creep){ return null; }
 
 action.step = function(creep){
     if(CHATTY) creep.say(this.name);
-    
-    // reached
-    if( creep.target.pos.roomName == creep.pos.roomName ){
+
+    if( creep.target ){
+        creep.moveTo(creep.target, {reusePath: this.reusePath});
+    }
+    if( creep.target.pos.roomName == creep.room.name ){
         // unregister & clear memory
         creep.unregisterTarget();
         creep.room.activities[creep.memory.action]--;
         creep.memory.action = null;
         creep.action = null;
-    }
-
-    if( creep.target ){
-        creep.moveTo(creep.target, {reusePath: this.reusePath});
-        return;
     }
 }
 

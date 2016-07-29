@@ -35,8 +35,12 @@ var mod = {
                 if( target.creeps[setup] === undefined){
                     target.creeps[setup] = [];
                 }
-                if( !target.creeps[setup].includes(creep.name) ) 
+                if( !target.creeps[setup].includes(creep.name) ) { 
                     target.creeps[setup].push(creep.name);
+                    if( !target.creeps.sum )
+                        target.creeps.sum = 1;
+                    else target.creeps.sum++;
+                }
                 // TODO: also register weight
                 
                 creep.target = target;

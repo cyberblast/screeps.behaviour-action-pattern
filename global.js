@@ -89,6 +89,7 @@ var mod = {
             healer: require('creep.behaviour.healer'),
             melee: require('creep.behaviour.melee'),
             pioneer: require('creep.behaviour.pioneer'),
+            privateer: require('creep.behaviour.privateer'),
             ranger: require('creep.behaviour.ranger'),
             worker: require('creep.behaviour.worker')
         };
@@ -97,6 +98,7 @@ var mod = {
             healer: require('creep.setup.healer'), 
             melee: require('creep.setup.melee'),
             pioneer: require('creep.setup.pioneer'),
+            privateer: require('creep.setup.privateer'),
             ranger: require('creep.setup.ranger'),
             worker: require('creep.setup.worker')
         };

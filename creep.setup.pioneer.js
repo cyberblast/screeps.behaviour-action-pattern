@@ -6,6 +6,7 @@ setup.fixedBody = [CARRY, WORK, MOVE, CARRY, WORK, MOVE];
 setup.minAbsEnergyAvailable = 400;
 setup.maxMulti = 4;
 setup.minControllerLevel = 4;
+setup.globalMeasurement = true;
 setup.multiplicationPartwise = false;
 setup.minEnergyAvailable = function(){
     return 0.75;
