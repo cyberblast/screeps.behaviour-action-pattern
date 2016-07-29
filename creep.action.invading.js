@@ -40,6 +40,7 @@ action.newTarget = function(creep){
         creep.room.activities[creep.memory.action]--;
         creep.memory.action = null;
         creep.action = null;
+        return;
     }
     
     if( !flag.room.controller.my ) {
