@@ -3,8 +3,6 @@ var behaviour = new MODULES.creep.Behaviour();
 behaviour.nextAction = function(creep){
     creep.unregisterTarget();
 
-    // TODO: limit to 2 per flag or equal distribution
-    //var flag = _.find(Game.flags, FLAG_COLOR.invade.exploit.filter);
     var flag;    
     if( creep.flag )
         flag = creep.flag;
