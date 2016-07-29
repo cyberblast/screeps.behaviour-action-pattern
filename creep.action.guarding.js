@@ -6,7 +6,7 @@ action.ignoreCreeps = true;
 action.maxTargetLease = 12;
 
 action.newTarget = function(creep){ 
-    var flags = _.sortBy(_.filter(Game.flags, function(f){ return f.color == FLAG_COLOR.defense; }), 
+    var flags = _.sortBy(_.filter(Game.flags, FLAG_COLOR.defense.filter), 
         function(o) { 
             var occupation = ( o.creeps && o.creeps[creep.memory.setup] ? o.creeps[creep.memory.setup].length : 0);
             var distance = creep.pos.getRangeTo(o);

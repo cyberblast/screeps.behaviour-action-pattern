@@ -18,16 +18,51 @@ var mod = {
             8: Infinity
         };
         global.FLAG_COLOR = {
-            invade: COLOR_RED, // destroy everything enemy in the room
-            //melee: COLOR_PURPLE,
-            //ranger: COLOR_BLUE,
+            invade: { // destroy everything enemy in the room
+                color: COLOR_RED, 
+                secondaryColor: COLOR_RED,
+                filter: {'color': COLOR_RED, 'secondaryColor': COLOR_RED },                 
+                exploit: { // send privateers to exploit sources
+                    color: COLOR_RED, 
+                    secondaryColor: COLOR_GREEN,
+                    filter: {'color': COLOR_RED, 'secondaryColor': COLOR_GREEN }
+                },  
+            },
+            //COLOR_PURPLE,
+            //COLOR_BLUE,
             //COLOR_CYAN,
-            idle: COLOR_GREEN, // creeps go here to have a nice time (getting out of the way)
-            defense: COLOR_YELLOW,  // point to gather troops
-            destroy: COLOR_ORANGE, // destroy whats standing here
+            idle: { // creeps go here to have a nice time (getting out of the way)
+                color: COLOR_GREEN, 
+                secondaryColor: COLOR_GREEN,
+                filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_GREEN }
+            },
+            defense: { // point to gather troops
+                color: COLOR_YELLOW, 
+                secondaryColor: COLOR_YELLOW,
+                filter: {'color': COLOR_YELLOW, 'secondaryColor': COLOR_YELLOW }
+            },
+            destroy: { // destroy whats standing here
+                color: COLOR_ORANGE, 
+                secondaryColor: COLOR_ORANGE,
+                filter: {'color': COLOR_ORANGE, 'secondaryColor': COLOR_ORANGE }
+            },
             //COLOR_BROWN,
-            settle: COLOR_GREY, // send pioneers to build spawn
-            claim: COLOR_WHITE // claim this room
+            // COLOR_GREY,
+            claim: { // claim this room
+                color: COLOR_WHITE, 
+                secondaryColor: COLOR_WHITE,
+                filter: {'color': COLOR_WHITE, 'secondaryColor': COLOR_WHITE },
+                spawn: { // send pioneers & build spawn here
+                    color: COLOR_WHITE, 
+                    secondaryColor: COLOR_GREEN,
+                    filter: {'color': COLOR_WHITE, 'secondaryColor': COLOR_GREEN }
+                },  
+                pioneer: { // send additional pioneers
+                    color: COLOR_WHITE, 
+                    secondaryColor: COLOR_RED,
+                    filter: {'color': COLOR_WHITE, 'secondaryColor': COLOR_RED }
+                }
+            }
         };
         global.MODULES = {};
         global.MODULES.creep = require('creep');

@@ -8,11 +8,7 @@ var mod = {
         this.maxTargetLease = null; // ticks until target refind
         
         this.defaultTarget = function(creep){
-            var flags = _.sortBy(creep.room.find(FIND_FLAGS, {
-                    filter: function(flag){ 
-                        return flag.color == FLAG_COLOR.idle;
-                    }
-                }), 
+            var flags = _.sortBy(creep.room.find(FIND_FLAGS, { filter: FLAG_COLOR.idle.filter }), 
                 function(o) { 
                     return (o.creeps ? o.creeps.length : 0); 
                 }

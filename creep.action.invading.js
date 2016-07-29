@@ -7,8 +7,8 @@ action.isValidAction = function(){ return true; };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 
-action.getFlaggedStructure = function(color){
-    var flag = _.find(Game.flags, {'color': color });
+action.getFlaggedStructure = function(flagColor){
+    var flag = _.find(Game.flags, flagColor.filter);
     if( flag && flag.room ){ // room is visible
         // get target or remove flag
         var targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
@@ -30,7 +30,7 @@ action.newTarget = function(creep){
     if( destroyFlag ) return destroyFlag;
         
     // move to invasion room
-    var flag = _.find(Game.flags, {'color': FLAG_COLOR.invade })
+    var flag = _.find(Game.flags, FLAG_COLOR.invade.filter);
     if( flag && (!flag.room || flag.room.name != creep.room.name))
         return flag; // other room
     
