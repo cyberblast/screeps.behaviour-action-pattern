@@ -33,11 +33,8 @@ action.newTarget = function(creep){
         filter: function(c){ return c.memory.setup == "ranger" } 
     });
     if(ranger) return ranger[0];
-    
-    var any = creep.room.find(FIND_MY_CREEPS);
-    if(any) return any[0];
-    
-    return this.defaultAction(creep);
+        
+    return null;
 };
 
 action.work = function(creep){
