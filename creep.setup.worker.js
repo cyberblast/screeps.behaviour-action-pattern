@@ -5,6 +5,7 @@ setup.multiBody = [CARRY, WORK, MOVE];
 setup.fixedBody = [];
 setup.minAbsEnergyAvailable = 200;
 setup.maxMulti = 6;
+setup.multiplicationPartwise = false;
 setup.minEnergyAvailable = function(){
     return 0.4;
 };

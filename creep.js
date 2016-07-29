@@ -8,11 +8,7 @@ var mod = {
         this.maxTargetLease = null; // ticks until target refind
         
         this.defaultTarget = function(creep){
-            var flags = _.sortBy(creep.room.find(FIND_FLAGS, {
-                    filter: function(flag){ 
-                        return flag.color == FLAG_COLOR.idle;
-                    }
-                }), 
+            var flags = _.sortBy(creep.room.find(FIND_FLAGS, { filter: FLAG_COLOR.idle.filter }), 
                 function(o) { 
                     return (o.creeps ? o.creeps.length : 0); 
                 }
@@ -212,6 +208,30 @@ var mod = {
             creep.unregisterTarget();
             creep.action = null;
             return false;
+        };
+        this.run = function(creep) {    
+            // Has assigned Action
+            if( creep.memory.action ){
+                if( !this.validateMemoryAction(creep)|| creep.memory.action == 'idle' ){ // not valid anymore 
+                    // unregister & clear memory
+                    creep.unregisterTarget();
+                    creep.room.activities[creep.memory.action]--;
+                    creep.memory.action = null;
+                    creep.action = null;
+                }
+            }
+            
+            // Assign next Action
+            if( !creep.memory.action ) {
+                this.nextAction(creep);
+            }
+
+            // Do some work
+            if( creep.action && creep.target ) {
+                creep.action.step(creep);
+            } 
+        };
+        this.nextAction = function(creep){
         };
     },
     loop: function () {

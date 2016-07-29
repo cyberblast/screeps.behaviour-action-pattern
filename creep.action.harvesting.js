@@ -3,7 +3,7 @@ var action = new MODULES.creep.Action();
 action.name = 'harvesting';
 
 action.isValidAction = function(creep){
-    return ( creep.carry.energy < creep.carryCapacity && 
+    return ( _.sum(creep.carry) < creep.carryCapacity && 
     creep.room.sourceEnergyAvailable > 0 && 
     (creep.memory.action == 'harvesting' || creep.carry.energy == 0));
 };
@@ -20,8 +20,8 @@ action.newTarget = function(creep){
     var sourceGuests = 999;
     for( var iSource = 0; iSource < creep.room.sources.length; iSource++ ){
         var source = creep.room.sources[iSource];
-        if( this.isValidTarget(source) && this.isAddableTarget(source) && (source.creeps == null || source.creeps.worker == null || source.creeps.worker.length < sourceGuests )){
-            sourceGuests = (source.creeps == null || source.creeps.worker == null) ? 0 : source.creeps.worker.length;
+        if( this.isValidTarget(source) && this.isAddableTarget(source) && (source.creeps == null || source.creeps.sum < sourceGuests )){
+            sourceGuests = (source.creeps == null) ? 0 : source.creeps.sum;
             target = source;
         }
     }

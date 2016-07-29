@@ -8,20 +8,25 @@ action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; }; 
 
 action.newTarget = function(creep){
-    var flag = _.find(Game.flags, {'color': FLAG_COLOR.claim });    // TODO: Limit to 1 creep per flag or even distribution
-    if( !flag ){
+    // get claim flag
+    if( !creep.flag ){
         return null;
     }
 
-    if( !flag.room || flag.room.name != creep.room.name)
-        return flag;
+    // not there, go to flagged room
+    if( !creep.flag.room || creep.flag.room.name != creep.room.name)
+        return creep.flag;
     
-    if( flag.room.controller.my ) {
-        flag.setColor(FLAG_COLOR.settle);
+    if( creep.flag.room.controller.my ) {
+        // already claimed, change flag
+        // TODO: only if no spawn or spawn-constructionSite present
+        creep.flag.setColor(FLAG_COLOR.claim.spawn.color, FLAG_COLOR.claim.spawn.secondaryColor);
+        // no valid target for claimer
         return null;
     }
     else {
-        return flag.room.controller;
+        // set controller as target
+        return creep.flag.room.controller;
     }
 }
 

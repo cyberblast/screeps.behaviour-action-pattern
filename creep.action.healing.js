@@ -4,7 +4,7 @@ action.name = 'healing';
 action.reusePath = 0;
 
 action.isValidTarget = function(target){
-    return true;
+    return target != null;
     /*
     return (
         target.hits != null && 
@@ -22,6 +22,7 @@ action.newTarget = function(creep){
         return _.sortBy(injured, function(i){ return i.hits - i.hitsMax; })[0];
     }
     
+    /*
     // TODO: Follow to other rooms (new action?)
     // TODO: max one healer per creep or equal distribution 
     var melees = creep.room.find(FIND_MY_CREEPS, { // follow
@@ -33,11 +34,8 @@ action.newTarget = function(creep){
         filter: function(c){ return c.memory.setup == "ranger" } 
     });
     if(ranger) return ranger[0];
-    
-    var any = creep.room.find(FIND_MY_CREEPS);
-    if(any) return any[0];
-    
-    return this.defaultAction(creep);
+      */  
+    return null;
 };
 
 action.work = function(creep){
@@ -46,7 +44,7 @@ action.work = function(creep){
             return creep.heal(creep.target);
         }
         if(creep.pos.inRangeTo(creep.target, 3)) {
-            return creep.rangedHeal(target);
+            return creep.rangedHeal(creep.target);
         }
         return OK;
     }

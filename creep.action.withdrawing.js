@@ -3,7 +3,7 @@ var action = new MODULES.creep.Action();
 action.name = 'withdrawing';
 
 action.isValidAction = function(creep){
-    return ( creep.room.storage && creep.carry.energy < creep.carryCapacity && 
+    return ( creep.room.storage && _.sum(creep.carry) < creep.carryCapacity && 
     (creep.room.energyAvailable < creep.room.energyCapacityAvailable || 
     creep.room.towerFreeCapacity > 500 ));
 };

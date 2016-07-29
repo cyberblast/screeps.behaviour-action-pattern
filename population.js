@@ -35,11 +35,37 @@ var mod = {
                 if( target.creeps[setup] === undefined){
                     target.creeps[setup] = [];
                 }
-                if( !target.creeps[setup].includes(creep.name) ) 
+                if( !target.creeps[setup].includes(creep.name) ) { 
                     target.creeps[setup].push(creep.name);
+                    if( !target.creeps.sum )
+                        target.creeps.sum = 1;
+                    else target.creeps.sum++;
+                }
                 // TODO: also register weight
                 
                 creep.target = target;
+            }
+        }
+    },
+    registerCreepFlag: function(creep, setup){
+        if( creep.memory.flag ){
+            var flag = Game.flags[creep.memory.flag];
+            if( !flag ) 
+                delete creep.memory.flag;
+            else {
+                if( flag.creeps === undefined ) flag.creeps = {};
+                if( flag.creeps[setup] === undefined){
+                    flag.creeps[setup] = [];
+                }
+                if( !flag.creeps[setup].includes(creep.name) ) { 
+                    flag.creeps[setup].push(creep.name);
+                    if( !flag.creeps.sum )
+                        flag.creeps.sum = 1;
+                    else flag.creeps.sum++;
+                }
+                // TODO: also register weight
+                
+                creep.flag = flag;
             }
         }
     },
@@ -72,6 +98,7 @@ var mod = {
                 var targetId = creep.memory.target;
                 var creepName = creep.name;
 
+                this.registerCreepFlag(creep, setup);
                 // register creep
                 if( creep.ticksToLive === undefined || creep.ticksToLive > spawning ) {
                     this.registerCreepSetup(room, setup, cost);
