@@ -23,14 +23,7 @@ behaviour.nextAction = function(creep){
             actions = [MODULES.creep.action.picking,
                 MODULES.creep.action.harvesting,
                 MODULES.creep.action.withdrawing];
-/*
-        var actions = creep.room.situation.invasion ?
-        [MODULES.creep.action.withdrawing,
-            MODULES.creep.action.harvesting] : 
-        [MODULES.creep.action.picking,
-            MODULES.creep.action.harvesting,
-            MODULES.creep.action.withdrawing];
-*/          
+                
         for(var iAction = 0; iAction < actions.length; iAction++) {                
             if(actions[iAction].isValidAction(creep) && 
             actions[iAction].isAddableAction(creep) && 

@@ -6,10 +6,10 @@ behaviour.run = function(creep) {
         assignment = this.assignAction(creep, MODULES.creep.action.healing);
     else {
         var flag = _.find(Game.flags, FLAG_COLOR.destroy.filter) || _.find(Game.flags, FLAG_COLOR.invade.filter);
-        if( flag ) assignment = this.assignAction(creep, MODULES.creep.action.settling, flag); 
+        if( flag ) 
+            assignment = this.assignAction(creep, MODULES.creep.action.settling, flag);
         else {
-            if(!assignment)
-                assignment = this.assignAction(creep, MODULES.creep.action.healing);
+            assignment = this.assignAction(creep, MODULES.creep.action.healing);
             if(!assignment)
                 assignment = this.assignAction(creep, MODULES.creep.action.guarding);
         }
