@@ -4,7 +4,7 @@ behaviour.nextAction = function(creep){
     creep.unregisterTarget();
 
     var flag;    
-    if( creep.flag )
+    if( creep.flag && creep.flag.color == FLAG_COLOR.invade.exploit.color && creep.flag.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor)
         flag = creep.flag;
     else {
         var flags = _.sortBy(_.filter(Game.flags, FLAG_COLOR.invade.exploit.filter), 

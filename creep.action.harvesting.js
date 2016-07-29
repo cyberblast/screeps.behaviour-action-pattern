@@ -12,7 +12,7 @@ action.isValidTarget = function(target){
 };   
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(target){ 
-    return (!target.creeps || !target.creeps.worker || target.creeps.worker.length < (target.accessibleFields*1.5));
+    return (!target.creeps || target.creeps.sum < (target.accessibleFields*1.5));
 };
 
 action.newTarget = function(creep){
