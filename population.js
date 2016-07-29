@@ -47,7 +47,7 @@ var mod = {
             }
         }
     },
-    registerCreepFlag: function(creep){
+    registerCreepFlag: function(creep, setup){
         if( creep.memory.flag ){
             var flag = Game.flags[creep.memory.flag];
             if( !flag ) 
@@ -90,8 +90,6 @@ var mod = {
                     else creep.memory.spawning++;
                 }
 
-                this.registerCreepFlag(creep);
-
                 var room = creep.room;
                 var spawning = creep.memory.spawning;
                 var cost = creep.memory.cost;
@@ -100,6 +98,7 @@ var mod = {
                 var targetId = creep.memory.target;
                 var creepName = creep.name;
 
+                this.registerCreepFlag(creep, setup);
                 // register creep
                 if( creep.ticksToLive === undefined || creep.ticksToLive > spawning ) {
                     this.registerCreepSetup(room, setup, cost);

@@ -12,7 +12,7 @@ behaviour.nextAction = function(creep){
         var flags = _.sortBy(_.filter(Game.flags, FLAG_COLOR.invade.exploit.filter), 
             function(f) { 
                 var occupation = ( f.creeps ? f.creeps.sum : 0 );
-                var distance = creep.pos.getRangeTo(o);
+                var distance = creep.pos.getRangeTo(f);
                 return (occupation + (distance == Infinity ? 0.9 : distance/100));
             }
         );
