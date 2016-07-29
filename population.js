@@ -47,6 +47,28 @@ var mod = {
             }
         }
     },
+    registerCreepFlag: function(creep){
+        if( creep.memory.flag ){
+            var flag = Game.flags[creep.memory.flag];
+            if( !flag ) 
+                delete creep.memory.flag;
+            else {
+                if( flag.creeps === undefined ) flag.creeps = {};
+                if( flag.creeps[setup] === undefined){
+                    flag.creeps[setup] = [];
+                }
+                if( !flag.creeps[setup].includes(creep.name) ) { 
+                    flag.creeps[setup].push(creep.name);
+                    if( !flag.creeps.sum )
+                        flag.creeps.sum = 1;
+                    else flag.creeps.sum++;
+                }
+                // TODO: also register weight
+                
+                creep.flag = flag;
+            }
+        }
+    },
     loop: function(){    
         if( Game.population === undefined ){
             Game.population = {};
@@ -67,6 +89,8 @@ var mod = {
                         creep.memory.spawning = 1;
                     else creep.memory.spawning++;
                 }
+
+                this.registerCreepFlag(creep);
 
                 var room = creep.room;
                 var spawning = creep.memory.spawning;

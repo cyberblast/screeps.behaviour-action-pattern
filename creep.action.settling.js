@@ -9,7 +9,7 @@ action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){ return null; }
 
 action.step = function(creep){
-    if(CHATTY) creep.say(this.name);
+    if(CHATTY) creep.say(this.name, SAY_PUBLIC);
 
     if( creep.target ){
         creep.moveTo(creep.target, {reusePath: this.reusePath});

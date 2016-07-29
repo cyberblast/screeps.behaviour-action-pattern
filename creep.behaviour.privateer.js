@@ -4,7 +4,24 @@ behaviour.nextAction = function(creep){
     creep.unregisterTarget();
 
     // TODO: limit to 2 per flag or equal distribution
-    var flag = _.find(Game.flags, FLAG_COLOR.invade.exploit.filter);
+    //var flag = _.find(Game.flags, FLAG_COLOR.invade.exploit.filter);
+    var flag;    
+    if( creep.flag )
+        flag = creep.flag;
+    else {
+        var flags = _.sortBy(_.filter(Game.flags, FLAG_COLOR.invade.exploit.filter), 
+            function(f) { 
+                var occupation = ( f.creeps ? f.creeps.sum : 0 );
+                var distance = creep.pos.getRangeTo(o);
+                return (occupation + (distance == Infinity ? 0.9 : distance/100));
+            }
+        );
+        if( flags && flags.length > 0 ) { 
+            flag = flags[0];
+            creep.flag = flags[0];
+            creep.memory.flag = flags[0].name;
+        }
+    }
      
     if( !flag ) { // no (more) exploit flag
         if( creep.pos.roomName != creep.memory.home ){ // not at home

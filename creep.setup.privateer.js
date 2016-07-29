@@ -12,10 +12,10 @@ setup.minEnergyAvailable = function(){
     return 0.8;
 };
 setup.maxCount = function(spawn){
-    return _.filter(Game.flags, FLAG_COLOR.invade.exploit.filter).length * 2;
+    return _.filter(Game.flags, FLAG_COLOR.invade.exploit.filter).length * 5;
 }
 setup.maxWeight = function(spawn){
-    return null; // no evaluation
+    return null; 
 }
 
 module.exports = setup;

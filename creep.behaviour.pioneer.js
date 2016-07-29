@@ -5,8 +5,12 @@ behaviour.run = function(creep) {
     // TODO: Add memorization
     var flag = _.find(Game.flags, FLAG_COLOR.claim.spawn.filter);   
     if( flag.room && flag.room.controller.my ) {
-        if( flag.room.spawns && flag.room.spawns.length > 0 )
+        if( flag.room.spawns && flag.room.spawns.length > 0 ){
             flag.remove();
+            // also remove exploit flags
+            var remove = f => f.remove();
+            _.forEach(creep.room.find(FIND_FLAGS, { filter: FLAG_COLOR.invade.exploit.filter }), remove);
+        }
         else if( flag.room.constructionSites.count == 0 )
             flag.room.createConstructionSite(flag, STRUCTURE_SPAWN);
     }
