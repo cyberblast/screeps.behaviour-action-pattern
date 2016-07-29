@@ -35,7 +35,11 @@ action.newTarget = function(creep){
         return flag; // other room
     
     if( !flag ){
-        return this.defaultTarget(creep);
+        // unregister & clear memory
+        creep.unregisterTarget();
+        creep.room.activities[creep.memory.action]--;
+        creep.memory.action = null;
+        creep.action = null;
     }
     
     if( !flag.room.controller.my ) {
