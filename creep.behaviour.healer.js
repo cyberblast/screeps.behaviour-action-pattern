@@ -2,7 +2,7 @@ var behaviour = new MODULES.creep.Behaviour();
 
 behaviour.run = function(creep) {
     var assignment;
-    if( creep.room.controller.my && creep.room.situation.invasion )
+    if( creep.room.situation.invasion )
         assignment = this.assignAction(creep, MODULES.creep.action.healing);
     else {
         var flag = _.find(Game.flags, FLAG_COLOR.destroy.filter) || _.find(Game.flags, FLAG_COLOR.invade.filter);
