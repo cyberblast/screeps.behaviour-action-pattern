@@ -2,7 +2,7 @@ var behaviour = new Creep.Behaviour('claimer');
 
 behaviour.run = function(creep) {
     var flag;    
-    if( creep.flag )
+    if( creep.flag ) // TODO: validate flag colors
         flag = creep.flag;
     else {
         var flags = _.sortBy(_.filter(Game.flags, FLAG_COLOR.claim.filter), 

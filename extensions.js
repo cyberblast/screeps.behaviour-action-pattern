@@ -128,7 +128,7 @@ var mod = {
             
             if( this.memory.hostileIds ){
                 this.situation.invasion = this.hostiles.length > 0;
-                if( this.controller.my ) {
+                if( this.controller && this.controller.my ) {
                     this.hostileIds.forEach( function(id){
                         if( !self.memory.hostileIds.includes(id) ){
                             var creep = Game.getObjectById(id);

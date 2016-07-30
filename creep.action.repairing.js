@@ -1,6 +1,6 @@
 var action = new Creep.Action('repairing');
 
-action.ignoreCreeps = true;
+action.ignoreCreeps = false;
 
 action.isValidAction = function(creep){
     return (creep.carry.energy > 0 && creep.room.creepRepairableSites.count > 0 );
