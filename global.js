@@ -87,10 +87,16 @@ var mod = {
             else return text;
         };
         global.ERROR_LOG = function(creep, code) {
-            if(creep) creep.say(ERROR_CODE(code));
-            var message = ERROR_CODE(code) + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
-            console.log( message );
-            Game.notify( message, 120 );
+            if( code) {
+                var error = ERROR_CODE(code);
+                if(creep) {
+                    if( error ) creep.say(error);
+                    else creep.say(code);
+                }
+                var message = error + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
+                console.log( DYE('red', message) );
+                Game.notify( message, 120 );
+            } else console.log( DYE('red', 'unknown error code!') );
         };
         global.MODULES = {};    
         global.MODULES.extensions = require('extensions');

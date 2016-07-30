@@ -23,33 +23,38 @@ behaviour.run = function(creep) {
                 if( flag.room.constructionSites.count == 0 ) // no constructionSites // TODO: filter for spawn-constructionSite
                     flag.room.createConstructionSite(flag, STRUCTURE_SPAWN); // create spawn construction site
 
-                // Has invalid assigned Action 
-                if(creep.memory.action && creep.memory.action != 'harvesting' && creep.memory.action != 'building') {
-                    this.unregisterAction(creep);
-                }
-                
-                // Last Action completed / No more energy
-                if( creep.carry.energy == 0 && creep.memory.action != 'harvesting') { 
-                    this.assignAction(creep, Creep.action.harvesting);
-                }    
-                // no action or harvesting complete
-                else if(!creep.memory.action || (creep.memory.action == 'harvesting' && _.sum(creep.carry) == creep.carryCapacity )){
-                    // urgent upgrading 
-                    if( creep.room.ticksToDowngrade < 2000 ) 
-                        this.assignAction(creep, Creep.action.upgrading);
-                    else // build
-                        this.assignAction(creep, Creep.action.building);
-                }
-
-                // Do some work
-                if( creep.action && creep.target ) {
-                    creep.action.step(creep);
-                    return;
-                }
             }            
         }
     }
 
+    // if there are construction sites prefer them
+    if( creep.room.constructionSites.count > 0 ) {
+        // Has invalid assigned Action 
+        if(creep.memory.action && creep.memory.action != 'harvesting' && creep.memory.action != 'building') {
+            this.unregisterAction(creep);
+        }
+        
+        // Last Action completed / No more energy
+        if( creep.carry.energy == 0 && creep.memory.action != 'harvesting') { 
+            this.assignAction(creep, Creep.action.harvesting);
+        }    
+        // no action or harvesting complete
+        else if(!creep.memory.action || (creep.memory.action == 'harvesting' && _.sum(creep.carry) == creep.carryCapacity )){
+            // urgent upgrading 
+            if( creep.room.ticksToDowngrade < 2000 ) 
+                this.assignAction(creep, Creep.action.upgrading);
+            else // build
+                this.assignAction(creep, Creep.action.building);
+        }
+
+        // Do some work
+        if( creep.action && creep.target ) {
+            creep.action.step(creep);
+            return;
+        }
+    }
+
+    // else run as worker
     creep.run(Creep.behaviour.worker); 
 };
 

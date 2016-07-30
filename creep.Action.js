@@ -57,14 +57,16 @@ var Action = function(actionName){
         if(CHATTY) creep.say(this.name, SAY_PUBLIC);
         var moveResult = creep.moveTo(creep.target, {reusePath: this.reusePath, ignoreCreeps: this.ignoreCreeps});
         var workResult = this.work(creep);
-        if(workResult == OK || moveResult == OK)
-            return;
-        
+        if( ![OK, ERR_NOT_IN_RANGE].includes(workResult) ) {
+            if( DEBUG ) ERROR_LOG(creep, workResult);
+            creep.memory.action = null;
+            creep.memory.target = null;
+        }
         if( moveResult == ERR_NO_PATH ){// get out of the way
             this.defaultAction(creep);
             return;
         } 
-        if( moveResult != ERR_TIRED ) {
+        if( ![OK, ERR_TIRED].includes(moveResult) ) {
             if( DEBUG ) ERROR_LOG(creep, moveResult);
             creep.memory.action = null;
             creep.memory.target = null;
