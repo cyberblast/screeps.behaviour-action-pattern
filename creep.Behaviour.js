@@ -27,7 +27,16 @@ var Behaviour = function(typeName){
             creep.room.activities[action] = 1;
         else creep.room.activities[action]++;
     };
+    this.unregisterAction = function(creep){
+        creep.unregisterTarget();
+        if( creep.memory.action && creep.room.activities[creep.memory.action] )
+            creep.room.activities[creep.memory.action]--;
+        creep.memory.action = null;
+        creep.action = null;
+    };
     this.assignAction = function(creep, action, target){
+        this.unregisterAction(creep);
+        
         creep.action = action;
         if( target === undefined ) target = action.newTarget(creep);
         
@@ -37,8 +46,6 @@ var Behaviour = function(typeName){
             return true;
         } 
 
-        creep.unregisterTarget();
-        creep.action = null;
         return false;
     };
     this.run = function(creep) {    

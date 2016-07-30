@@ -4,27 +4,53 @@ behaviour.run = function(creep) {
     // TODO: limit to 3 per flag or equal distribution
     // TODO: Add memorization
     var flag = _.find(Game.flags, FLAG_COLOR.claim.spawn.filter);  
-    if( flag ) {
-        if( flag.room && flag.room.controller.my ) {
-            if( flag.room.spawns && flag.room.spawns.length > 0 ){
-                flag.remove();
-                // also remove exploit flags
-                var remove = f => f.remove();
-                _.forEach(creep.room.find(FIND_FLAGS, { filter: FLAG_COLOR.invade.exploit.filter }), remove);
-            }
-            else if( flag.room.constructionSites.count == 0 )
-                flag.room.createConstructionSite(flag, STRUCTURE_SPAWN);
-            
-        }
-
+    if( flag ) { 
         if( !flag.room || flag.room.name != creep.room.name ){
             if( this.assignAction(creep, Creep.action.settling, flag)) {
                 creep.action.step(creep);
                 return;
             }
         } 
+
+        if( flag.room && flag.room.controller.my ) { // inside owned target room
+            if( flag.room.spawns && flag.room.spawns.length > 0 ){ // spawn complete
+                flag.remove();
+                // also remove exploit flags
+                var remove = f => f.remove();
+                _.forEach(creep.room.find(FIND_FLAGS, { filter: FLAG_COLOR.invade.exploit.filter }), remove);
+            }
+            else { // no spawn => build it
+                if( flag.room.constructionSites.count == 0 ) // no constructionSites // TODO: filter for spawn-constructionSite
+                    flag.room.createConstructionSite(flag, STRUCTURE_SPAWN); // create spawn construction site
+
+                // Has invalid assigned Action 
+                if(creep.memory.action && creep.memory.action != 'harvesting' && creep.memory.action != 'building') {
+                    this.unregisterAction(creep);
+                }
+                
+                // Last Action completed / No more energy
+                if( creep.carry.energy == 0 && creep.memory.action != 'harvesting') { 
+                    this.assignAction(creep, Creep.action.harvesting);
+                }    
+                // no action or harvesting complete
+                else if(!creep.memory.action || (creep.memory.action == 'harvesting' && _.sum(creep.carry) == creep.carryCapacity )){
+                    // urgent upgrading 
+                    if( creep.room.ticksToDowngrade < 2000 ) 
+                        this.assignAction(creep, Creep.action.upgrading);
+                    else // build
+                        this.assignAction(creep, Creep.action.building);
+                }
+
+                // Do some work
+                if( creep.action && creep.target ) {
+                    creep.action.step(creep);
+                    return;
+                }
+            }            
+        }
     }
-    creep.run(Creep.behaviour.worker); // TODO: implement own action priorization (more builder required e.g. for spawn!!)
+
+    creep.run(Creep.behaviour.worker); 
 };
 
 
