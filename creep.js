@@ -39,10 +39,22 @@ var mod = {
             ranger: require('creep.setup.ranger'),
             worker: require('creep.setup.worker')
         };
-
+/*
+        Object.defineProperty(Creep.prototype, 'behaviour', {
+            configurable: true,
+            get: function() {
+                if(this.memory.setup) {
+                    return Creep.behaviour[this.memory.setup];
+                }
+                return null;
+            }
+        });
+*/
         Creep.prototype.run = function(behaviour){
             if( !this.spawning ){
-                if(!behaviour) behaviour = this.behaviour;
+                if(!behaviour && this.memory.setup) {
+                    behaviour = Creep.behaviour[this.memory.setup];
+                }
                 if( behaviour ) behaviour.run(this);
             }
         };     

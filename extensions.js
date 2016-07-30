@@ -186,17 +186,6 @@ var mod = {
                 if( mail ) Game.notify(message);
                 console.log(message);
         };
-        /*
-        Object.defineProperty(Creep.prototype, 'behaviour', {
-            configurable: true,
-            get: function() {
-                if(this.memory.setup) {
-                    return Creep.behaviour[this.memory.setup];
-                }
-                return null;
-            }
-        });
-         */
     }
 }
 
