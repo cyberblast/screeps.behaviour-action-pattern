@@ -1,22 +1,10 @@
+var params = require('parameter');
+
 var mod = {
     init: function(){
-        global.CHATTY = false; // creeps like talking 
-        global.SAY_PUBLIC = true; // creeps talk public
-        global.DEBUG = true; // gimme some more details
-        global.LIMIT_CREEP_REPAIRING = 1000; // urgent repair when hits below
-        global.LIMIT_STORAGE_ENERGY = 500000; // stop storing energy when reached
-        global.TIME_REPORT = 8000; // ticks between room reports
-        global.INTRUDER_REPORT_DELAY = 360; // minutes between intruder reports
-        global.HIVE_ENERGY_URGENT = 0.3; // prefer withdraw & add more feeding below this relative amount of available energy
-        global.TOWER_REPAIR_LIMITS = { // Limits how high structures get repaired by towers, regarding RCL
-            2: 10000,
-            3: 10000,
-            4: 20000,
-            5: 50000,
-            6: 80000,
-            7: 120000,
-            8: Infinity
-        };
+        var register = key => global[key] = params[key];
+        _.forEach(Object.keys(params), register);
+
         global.FLAG_COLOR = {
             invade: { // destroy everything enemy in the room
                 color: COLOR_RED, 
