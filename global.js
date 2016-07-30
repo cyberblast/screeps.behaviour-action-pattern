@@ -2,7 +2,7 @@ var params = require('parameter');
 
 var mod = {
     init: function(){
-        var register = key => global[key] = params[key];
+        var register = key => { global[key] = params[key]; };
         _.forEach(Object.keys(params), register);
 
         global.FLAG_COLOR = {
