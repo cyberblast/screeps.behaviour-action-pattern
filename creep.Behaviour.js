@@ -1,7 +1,7 @@
 var Behaviour = function(typeName){
     this.name = typeName;
     this.validateMemoryAction = function(creep){
-        creep.action = MODULES.creep.action[creep.memory.action];
+        creep.action = Creep.action[creep.memory.action];
 
         if( creep.action && creep.action.isValidAction(creep) ){
             // validate target or new

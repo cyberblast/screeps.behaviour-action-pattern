@@ -3,7 +3,7 @@ var behaviour = new Creep.Behaviour('ranger');
 behaviour.run = function(creep) {
     var assignment;
     if( creep.room.situation.invasion )
-        assignment = this.assignAction(creep, MODULES.creep.action.defending);
+        assignment = this.assignAction(creep, Creep.action.defending);
     else {
         if( creep.memory.action ){
             if( !this.validateMemoryAction(creep) ){
@@ -18,10 +18,10 @@ behaviour.run = function(creep) {
             } else assignment = true;
         }
         if(!assignment)
-            assignment = this.assignAction(creep, MODULES.creep.action.guarding);
+            assignment = this.assignAction(creep, Creep.action.guarding);
     }
     
-    if( !assignment ) this.assignAction(creep, MODULES.creep.action.idle);
+    if( !assignment ) this.assignAction(creep, Creep.action.idle);
     
     if( creep.action ) creep.action.step(creep);
 };

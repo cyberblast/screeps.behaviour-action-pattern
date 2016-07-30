@@ -3,10 +3,10 @@ var behaviour = new Creep.Behaviour('melee');
 behaviour.run = function(creep) {
     var assignment;
     if( creep.room.controller.my && creep.room.situation.invasion )
-        assignment = this.assignAction(creep, MODULES.creep.action.defending);
+        assignment = this.assignAction(creep, Creep.action.defending);
     else {
         var flag = _.find(Game.flags, FLAG_COLOR.destroy.filter) || _.find(Game.flags, FLAG_COLOR.invade.filter);
-        if( flag ) assignment = this.assignAction(creep, MODULES.creep.action.invading);
+        if( flag ) assignment = this.assignAction(creep, Creep.action.invading);
         else {
             if( creep.memory.action ){
                 if( !this.validateMemoryAction(creep) ){
@@ -21,10 +21,10 @@ behaviour.run = function(creep) {
                 } else assignment = true;
             }
             if(!assignment)
-                assignment = this.assignAction(creep, MODULES.creep.action.guarding);
+                assignment = this.assignAction(creep, Creep.action.guarding);
         }
     }
-    if( !assignment ) this.assignAction(creep, MODULES.creep.action.idle);
+    if( !assignment ) this.assignAction(creep, Creep.action.idle);
     
     if( creep.action ) creep.action.step(creep);
 };

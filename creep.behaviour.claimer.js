@@ -21,8 +21,8 @@ behaviour.run = function(creep) {
 
     // TODO: Add Settling
      
-    if( !flag || !this.assignAction(creep, MODULES.creep.action.claiming) )
-        this.assignAction(creep, MODULES.creep.action.idle);
+    if( !flag || !this.assignAction(creep, Creep.action.claiming) )
+        this.assignAction(creep, Creep.action.idle);
 
     if( creep.action ) creep.action.step(creep);
     return;

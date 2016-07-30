@@ -16,11 +16,11 @@ behaviour.run = function(creep) {
     }
 
     if( flag && (!flag.room || flag.room.name != creep.room.name) ){
-        this.assignAction(creep, MODULES.creep.action.settling, flag);
+        this.assignAction(creep, Creep.action.settling, flag);
         return;
     } 
 
-    creep.run(MODULES.creep.behaviour.worker);
+    creep.run(Creep.behaviour.worker);
 };
 
 

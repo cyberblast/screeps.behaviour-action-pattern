@@ -8,13 +8,13 @@ var mod = {
         }
     },
     createCreep: function(spawn){
-        [MODULES.creep.setup.worker, 
-            MODULES.creep.setup.melee,
-            MODULES.creep.setup.ranger,
-            MODULES.creep.setup.healer,
-            MODULES.creep.setup.claimer, 
-            MODULES.creep.setup.pioneer, 
-            MODULES.creep.setup.privateer
+        [Creep.setup.worker, 
+            Creep.setup.melee,
+            Creep.setup.ranger,
+            Creep.setup.healer,
+            Creep.setup.claimer, 
+            Creep.setup.pioneer, 
+            Creep.setup.privateer
         ].forEach(function(set) {
             if( !spawn.busy && set.isValidSetup(spawn) ){
                 var params =  set.buildParams(spawn);

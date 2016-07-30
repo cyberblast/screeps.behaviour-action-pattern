@@ -23,21 +23,21 @@ behaviour.nextAction = function(creep){
      
     if( !flag ) { // no (more) exploit flag
         if( creep.pos.roomName != creep.memory.home ){ // not at home
-            this.assignAction(creep, MODULES.creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
-        } else creep.run(MODULES.creep.behaviour.worker); // at home: behave as worker
+            this.assignAction(creep, Creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
+        } else creep.run(Creep.behaviour.worker); // at home: behave as worker
         return;
     }
 
     if(_.sum(creep.carry) == creep.carryCapacity) { // carrier full
         if( creep.pos.roomName != creep.memory.home ){ // not at home
-            this.assignAction(creep, MODULES.creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
+            this.assignAction(creep, Creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
         } 
         else { // at home
             if( _.sum(creep.carry) > creep.carry.energy ) { // has non energy sources
-                if( this.assignAction(creep, MODULES.creep.action.storing) ) 
+                if( this.assignAction(creep, Creep.action.storing) ) 
                     return; // TODO: handle no storage ?
             } 
-            this.assignAction(creep, MODULES.creep.action.upgrading); 
+            this.assignAction(creep, Creep.action.upgrading); 
         }        
         return;
     }
@@ -46,13 +46,13 @@ behaviour.nextAction = function(creep){
 
     // flag is in other room 
     if( flag && (!flag.room || flag.room.name != creep.room.name) ) {
-        this.assignAction(creep, MODULES.creep.action.settling, flag); // go to flagged room
+        this.assignAction(creep, Creep.action.settling, flag); // go to flagged room
         return;
     } 
     
     // inside flagged room
     
-    var actions = [MODULES.creep.action.picking, MODULES.creep.action.harvesting];
+    var actions = [Creep.action.picking, Creep.action.harvesting];
     // TODO: Add extracting at first (if extractor present)
 
     for(var iAction = 0; iAction < actions.length; iAction++) {   
@@ -64,7 +64,7 @@ behaviour.nextAction = function(creep){
     }
     
     // idle
-    this.assignAction(creep, MODULES.creep.action.idle);
+    this.assignAction(creep, Creep.action.idle);
 };
 
 

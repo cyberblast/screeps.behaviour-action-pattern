@@ -99,8 +99,7 @@ var mod = {
             console.log( message );
             Game.notify( message, 120 );
         };
-        global.MODULES = {};
-        global.MODULES.creep = require('creep');        
+        global.MODULES = {};    
         global.MODULES.extensions = require('extensions');
         global.MODULES.population = require('population');
         global.MODULES.room = require('room');
