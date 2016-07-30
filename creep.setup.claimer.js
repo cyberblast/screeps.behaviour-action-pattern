@@ -4,7 +4,7 @@ setup.multiBody = [CLAIM, MOVE];
 setup.fixedBody = [CLAIM, MOVE, CLAIM, MOVE];
 setup.minAbsEnergyAvailable = 1300;
 setup.maxMulti = 0;
-setup.minControllerLevel = 4;
+setup.minControllerLevel = 3;
 setup.globalMeasurement = true;
 setup.multiplicationPartwise = false;
 
