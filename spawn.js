@@ -26,8 +26,8 @@ var mod = {
                 }
                 
                 console.log(params.id == newName || ERROR_CODE(newName) === undefined ? 
-                    spawn.name + ' > Good morning ' + newName + '!': 
-                    spawn.name + ' > Offspring failed: ' + ERROR_CODE(newName));
+                    spawn.name + ' &gt; ' + DYE('yellow', 'Good morning ' + newName + '!'): 
+                    spawn.name + ' &gt; ' + DYE('red', 'Offspring failed: ' + ERROR_CODE(newName)));
             }
         });
     }

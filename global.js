@@ -81,6 +81,11 @@ var mod = {
                 15: 'ERR_GCL_NOT_ENOUGH'};
             return codes[code*-1];
         };
+        global.DYE = function(color, text){
+            if( color )
+                return('<font style="color:' + color + ';">' + text + '</font>');
+            else return text;
+        };
         global.ERROR_LOG = function(creep, code) {
             if(creep) creep.say(ERROR_CODE(code));
             var message = ERROR_CODE(code) + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
