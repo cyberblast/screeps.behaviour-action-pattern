@@ -74,6 +74,7 @@ var mod = {
             Game.population = {};
         }
 
+        var spawnsToProbe = [];
         for(var creepName in Memory.creeps){
             var creep = Game.creeps[creepName];
 
@@ -104,10 +105,15 @@ var mod = {
                     this.registerCreepSetup(room, setup, cost);
                 } else if(creep.ticksToLive == spawning) {
                     if(DEBUG) console.log(DYE(CRAYON.system, creepName + ' &gt; ') + DYE(CRAYON.death, 'Good night!') );
+                    if( Game.time % 10 != 0 && !spawnsToProbe.includes(creep.memory.mother)) { // no common spawnprobe
+                        spawnsToProbe.push(creep.memory.mother);
+                    }
                 }
                 this.registerCreepActivity(room, creep, setup, action, targetId);
             }
-        }            
+        }    
+        probe = spawnName => MODULES.spawn.createCreep(Game.spawns[spawnName]);
+        _.forEach(spawnsToProbe, probe);        
     }
 }
 

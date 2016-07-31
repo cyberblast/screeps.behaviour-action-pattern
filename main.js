@@ -3,8 +3,8 @@ require('creep').extend();
 
 module.exports.loop = function () {
     MODULES.extensions.loop();  
-    MODULES.population.loop();  
     MODULES.room.loop();  
+    MODULES.population.loop();  
 
     var run = creep => creep.run();
     _.forEach(Game.creeps, run);   
