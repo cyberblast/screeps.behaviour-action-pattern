@@ -37,7 +37,8 @@ behaviour.nextAction = function(creep){
                 if( this.assignAction(creep, Creep.action.storing) ) 
                     return; // TODO: handle no storage ?
             } 
-            this.assignAction(creep, Creep.action.upgrading); 
+            //this.assignAction(creep, Creep.action.upgrading); 
+            Creep.behaviour.worker.nextAction(creep);
         }        
         return;
     }
