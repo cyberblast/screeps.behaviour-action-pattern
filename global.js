@@ -94,7 +94,7 @@ var mod = {
         };
         global.CRAYON = {
             death: { color: 'black', 'font-weight': 'bold' }, 
-            birth: 'khaki', 
+            birth: '#e6de99', 
             error: 'red', 
             system: { color: '#999', 'font-size': '10px' }
         };
