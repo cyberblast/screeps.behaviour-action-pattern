@@ -25,9 +25,9 @@ var mod = {
                     MODULES.population.registerCreepSetup(spawn.room, params.setup, params.cost);
                 }
                 
-                console.log(params.id == newName || ERROR_CODE(newName) === undefined ? 
-                    DYE(CRAYON.system, spawn.name + ' &gt; ') + DYE(CRAYON.birth, 'Good morning ' + newName + '!'): 
-                    DYE(CRAYON.system, spawn.name + ' &gt; ') + DYE(CRAYON.error, 'Offspring failed: ' + ERROR_CODE(newName)));
+                if( params.id == newName || ERROR_CODE(newName) === undefined ){
+                    if(DEBUG) console.log( DYE(CRAYON.system, spawn.name + ' &gt; ') + DYE(CRAYON.birth, 'Good morning ' + newName + '!') );
+                } else console.log( DYE(CRAYON.system, spawn.name + ' &gt; ') + DYE(CRAYON.error, 'Offspring failed: ' + ERROR_CODE(newName)) );
             }
         });
     }
