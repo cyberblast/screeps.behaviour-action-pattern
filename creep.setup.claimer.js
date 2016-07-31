@@ -9,7 +9,7 @@ setup.globalMeasurement = true;
 setup.multiplicationPartwise = false;
 
 setup.minEnergyAvailable = function(){
-    return 0.9;
+    return 0.75;
 }
 setup.maxCount = function(spawn){
     return _.filter(Game.flags, function(flag){
