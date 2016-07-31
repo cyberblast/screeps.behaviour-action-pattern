@@ -82,8 +82,12 @@ var mod = {
             if( !target.creeps[this.memory.setup] ){
                 target.creeps[this.memory.setup] = [];
             }
-            if( !target.creeps[this.memory.setup].includes(this.name) ) 
-                target.creeps[this.memory.setup].push(this.name);
+            if( !target.creeps[this.memory.setup].includes(this.name) ) {
+                target.creeps[this.memory.setup].push(this.name);            
+                if( !target.creeps.sum )
+                    target.creeps.sum = 1;
+                else target.creeps.sum++;
+            }
         };    
     }
 }
