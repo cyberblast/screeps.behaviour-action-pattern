@@ -62,11 +62,11 @@ var Action = function(actionName){
             creep.memory.action = null;
             creep.memory.target = null;
         }
-        if( moveResult == ERR_NO_PATH ){// get out of the way
+        if( workResult != OK && moveResult == ERR_NO_PATH ){// get out of the way
             this.defaultAction(creep);
             return;
         } 
-        if( ![OK, ERR_TIRED].includes(moveResult) ) {
+        if( ![OK, ERR_TIRED, ERR_NO_PATH].includes(moveResult) ) {
             if( DEBUG ) ERROR_LOG(creep, moveResult);
             creep.memory.action = null;
             creep.memory.target = null;
