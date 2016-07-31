@@ -79,7 +79,7 @@ var mod = {
 
             // Clean memory
             if ( !creep ) {
-                console.log(Memory.creeps[creepName].mother + ' &gt; ' + DYE('black', 'Good night ' + creepName + '!') );
+                console.log(DYE(CRAYON.gray, Memory.creeps[creepName].mother + ' &gt; ') + DYE(CRAYON.death, 'Good night ' + creepName + '!') );
                 delete Memory.creeps[creepName];
             } 
             else {

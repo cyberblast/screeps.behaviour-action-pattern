@@ -81,23 +81,39 @@ var mod = {
                 15: 'ERR_GCL_NOT_ENOUGH'};
             return codes[code*-1];
         };
-        global.DYE = function(color, text){
-            if( color )
-                return('<font style="color:' + color + ';">' + text + '</font>');
+        global.DYE = function(style, text){
+            if( isObj(style) ) {
+                var css = "";
+                var format = key => css += key + ":" + style[key] + ";";
+                _.forEach(Object.keys(style), format);
+                return('<font style="' + css + '">' + text + '</font>');
+            }
+            if( style )
+                return('<font style="color:' + style + '">' + text + '</font>');
             else return text;
         };
+        global.CRAYON = {
+            death: { color: 'black', 'font-weight': 'bold' }, 
+            birth: 'khaki', 
+            error: 'red', 
+            gray: '#999'
+        };
         global.ERROR_LOG = function(creep, code) {
-            if( code) {
+            if( code ) {
                 var error = ERROR_CODE(code);
                 if(creep) {
                     if( error ) creep.say(error);
                     else creep.say(code);
                 }
                 var message = error + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
-                console.log( DYE('red', message) );
+                console.log( DYE(CRAYON.error, message) );
                 Game.notify( message, 120 );
-            } else console.log( DYE('red', 'unknown error code!') );
+            } else console.log( DYE(CRAYON.error, 'unknown error code!') );
         };
+        global.isObj = function(val){
+            if (val === null) { return false;}
+            return ( (typeof val === 'function') || (typeof val === 'object') );
+        }
         global.MODULES = {};    
         global.MODULES.extensions = require('extensions');
         global.MODULES.population = require('population');
