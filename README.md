@@ -8,7 +8,7 @@ I'm quite unsure about the corresponding timeline, but the order should fit.
   Refactoring & cleanup
 
 * 2016 September  
-  Focusing on Spawn & Pathfinding
+  Pathfinding
 
 * 2016 October  
   Redesign/improvement of the worker concept. Utilizing containers & specialized 'workers'
