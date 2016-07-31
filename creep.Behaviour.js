@@ -1,62 +1,11 @@
 var Behaviour = function(typeName){
     this.name = typeName;
-    this.validateMemoryAction = function(creep){
-        creep.action = Creep.action[creep.memory.action];
-
-        if( creep.action && creep.action.isValidAction(creep) ){
-            // validate target or new
-            if( !creep.action.isValidTarget(creep.target) || 
-            (creep.action.maxTargetLease && (Game.time-creep.memory.targetAssignmentTime) > creep.action.maxTargetLease )){ 
-                // invalid. try to find a new one...
-                creep.unregisterTarget();
-                var target = creep.action.newTarget(creep);
-                if( target ) {
-                    creep.registerTarget(target);
-                    return true;
-                }
-            } else return true;
-        } 
-        return false;
-    };
-    this.registerAction = function(creep, action){
-        if( creep.memory.action )
-            creep.room.activities[creep.memory.action]--;
-        creep.memory.action = action.name;
-        
-        if(!creep.room.activities[action])
-            creep.room.activities[action] = 1;
-        else creep.room.activities[action]++;
-    };
-    this.unregisterAction = function(creep){
-        creep.unregisterTarget();
-        if( creep.memory.action && creep.room.activities[creep.memory.action] )
-            creep.room.activities[creep.memory.action]--;
-        creep.memory.action = null;
-        creep.action = null;
-    };
-    this.assignAction = function(creep, action, target){
-        this.unregisterAction(creep);
-        
-        creep.action = action;
-        if( target === undefined ) target = action.newTarget(creep);
-        
-        if( target != undefined ) {
-            this.registerAction(creep, action);
-            creep.registerTarget(target);
-            return true;
-        } 
-
-        return false;
-    };
     this.run = function(creep) {    
         // Has assigned Action
         if( creep.memory.action ){
-            if( !this.validateMemoryAction(creep)|| creep.memory.action == 'idle' ){ // not valid anymore 
+            if( !creep.validateMemoryAction() || creep.memory.action == 'idle' ){ // not valid anymore 
                 // unregister & clear memory
-                creep.unregisterTarget();
-                creep.room.activities[creep.memory.action]--;
-                creep.memory.action = null;
-                creep.action = null;
+                creep.unregisterAction();
             }
         }
         

@@ -7,7 +7,7 @@ behaviour.nextAction = function(creep){
     if( creep.carry.energy == 0 && creep.memory.action != 'harvesting' && creep.memory.action != 'pickup' && creep.memory.action != 'withdrawing') { 
 
         if( _.sum(creep.carry) > creep.carry.energy ) {
-            if( this.assignAction(creep, Creep.action.storing) ) 
+            if( creep.assignAction(Creep.action.storing) ) 
                 return;
         }
         
@@ -27,18 +27,18 @@ behaviour.nextAction = function(creep){
         for(var iAction = 0; iAction < actions.length; iAction++) {                
             if(actions[iAction].isValidAction(creep) && 
             actions[iAction].isAddableAction(creep) && 
-            this.assignAction(creep, actions[iAction]))
+            creep.assignAction(actions[iAction]))
                 return;
         }
         
         // idle
-        this.assignAction(creep, Creep.action.idle);
+        creep.assignAction(Creep.action.idle);
     }
     
     else {	        
         // urgent upgrading 
         if( creep.room.ticksToDowngrade < 2000 ) {
-            if( this.assignAction(creep, Creep.action.upgrading) ) 
+            if( creep.assignAction(Creep.action.upgrading) ) 
                 return;
         }
         
@@ -63,12 +63,12 @@ behaviour.nextAction = function(creep){
             
             if(priority[iAction].isValidAction(creep) && 
             priority[iAction].isAddableAction(creep) && 
-            this.assignAction(creep, priority[iAction]))
+            creep.assignAction(priority[iAction]))
                 return;
         }
         
         // idle
-        this.assignAction(creep, Creep.action.idle);
+        creep.assignAction(Creep.action.idle);
     }
 };
 

@@ -88,7 +88,56 @@ var mod = {
                     target.creeps.sum = 1;
                 else target.creeps.sum++;
             }
-        };    
+        };       
+             
+        Creep.prototype.validateMemoryAction = function(){
+            this.action = Creep.action[this.memory.action];
+
+            if( this.action && this.action.isValidAction(this) ){
+                // validate target or new
+                if( !this.action.isValidTarget(this.target) || 
+                (this.action.maxTargetLease && (Game.time-this.memory.targetAssignmentTime) > this.action.maxTargetLease )){ 
+                    // invalid. try to find a new one...
+                    this.unregisterTarget();
+                    var target = this.action.newTarget(this);
+                    if( target ) {
+                        this.registerTarget(target);
+                        return true;
+                    }
+                } else return true;
+            } 
+            return false;
+        };
+        Creep.prototype.registerAction = function(action){
+            if( this.memory.action )
+                this.room.activities[this.memory.action]--;
+            this.memory.action = action.name;
+            
+            if(!this.room.activities[action])
+                this.room.activities[action] = 1;
+            else this.room.activities[action]++;
+        };
+        Creep.prototype.unregisterAction = function(){
+            this.unregisterTarget();
+            if( this.memory.action && this.room.activities[this.memory.action] )
+                this.room.activities[this.memory.action]--;
+            this.memory.action = null;
+            this.action = null;
+        };
+        Creep.prototype.assignAction = function(action, target){
+            this.unregisterAction();
+            
+            this.action = action;
+            if( target === undefined ) target = action.newTarget(this);
+            
+            if( target != undefined ) {
+                this.registerAction(action);
+                this.registerTarget(target);
+                return true;
+            } 
+
+            return false;
+        };
     }
 }
 

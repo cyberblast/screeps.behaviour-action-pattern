@@ -6,7 +6,7 @@ behaviour.run = function(creep) {
     var flag = _.find(Game.flags, FLAG_COLOR.claim.spawn.filter);  
     if( flag ) { 
         if( !flag.room || flag.room.name != creep.room.name ){
-            if( this.assignAction(creep, Creep.action.settling, flag)) {
+            if( creep.assignAction(Creep.action.settling, flag)) {
                 creep.action.step(creep);
                 return;
             }
@@ -31,20 +31,20 @@ behaviour.run = function(creep) {
     if( creep.room.constructionSites.count > 0 ) {
         // Has invalid assigned Action 
         if(creep.memory.action && creep.memory.action != 'harvesting' && creep.memory.action != 'building') {
-            this.unregisterAction(creep);
+            creep.unregisterAction();
         }
         
         // Last Action completed / No more energy
         if( creep.carry.energy == 0 && creep.memory.action != 'harvesting') { 
-            this.assignAction(creep, Creep.action.harvesting);
+            creep.assignAction(Creep.action.harvesting);
         }    
         // no action or harvesting complete
         else if(!creep.memory.action || (creep.memory.action == 'harvesting' && _.sum(creep.carry) == creep.carryCapacity )){
             // urgent upgrading 
             if( creep.room.ticksToDowngrade < 2000 ) 
-                this.assignAction(creep, Creep.action.upgrading);
+                creep.assignAction(Creep.action.upgrading);
             else // build
-                this.assignAction(creep, Creep.action.building);
+                creep.assignAction(Creep.action.building);
         }
 
         // Do some work

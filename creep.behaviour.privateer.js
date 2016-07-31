@@ -23,21 +23,21 @@ behaviour.nextAction = function(creep){
      
     if( !flag ) { // no (more) exploit flag
         if( creep.pos.roomName != creep.memory.home ){ // not at home
-            this.assignAction(creep, Creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
+            creep.assignAction(Creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
         } else creep.run(Creep.behaviour.worker); // at home: behave as worker
         return;
     }
 
     if(_.sum(creep.carry) == creep.carryCapacity) { // carrier full
         if( creep.pos.roomName != creep.memory.home ){ // not at home
-            this.assignAction(creep, Creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
+            creep.assignAction(Creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
         } 
         else { // at home
             if( _.sum(creep.carry) > creep.carry.energy ) { // has non energy sources
-                if( this.assignAction(creep, Creep.action.storing) ) 
+                if( creep.assignAction(Creep.action.storing) ) 
                     return; // TODO: handle no storage ?
             } 
-            //this.assignAction(creep, Creep.action.upgrading); 
+            //creep.assignAction(Creep.action.upgrading); 
             Creep.behaviour.worker.nextAction(creep);
         }        
         return;
@@ -47,7 +47,7 @@ behaviour.nextAction = function(creep){
 
     // flag is in other room 
     if( flag && (!flag.room || flag.room.name != creep.room.name) ) {
-        this.assignAction(creep, Creep.action.settling, flag); // go to flagged room
+        creep.assignAction(Creep.action.settling, flag); // go to flagged room
         return;
     } 
     
@@ -60,12 +60,12 @@ behaviour.nextAction = function(creep){
         var action = actions[iAction];             
         if(action.isValidAction(creep) && 
             action.isAddableAction(creep) && 
-            this.assignAction(creep, action))
+            creep.assignAction(action))
             return;
     }
     
     // idle
-    this.assignAction(creep, Creep.action.idle);
+    creep.assignAction(Creep.action.idle);
 };
 
 
