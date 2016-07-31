@@ -79,7 +79,7 @@ var mod = {
 
             // Clean memory
             if ( !creep ) {
-                console.log(DYE(CRAYON.gray, Memory.creeps[creepName].mother + ' &gt; ') + DYE(CRAYON.death, 'Good night ' + creepName + '!') );
+                console.log(DYE(CRAYON.system, Memory.creeps[creepName].mother + ' &gt; ') + DYE(CRAYON.death, 'Good night ' + creepName + '!') );
                 delete Memory.creeps[creepName];
             } 
             else {
@@ -102,6 +102,8 @@ var mod = {
                 // register creep
                 if( creep.ticksToLive === undefined || creep.ticksToLive > spawning ) {
                     this.registerCreepSetup(room, setup, cost);
+                } else if(creep.ticksToLive == spawning) {
+                    console.log(DYE(CRAYON.system, creepName + ' &gt; ') + DYE(CRAYON.death, 'Good night!') );
                 }
                 this.registerCreepActivity(room, creep, setup, action, targetId);
             }

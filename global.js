@@ -96,7 +96,7 @@ var mod = {
             death: { color: 'black', 'font-weight': 'bold' }, 
             birth: 'khaki', 
             error: 'red', 
-            gray: '#999'
+            system: { color: '#999', 'font-size': '10px' }
         };
         global.ERROR_LOG = function(creep, code) {
             if( code ) {

@@ -26,8 +26,8 @@ var mod = {
                 }
                 
                 console.log(params.id == newName || ERROR_CODE(newName) === undefined ? 
-                    DYE(CRAYON.gray, spawn.name + ' &gt; ') + DYE(CRAYON.birth, 'Good morning ' + newName + '!'): 
-                    DYE(CRAYON.gray, spawn.name + ' &gt; ') + DYE(CRAYON.error, 'Offspring failed: ' + ERROR_CODE(newName)));
+                    DYE(CRAYON.system, spawn.name + ' &gt; ') + DYE(CRAYON.birth, 'Good morning ' + newName + '!'): 
+                    DYE(CRAYON.system, spawn.name + ' &gt; ') + DYE(CRAYON.error, 'Offspring failed: ' + ERROR_CODE(newName)));
             }
         });
     }
