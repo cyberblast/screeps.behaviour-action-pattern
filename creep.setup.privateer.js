@@ -14,7 +14,7 @@ setup.maxCount = function(spawn){
     return _.filter(Game.flags, FLAG_COLOR.invade.exploit.filter).length * 5;
 }
 setup.maxWeight = function(spawn){
-    return null; 
+    return _.filter(Game.flags, FLAG_COLOR.invade.exploit.filter).length * 4000; 
 }
 
 module.exports = setup;
