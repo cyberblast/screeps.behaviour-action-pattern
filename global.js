@@ -120,6 +120,12 @@ var mod = {
         global.MODULES.room = require('room');
         global.MODULES.spawn = require('spawn'); 
         global.MODULES.tower = require('tower');
+        global.LocalDate = function(date){
+            if( !date ) date = new Date(); 
+            var offset = TIME_ZONE;
+            if( USE_SUMMERTIME && IS_SUMMERTIME(date) ) offset++;
+            return new Date(date + (3600000 * offset));
+        }
     }
 }
 
