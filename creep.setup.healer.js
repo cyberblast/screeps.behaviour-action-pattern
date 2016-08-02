@@ -4,7 +4,7 @@ setup.multiBody = [MOVE, HEAL];
 setup.minAbsEnergyAvailable = 300;
 setup.maxMulti = 1;
 setup.globalMeasurement = true;
-setup.minControllerLevel = 5;
+setup.minControllerLevel = 7;
 setup.multiplicationPartwise = false;
 setup.minEnergyAvailable = function(){
     return 0.8;
