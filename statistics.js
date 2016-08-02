@@ -31,7 +31,7 @@ var mod = {
         if( storedStatisticsTime > 0 ) {
             var message = '<h3><b>Status report</b></h3>' 
                 + '<h4>at ' + LocalDate().toLocaleString() + ',<br/>' 
-                + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(storedStatisticsTime)) + ' (' + TIME_REPORT + ' loops)</h4>';
+                + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(storedStatisticsTime)) + ' (' + (Game.time - Memory.statistics.tick) + ' loops)</h4>';
             
             bucketDif = Game.cpu.bucket - Memory.statistics.bucket;
             message += 'CPU Bucket: ' + Game.cpu.bucket + ' ('  + (bucketDif >= 0 ? '+' : '' ) + bucketDif + ')<ul>';
@@ -48,7 +48,7 @@ var mod = {
                     message += '<li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul>';
                     var isUpgraded = room.controller.progress < room.memory.statistics.controllerProgress;
                     var cdif = isUpgraded ? (room.memory.statistics.controllerProgressTotal - room.memory.statistics.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.statistics.controllerProgress); 
-                    message += '<li>Level ' + room.controller.level + ', ' + room.controller.progress + '/' + room.controller.progressTotal + ' (+' + cdif + ')' + isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>';
+                    message += '<li>Level ' + room.controller.level + ', ' + room.controller.progress + '/' + room.controller.progressTotal + ' (+' + cdif + ')' + (isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>');
 
                     // storage
                     if( room.storage && room.memory.statistics.store ){
