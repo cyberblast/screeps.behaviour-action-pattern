@@ -34,8 +34,9 @@ var mod = {
             var roomReport = room => {
                 if( room.controller && room.controller.my ){
                     message += '<li><b>Room ' + room.name + '</b><br/><u>Controller</u><br/>';
-                    var cdif = room.controller.progress < room.memory.statistics.controllerProgress ? (room.memory.statistics.controllerProgressTotal - room.memory.statistics.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.statistics.controllerProgress); 
-                    message += '   Level ' + room.controller.level + ', ' + room.controller.progress + '/' + room.controller.progressTotal + ' (+' + cdif + ')<br/>';
+                    var isUpgraded = room.controller.progress < room.memory.statistics.controllerProgress;
+                    var cdif = isUpgraded ? (room.memory.statistics.controllerProgressTotal - room.memory.statistics.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.statistics.controllerProgress); 
+                    message += '   Level ' + room.controller.level + ', ' + room.controller.progress + '/' + room.controller.progressTotal + ' (+' + cdif + ')' + isUpgraded ? ' <b><i>Upgraded!</i></b><br/>' : '<br/>';
 
                     if( room.storage && room.memory.statistics.store ){
                         var memoryStoreRecord = room.memory.statistics.store;
