@@ -126,6 +126,17 @@ var mod = {
             if( USE_SUMMERTIME && IS_SUMMERTIME(date) ) offset++;
             return new Date(date + (3600000 * offset));
         }
+        global.IS_SUMMERTIME = function(date){
+            var year = date.getFullYear();
+            // last sunday of march
+            var temp = new Date(year, 2, 31);
+            var begin = new Date(year, 2, temp.getDate() - temp.getDay(), 2, 0, 0);
+            // last sunday of october
+            temp = new Date(year, 9, 31);
+            var end = new Date(year, 9, temp.getDate() - temp.getDay(), 3, 0, 0);
+
+            return ( begin < date && date < end );
+        };
     }
 }
 

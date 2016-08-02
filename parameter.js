@@ -17,18 +17,7 @@ var mod = {
         8: Infinity
     }, 
     TIME_ZONE: 1, // zone offset in hours (-12 through +12) from UTC
-    USE_SUMMERTIME: TRUE, // Please define SUMMERTIME_BEGIN & SUMMERTIME_END to suit to your zones summertime rules 
-    IS_SUMMERTIME: function(date){
-        var year = date.getFullYear();
-        // last sunday of march
-        var temp = new Date(year, 2, 31);
-        var begin = new Date(year, 2, temp.getDate() - temp.getDay(), 2, 0, 0);
-        // last sunday of october
-        temp = new Date(year, 9, 31);
-        var end = new Date(year, 9, temp.getDate() - temp.getDay(), 3, 0, 0);
-
-        return ( begin < date && date < end );
-    }
+    USE_SUMMERTIME: TRUE, // Please define IS_SUMMERTIME in global.js to suit to your local summertime rules 
 }
 
 module.exports = mod;
