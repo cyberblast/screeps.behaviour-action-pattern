@@ -1,8 +1,7 @@
 var mod = {
     loop: function(){
-        _.forEach(Game.rooms, function(room, name){
-            room.init();
-        });
+        var init = room => room.init();
+        _.forEach(Game.rooms, init);
     }
 }
 
