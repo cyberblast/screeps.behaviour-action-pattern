@@ -117,6 +117,7 @@ var mod = {
         global.MODULES = {};    
         global.MODULES.extensions = require('extensions');
         global.MODULES.population = require('population');
+        global.MODULES.statistics = require('statistics');
         global.MODULES.room = require('room');
         global.MODULES.spawn = require('spawn'); 
         global.MODULES.tower = require('tower');

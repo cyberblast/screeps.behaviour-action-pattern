@@ -12,4 +12,6 @@ module.exports.loop = function () {
     if( Game.time % 10 == 0 ) 
         MODULES.spawn.loop();
     MODULES.tower.loop();
+    
+    MODULES.statistics.loop();
 };
