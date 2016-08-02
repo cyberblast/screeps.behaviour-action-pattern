@@ -17,7 +17,7 @@ var mod = {
         8: Infinity
     }, 
     TIME_ZONE: 1, // zone offset in hours (-12 through +12) from UTC
-    USE_SUMMERTIME: TRUE, // Please define IS_SUMMERTIME in global.js to suit to your local summertime rules 
+    USE_SUMMERTIME: true, // Please define IS_SUMMERTIME in global.js to suit to your local summertime rules 
 }
 
 module.exports = mod;

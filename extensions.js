@@ -152,7 +152,7 @@ var mod = {
                 this.sendReport(true);
                 this.memory.report = {
                     tick: Game.time, 
-                    time: new Date(Date.now() + 7200000).getTime(),
+                    time: Date.now(),
                     store: this.storage ? this.storage.store : null, 
                     controllerProgress: this.controller.progress, 
                     controllerProgressTotal: this.controller.progressTotal
@@ -162,8 +162,7 @@ var mod = {
         
         Room.prototype.sendReport = function(mail){
                 if( !this.memory.report ) return;
-                var now = new Date(Date.now() + 7200000);
-                var message = '<h4><b>Status report <a href="https://screeps.com/a/#!/room/' + this.name + '">' + this.name + '</a></b></h4>' + now.toLocaleString() + ' (' + parseInt((now.getTime() - this.memory.report.time)/60000) + ' minutes dif)<br/>';
+                var message = '<h4><b>Status report <a href="https://screeps.com/a/#!/room/' + this.name + '">' + this.name + '</a></b></h4>' + LocalDate().toLocaleString() + ' (' + parseInt((Date.now() - this.memory.report.time)/60000) + ' minutes dif)<br/>';
                 
                 message += "<u>Controller</u><br/>";
                 var cdif = this.controller.progress < this.memory.report.controllerProgress ? (this.memory.report.controllerProgressTotal - this.memory.report.controllerProgress) + this.controller.progress : (this.controller.progress - this.memory.report.controllerProgress); 

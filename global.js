@@ -124,7 +124,7 @@ var mod = {
             if( !date ) date = new Date(); 
             var offset = TIME_ZONE;
             if( USE_SUMMERTIME && IS_SUMMERTIME(date) ) offset++;
-            return new Date(date + (3600000 * offset));
+            return new Date(date.getTime() + (3600000 * offset));
         }
         global.IS_SUMMERTIME = function(date){
             var year = date.getFullYear();
