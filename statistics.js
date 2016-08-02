@@ -15,7 +15,6 @@ var mod = {
                 store: room.storage ? room.storage.store : null, 
                 controllerProgress: room.controller.progress, 
                 controllerProgressTotal: room.controller.progressTotal, 
-                bucket: Game.cpu.bucket, 
                 invaders: invaders
             };          
         };
@@ -23,7 +22,8 @@ var mod = {
         _.forEach(Game.rooms, setRoomStatistics);
         Memory.statistics = {
             tick: Game.time, 
-            time: Date.now()
+            time: Date.now(),
+            bucket: Game.cpu.bucket
         }
     },
     sendReport: function(){
@@ -33,7 +33,7 @@ var mod = {
                 + '<h4>at ' + LocalDate().toLocaleString() + ',<br/>' 
                 + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(storedStatisticsTime)) + ' (' + TIME_REPORT + ' loops)</h4>';
             
-            bucketDif = Game.cpu.bucket - room.memory.statistics.bucket;
+            bucketDif = Game.cpu.bucket - Memory.statistics.bucket;
             message += 'CPU Bucket: ' + Game.cpu.bucket + ' ('  + (bucketDif >= 0 ? '+' : '' ) + bucketDif + ')<ul>';
 
             var invaderReport = invader => {
