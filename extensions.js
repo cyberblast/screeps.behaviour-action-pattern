@@ -132,16 +132,33 @@ var mod = {
                     this.hostileIds.forEach( function(id){
                         if( !self.memory.hostileIds.includes(id) ){
                             var creep = Game.getObjectById(id);
+                            /*
                             var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
                             Game.notify(message, INTRUDER_REPORT_DELAY);
                             console.log(message);
+                            */
+                            var body = "";
+                            var concat = (value, key) => body += ', ' + key + ':' + value;
+                            var count = _.countBy(creep.body, 'type');
+                            _.forEach(count, concat);
+                            this.memory.statistics.invaders.push({
+                                owner: creep.owner.username, 
+                                id: id,
+                                body: body.substr(2), 
+                                enter: Game.time, 
+                                time: Date.now()
+                            });
                         }
                     });
                     this.memory.hostileIds.forEach( function(id){
                         if( !self.hostileIds.includes(id) ){
+                            /*
                             var message = 'Hostile intruder ' + id  + ' gone at ' + Game.time + ' ticks.'; 
                             Game.notify(message, INTRUDER_REPORT_DELAY);
                             console.log(message);
+                            */
+                            var select = invader => invader.id == id && invader.leave === undefined;
+                            _.find(this.memory.statistics.invaders, select).leave = Game.time;
                         }
                     });
                 }
