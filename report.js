@@ -25,20 +25,20 @@ var mod = {
     sendReport: function(){
         var storedStatisticsTime = (Memory.statistics && Memory.statistics.time ? Memory.statistics.time : 0 );
         if( storedStatisticsTime > 0 ) {
-            var message = '<h4><b>Status report</b></h4><br/>' 
-                + '<h3>at ' + LocalDate().toLocaleString() + '<br/>' 
-                + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(storedStatisticsTime)) + '</h3><br/><ul>';
+            var message = '<h3><b>Status report</b></h3>' 
+                + '<h4>at ' + LocalDate().toLocaleString() + '<br/>' 
+                + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(storedStatisticsTime)) + '</h4><ul>';
             
             // TODO: Add CPU bucket Statistik
 
             var roomReport = room => {
                 if( room.controller && room.controller.my ){
-                    message += '<li><h3>Room ' + room.name + '</h3><br/><u>Controller</u><br/>';
-                    var cdif = room.controller.progress < room.memory.report.controllerProgress ? (room.memory.report.controllerProgressTotal - room.memory.report.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.report.controllerProgress); 
+                    message += '<li><b>Room ' + room.name + '</b><br/><u>Controller</u><br/>';
+                    var cdif = room.controller.progress < room.memory.statistics.controllerProgress ? (room.memory.statistics.controllerProgressTotal - room.memory.statistics.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.statistics.controllerProgress); 
                     message += '   Level ' + room.controller.level + ', ' + room.controller.progress + '/' + room.controller.progressTotal + ' (+' + cdif + ')<br/>';
 
-                    if( room.storage && room.memory.report.store ){
-                        var memoryStoreRecord = room.memory.report.store;
+                    if( room.storage && room.memory.statistics.store ){
+                        var memoryStoreRecord = room.memory.statistics.store;
                         var currentRecord = room.storage.store;
                         message += '<u>Storage</u><br/>';
                         for( var type in memoryStoreRecord ){ // changed & depleted
@@ -64,7 +64,7 @@ var mod = {
     toTimeSpanString: function(dateA, dateB){
         var spanTicks = dateA.getTime() - dateB.getTime();
         if( spanTicks < 0 ) spanTicks *= -1;
-        var span = new date(spanTicks);    
+        var span = new Date(spanTicks);    
         var h = Math.floor(spanTicks / 3600000);
         var m = span.getMinutes();
         var s = span.getSeconds();
