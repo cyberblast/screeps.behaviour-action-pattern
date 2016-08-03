@@ -125,56 +125,49 @@ var mod = {
                 noEnergy: self.sourceEnergyAvailable == 0, 
                 invasion: false
             }
-            debugger;
             try{
-            if( this.memory.hostileIds ){
-                
-                if(self.memory.statistics === undefined)
-                    self.memory.statistics = {};
-                this.situation.invasion = this.hostiles.length > 0;
-                if( this.controller && this.controller.my ) {
-                    this.hostileIds.forEach( function(id){
-                        if( !self.memory.hostileIds.includes(id) ){
-                            var creep = Game.getObjectById(id);
-                            if( creep.owner.username != 'Invader' ){
-                                var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + creep.owner.username + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
-                                Game.notify(message);
-                                console.log(message);
+                if( this.memory.hostileIds ){                    
+                    if(self.memory.statistics === undefined)
+                        self.memory.statistics = {};
+                    this.situation.invasion = this.hostiles.length > 0;
+                    if( this.controller && this.controller.my ) {
+                        this.hostileIds.forEach( function(id){
+                            if( !self.memory.hostileIds.includes(id) ){
+                                var creep = Game.getObjectById(id);
+                                var body = "";
+                                var concat = (value, key) => body += ', ' + key + ':' + value;
+                                var count = _.countBy(creep.body, 'type');
+                                _.forEach(count, concat);
+                                if( creep.owner.username != 'Invader' ){
+                                    var message = 'Hostile intruder ' + id + ' (' + body.substr(2) + ') from "' + creep.owner.username + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
+                                    Game.notify(message);
+                                    console.log(message);
+                                }
+                                if(self.memory.statistics.invaders === undefined)
+                                    self.memory.statistics.invaders = [];
+                                self.memory.statistics.invaders.push({
+                                    owner: creep.owner.username, 
+                                    id: id,
+                                    body: body.substr(2), 
+                                    enter: Game.time, 
+                                    time: Date.now()
+                                });
                             }
-                            /*
-                            var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
-                            Game.notify(message, INTRUDER_REPORT_DELAY);
-                            console.log(message);
-                            */
-                            var body = "";
-                            var concat = (value, key) => body += ', ' + key + ':' + value;
-                            var count = _.countBy(creep.body, 'type');
-                            _.forEach(count, concat);
-                            if(self.memory.statistics.invaders === undefined)
-                                self.memory.statistics.invaders = [];
-                            self.memory.statistics.invaders.push({
-                                owner: creep.owner.username, 
-                                id: id,
-                                body: body.substr(2), 
-                                enter: Game.time, 
-                                time: Date.now()
-                            });
-                        }
-                    });
-                    this.memory.hostileIds.forEach( function(id){
-                        if( !self.hostileIds.includes(id) && self.memory.statistics && self.memory.statistics.invaders !== undefined && self.memory.statistics.invaders.length > 0){
-                            /*
-                            var message = 'Hostile intruder ' + id  + ' gone at ' + Game.time + ' ticks.'; 
-                            Game.notify(message, INTRUDER_REPORT_DELAY);
-                            console.log(message);
-                            */
-                            var select = invader => invader.id == id && invader.leave === undefined;
-                            var entry = _.find(self.memory.statistics.invaders, select);
-                            if( entry != undefined ) entry.leave = Game.time;
-                        }
-                    });
+                        });
+                        this.memory.hostileIds.forEach( function(id){
+                            if( !self.hostileIds.includes(id) && self.memory.statistics && self.memory.statistics.invaders !== undefined && self.memory.statistics.invaders.length > 0){
+                                /*
+                                var message = 'Hostile intruder ' + id  + ' gone at ' + Game.time + ' ticks.'; 
+                                Game.notify(message, INTRUDER_REPORT_DELAY);
+                                console.log(message);
+                                */
+                                var select = invader => invader.id == id && invader.leave === undefined;
+                                var entry = _.find(self.memory.statistics.invaders, select);
+                                if( entry != undefined ) entry.leave = Game.time;
+                            }
+                        });
+                    }
                 }
-            }
             }
             catch(err) {
                 Game.notify(err);
