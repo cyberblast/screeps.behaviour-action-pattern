@@ -81,7 +81,7 @@ var mod = {
                 }
             };
 
-            _.forEach(Game.rooms, roomReport);
+            _.forEach(Game.rooms, roomReport); 
         }
     }, 
     toTimeSpanString: function(dateA, dateB){
