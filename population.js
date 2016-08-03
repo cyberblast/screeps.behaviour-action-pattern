@@ -112,7 +112,7 @@ var mod = {
                 this.registerCreepActivity(room, creep, setup, action, targetId);
             }
         }    
-        probe = spawnName => MODULES.spawn.createCreep(Game.spawns[spawnName]);
+        var probe = spawnName => MODULES.spawn.createCreep(Game.spawns[spawnName]);
         _.forEach(spawnsToProbe, probe);        
     }
 }
