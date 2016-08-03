@@ -125,8 +125,12 @@ var mod = {
                 noEnergy: self.sourceEnergyAvailable == 0, 
                 invasion: false
             }
+            debugger;
             try{
             if( this.memory.hostileIds ){
+                
+                if(self.memory.statistics === undefined)
+                    self.memory.statistics = {};
                 this.situation.invasion = this.hostiles.length > 0;
                 if( this.controller && this.controller.my ) {
                     this.hostileIds.forEach( function(id){
@@ -158,14 +162,15 @@ var mod = {
                         }
                     });
                     this.memory.hostileIds.forEach( function(id){
-                        if( !self.hostileIds.includes(id) ){
+                        if( !self.hostileIds.includes(id) && self.memory.statistics && self.memory.statistics.invaders !== undefined && self.memory.statistics.invaders.length > 0){
                             /*
                             var message = 'Hostile intruder ' + id  + ' gone at ' + Game.time + ' ticks.'; 
                             Game.notify(message, INTRUDER_REPORT_DELAY);
                             console.log(message);
                             */
                             var select = invader => invader.id == id && invader.leave === undefined;
-                            _.find(self.memory.statistics.invaders, select).leave = Game.time;
+                            var entry = _.find(self.memory.statistics.invaders, select);
+                            if( entry != undefined ) entry.leave = Game.time;
                         }
                     });
                 }
@@ -173,6 +178,7 @@ var mod = {
             }
             catch(err) {
                 Game.notify(err);
+                console.log(err);
             }
             this.memory.hostileIds = this.hostileIds;
             
