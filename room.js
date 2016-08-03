@@ -1,5 +1,9 @@
 var mod = {
     extend: function(){
+        Room.loop = function(){
+            var loop = room => room.loop();
+            _.forEach(Game.rooms, loop);
+        };
         Room.prototype.loop = function(){
             // temporary cleanup: 
             if( this.memory.report !== undefined ){
@@ -91,11 +95,8 @@ var mod = {
             // Hostiles
             this.hostiles = this.find(FIND_HOSTILE_CREEPS);
             this.hostileIds = _.map(this.hostiles, 'id');
-            this.hostilesHeal = this.find(FIND_HOSTILE_CREEPS, {
-                filter: function(hostile) { 
-                    return _.some( hostile.body, {'type': HEAL} );
-                }
-            });
+            var healer = creep => _.some( creep.body, {'type': HEAL} );
+            this.hostilesHeal = _.filter(this.hostiles, healer);
             
             // storage
             if(this.storage && this.storage.store){
@@ -156,12 +157,7 @@ var mod = {
                 console.log(err);
             }
             this.memory.hostileIds = this.hostileIds;            
-        };
-        
-        Room.loop = function(){
-            var loop = room => room.loop();
-            _.forEach(Game.rooms, loop);
-        }
+        };        
     }
 }
 

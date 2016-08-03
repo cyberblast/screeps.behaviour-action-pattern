@@ -39,6 +39,10 @@ var mod = {
             ranger: require('creep.setup.ranger'),
             worker: require('creep.setup.worker')
         };
+        Creep.loop = function(){
+            var run = creep => creep.run();
+            _.forEach(Game.creeps, run);
+        };
         Creep.prototype.run = function(behaviour){
             if( !this.spawning ){
                 if(!behaviour && this.memory.setup) {
@@ -46,7 +50,7 @@ var mod = {
                 }
                 if( behaviour ) behaviour.run(this);
             }
-        };     
+        };
         Creep.prototype.unregisterTarget = function(){   
             var target = this.target;
             // unassign
@@ -88,8 +92,7 @@ var mod = {
                     target.creeps.sum = 1;
                 else target.creeps.sum++;
             }
-        };       
-             
+        };
         Creep.prototype.validateMemoryAction = function(){
             this.action = Creep.action[this.memory.action];
 
@@ -138,10 +141,6 @@ var mod = {
 
             return false;
         };
-        Creep.loop = function(){
-            var run = creep => creep.run();
-            _.forEach(Game.creeps, run);
-        }
     }
 }
 
