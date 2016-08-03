@@ -8,7 +8,7 @@ var mod = {
     setStatistics: function(){
         var setRoomStatistics = room => {  
             var present = invader => infader.leave === undefined;
-            var invaders = _.every(room.memory.statistics.invader, present);
+            var invaders = _.filter(room.memory.statistics.invader, present);
             room.memory.statistics = {
                 tick: Game.time, 
                 time: Date.now(),
@@ -40,9 +40,9 @@ var mod = {
             Game.notify(message);
 
             var invaderReport = invader => {
-                message += '<li>' + invader.owner + ': ' + invader.body;
-                if( invader.leave === undefined ) message += " since " + LocalDate(new Date(invader.time)) + '</li>';
-                else message += " for " + (invader.leave - invader.enter) + ' loops' + '</li>';
+                message += '<li>' + invader.owner + ': [' + invader.body;
+                if( invader.leave === undefined ) message += "] since " + LocalDate(new Date(invader.time)) + '</li>';
+                else message += "] for " + (invader.leave - invader.enter) + ' loops' + '</li>';
             };
 
             var roomReport = room => {
