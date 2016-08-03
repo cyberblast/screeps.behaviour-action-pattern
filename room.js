@@ -47,7 +47,7 @@ var mod = {
             // Sources
             _.sortBy(this.find(FIND_SOURCES), 
                 function(o) { 
-                    o.loop();
+                    o.init();
                     return o.accessibleFields;
                 }).forEach((source) => {
                     this.sources.push(source);
