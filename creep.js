@@ -138,6 +138,10 @@ var mod = {
 
             return false;
         };
+        Creep.loop = function(){
+            var run = creep => creep.run();
+            _.forEach(Game.creeps, run);
+        }
     }
 }
 

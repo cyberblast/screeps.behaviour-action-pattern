@@ -18,6 +18,7 @@ var mod = {
     }, 
     TIME_ZONE: 1, // zone offset in hours (-12 through +12) from UTC
     USE_SUMMERTIME: true, // Please define IS_SUMMERTIME in global.js to suit to your local summertime rules 
+    SPAWN_INTERVAL: 10 // loops between regular spawn probe 
 }
 
 module.exports = mod;

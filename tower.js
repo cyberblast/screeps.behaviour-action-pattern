@@ -1,5 +1,4 @@
 var mod = {
-    self: this,
     loop: function(){
         for(var iRoom in Game.rooms){
             //var towers = Game.rooms[iRoom].find(

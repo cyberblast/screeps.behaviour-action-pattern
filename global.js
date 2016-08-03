@@ -5,6 +5,16 @@ var mod = {
         var register = key => { global[key] = params[key]; };
         _.forEach(Object.keys(params), register);
 
+        Creep.extend = require('creep').extend;
+        Room.extend = require('room').extend;
+        Spawn.extend = require('spawn').extend;
+        
+        global.Extensions = require('extensions');
+        global.Population = require('population');
+        global.Statistics = require('statistics');
+        global.MOD = {};    
+        global.Tower = require('tower');
+        
         global.FLAG_COLOR = {
             invade: { // destroy everything enemy in the room
                 color: COLOR_RED, 
@@ -114,13 +124,6 @@ var mod = {
             if (val === null) { return false;}
             return ( (typeof val === 'function') || (typeof val === 'object') );
         }
-        global.MODULES = {};    
-        global.MODULES.extensions = require('extensions');
-        global.MODULES.population = require('population');
-        global.MODULES.statistics = require('statistics');
-        global.MODULES.room = require('room');
-        global.MODULES.spawn = require('spawn'); 
-        global.MODULES.tower = require('tower');
         global.LocalDate = function(date){
             if( !date ) date = new Date(); 
             var offset = TIME_ZONE;
