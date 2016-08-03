@@ -36,6 +36,9 @@ var mod = {
             bucketDif = Game.cpu.bucket - Memory.statistics.bucket;
             message += 'CPU Bucket: ' + Game.cpu.bucket + ' ('  + (bucketDif >= 0 ? '+' : '' ) + bucketDif + ')<ul>';
 
+            message += '</ul>';
+            Game.notify(message);
+
             var invaderReport = invader => {
                 message += '<li>' + invader.owner + ': ' + invader.body;
                 if( invader.leave === undefined ) message += " since " + LocalDate(new Date(invader.time)) + '</li>';
@@ -45,7 +48,7 @@ var mod = {
             var roomReport = room => {
                 if( room.controller && room.controller.my ){
                     // controller
-                    message += '<li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul>';
+                    message = '<ul><li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul>';
                     var isUpgraded = room.controller.progress < room.memory.statistics.controllerProgress;
                     var cdif = isUpgraded ? (room.memory.statistics.controllerProgressTotal - room.memory.statistics.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.statistics.controllerProgress); 
                     message += '<li>Level ' + room.controller.level + ', ' + room.controller.progress + '/' + room.controller.progressTotal + ' (+' + cdif + ')' + (isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>');
@@ -73,14 +76,12 @@ var mod = {
                         _.forEach(room.memory.statistics.invaders, invaderReport);
                         message += '</ul>';
                     }
-                    message += '</li>'; 
+                    message += '</li></ul>'; 
+                    Game.notify(message);
                 }
             };
 
             _.forEach(Game.rooms, roomReport);
-            message += '</ul>';
-
-            Game.notify(message);
         }
     }, 
     toTimeSpanString: function(dateA, dateB){
