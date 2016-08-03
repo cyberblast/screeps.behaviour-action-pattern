@@ -32,10 +32,11 @@ var mod = {
             var message = '<h3><b>Status report</b></h3>' 
                 + '<h4>at ' + LocalDate().toLocaleString() + ',<br/>' 
                 + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(storedStatisticsTime)) + ' (' + (Game.time - Memory.statistics.tick) + ' loops)</h4>';
-            
-            bucketDif = Game.cpu.bucket - Memory.statistics.bucket;
-            message += 'CPU Bucket: ' + Game.cpu.bucket + ' ('  + (bucketDif >= 0 ? '+' : '' ) + bucketDif + ')';
-            Game.notify(message);
+            if( Game.cpu.bucket ){
+                bucketDif = Game.cpu.bucket - Memory.statistics.bucket;
+                message += 'CPU Bucket: ' + Game.cpu.bucket + ' ('  + (bucketDif >= 0 ? '+' : '' ) + bucketDif + ')';
+                Game.notify(message);
+            }
 
             var invaderReport = invader => {
                 message += '<li>' + invader.owner + ': [' + invader.body;
