@@ -34,15 +34,13 @@ var mod = {
                 + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(storedStatisticsTime)) + ' (' + (Game.time - Memory.statistics.tick) + ' loops)</h4>';
             
             bucketDif = Game.cpu.bucket - Memory.statistics.bucket;
-            message += 'CPU Bucket: ' + Game.cpu.bucket + ' ('  + (bucketDif >= 0 ? '+' : '' ) + bucketDif + ')<ul>';
-
-            message += '</ul>';
+            message += 'CPU Bucket: ' + Game.cpu.bucket + ' ('  + (bucketDif >= 0 ? '+' : '' ) + bucketDif + ')';
             Game.notify(message);
 
             var invaderReport = invader => {
                 message += '<li>' + invader.owner + ': [' + invader.body;
-                if( invader.leave === undefined ) message += "] since " + LocalDate(new Date(invader.time)) + '</li>';
-                else message += "] for " + (invader.leave - invader.enter) + ' loops' + '</li>';
+                if( invader.leave === undefined ) message += "] since " + LocalDate(new Date(invader.time)).toLocaleString() + '</li>';
+                else message += "] for " + (invader.leave - invader.enter) + ' loops at ' + LocalDate(new Date(invader.time)).toLocaleString() + '</li>';
             };
 
             var roomReport = room => {

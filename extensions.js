@@ -139,7 +139,7 @@ var mod = {
                                 var count = _.countBy(creep.body, 'type');
                                 _.forEach(count, concat);
                                 if( creep.owner.username != 'Invader' ){
-                                    var message = 'Hostile intruder ' + id + ' (' + body.substr(2) + ') from "' + creep.owner.username + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
+                                    var message = 'Hostile intruder ' + id + ' (' + body.substr(2) + ') from "' + creep.owner.username + '" in room ' + self.name + ' at ' + LocalDate(new Date()).toLocaleString();
                                     Game.notify(message);
                                     console.log(message);
                                 }
