@@ -141,7 +141,7 @@ var mod = {
                             var concat = (value, key) => body += ', ' + key + ':' + value;
                             var count = _.countBy(creep.body, 'type');
                             _.forEach(count, concat);
-                            this.memory.statistics.invaders.push({
+                            self.memory.statistics.invaders.push({
                                 owner: creep.owner.username, 
                                 id: id,
                                 body: body.substr(2), 
@@ -158,7 +158,7 @@ var mod = {
                             console.log(message);
                             */
                             var select = invader => invader.id == id && invader.leave === undefined;
-                            _.find(this.memory.statistics.invaders, select).leave = Game.time;
+                            _.find(self.memory.statistics.invaders, select).leave = Game.time;
                         }
                     });
                 }
