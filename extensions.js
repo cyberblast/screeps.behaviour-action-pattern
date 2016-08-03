@@ -125,13 +125,18 @@ var mod = {
                 noEnergy: self.sourceEnergyAvailable == 0, 
                 invasion: false
             }
-            
+            try{
             if( this.memory.hostileIds ){
                 this.situation.invasion = this.hostiles.length > 0;
                 if( this.controller && this.controller.my ) {
                     this.hostileIds.forEach( function(id){
                         if( !self.memory.hostileIds.includes(id) ){
                             var creep = Game.getObjectById(id);
+                            if( creep.owner.username != 'Invader' ){
+                                var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + creep.owner.username + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
+                                Game.notify(message);
+                                console.log(message);
+                            }
                             /*
                             var message = 'Hostile intruder ' + id + ' (' + creep.body.length + ' body parts) from "' + (creep.owner && creep.owner.username ? creep.owner.username : 'unknown') + '" in room ' + self.name + ' at ' + Game.time + ' ticks.'
                             Game.notify(message, INTRUDER_REPORT_DELAY);
@@ -141,6 +146,8 @@ var mod = {
                             var concat = (value, key) => body += ', ' + key + ':' + value;
                             var count = _.countBy(creep.body, 'type');
                             _.forEach(count, concat);
+                            if(self.memory.statistics.invaders === undefined)
+                                self.memory.statistics.invaders = [];
                             self.memory.statistics.invaders.push({
                                 owner: creep.owner.username, 
                                 id: id,
@@ -162,6 +169,10 @@ var mod = {
                         }
                     });
                 }
+            }
+            }
+            catch(err) {
+                Game.notify(err);
             }
             this.memory.hostileIds = this.hostileIds;
             
