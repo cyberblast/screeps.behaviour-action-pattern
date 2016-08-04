@@ -65,7 +65,7 @@ var mod = {
                         // new
                         for( var type in currentRecord ){
                             if(!memoryStoreRecord[type])
-                                message += '<li>' + type + ': ' + currentRecord[type] + ' (' + currentRecord[type] + ')</li>';  
+                                message += '<li>' + type + ': ' + currentRecord[type] + ' (+' + currentRecord[type] + ')</li>';  
                         }
                         message += '</ul>';
                     }
