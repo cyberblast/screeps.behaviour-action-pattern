@@ -1,5 +1,53 @@
 var mod = {
     extend: function(){
+        Object.defineProperty(Room.prototype, 'sources', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this.memory.sourceIds) ) { // inital memorization
+                    this.memory.sourceIds = [];
+                    let sources = this.find(FIND_SOURCES);
+                    if( sources.length > 0 ){
+                        var byAccess = source => source.accessibleFields;
+                        var sourceId = source => source.id;
+                        this.memory.sourceIds = _.map(_.sortBy(sources, byAccess), sourceId);
+                    } else this.memory.sourceIds = [];
+                }
+                if( this._sources == null ){ // each loop: get real objects 
+                    this._sources = [];
+                    var addSource = sourceId => {
+                        var source = Game.getObjectById(sourceId);
+                        if( source != null )
+                            this._sources.push(Game.getObjectById(sourceId))
+                    };
+                    _.forEach(this.memory.sourceIds, addSource);
+                }
+                return this._sources;
+            }
+        });
+        Object.defineProperty(Room.prototype, 'sourceAccessibleFields', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this.memory.sourceAccessibleFields)) {
+                    let sourceAccessibleFields = 0;
+                    let sources = this.sources;
+                    var countAccess = source => sourceAccessibleFields += source.accessibleFields;
+                    _.forEach(sources, countAccess);
+                    this.memory.sourceAccessibleFields = sourceAccessibleFields;
+                }
+                return this.memory.sourceAccessibleFields;
+            }
+        });
+        Object.defineProperty(Room.prototype, 'sourceEnergyAvailable', {
+            configurable: true,
+            get: function() {
+                if( this._sourceEnergyAvailable == null ){ // each loop: get real objects 
+                    this._sourceEnergyAvailable = 0;
+                    var countEnergy = source => this._sourceEnergyAvailable += source.energy;
+                    _.forEach(this.sources, countEnergy);
+                }
+                return this._sourceEnergyAvailable;
+            }
+        });
         Room.loop = function(){
             var loop = room => room.loop();
             _.forEach(Game.rooms, loop);
@@ -18,10 +66,7 @@ var mod = {
             // Room
             var self = this;
             if( this.population === undefined ) this.population = {};
-            this.sourceAccessibleFields = 0;
-            this.sourceEnergyAvailable = 0;
             this.relativeEnergyAvailable = this.energyCapacityAvailable > 0 ? this.energyAvailable / this.energyCapacityAvailable : 0;
-            this.sources = [];            
             this.constructionSites = {
                 order: [], // ids, ordered descending by remaining progress
                 count: 0
@@ -38,7 +83,7 @@ var mod = {
             this.towerFreeCapacity = 0;
 
             // Construction Sites
-            _.sortBy(this.find(FIND_MY_CONSTRUCTION_SITES), 
+            _.sortBy(this.find(FIND_MY_CONSTRUCTION_SITES),             
                 function(o) { 
                     return o.progress * -1; 
                 }).forEach(function(site){
@@ -46,19 +91,8 @@ var mod = {
                     self.constructionSites.order.push(site.id);
                     self.constructionSites.count++;
                     self.constructionSites[site.id] = site; 
-                });
-            
-            // Sources
-            _.sortBy(this.find(FIND_SOURCES), 
-                function(o) { 
-                    o.init();
-                    return o.accessibleFields;
-                }).forEach((source) => {
-                    this.sources.push(source);
-                    self.sourceAccessibleFields += source.accessibleFields;
-                    self.sourceEnergyAvailable += source.energy;
-                });
-            
+                });            
+                
             // RepairableSites
             var coreStructures = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTROLLER];  
             _.sortBy(this.find(FIND_STRUCTURES, {
@@ -150,10 +184,10 @@ var mod = {
             }
             catch(err) {
                 Game.notify(err);
-                console.log(err);
+                console.log('Error in room.js: ' + err);
             }
             this.memory.hostileIds = this.hostileIds;            
-        };        
+        };
     }
 }
 

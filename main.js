@@ -1,7 +1,7 @@
 require('global').init();
+Extensions.extend();  
 Creep.extend();  
 Room.extend();  
-Extensions.extend();  
 Spawn.extend();  
 
 module.exports.loop = function () {

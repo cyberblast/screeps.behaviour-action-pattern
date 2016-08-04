@@ -22,11 +22,38 @@ var mod = {
                 Memory.structures[this.id] = value;
             }
         });
+        Object.defineProperty(Source.prototype, 'memory', {
+            configurable: true,
+            get: function() {
+                if(_.isUndefined(Memory.sources)) {
+                    Memory.sources = {};
+                }
+                if(!_.isObject(Memory.sources)) {
+                    return undefined;
+                }
+                return Memory.sources[this.id] = Memory.sources[this.id] || {};
+            },
+            set: function(value) {
+                if(_.isUndefined(Memory.sources)) {
+                    Memory.sources = {};
+                }
+                if(!_.isObject(Memory.sources)) {
+                    throw new Error('Could not set memory extension for sources');
+                }
+                Memory.sources[this.id] = value;
+            }
+        });
         
-        Source.prototype.init = function() {
-            var fields = this.room.lookForAtArea(LOOK_TERRAIN, this.pos.y-1, this.pos.x-1, this.pos.y+1, this.pos.x+1, true);
-            this.accessibleFields = 9-_.countBy( fields , "terrain" ).wall;
-        };
+        Object.defineProperty(Source.prototype, 'accessibleFields', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this.memory.accessibleFields) ) {
+                    var fields = this.room.lookForAtArea(LOOK_TERRAIN, this.pos.y-1, this.pos.x-1, this.pos.y+1, this.pos.x+1, true);
+                    this.memory.accessibleFields = 9-_.countBy( fields , "terrain" ).wall;
+                }
+                return this.memory.accessibleFields;
+            }
+        });        
     }
 }
 
