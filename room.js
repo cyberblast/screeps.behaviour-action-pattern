@@ -117,12 +117,13 @@ var mod = {
                         this.hostileIds.forEach( function(id){
                             if( !self.memory.hostileIds.includes(id) ){
                                 var creep = Game.getObjectById(id);
-                                var body = "";
-                                var concat = (value, key) => body += ', ' + key + ':' + value;
-                                var count = _.countBy(creep.body, 'type');
-                                _.forEach(count, concat);
+                                //var body = "";
+                                //var concat = (value, key) => body += ', ' + key + ':' + value;
+                                //var count = _.countBy(creep.body, 'type');
+                                //_.forEach(count, concat);
+                                var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
                                 if( creep.owner.username != 'Invader' ){
-                                    var message = 'Hostile intruder ' + id + ' (' + body.substr(2) + ') from "' + creep.owner.username + '" in room ' + self.name + ' at ' + LocalDate(new Date()).toLocaleString();
+                                    var message = 'Hostile intruder ' + id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + self.name + ' at ' + LocalDate(new Date()).toLocaleString();
                                     Game.notify(message);
                                     console.log(message);
                                 }
@@ -131,7 +132,7 @@ var mod = {
                                 self.memory.statistics.invaders.push({
                                     owner: creep.owner.username, 
                                     id: id,
-                                    body: body.substr(2), 
+                                    body: bodyCount, 
                                     enter: Game.time, 
                                     time: Date.now()
                                 });
@@ -139,11 +140,6 @@ var mod = {
                         });
                         this.memory.hostileIds.forEach( function(id){
                             if( !self.hostileIds.includes(id) && self.memory.statistics && self.memory.statistics.invaders !== undefined && self.memory.statistics.invaders.length > 0){
-                                /*
-                                var message = 'Hostile intruder ' + id  + ' gone at ' + Game.time + ' ticks.'; 
-                                Game.notify(message, INTRUDER_REPORT_DELAY);
-                                console.log(message);
-                                */
                                 var select = invader => invader.id == id && invader.leave === undefined;
                                 var entry = _.find(self.memory.statistics.invaders, select);
                                 if( entry != undefined ) entry.leave = Game.time;
