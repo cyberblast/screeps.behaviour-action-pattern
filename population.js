@@ -90,6 +90,9 @@ var mod = {
                         creep.memory.spawning = 1;
                     else creep.memory.spawning++;
                 }
+                else if( creep.ticksToLive == 1499 ){ // spawning complete
+                    spawnsToProbe.push(creep.memory.mother);
+                }
 
                 var room = creep.room;
                 var spawning = creep.memory.spawning;
@@ -103,9 +106,9 @@ var mod = {
                 // register creep
                 if( creep.ticksToLive === undefined || creep.ticksToLive > spawning ) {
                     this.registerCreepSetup(room, setup, cost);
-                } else if(creep.ticksToLive == spawning) {
+                } else if(creep.ticksToLive == spawning) { // will die in ticks equal to spawning time
                     if(DEBUG) console.log(DYE(CRAYON.system, creepName + ' &gt; ') + DYE(CRAYON.death, 'Good night!') );
-                    if( Game.time % 10 != 0 && !spawnsToProbe.includes(creep.memory.mother)) { // no common spawnprobe
+                    if( Game.time % SPAWN_INTERVAL != 0 && !spawnsToProbe.includes(creep.memory.mother)) { // no regular spawnprobe
                         spawnsToProbe.push(creep.memory.mother);
                     }
                 }
