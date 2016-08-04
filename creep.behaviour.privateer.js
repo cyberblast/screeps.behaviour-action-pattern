@@ -1,10 +1,10 @@
-var behaviour = new MODULES.creep.Behaviour();
+var behaviour = new Creep.Behaviour('privateer');
 
 behaviour.nextAction = function(creep){
     creep.unregisterTarget();
 
     var flag;    
-    if( creep.flag )
+    if( creep.flag && creep.flag.color == FLAG_COLOR.invade.exploit.color && creep.flag.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor)
         flag = creep.flag;
     else {
         var flags = _.sortBy(_.filter(Game.flags, FLAG_COLOR.invade.exploit.filter), 
@@ -23,21 +23,22 @@ behaviour.nextAction = function(creep){
      
     if( !flag ) { // no (more) exploit flag
         if( creep.pos.roomName != creep.memory.home ){ // not at home
-            this.assignAction(creep, MODULES.creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
-        } else creep.run(MODULES.creep.behaviour.worker); // at home: behave as worker
+            creep.assignAction(Creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
+        } else creep.run(Creep.behaviour.worker); // at home: behave as worker
         return;
     }
 
     if(_.sum(creep.carry) == creep.carryCapacity) { // carrier full
         if( creep.pos.roomName != creep.memory.home ){ // not at home
-            this.assignAction(creep, MODULES.creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
+            creep.assignAction(Creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
         } 
         else { // at home
             if( _.sum(creep.carry) > creep.carry.energy ) { // has non energy sources
-                if( this.assignAction(creep, MODULES.creep.action.storing) ) 
+                if( creep.assignAction(Creep.action.storing) ) 
                     return; // TODO: handle no storage ?
             } 
-            this.assignAction(creep, MODULES.creep.action.upgrading); 
+            //creep.assignAction(Creep.action.upgrading); 
+            Creep.behaviour.worker.nextAction(creep);
         }        
         return;
     }
@@ -46,25 +47,25 @@ behaviour.nextAction = function(creep){
 
     // flag is in other room 
     if( flag && (!flag.room || flag.room.name != creep.room.name) ) {
-        this.assignAction(creep, MODULES.creep.action.settling, flag); // go to flagged room
+        creep.assignAction(Creep.action.settling, flag); // go to flagged room
         return;
     } 
     
     // inside flagged room
     
-    var actions = [MODULES.creep.action.picking, MODULES.creep.action.harvesting];
+    var actions = [Creep.action.picking, Creep.action.harvesting];
     // TODO: Add extracting at first (if extractor present)
 
     for(var iAction = 0; iAction < actions.length; iAction++) {   
         var action = actions[iAction];             
         if(action.isValidAction(creep) && 
             action.isAddableAction(creep) && 
-            this.assignAction(creep, action))
+            creep.assignAction(action))
             return;
     }
     
     // idle
-    this.assignAction(creep, MODULES.creep.action.idle);
+    creep.assignAction(Creep.action.idle);
 };
 
 

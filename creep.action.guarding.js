@@ -1,9 +1,11 @@
-var action = new MODULES.creep.Action();
+var action = new Creep.Action('guarding');
 
-action.name = 'guarding';
 action.reusePath = 10;
 action.ignoreCreeps = true;
 action.maxTargetLease = 12;
+
+action.isAddableAction = function(){ return true; };
+action.isAddableTarget = function(){ return true; };
 
 action.newTarget = function(creep){ 
     var flags = _.sortBy(_.filter(Game.flags, FLAG_COLOR.defense.filter), 
@@ -16,9 +18,6 @@ action.newTarget = function(creep){
     if( flags && flags.length > 0 ) return flags[0];
     return null;
 };
-action.isAddableAction = function(){ return true; };
-action.isAddableTarget = function(){ return true; };
-
 action.work = function(creep){
     return OK;
 };

@@ -74,12 +74,13 @@ var mod = {
             Game.population = {};
         }
 
+        var spawnsToProbe = [];
         for(var creepName in Memory.creeps){
             var creep = Game.creeps[creepName];
 
             // Clean memory
             if ( !creep ) {
-                console.log(Memory.creeps[creepName].mother + ' > Good night ' + creepName + '!');
+                if(DEBUG) console.log(DYE(CRAYON.system, Memory.creeps[creepName].mother + ' &gt; ') + DYE(CRAYON.death, 'Good night ' + creepName + '!') );
                 delete Memory.creeps[creepName];
             } 
             else {
@@ -102,10 +103,17 @@ var mod = {
                 // register creep
                 if( creep.ticksToLive === undefined || creep.ticksToLive > spawning ) {
                     this.registerCreepSetup(room, setup, cost);
+                } else if(creep.ticksToLive == spawning) {
+                    if(DEBUG) console.log(DYE(CRAYON.system, creepName + ' &gt; ') + DYE(CRAYON.death, 'Good night!') );
+                    if( Game.time % 10 != 0 && !spawnsToProbe.includes(creep.memory.mother)) { // no common spawnprobe
+                        spawnsToProbe.push(creep.memory.mother);
+                    }
                 }
                 this.registerCreepActivity(room, creep, setup, action, targetId);
             }
-        }            
+        }    
+        var probe = spawnName => Game.spawns[spawnName].loop();
+        _.forEach(spawnsToProbe, probe);        
     }
 }
 

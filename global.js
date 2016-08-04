@@ -1,22 +1,20 @@
+var params = require('parameter');
+
 var mod = {
     init: function(){
-        global.CHATTY = false; // creeps like talking 
-        global.SAY_PUBLIC = true; // creeps talk public
-        global.DEBUG = true; // gimme some more details
-        global.LIMIT_CREEP_REPAIRING = 1000; // urgent repair when hits below
-        global.LIMIT_STORAGE_ENERGY = 500000; // stop storing energy when reached
-        global.TIME_REPORT = 8000; // ticks between room reports
-        global.INTRUDER_REPORT_DELAY = 360; // minutes between intruder reports
-        global.HIVE_ENERGY_URGENT = 0.3; // prefer withdraw & add more feeding below this relative amount of available energy
-        global.TOWER_REPAIR_LIMITS = { // Limits how high structures get repaired by towers, regarding RCL
-            2: 10000,
-            3: 10000,
-            4: 20000,
-            5: 50000,
-            6: 80000,
-            7: 120000,
-            8: Infinity
-        };
+        var register = key => { global[key] = params[key]; };
+        _.forEach(Object.keys(params), register);
+
+        Creep.extend = require('creep').extend;
+        Room.extend = require('room').extend;
+        Spawn.extend = require('spawn').extend;
+        
+        global.Extensions = require('extensions');
+        global.Population = require('population');
+        global.Statistics = require('statistics');
+        global.MOD = {};    
+        global.Tower = require('tower');
+        
         global.FLAG_COLOR = {
             invade: { // destroy everything enemy in the room
                 color: COLOR_RED, 
@@ -64,51 +62,6 @@ var mod = {
                 }
             }
         };
-        global.MODULES = {};
-        global.MODULES.creep = require('creep');
-        global.MODULES.creep.action = {
-            building: require('creep.action.building'), 
-            claiming: require('creep.action.claiming'), 
-            defending: require('creep.action.defending'),
-            feeding: require('creep.action.feeding'), 
-            fueling: require('creep.action.fueling'), 
-            guarding: require('creep.action.guarding'), 
-            harvesting: require('creep.action.harvesting'),
-            healing: require('creep.action.healing'),
-            idle: require('creep.action.idle'),
-            invading: require('creep.action.invading'),
-            picking: require('creep.action.picking'), 
-            repairing: require('creep.action.repairing'), 
-            settling: require('creep.action.settling'), 
-            storing: require('creep.action.storing'), 
-            upgrading: require('creep.action.upgrading'), 
-            withdrawing: require('creep.action.withdrawing')
-        };
-        global.MODULES.creep.behaviour = {
-            claimer: require('creep.behaviour.claimer'),
-            healer: require('creep.behaviour.healer'),
-            melee: require('creep.behaviour.melee'),
-            pioneer: require('creep.behaviour.pioneer'),
-            privateer: require('creep.behaviour.privateer'),
-            ranger: require('creep.behaviour.ranger'),
-            worker: require('creep.behaviour.worker')
-        };
-        global.MODULES.creep.setup = {
-            claimer: require('creep.setup.claimer'),
-            healer: require('creep.setup.healer'), 
-            melee: require('creep.setup.melee'),
-            pioneer: require('creep.setup.pioneer'),
-            privateer: require('creep.setup.privateer'),
-            ranger: require('creep.setup.ranger'),
-            worker: require('creep.setup.worker')
-        };
-        
-        global.MODULES.extensions = require('extensions');
-        global.MODULES.population = require('population');
-        global.MODULES.room = require('room');
-        global.MODULES.spawn = require('spawn'); 
-        global.MODULES.tower = require('tower');
-
         global.PART_COSTS = {
             work: 100,
             carry: 50,
@@ -138,11 +91,55 @@ var mod = {
                 15: 'ERR_GCL_NOT_ENOUGH'};
             return codes[code*-1];
         };
+        global.DYE = function(style, text){
+            if( isObj(style) ) {
+                var css = "";
+                var format = key => css += key + ":" + style[key] + ";";
+                _.forEach(Object.keys(style), format);
+                return('<font style="' + css + '">' + text + '</font>');
+            }
+            if( style )
+                return('<font style="color:' + style + '">' + text + '</font>');
+            else return text;
+        };
+        global.CRAYON = {
+            death: { color: 'black', 'font-weight': 'bold' }, 
+            birth: '#e6de99', 
+            error: 'FireBrick', 
+            system: { color: '#999', 'font-size': '10px' }
+        };
         global.ERROR_LOG = function(creep, code) {
-            if(creep) creep.say(ERROR_CODE(code));
-            var message = ERROR_CODE(code) + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
-            console.log( message );
-            Game.notify( message, 120 );
+            if( code ) {
+                var error = ERROR_CODE(code);
+                if(creep) {
+                    if( error ) creep.say(error);
+                    else creep.say(code);
+                }
+                var message = error + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
+                console.log( DYE(CRAYON.error, message) );
+                Game.notify( message, 120 );
+            } else console.log( DYE(CRAYON.error, 'unknown error code!') );
+        };
+        global.isObj = function(val){
+            if (val === null) { return false;}
+            return ( (typeof val === 'function') || (typeof val === 'object') );
+        }
+        global.LocalDate = function(date){
+            if( !date ) date = new Date(); 
+            var offset = TIME_ZONE;
+            if( USE_SUMMERTIME && IS_SUMMERTIME(date) ) offset++;
+            return new Date(date.getTime() + (3600000 * offset));
+        }
+        global.IS_SUMMERTIME = function(date){
+            var year = date.getFullYear();
+            // last sunday of march
+            var temp = new Date(year, 2, 31);
+            var begin = new Date(year, 2, temp.getDate() - temp.getDay(), 2, 0, 0);
+            // last sunday of october
+            temp = new Date(year, 9, 31);
+            var end = new Date(year, 9, temp.getDate() - temp.getDay(), 3, 0, 0);
+
+            return ( begin < date && date < end );
         };
     }
 }

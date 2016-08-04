@@ -1,6 +1,4 @@
-var action = new MODULES.creep.Action();
-
-action.name = 'fueling';
+var action = new Creep.Action('fueling');
 
 action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 && creep.room.towerFreeCapacity > 0 );
@@ -8,6 +6,11 @@ action.isValidAction = function(creep){
 action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };   
+action.isAddableTarget = function(target){ 
+    return (this.maxPerTarget > 0 && (!target.creeps || !target.creeps[this.maxPerTargetType] || target.creeps[this.maxPerTargetType].length < this.maxPerTarget)) && 
+    ((target.energy < target.energyCapacity * (1-(0.18/target.room.towers.length))) || target.room.situation.invasion);
+};
+
 action.newTarget = function(creep){
     var self = this;
     var t = creep.room.towers.find(function(tower) { // TODO: include Nuker
@@ -15,11 +18,6 @@ action.newTarget = function(creep){
     });
     return t;
 };
-action.isAddableTarget = function(target){ 
-    return (this.maxPerTarget > 0 && (!target.creeps || !target.creeps[this.maxPerTargetType] || target.creeps[this.maxPerTargetType].length < this.maxPerTarget)) && 
-    ((target.energy < target.energyCapacity * (1-(0.18/target.room.towers.length))) || target.room.situation.invasion);
-};
-
 action.work = function(creep){
     return creep.transfer(creep.target, RESOURCE_ENERGY);
 };

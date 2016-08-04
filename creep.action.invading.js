@@ -1,6 +1,5 @@
-var action = new MODULES.creep.Action();
+var action = new Creep.Action('invading');
 
-action.name = 'invading';
 action.reusePath = 0;
 
 action.isValidAction = function(){ return true; };
@@ -8,21 +7,22 @@ action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 
 action.getFlaggedStructure = function(flagColor){
-    var flag = _.find(Game.flags, flagColor.filter);
-    if( flag && flag.room ){ // room is visible
-        // get target or remove flag
-        var targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
-        if( targets && targets.length > 0)
-            return targets[0];
-        else {
-            // remove flag. try next flag
-            flag.remove();
-            return this.getFlaggedStructure(color);
+    var flags = _.filter(Game.flags, flagColor.filter); // TODO: find nearest (in room or count rooms?)
+    var target = null;
+    for( var iFlag = 0; iFlag < flags.length; iFlag++ ){
+        var flag = flags[iFlag];
+        if( flag.room !== undefined ){ // room is visible
+            var targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
+            if( targets && targets.length > 0)
+                return targets[0]; // prefer target in same room so return
+            else {
+                // remove flag. try next flag
+                flag.remove();
+            }
         }
+        else target = flag; // target in other room
     }
-    if( flag && !flag.room ) // || flag.room.name != creep.room.name))
-        return flag; // other invisible room
-    return null;
+    return target;
 }
 
 action.newTarget = function(creep){
@@ -99,7 +99,7 @@ action.newTarget = function(creep){
     // no target found
     flag.remove();
     
-    return this.defaultTarget(creep);
+    return null;
 };
 
 action.step = function(creep){

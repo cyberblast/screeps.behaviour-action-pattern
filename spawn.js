@@ -1,36 +1,38 @@
 var mod = {
-    self: this,
-    loop: function(){
-        for(var iSpawn in Game.spawns){
-            var spawn = Game.spawns[iSpawn];
-            if( !spawn.spawning )
-                this.createCreep(spawn);
-        }
-    },
-    createCreep: function(spawn){
-        [MODULES.creep.setup.worker, 
-            MODULES.creep.setup.melee,
-            MODULES.creep.setup.ranger,
-            MODULES.creep.setup.healer,
-            MODULES.creep.setup.claimer, 
-            MODULES.creep.setup.pioneer, 
-            MODULES.creep.setup.privateer
-        ].forEach(function(set) {
-            if( !spawn.busy && set.isValidSetup(spawn) ){
-                var params =  set.buildParams(spawn);
-                //if( DEBUG ) console.log(spawn.name + ' > Spawning new ' + params.setup + ' @ ' + (Game.population[params.setup] ? Game.population[params.setup].count : 0) + ' total already existing');
-                var newName = spawn.createCreep(params.parts, params.id, params);
-                if( params.id == newName ){
-                    spawn.busy = true;
-                    MODULES.population.registerCreepSetup(spawn.room, params.setup, params.cost);
+    extend: function(){
+        Spawn.prototype.loop = function(){
+            if( this.spawning ) return;
+            var self = this;
+            [Creep.setup.worker, 
+                Creep.setup.melee,
+                Creep.setup.ranger,
+                Creep.setup.healer,
+                Creep.setup.claimer, 
+                Creep.setup.pioneer, 
+                Creep.setup.privateer
+            ].forEach(function(set) {
+                if( set.isValidSetup(self) ){
+                    var params =  set.buildParams(self);
+                    var newName = self.createCreep(params.parts, params.id, params);
+                    if( params.id == newName || ERROR_CODE(newName) === undefined ){ // other name assigned?
+                        Population.registerCreepSetup(self.room, params.setup, params.cost);
+                        if(DEBUG) console.log( DYE(CRAYON.system, self.name + ' &gt; ') + DYE(CRAYON.birth, 'Good morning ' + newName + '!') );
+                        return;
+                    } 
+                    
+                    console.log( DYE(CRAYON.system, self.name + ' &gt; ') + DYE(CRAYON.error, 'Offspring failed: ' + ERROR_CODE(newName)) );
                 }
-                
-                console.log(params.id == newName || ERROR_CODE(newName) === undefined ? 
-                    spawn.name + ' > Good morning ' + newName + '!': 
-                    spawn.name + ' > Offspring failed: ' + ERROR_CODE(newName));
-                //if( DEBUG ) console.log(spawn.name + ' > New total population of ' + params.setup + ': ' + (Game.population[params.setup] ? Game.population[params.setup].count : 0) + '<br/> ');
+            });
+        };
+        Spawn.loop = function(){
+            if( Game.time % SPAWN_INTERVAL == 0 ) {        
+                var loop = spawn => { 
+                    if( !spawn.spawning ) 
+                    spawn.loop(); 
+                };
+                _.forEach(Game.spawns, loop);
             }
-        });
+        }
     }
 };
 

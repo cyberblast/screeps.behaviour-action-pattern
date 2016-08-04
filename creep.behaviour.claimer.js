@@ -1,8 +1,8 @@
-var behaviour = new MODULES.creep.Behaviour();
+var behaviour = new Creep.Behaviour('claimer');
 
 behaviour.run = function(creep) {
     var flag;    
-    if( creep.flag )
+    if( creep.flag ) // TODO: validate flag colors
         flag = creep.flag;
     else {
         var flags = _.sortBy(_.filter(Game.flags, FLAG_COLOR.claim.filter), 
@@ -21,8 +21,8 @@ behaviour.run = function(creep) {
 
     // TODO: Add Settling
      
-    if( !flag || !this.assignAction(creep, MODULES.creep.action.claiming) )
-        this.assignAction(creep, MODULES.creep.action.idle);
+    if( !flag || !creep.assignAction(Creep.action.claiming) )
+        creep.assignAction(Creep.action.idle);
 
     if( creep.action ) creep.action.step(creep);
     return;
