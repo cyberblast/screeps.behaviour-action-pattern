@@ -141,6 +141,14 @@ var mod = {
 
             return ( begin < date && date < end );
         };
+        global.AddById = function(array, id){
+            if(array == null) array = [];
+            var obj = Game.getObjectById(id);
+            if( !_.isUndefined(obj) ){
+                array.push(obj);
+            }
+            return array;
+        };
     }
 }
 

@@ -14,11 +14,7 @@ var mod = {
                 }
                 if( this._sources == null ){ // each loop: get real objects 
                     this._sources = [];
-                    var addSource = sourceId => {
-                        var source = Game.getObjectById(sourceId);
-                        if( source != null )
-                            this._sources.push(Game.getObjectById(sourceId))
-                    };
+                    var addSource = id => { AddById(this._sources, id); };
                     _.forEach(this.memory.sourceIds, addSource);
                 }
                 return this._sources;
@@ -40,14 +36,43 @@ var mod = {
         Object.defineProperty(Room.prototype, 'sourceEnergyAvailable', {
             configurable: true,
             get: function() {
-                if( this._sourceEnergyAvailable == null ){ // each loop: get real objects 
+                if( this._sourceEnergyAvailable === undefined ){ 
                     this._sourceEnergyAvailable = 0;
-                    var countEnergy = source => this._sourceEnergyAvailable += source.energy;
+                    var countEnergy = source => (this._sourceEnergyAvailable += source.energy);
                     _.forEach(this.sources, countEnergy);
                 }
                 return this._sourceEnergyAvailable;
             }
         });
+        Object.defineProperty(Room.prototype, 'relativeEnergyAvailable', {
+            configurable: true,
+            get: function() {
+                if( this._relativeEnergyAvailable === undefined ){  
+                    this._relativeEnergyAvailable = this.energyCapacityAvailable > 0 ? this.energyAvailable / this.energyCapacityAvailable : 0;
+                }
+                return this._relativeEnergyAvailable;
+            }
+        });
+        Object.defineProperty(Room.prototype, 'spawns', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this.memory.spawns) ) { // inital memorization
+                    this.memory.spawns = [];
+                    let spawns = this.find(FIND_MY_SPAWNS);
+                    if( spawns.length > 0 ){
+                        var spawnId = spawn => spawn.id;
+                        this.memory.spawns = _.map(spawns, spawnId);
+                    } else this.memory.spawns = [];
+                }
+                if( this._spawns == null ){ // each loop: get real objects 
+                    this._spawns = [];
+                    var addSpawn = id => { AddById(this._spawns, id); };
+                    _.forEach(this.memory.spawns, addSpawn);
+                }
+                return this._spawns;
+            }
+        });
+        
         Room.loop = function(){
             var loop = room => room.loop();
             _.forEach(Game.rooms, loop);
@@ -66,7 +91,7 @@ var mod = {
             // Room
             var self = this;
             if( this.population === undefined ) this.population = {};
-            this.relativeEnergyAvailable = this.energyCapacityAvailable > 0 ? this.energyAvailable / this.energyCapacityAvailable : 0;
+
             this.constructionSites = {
                 order: [], // ids, ordered descending by remaining progress
                 count: 0
@@ -122,9 +147,6 @@ var mod = {
                 self.towers.push(struct);
                 self.towerFreeCapacity += (struct.energyCapacity - struct.energy);
             });
-
-            // Spawns
-            this.spawns = this.find(FIND_MY_SPAWNS);
             
             // Hostiles
             this.hostiles = this.find(FIND_HOSTILE_CREEPS);
@@ -139,7 +161,7 @@ var mod = {
 
             // Situation
             this.situation = {
-                noEnergy: self.sourceEnergyAvailable == 0, 
+                noEnergy: this.sourceEnergyAvailable == 0, 
                 invasion: false
             }
             try{
