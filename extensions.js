@@ -1,6 +1,7 @@
 var mod = {
     extend: function(){
-
+        Structure.prototype.creeps = [];
+        Structure.prototype.towers = [];
         Object.defineProperty(Structure.prototype, 'memory', {
             configurable: true,
             get: function() {

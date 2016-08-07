@@ -1,8 +1,6 @@
 var mod = {
     loop: function(){
         for(var iRoom in Game.rooms){
-            //var towers = Game.rooms[iRoom].find(
-            //FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}});
             Game.rooms[iRoom].towers.forEach(tower => this.run(tower));
         }
     }, 
@@ -16,10 +14,6 @@ var mod = {
                     filter: (creep) => creep.hits < creep.hitsMax && 
                     (creep.towers == null || creep.towers.length == 0)
                 }), 'hits');
-                /*
-            var closestCasualty = tower.pos.findClosestByRange(FIND_MY_CREEPS, {
-                    filter: (creep) => creep.hits < creep.hitsMax
-                });*/
             if(casualty.length > 0) {
                 tower.heal(casualty[0]);
                 if( casualty.towers == null )casualty.towers = [];
@@ -27,18 +21,15 @@ var mod = {
                 return;
             } 
 
-            // urgend Repair
-            if( (tower.room.creepRepairableSites.count > 0) ) {
-                for( var iSite = 0; iSite < tower.room.creepRepairableSites.count; iSite++){
-                    var site = tower.room.creepRepairableSites[tower.room.creepRepairableSites.order[iSite]];
-                    
-                    if(site.towers == null || site.towers.length == 0){
-                        if( site.towers == null ) 
-                            site.towers = [];
-                        site.towers.push(tower.id);
-                        tower.repair(site);
-                        return;
-                    }
+            // urgent Repair
+            if( (tower.room.urgentRepairableSites.length > 0) ) {                
+                var self = this;
+                var isAddable = target => target.towers.length == 0;
+                var target = _.find(tower.room.urgentRepairableSites, isAddable);
+                if( !_.isUndefined(target) ){
+                    target.towers.push(tower.id);
+                    tower.repair(target);
+                    return;
                 }
             }
             
@@ -58,13 +49,12 @@ var mod = {
             } 
 
             // Repair
-            if( (tower.room.repairableSites.count > 0) && (tower.energy > (tower.energyCapacity * (1-(0.2/tower.room.towers.length)))) ) {
-                var find = siteId => tower.room.repairableSites[siteId].towers.length == 0;
-                var targetId = _.find(tower.room.repairableSites.order, find);
-                if( targetId ){
-                    var site = tower.room.repairableSites[targetId];
-                    site.towers.push(tower.id);
-                    tower.repair(site);
+            if( (tower.room.repairableSites.length > 0) && (tower.energy > (tower.energyCapacity * (1-(0.2/tower.room.towers.length)))) ) {
+                var isAddable = target => target.towers.length == 0;
+                var target = _.find(tower.room.repairableSites, isAddable);
+                if( !_.isUndefined(target) ){
+                    target.towers.push(tower.id);
+                    tower.repair(target);
                     return;
                 }
             }

@@ -3,7 +3,7 @@ var mod = {
         Object.defineProperty(Room.prototype, 'sources', {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this.memory.sourceIds) ) { // inital memorization
+                if( _.isUndefined(this.memory.sourceIds) ) {
                     this.memory.sourceIds = [];
                     let sources = this.find(FIND_SOURCES);
                     if( sources.length > 0 ){
@@ -12,7 +12,7 @@ var mod = {
                         this.memory.sourceIds = _.map(_.sortBy(sources, byAccess), sourceId);
                     } else this.memory.sourceIds = [];
                 }
-                if( _.isUndefined(this._sources) ){ // each loop: get real objects 
+                if( _.isUndefined(this._sources) ){  
                     this._sources = [];
                     var addSource = id => { AddById(this._sources, id); };
                     _.forEach(this.memory.sourceIds, addSource);
@@ -56,7 +56,7 @@ var mod = {
         Object.defineProperty(Room.prototype, 'spawns', {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this.memory.spawns) ) { // inital memorization
+                if( _.isUndefined(this.memory.spawns) ) {
                     this.memory.spawns = [];
                     let spawns = this.find(FIND_MY_SPAWNS);
                     if( spawns.length > 0 ){
@@ -64,7 +64,7 @@ var mod = {
                         this.memory.spawns = _.map(spawns, spawnId);
                     } else this.memory.spawns = [];
                 }
-                if( _.isUndefined(this._spawns) ){ // each loop: get real objects 
+                if( _.isUndefined(this._spawns) ){ 
                     this._spawns = [];
                     var addSpawn = id => { AddById(this._spawns, id); };
                     _.forEach(this.memory.spawns, addSpawn);
@@ -85,7 +85,7 @@ var mod = {
                         this.memory.towers = _.map(towers, id);
                     } else this.memory.towers = [];
                 }
-                if( _.isUndefined(this._towers) ){ // each loop: get real objects 
+                if( _.isUndefined(this._towers) ){ 
                     this._towers = [];
                     var add = id => { AddById(this._towers, id); };
                     _.forEach(this.memory.towers, add);
@@ -113,53 +113,39 @@ var mod = {
                 return this._constructionSites;
             }
         });
+        Object.defineProperty(Room.prototype, 'repairableSites', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._repairableSites) ){ 
+                    this._repairableSites = _.sortBy(this.find(FIND_STRUCTURES, {
+                        filter: (structure) => structure.hits < structure.hitsMax && structure.hits < TOWER_REPAIR_LIMITS[this.controller.level] && (structure.structureType != STRUCTURE_ROAD || structure.hitsMax - structure.hits > GAP_REPAIR_STREETS ) }) , 
+                        'hits'
+                    );
+                }
+                return this._repairableSites;
+            }
+        });
+        Object.defineProperty(Room.prototype, 'urgentRepairableSites', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._urgentRepairableSites) ){ 
+                    //let coreStructures = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTROLLER];
+                    var isUrgent = site => (site.hits < LIMIT_CREEP_REPAIRING );//|| site.structureType in coreStructures);
+                    this._urgentRepairableSites = _.filter(this.repairableSites, isUrgent);
+                }
+                return this._urgentRepairableSites;
+            }
+        });
         
         Room.loop = function(){
             var loop = room => room.loop();
             _.forEach(Game.rooms, loop);
         };
         Room.prototype.loop = function(){
-            // temporary cleanup: 
-            if( this.memory.report !== undefined ){
-                this.memory.statistics = this.memory.report;
-                Memory.statistics = {
-                    tick: this.memory.report.tick, 
-                    time: this.memory.report.time
-                }
-                delete this.memory.report;
-            }
-
-            // Room
             var self = this;
-            if( this.population === undefined ) this.population = {};
+            if( this.population === undefined ) 
+                this.population = {};
 
-            this.repairableSites = {
-                order: [], 
-                count: 0
-            }
-            this.creepRepairableSites = {
-                order: [], 
-                count: 0
-            }
-
-            // RepairableSites
-            var coreStructures = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTROLLER];  
-            _.sortBy(this.find(FIND_STRUCTURES, {
-                filter: (structure) => structure.hits < structure.hitsMax && structure.hits < TOWER_REPAIR_LIMITS[this.controller.level] && (structure.structureType != STRUCTURE_ROAD || structure.hitsMax - structure.hits > 800 ) }) , 
-                'hits'
-            ).forEach(function(struct){
-                struct.creeps = [];
-                struct.towers = [];
-                self.repairableSites.order.push(struct.id);
-                self.repairableSites.count++;
-                self.repairableSites[struct.id] = struct;
-                if( struct.hits < LIMIT_CREEP_REPAIRING || struct.structureType in coreStructures ){
-                    self.creepRepairableSites.order.push(struct.id);
-                    self.creepRepairableSites.count++;
-                    self.creepRepairableSites[struct.id] = struct;
-                }
-            });
-            
             this.maxPerJob = _.max([1,(self.population && self.population.worker ? self.population.worker.count : 0)/3.1]);
                         
             // Hostiles
