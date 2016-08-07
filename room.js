@@ -12,7 +12,7 @@ var mod = {
                         this.memory.sourceIds = _.map(_.sortBy(sources, byAccess), sourceId);
                     } else this.memory.sourceIds = [];
                 }
-                if( this._sources == null ){ // each loop: get real objects 
+                if( _.isUndefined(this._sources) ){ // each loop: get real objects 
                     this._sources = [];
                     var addSource = id => { AddById(this._sources, id); };
                     _.forEach(this.memory.sourceIds, addSource);
@@ -36,7 +36,7 @@ var mod = {
         Object.defineProperty(Room.prototype, 'sourceEnergyAvailable', {
             configurable: true,
             get: function() {
-                if( this._sourceEnergyAvailable === undefined ){ 
+                if( _.isUndefined(this._sourceEnergyAvailable) ){ 
                     this._sourceEnergyAvailable = 0;
                     var countEnergy = source => (this._sourceEnergyAvailable += source.energy);
                     _.forEach(this.sources, countEnergy);
@@ -47,7 +47,7 @@ var mod = {
         Object.defineProperty(Room.prototype, 'relativeEnergyAvailable', {
             configurable: true,
             get: function() {
-                if( this._relativeEnergyAvailable === undefined ){  
+                if( _.isUndefined(this._relativeEnergyAvailable) ){  
                     this._relativeEnergyAvailable = this.energyCapacityAvailable > 0 ? this.energyAvailable / this.energyCapacityAvailable : 0;
                 }
                 return this._relativeEnergyAvailable;
@@ -64,12 +64,53 @@ var mod = {
                         this.memory.spawns = _.map(spawns, spawnId);
                     } else this.memory.spawns = [];
                 }
-                if( this._spawns == null ){ // each loop: get real objects 
+                if( _.isUndefined(this._spawns) ){ // each loop: get real objects 
                     this._spawns = [];
                     var addSpawn = id => { AddById(this._spawns, id); };
                     _.forEach(this.memory.spawns, addSpawn);
                 }
                 return this._spawns;
+            }
+        });
+        Object.defineProperty(Room.prototype, 'towers', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this.memory.towers) || Game.time % MEMORY_RESYNC_INTERVAL == 0) { // inital memorization
+                    this.memory.towers = [];
+                    let towers = this.find(FIND_MY_STRUCTURES, {
+                        filter: {structureType: STRUCTURE_TOWER}
+                    });
+                    if( towers.length > 0 ){
+                        var id = obj => obj.id;
+                        this.memory.towers = _.map(towers, id);
+                    } else this.memory.towers = [];
+                }
+                if( _.isUndefined(this._towers) ){ // each loop: get real objects 
+                    this._towers = [];
+                    var add = id => { AddById(this._towers, id); };
+                    _.forEach(this.memory.towers, add);
+                }
+                return this._towers;
+            }
+        });
+        Object.defineProperty(Room.prototype, 'towerFreeCapacity', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._towerFreeCapacity) ) { 
+                    this._towerFreeCapacity = 0;
+                    var addFreeCapacity = tower => this._towerFreeCapacity += (tower.energyCapacity - tower.energy);
+                    _.forEach(this.towers, addFreeCapacity);
+                }
+                return this._towerFreeCapacity;
+            }
+        });
+        Object.defineProperty(Room.prototype, 'constructionSites', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._constructionSites) ){ 
+                    this._constructionSites = this.find(FIND_MY_CONSTRUCTION_SITES); 
+                }
+                return this._constructionSites;
             }
         });
         
@@ -92,10 +133,6 @@ var mod = {
             var self = this;
             if( this.population === undefined ) this.population = {};
 
-            this.constructionSites = {
-                order: [], // ids, ordered descending by remaining progress
-                count: 0
-            };
             this.repairableSites = {
                 order: [], 
                 count: 0
@@ -104,20 +141,7 @@ var mod = {
                 order: [], 
                 count: 0
             }
-            this.towers = [];
-            this.towerFreeCapacity = 0;
 
-            // Construction Sites
-            _.sortBy(this.find(FIND_MY_CONSTRUCTION_SITES),             
-                function(o) { 
-                    return o.progress * -1; 
-                }).forEach(function(site){
-                    site.creeps = [];
-                    self.constructionSites.order.push(site.id);
-                    self.constructionSites.count++;
-                    self.constructionSites[site.id] = site; 
-                });            
-                
             // RepairableSites
             var coreStructures = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTROLLER];  
             _.sortBy(this.find(FIND_STRUCTURES, {
@@ -137,17 +161,7 @@ var mod = {
             });
             
             this.maxPerJob = _.max([1,(self.population && self.population.worker ? self.population.worker.count : 0)/3.1]);
-            
-            // Towers
-            _.sortBy(this.find(FIND_MY_STRUCTURES, {
-                filter: {structureType: STRUCTURE_TOWER}
-            }), function(o) { 
-                return o.energy; 
-            }).forEach(function(struct){
-                self.towers.push(struct);
-                self.towerFreeCapacity += (struct.energyCapacity - struct.energy);
-            });
-            
+                        
             // Hostiles
             this.hostiles = this.find(FIND_HOSTILE_CREEPS);
             this.hostileIds = _.map(this.hostiles, 'id');

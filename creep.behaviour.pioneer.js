@@ -20,7 +20,7 @@ behaviour.run = function(creep) {
                 _.forEach(creep.room.find(FIND_FLAGS, { filter: FLAG_COLOR.invade.exploit.filter }), remove);
             }
             else { // no spawn => build it
-                if( flag.room.constructionSites.count == 0 ) // no constructionSites // TODO: filter for spawn-constructionSite
+                if( flag.room.constructionSites.length == 0 ) // no constructionSites // TODO: filter for spawn-constructionSite
                     flag.room.createConstructionSite(flag, STRUCTURE_SPAWN); // create spawn construction site
 
             }            
@@ -28,7 +28,7 @@ behaviour.run = function(creep) {
     }
 
     // if there are construction sites prefer them
-    if( creep.room.constructionSites.count > 0 ) {
+    if( creep.room.constructionSites.length > 0 ) {
         // Has invalid assigned Action 
         if(creep.memory.action && creep.memory.action != 'harvesting' && creep.memory.action != 'building') {
             creep.unregisterAction();
