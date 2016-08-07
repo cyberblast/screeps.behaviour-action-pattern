@@ -8,7 +8,6 @@ var mod = {
         if(tower) {
             // TODO: Calculate Values only once initial
             // TODO: convert to action pattern  
-
             // Heal
             var casualty = _.sortBy(tower.room.find(FIND_MY_CREEPS, {
                     filter: (creep) => creep.hits < creep.hitsMax && 
@@ -20,7 +19,6 @@ var mod = {
                     casualty.towers.push(tower.id);
                 return;
             } 
-
             // urgent Repair
             if( (tower.room.urgentRepairableSites.length > 0) ) {                
                 var self = this;
@@ -31,23 +29,13 @@ var mod = {
                     tower.repair(target);
                     return;
                 }
-            }
-            
-            // Attack
-            /*
-            var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
-                filter: function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
-            });
-            if(closestHostile) {
-                tower.attack(closestHostile);
-                return;
-            }*/            
+            }            
+            // Attack        
             var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
             if(closestHostile) {
                 tower.attack(closestHostile);
                 return;
             } 
-
             // Repair
             if( (tower.room.repairableSites.length > 0) && (tower.energy > (tower.energyCapacity * (1-(0.2/tower.room.towers.length)))) ) {
                 var isAddable = target => target.towers.length == 0;
@@ -61,5 +49,4 @@ var mod = {
         }
     }
 }
-
 module.exports = mod;
