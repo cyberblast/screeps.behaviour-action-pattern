@@ -40,9 +40,9 @@ var mod = {
             }
 
             var invaderReport = invader => {
-                message += '<li>' + invader.owner + ': [' + invader.body;
-                if( invader.leave === undefined ) message += "] since " + LocalDate(new Date(invader.time)).toLocaleString() + '</li>';
-                else message += "] for " + (invader.leave - invader.enter) + ' loops at ' + LocalDate(new Date(invader.time)).toLocaleString() + '</li>';
+                message += '<li>' + invader.owner + ': ' + invader.body.replace('/"/g','');
+                if( invader.leave === undefined ) message += " since " + LocalDate(new Date(invader.time)).toLocaleString() + '</li>';
+                else message += " for " + (invader.leave - invader.enter) + ' loops at ' + LocalDate(new Date(invader.time)).toLocaleString() + '</li>';
             };
 
             var roomReport = room => {
