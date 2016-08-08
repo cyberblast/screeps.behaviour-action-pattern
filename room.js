@@ -130,7 +130,7 @@ var mod = {
             get: function() {
                 if( _.isUndefined(this._urgentRepairableSites) ){ 
                     //let coreStructures = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTROLLER];
-                    var isUrgent = site => (site.hits < LIMIT_CREEP_REPAIRING );//|| site.structureType in coreStructures);
+                    var isUrgent = site => (site.hits < LIMIT_CREEP_REPAIRING && (creep.towers === undefined || creep.towers.length == 0));//|| site.structureType in coreStructures);
                     this._urgentRepairableSites = _.filter(this.repairableSites, isUrgent);
                 }
                 return this._urgentRepairableSites;
@@ -175,7 +175,27 @@ var mod = {
                 return this._maxPerJob;
             }
         });
-        
+        Object.defineProperty(Room.prototype, 'creeps', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._creeps) ){ 
+                    this._creeps = this.find(FIND_MY_CREEPS);
+                }
+                return this._creeps;
+            }
+        });
+        Object.defineProperty(Room.prototype, 'casualties', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._casualties) ){ 
+                    this._casualties = _.sortBy(tower.room.find(FIND_MY_CREEPS, {
+                        filter: (creep) => creep.hits < creep.hitsMax && 
+                        (creep.towers === undefined || creep.towers.length == 0)
+                    }), 'hits');
+                }
+                return this._casualties;
+            }
+        });        
         Room.prototype.loop = function(){
             var self = this;               
             try {

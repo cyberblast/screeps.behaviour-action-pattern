@@ -1,7 +1,5 @@
-var params = require('parameter');
-
 var mod = {
-    init: function(){
+    init: function(params){
         var register = key => { global[key] = params[key]; };
         _.forEach(Object.keys(params), register);
 
