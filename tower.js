@@ -1,9 +1,8 @@
 var mod = {
-    loop: function(){
-        for(var iRoom in Game.rooms){
-            Game.rooms[iRoom].towers.forEach(tower => this.run(tower));
-        }
-    }, 
+    loop: function(room){
+        var run = tower => this.run(tower);
+        _.forEach(room.towers);
+    },
     run: function(tower){
         if(tower) {
             // TODO: Calculate Values only once initial

@@ -5,10 +5,16 @@ Room.extend();
 Spawn.extend();  
 
 module.exports.loop = function () {
-    Room.loop();  
     Population.loop();  
+    var roomLoop = room => {
+        room.loop();
+        Tower.loop(room);
+    };
+    _.forEach(Game.rooms, roomLoop);
+
     Creep.loop(); 
-    Spawn.loop();
-    Tower.loop();    
-    Statistics.loop();
+    Spawn.loop(); 
+
+    if( Game.time % TIME_REPORT == 0 ) 
+        require('statistics').loop();
 };

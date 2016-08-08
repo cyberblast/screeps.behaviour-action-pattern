@@ -56,7 +56,7 @@ var mod = {
         Object.defineProperty(Room.prototype, 'spawns', {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this.memory.spawns) ) {
+                if( _.isUndefined(this.memory.spawns) || Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
                     this.memory.spawns = [];
                     let spawns = this.find(FIND_MY_SPAWNS);
                     if( spawns.length > 0 ){
@@ -75,7 +75,7 @@ var mod = {
         Object.defineProperty(Room.prototype, 'towers', {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this.memory.towers) || Game.time % MEMORY_RESYNC_INTERVAL == 0) { // inital memorization
+                if( _.isUndefined(this.memory.towers) || Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
                     this.memory.towers = [];
                     let towers = this.find(FIND_MY_STRUCTURES, {
                         filter: {structureType: STRUCTURE_TOWER}
@@ -121,11 +121,6 @@ var mod = {
                         filter: (structure) => structure.hits < structure.hitsMax && structure.hits < TOWER_REPAIR_LIMITS[this.controller.level] && (structure.structureType != STRUCTURE_ROAD || structure.hitsMax - structure.hits > GAP_REPAIR_STREETS ) }) , 
                         'hits'
                     );
-                    var expand = site => {
-                        site.creeps = [];
-                        site.towers = [];
-                    }
-                    _.forEach(this._repairableSites, expand)
                 }
                 return this._repairableSites;
             }
@@ -141,72 +136,84 @@ var mod = {
                 return this._urgentRepairableSites;
             }
         });
-        
-        Room.loop = function(){
-            var loop = room => room.loop();
-            _.forEach(Game.rooms, loop);
-        };
-        Room.prototype.loop = function(){
-            var self = this;
-            if( this.population === undefined ) 
-                this.population = {};
-
-            this.maxPerJob = _.max([1,(self.population && self.population.worker ? self.population.worker.count : 0)/3.1]);
-                        
-            // Hostiles
-            this.hostiles = this.find(FIND_HOSTILE_CREEPS);
-            this.hostileIds = _.map(this.hostiles, 'id');
-            var healer = creep => _.some( creep.body, {'type': HEAL} );
-            this.hostilesHeal = _.filter(this.hostiles, healer);
-            
-            // storage
-            if(this.storage && this.storage.store){
-                this.storage.sum = _.sum(this.storage.store);
+        Object.defineProperty(Room.prototype, 'hostiles', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._hostiles) ){ 
+                    this._hostiles = this.find(FIND_HOSTILE_CREEPS);
+                }
+                return this._hostiles;
             }
-
-            // Situation
-            this.situation = {
-                noEnergy: this.sourceEnergyAvailable == 0, 
-                invasion: false
+        });
+        Object.defineProperty(Room.prototype, 'hostileIds', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._hostileIds) ){ 
+                    this._hostileIds = _.map(this.hostiles, 'id');
+                }
+                return this._hostileIds;
             }
-            try{
-                if( this.memory.hostileIds ){                    
-                    if(self.memory.statistics === undefined)
-                        self.memory.statistics = {};
-                    this.situation.invasion = this.hostiles.length > 0;
-                    if( this.controller && this.controller.my ) {
-                        this.hostileIds.forEach( function(id){
-                            if( !self.memory.hostileIds.includes(id) ){
-                                var creep = Game.getObjectById(id);
-                                //var body = "";
-                                //var concat = (value, key) => body += ', ' + key + ':' + value;
-                                //var count = _.countBy(creep.body, 'type');
-                                //_.forEach(count, concat);
-                                var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-                                if( creep.owner.username != 'Invader' ){
-                                    var message = 'Hostile intruder ' + id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + self.name + ' at ' + LocalDate(new Date()).toLocaleString();
-                                    Game.notify(message);
-                                    console.log(message);
-                                }
-                                if(self.memory.statistics.invaders === undefined)
-                                    self.memory.statistics.invaders = [];
-                                self.memory.statistics.invaders.push({
-                                    owner: creep.owner.username, 
-                                    id: id,
-                                    body: bodyCount, 
-                                    enter: Game.time, 
-                                    time: Date.now()
-                                });
-                            }
-                        });
-                        this.memory.hostileIds.forEach( function(id){
-                            if( !self.hostileIds.includes(id) && self.memory.statistics && self.memory.statistics.invaders !== undefined && self.memory.statistics.invaders.length > 0){
-                                var select = invader => invader.id == id && invader.leave === undefined;
-                                var entry = _.find(self.memory.statistics.invaders, select);
-                                if( entry != undefined ) entry.leave = Game.time;
-                            }
-                        });
+        });
+        Object.defineProperty(Room.prototype, 'situation', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._situation) ){ 
+                    this._situation = {
+                        noEnergy: this.sourceEnergyAvailable == 0, 
+                        invasion: this.hostiles.length > 0
                     }
+                }
+                return this._situation;
+            }
+        });
+        Object.defineProperty(Room.prototype, 'maxPerJob', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._maxPerJob) ){ 
+                    this._maxPerJob = _.max([1,(this.population && this.population.worker ? this.population.worker.count : 0)/3.1]);
+                }
+                return this._maxPerJob;
+            }
+        });
+        
+        Room.prototype.loop = function(){
+            var self = this;               
+            try {
+                if( this.memory.hostileIds === undefined )
+                    this.memory.hostileIds = [];
+                if( this.memory.statistics === undefined)
+                    this.memory.statistics = {};
+
+                if( this.controller && this.controller.my ) {
+                    var registerHostile = creep => {
+                        if( !self.memory.hostileIds.includes(creep.id) ){
+                            var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
+                            if( creep.owner.username != 'Invader' ){
+                                var message = 'Hostile intruder ' + id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + self.name + ' at ' + LocalDate(new Date()).toLocaleString();
+                                Game.notify(message);
+                                console.log(message);
+                            }
+                            if(self.memory.statistics.invaders === undefined)
+                                self.memory.statistics.invaders = [];
+                            self.memory.statistics.invaders.push({
+                                owner: creep.owner.username, 
+                                id: id,
+                                body: bodyCount, 
+                                enter: Game.time, 
+                                time: Date.now()
+                            });
+                        }
+                    }
+                    _.forEach(this.hostiles, registerHostile);
+                    
+                    var registerHostileLeave = id => {
+                        if( !self.hostileIds.includes(id) && self.memory.statistics && self.memory.statistics.invaders !== undefined && self.memory.statistics.invaders.length > 0){
+                            var select = invader => invader.id == id && invader.leave === undefined;
+                            var entry = _.find(self.memory.statistics.invaders, select);
+                            if( entry != undefined ) entry.leave = Game.time;
+                        }
+                    }
+                    _.forEach(this.memory.hostileIds, registerHostileLeave);
                 }
             }
             catch(err) {

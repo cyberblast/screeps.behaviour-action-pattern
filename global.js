@@ -11,7 +11,6 @@ var mod = {
         
         global.Extensions = require('extensions');
         global.Population = require('population');
-        global.Statistics = require('statistics');
         global.MOD = {};    
         global.Tower = require('tower');
         

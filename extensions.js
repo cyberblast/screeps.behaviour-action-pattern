@@ -21,6 +21,37 @@ var mod = {
                 Memory.structures[this.id] = value;
             }
         });
+        Object.defineProperty(Structure.prototype, 'creeps', {
+            // TODO: persist target assignments not only to creeps but also to targets. also not only as creepId but with activity
+            configurable: true,
+            get: function() {
+                if(_.isUndefined(this._creeps)) {
+                    this._creeps = [];
+                }
+                return this._creeps;
+            },
+            set: function(value) {
+                if(_.isUndefined(this._creeps)) {
+                    this._creeps = [];
+                }
+                this._creeps.push(value);
+            }
+        });
+        Object.defineProperty(Structure.prototype, 'towers', {
+            configurable: true,
+            get: function() {
+                if(_.isUndefined(this._towers)) {
+                    this._towers = [];
+                }
+                return this._towers;
+            },
+            set: function(value) {
+                if(_.isUndefined(this._towers)) {
+                    this._towers = [];
+                }
+                this._towers.push(value);
+            }
+        });
         Object.defineProperty(Source.prototype, 'memory', {
             configurable: true,
             get: function() {
@@ -42,7 +73,6 @@ var mod = {
                 Memory.sources[this.id] = value;
             }
         });
-        
         Object.defineProperty(Source.prototype, 'accessibleFields', {
             configurable: true,
             get: function() {
@@ -52,7 +82,16 @@ var mod = {
                 }
                 return this.memory.accessibleFields;
             }
-        });        
+        });
+        Object.defineProperty(StructureStorage.prototype, 'sum', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._sum) ) {
+                    this._sum = _.sum(this.store);
+                }
+                return this._sum;
+            }
+        });
     }
 }
 
