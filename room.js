@@ -121,6 +121,11 @@ var mod = {
                         filter: (structure) => structure.hits < structure.hitsMax && structure.hits < TOWER_REPAIR_LIMITS[this.controller.level] && (structure.structureType != STRUCTURE_ROAD || structure.hitsMax - structure.hits > GAP_REPAIR_STREETS ) }) , 
                         'hits'
                     );
+                    var expand = site => {
+                        site.creeps = [];
+                        site.towers = [];
+                    }
+                    _.forEach(this._repairableSites, expand)
                 }
                 return this._repairableSites;
             }
