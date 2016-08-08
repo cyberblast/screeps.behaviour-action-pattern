@@ -188,7 +188,7 @@ var mod = {
             configurable: true,
             get: function() {
                 if( _.isUndefined(this._casualties) ){ 
-                    this._casualties = _.sortBy(tower.room.find(FIND_MY_CREEPS, {
+                    this._casualties = _.sortBy(this.find(FIND_MY_CREEPS, {
                         filter: (creep) => creep.hits < creep.hitsMax && 
                         (creep.towers === undefined || creep.towers.length == 0)
                     }), 'hits');
