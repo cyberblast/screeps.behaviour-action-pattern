@@ -209,7 +209,7 @@ var mod = {
                         if( !self.memory.hostileIds.includes(creep.id) ){
                             var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
                             if( creep.owner.username != 'Invader' ){
-                                var message = 'Hostile intruder ' + id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + self.name + ' at ' + LocalDate(new Date()).toLocaleString();
+                                var message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + self.name + ' at ' + LocalDate(new Date()).toLocaleString();
                                 Game.notify(message);
                                 console.log(message);
                             }
@@ -217,7 +217,7 @@ var mod = {
                                 self.memory.statistics.invaders = [];
                             self.memory.statistics.invaders.push({
                                 owner: creep.owner.username, 
-                                id: id,
+                                id: creep.id,
                                 body: bodyCount, 
                                 enter: Game.time, 
                                 time: Date.now()
