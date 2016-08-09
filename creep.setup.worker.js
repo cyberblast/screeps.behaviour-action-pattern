@@ -4,7 +4,7 @@ setup.fixedBody = [];
 setup.minAbsEnergyAvailable = 200;
 setup.maxMulti = 6;
 setup.multiplicationPartwise = false;
-setup.minEnergyAvailable = function(){
+setup.minEnergyAvailable = function(spawn){
     return 0.4;
 };
 setup.maxCount = function(spawn){

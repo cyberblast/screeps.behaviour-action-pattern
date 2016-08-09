@@ -6,7 +6,7 @@ setup.maxMulti = 4;
 setup.minControllerLevel = 2;
 setup.globalMeasurement = true;
 setup.multiplicationPartwise = false;
-setup.minEnergyAvailable = function(){
+setup.minEnergyAvailable = function(spawn){
     return 0.8;
 };
 setup.maxCount = function(spawn){
