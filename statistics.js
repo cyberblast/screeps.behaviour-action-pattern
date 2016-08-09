@@ -1,10 +1,10 @@
 var mod = {
     storedStatisticsTime: (Memory.statistics && Memory.statistics.time ? Memory.statistics.time : 0 ),
     loop: function(){
-        if( storedStatisticsTime > 0 ) {
+        if( this.storedStatisticsTime > 0 ) {
             var message = '<h3><b>Status report</b></h3>' 
                 + '<h4>at ' + LocalDate().toLocaleString() + ',<br/>' 
-                + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(storedStatisticsTime)) + ' (' + (Game.time - Memory.statistics.tick) + ' loops)</h4>';
+                + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(this.storedStatisticsTime)) + ' (' + (Game.time - Memory.statistics.tick) + ' loops)</h4>';
 
             if( Game.cpu.bucket ){
                 bucketDif = Game.cpu.bucket - Memory.statistics.bucket;
@@ -22,7 +22,7 @@ var mod = {
         }
     }, 
     processRoom: function(room){
-        if( storedStatisticsTime > 0 ) { // send Report
+        if( this.storedStatisticsTime > 0 ) { // send Report
             if( room.controller && room.controller.my ){
                 // controller
                 message = '<ul><li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul>';
