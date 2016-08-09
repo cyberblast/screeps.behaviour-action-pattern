@@ -13,7 +13,7 @@ var mod = {
             Game.notify(message);
         }
 
-        _.forEach(Game.rooms, processRoom);
+        _.forEach(Game.rooms, this.processRoom);
 
         Memory.statistics = {
             tick: Game.time, 
