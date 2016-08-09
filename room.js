@@ -118,7 +118,7 @@ var mod = {
             get: function() {
                 if( _.isUndefined(this._repairableSites) ){ 
                     this._repairableSites = _.sortBy(this.find(FIND_STRUCTURES, {
-                        filter: (structure) => structure.hits < structure.hitsMax && structure.hits < TOWER_REPAIR_LIMITS[this.controller.level] && (structure.structureType != STRUCTURE_ROAD || structure.hitsMax - structure.hits > GAP_REPAIR_STREETS ) }) , 
+                        filter: (structure) => structure.hits < structure.hitsMax && structure.hits < TOWER_REPAIR_LIMITS[this.controller.level] && (structure.structureType != STRUCTURE_ROAD || structure.hitsMax - structure.hits > GAP_REPAIR_DECAYABLE ) }) , 
                         'hits'
                     );
                 }
@@ -130,7 +130,7 @@ var mod = {
             get: function() {
                 if( _.isUndefined(this._urgentRepairableSites) ){ 
                     //let coreStructures = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_CONTROLLER];
-                    var isUrgent = site => (site.hits < LIMIT_CREEP_REPAIRING && (creep.towers === undefined || creep.towers.length == 0));//|| site.structureType in coreStructures);
+                    var isUrgent = site => (site.hits < LIMIT_URGENT_REPAIRING && (creep.towers === undefined || creep.towers.length == 0));//|| site.structureType in coreStructures);
                     this._urgentRepairableSites = _.filter(this.repairableSites, isUrgent);
                 }
                 return this._urgentRepairableSites;
