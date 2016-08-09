@@ -68,26 +68,20 @@ var Setup = function(typeName){
     this.maxCount = function(spawn){ return 0; }; 
     this.maxWeight = function(spawn){ return 0; };
     this.isValidSetup = function(spawn){
-
         if( spawn.room.energyAvailable < this.minAbsEnergyAvailable || spawn.room.relativeEnergyAvailable < this.minEnergyAvailable(spawn) ) 
             return false;
-
         var maxCount = this.maxCount(spawn);
         var maxWeight = this.maxWeight(spawn);            
         if( maxCount == 0 || maxWeight == 0 || spawn.room.controller.level < this.minControllerLevel) 
             return false;
-
         var population = this.globalMeasurement ? Game.population[this.type] : spawn.room.population[this.type];
         if( !population ) 
             return true;
-
         if( maxCount == null ) 
             maxCount = Infinity;
         if( maxWeight == null ) 
-            maxWeight = Infinity;
-            
+            maxWeight = Infinity;            
         return (population.count < maxCount && population.weight < maxWeight);
     };
 }
-
 module.exports = Setup;

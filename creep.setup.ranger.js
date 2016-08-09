@@ -1,5 +1,4 @@
 var setup = new Creep.Setup('ranger');
-
 setup.multiBody = [RANGED_ATTACK, MOVE]; 
 setup.minAbsEnergyAvailable = 200;
 setup.maxMulti = 2;
@@ -15,5 +14,4 @@ setup.maxCount = function(spawn){
 setup.maxWeight = function(spawn){
     return 0; 
 }
-
 module.exports = setup;

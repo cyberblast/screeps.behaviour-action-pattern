@@ -1,5 +1,4 @@
 var action = new Creep.Action('picking');
-
 action.isValidAction = function(creep){
     return ( _.sum(creep.carry) < creep.carryCapacity );
 };
@@ -31,5 +30,4 @@ action.work = function(creep){
     }
     return result;
 };
-
 module.exports = action;

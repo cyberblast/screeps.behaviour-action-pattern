@@ -2,16 +2,13 @@ var mod = {
     init: function(params){
         var register = key => { global[key] = params[key]; };
         _.forEach(Object.keys(params), register);
-
         Creep.extend = require('creep').extend;
         Room.extend = require('room').extend;
-        Spawn.extend = require('spawn').extend;
-        
+        Spawn.extend = require('spawn').extend;        
         global.Extensions = require('extensions');
         global.Population = require('population');
         global.MOD = {};    
-        global.Tower = require('tower');
-        
+        global.Tower = require('tower');        
         global.FLAG_COLOR = {
             invade: { // destroy everything enemy in the room
                 color: COLOR_RED, 
@@ -112,7 +109,8 @@ var mod = {
                     if( error ) creep.say(error);
                     else creep.say(code);
                 }
-                var message = error + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
+                var caller = arguments.callee.caller.displayName;
+                var message = ( caller === undefined ? "" : ("Error in '" + caller + "': " )) + error + '\ncreep: '  + creep.name + '\naction: ' + creep.memory.action + '\ntarget: ' + creep.memory.target ;
                 console.log( DYE(CRAYON.error, message) );
                 Game.notify( message, 120 );
             } else console.log( DYE(CRAYON.error, 'unknown error code!') );
@@ -148,5 +146,4 @@ var mod = {
         };
     }
 }
-
 module.exports = mod;

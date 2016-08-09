@@ -1,5 +1,4 @@
 var setup = new Creep.Setup('healer');
-
 setup.multiBody = [MOVE, HEAL];
 setup.minAbsEnergyAvailable = 300;
 setup.maxMulti = 1;
@@ -15,5 +14,4 @@ setup.maxCount = function(spawn){
 setup.maxWeight = function(spawn){
     return null;
 }
-
 module.exports = setup;

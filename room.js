@@ -237,8 +237,8 @@ var mod = {
                 }
             }
             catch(err) {
-                Game.notify(err);
-                console.log('Error in room.js: ' + err);
+                Game.notify('Error in room.js (Room.prototype.loop): ' + err);
+                console.log('Error in room.js (Room.prototype.loop): ' + err);
             }
             this.memory.hostileIds = this.hostileIds;            
         };

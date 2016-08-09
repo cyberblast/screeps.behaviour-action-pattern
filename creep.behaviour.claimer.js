@@ -1,5 +1,4 @@
 var behaviour = new Creep.Behaviour('claimer');
-
 behaviour.run = function(creep) {
     var flag;    
     if( creep.flag ) // TODO: validate flag colors
@@ -18,15 +17,11 @@ behaviour.run = function(creep) {
             creep.memory.flag = flags[0].name;
         }
     }
-
-    // TODO: Add Settling
-     
+    // TODO: Add Settling     
     if( !flag || !creep.assignAction(Creep.action.claiming) )
         creep.assignAction(Creep.action.idle);
-
     if( creep.action ) creep.action.step(creep);
     return;
 };
-
-
+behaviour.run.displayName = "creep.behaviour.claimer.run";
 module.exports = behaviour;

@@ -1,7 +1,5 @@
 var action = new Creep.Action('building');
-
 action.ignoreCreeps = false;
-
 action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 && creep.room.constructionSites.length > 0 );
 };
@@ -19,5 +17,4 @@ action.newTarget = function(creep){
 action.work = function(creep){
     return creep.build(creep.target);
 };
-
 module.exports = action;

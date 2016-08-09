@@ -1,5 +1,4 @@
 var setup = new Creep.Setup('melee');
-
 setup.multiBody = [TOUGH, MOVE, TOUGH, MOVE, ATTACK, MOVE]; 
 setup.minAbsEnergyAvailable = 250;
 setup.maxMulti = 4;
@@ -15,5 +14,4 @@ setup.maxCount = function(spawn){
 setup.maxWeight = function(spawn){
     return null; // no evaluation
 }
-
 module.exports = setup;

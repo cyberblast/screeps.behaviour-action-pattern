@@ -1,7 +1,5 @@
 var action = new Creep.Action('withdrawing');
-
 action.maxPerTarget = 2;
-
 action.isValidAction = function(creep){
     return ( creep.room.storage && creep.room.storage.energy > 0  && _.sum(creep.carry) < creep.carryCapacity && 
     (creep.room.energyAvailable < creep.room.energyCapacityAvailable || 
@@ -16,5 +14,4 @@ action.newTarget = function(creep){
 action.work = function(creep){
     return creep.withdraw(creep.target, RESOURCE_ENERGY);
 };
-
 module.exports = action;

@@ -22,5 +22,4 @@ var mod = {
     MEMORY_RESYNC_INTERVAL: 50, 
     GAP_REPAIR_STREETS: 800
 }
-
 module.exports = mod;

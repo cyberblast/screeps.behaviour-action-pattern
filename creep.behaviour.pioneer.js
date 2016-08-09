@@ -1,5 +1,4 @@
 var behaviour = new Creep.Behaviour('pioneer');
-
 behaviour.run = function(creep) {    
     // TODO: limit to 3 per flag or equal distribution
     // TODO: Add memorization
@@ -11,7 +10,6 @@ behaviour.run = function(creep) {
                 return;
             }
         } 
-
         if( flag.room && flag.room.controller.my ) { // inside owned target room
             if( flag.room.spawns && flag.room.spawns.length > 0 ){ // spawn complete
                 flag.remove();
@@ -22,18 +20,15 @@ behaviour.run = function(creep) {
             else { // no spawn => build it
                 if( flag.room.constructionSites.length == 0 ) // no constructionSites // TODO: filter for spawn-constructionSite
                     flag.room.createConstructionSite(flag, STRUCTURE_SPAWN); // create spawn construction site
-
             }            
         }
     }
-
     // if there are construction sites prefer them
     if( creep.room.constructionSites.length > 0 ) {
         // Has invalid assigned Action 
         if(creep.memory.action && creep.memory.action != 'harvesting' && creep.memory.action != 'building') {
             creep.unregisterAction();
-        }
-        
+        }        
         // Last Action completed / No more energy
         if( creep.carry.energy == 0 && creep.memory.action != 'harvesting') { 
             creep.assignAction(Creep.action.harvesting);
@@ -46,17 +41,14 @@ behaviour.run = function(creep) {
             else // build
                 creep.assignAction(Creep.action.building);
         }
-
         // Do some work
         if( creep.action && creep.target ) {
             creep.action.step(creep);
             return;
         }
     }
-
     // else run as worker
     creep.run(Creep.behaviour.worker); 
 };
-
-
+behaviour.run.displayName = "creep.behaviour.pioneer.run";
 module.exports = behaviour;

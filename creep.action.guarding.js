@@ -1,12 +1,9 @@
 var action = new Creep.Action('guarding');
-
 action.reusePath = 10;
 action.ignoreCreeps = true;
 action.maxTargetLease = 12;
-
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
-
 action.newTarget = function(creep){ 
     var flags = _.sortBy(_.filter(Game.flags, FLAG_COLOR.defense.filter), 
         function(o) { 
@@ -21,5 +18,4 @@ action.newTarget = function(creep){
 action.work = function(creep){
     return OK;
 };
-
 module.exports = action;

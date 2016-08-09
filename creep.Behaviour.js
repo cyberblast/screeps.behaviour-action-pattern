@@ -19,8 +19,10 @@ var Behaviour = function(typeName){
             creep.action.step(creep);
         } 
     };
+    this.run.displayName = "creep.Behaviour.run";
     this.nextAction = function(creep){
     };
+    this.nextAction.displayName = "creep.Behaviour.nextAction";
 }
 
 module.exports = Behaviour;

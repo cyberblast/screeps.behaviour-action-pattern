@@ -1,5 +1,4 @@
 var setup = new Creep.Setup('pioneer');
-
 setup.multiBody = [CARRY, WORK, MOVE];
 setup.fixedBody = [CARRY, WORK, MOVE, CARRY, WORK, MOVE];
 setup.minAbsEnergyAvailable = 400;
@@ -16,5 +15,4 @@ setup.maxCount = function(spawn){
 setup.maxWeight = function(spawn){
     return null; // no evaluation
 }
-
 module.exports = setup;

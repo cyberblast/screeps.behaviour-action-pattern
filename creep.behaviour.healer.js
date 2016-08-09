@@ -1,5 +1,4 @@
 var behaviour = new Creep.Behaviour('healer');
-
 behaviour.run = function(creep) {
     var assignment;
     if( creep.room.situation.invasion )
@@ -14,9 +13,8 @@ behaviour.run = function(creep) {
                 assignment = creep.assignAction(Creep.action.guarding);
         }
     }
-    if( !assignment ) creep.assignAction(Creep.action.idle);
-    
+    if( !assignment ) creep.assignAction(Creep.action.idle);    
     if( creep.action ) creep.action.step(creep);
 };
-
+behaviour.run.displayName = "creep.behaviour.healer.run";
 module.exports = behaviour;
