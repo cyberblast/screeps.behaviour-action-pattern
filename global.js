@@ -123,7 +123,16 @@ var mod = {
             if( !date ) date = new Date(); 
             var offset = TIME_ZONE;
             if( USE_SUMMERTIME && IS_SUMMERTIME(date) ) offset++;
-            return new Date(date.getTime() + (3600000 * offset));
+            return Date(date.getTime() + (3600000 * offset));
+        }
+        global.DateTimeString = function(date){
+            return (Len(date.getDate()) + "." + Len(date.getMonth()+1) + "." + Len(date.getFullYear()) + " " + Len(date.getHours()) + ":" + Len(date.getMinutes()) + ":" + Len(date.getSeconds()));
+        }
+        global.TimeString = function(date){
+            return (Len(date.getHours()) + ":" + Len(date.getMinutes()) + ":" + Len(date.getSeconds()));
+        }
+        global.Len = function(number){
+            return ("00" + number).slice(-2);
         }
         global.IS_SUMMERTIME = function(date){
             var year = date.getFullYear();

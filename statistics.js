@@ -3,7 +3,7 @@ var mod = {
     loop: function(){
         if( this.storedStatisticsTime > 0 ) {
             var message = '<h3><b>Status report</b></h3>' 
-                + '<h4>at ' + LocalDate().toLocaleString() + ',<br/>' 
+                + '<h4>at ' + DateTimeString(LocalDate()) + ',<br/>' 
                 + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(this.storedStatisticsTime)) + ' (' + (Game.time - Memory.statistics.tick) + ' loops)</h4>';
 
             if( Game.cpu.bucket ){
@@ -14,9 +14,9 @@ var mod = {
         }
         
         var invaderReport = invader => {
-            message += '<li>' + invader.owner + ': ' + invader.body.replace('/"/g','');
-            if( invader.leave === undefined ) message += " since " + LocalDate(new Date(invader.time)).toLocaleString() + '</li>';
-            else message += " for " + (invader.leave - invader.enter) + ' loops at ' + LocalDate(new Date(invader.time)).toLocaleString() + '</li>';
+            message += '<li>' + invader.owner + ': ' + invader.body.replace(/"/g,'');
+            if( invader.leave === undefined ) message += " since " + TimeString(LocalDate(new Date(invader.time))) + '</li>';
+            else message += " for " + (invader.leave - invader.enter) + ' loops at ' + TimeString(LocalDate(new Date(invader.time))) + '</li>';
         };
         
         var processRoom = room => {
