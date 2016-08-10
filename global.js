@@ -1,7 +1,6 @@
 var mod = {
     init: function(params){
-        var register = key => { global[key] = params[key]; };
-        _.forEach(Object.keys(params), register);
+        _.assign(global, params);
         Creep.extend = require('creep').extend;
         Room.extend = require('room').extend;
         Spawn.extend = require('spawn').extend;        
