@@ -122,7 +122,7 @@ var mod = {
             if( !date ) date = new Date(); 
             var offset = TIME_ZONE;
             if( USE_SUMMERTIME && IS_SUMMERTIME(date) ) offset++;
-            return Date(date.getTime() + (3600000 * offset));
+            return new Date(date.getTime() + (3600000 * offset));
         }
         global.DateTimeString = function(date){
             return (Len(date.getDate()) + "." + Len(date.getMonth()+1) + "." + Len(date.getFullYear()) + " " + Len(date.getHours()) + ":" + Len(date.getMinutes()) + ":" + Len(date.getSeconds()));
