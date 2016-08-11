@@ -1,7 +1,7 @@
 var behaviour = new Creep.Behaviour('melee');
 behaviour.run = function(creep) {
     var assignment;
-    if( creep.room.controller.my && creep.room.situation.invasion )
+    if( creep.room.controller && creep.room.controller.my && creep.room.situation.invasion )
         assignment = creep.assignAction(Creep.action.defending);
     else {
         var flag = _.find(Game.flags, FLAG_COLOR.destroy.filter) || _.find(Game.flags, FLAG_COLOR.invade.filter);
