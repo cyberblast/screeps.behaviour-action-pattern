@@ -6,7 +6,7 @@ Creep.extend();
 Room.extend();  
 Spawn.extend();  
 
-module.exports.loop = function () {
+function loop(){        
     Population.loop();  
 
     var roomLoop = room => {
@@ -22,4 +22,4 @@ module.exports.loop = function () {
 
     if( Game.time % TIME_REPORT == 0 ) 
         require('./statistics').loop();
-};
+}

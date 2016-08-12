@@ -35,7 +35,7 @@ action.newTarget = function(creep){
         creep.action = null;
         return;
     }    
-    if( !flag.room.controller.my ) {        
+    if( !flag.room.controller || !flag.room.controller.my ) {        
         //attack healer
         var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
             filter: function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 

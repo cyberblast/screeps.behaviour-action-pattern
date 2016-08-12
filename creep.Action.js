@@ -4,7 +4,8 @@ var Action = function(actionName){
     this.ignoreCreeps = false;
     this.maxPerTarget = 1;
     this.maxPerTargetType = 'worker'; // TODO: if null take sum
-    this.maxTargetLease = null; // ticks until target refind    
+    this.maxTargetLease = null; // ticks until target refind
+    this.renewTarget = true;
     this.defaultTarget = function(creep){
         var flags = _.sortBy(creep.room.find(FIND_FLAGS, { filter: FLAG_COLOR.idle.filter }), 
             function(o) { 
