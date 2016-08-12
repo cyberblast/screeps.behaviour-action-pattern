@@ -1,6 +1,6 @@
 var behaviour = new Creep.Behaviour('healer');
 behaviour.run = function(creep) {
-    var assignment;
+    var assignment = true;
     if( creep.room.situation.invasion )
         assignment = creep.assignAction(Creep.action.healing);
     else {

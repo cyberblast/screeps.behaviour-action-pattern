@@ -31,10 +31,7 @@ var mod = {
                 return this._creeps;
             },
             set: function(value) {
-                if(_.isUndefined(this._creeps)) {
-                    this._creeps = [];
-                }
-                this._creeps.push(value);
+                this._creeps = value;
             }
         });
         Object.defineProperty(Structure.prototype, 'towers', {
@@ -46,10 +43,7 @@ var mod = {
                 return this._towers;
             },
             set: function(value) {
-                if(_.isUndefined(this._towers)) {
-                    this._towers = [];
-                }
-                this._towers.push(value);
+                this._towers = value;
             }
         });
         Object.defineProperty(Source.prototype, 'memory', {

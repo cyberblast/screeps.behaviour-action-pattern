@@ -1,21 +1,21 @@
 var Behaviour = function(typeName){
     this.name = typeName;
-    this.run = function(creep) {    
+    this.run = function(creep) {
         // Has assigned Action
-        if( creep.memory.action ){
-            if( !creep.validateMemoryAction() || creep.memory.action == 'idle' ){ // not valid anymore 
-                // unregister & clear memory
-                creep.unregisterAction();
-            }
-        }
-        
+        let action;
+        if( !creep.validateMemoryAction() ){ // not valid anymore 
+            creep.action = null;
+            action = null;
+        } else action = creep.action;
+
         // Assign next Action
-        if( !creep.memory.action ) {
+        if( action == null ) {
             this.nextAction(creep);
+            action = creep.action;
         }
 
         // Do some work
-        if( creep.action && creep.target ) {
+        if( action && creep.target ) {
             creep.action.step(creep);
         } 
     };

@@ -11,10 +11,7 @@ action.step = function(creep){
         creep.moveTo(creep.target, {reusePath: this.reusePath});
     }
     if( creep.target.pos.roomName == creep.room.name ){
-        // unregister & clear memory
-        creep.unregisterTarget();
-        creep.room.activities[creep.memory.action]--;
-        creep.memory.action = null;
+        // unregister
         creep.action = null;
     }
 }

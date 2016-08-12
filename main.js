@@ -7,6 +7,7 @@ Room.extend();
 Spawn.extend();  
 
 module.exports.loop = function () {
+    FlagDir.loop();
     Population.loop();  
 
     var roomLoop = room => {

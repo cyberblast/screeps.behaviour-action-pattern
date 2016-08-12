@@ -28,10 +28,7 @@ action.newTarget = function(creep){
     if( flag && (!flag.room || flag.room.name != creep.room.name))
         return flag; // other room    
     if( !flag ){
-        // unregister & clear memory
-        creep.unregisterTarget();
-        creep.room.activities[creep.memory.action]--;
-        creep.memory.action = null;
+        // unregister 
         creep.action = null;
         return;
     }    
@@ -87,7 +84,7 @@ action.newTarget = function(creep){
 };
 action.step = function(creep){
     if(CHATTY) creep.say(this.name);
-    this.setup[creep.memory.setup](creep);
+    this.setup[creep.type](creep);
 }
 action.setup = {
     melee: function(creep){        

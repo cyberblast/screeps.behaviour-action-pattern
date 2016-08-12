@@ -86,18 +86,16 @@ var mod = {
             else {
                 // count spawning time
                 if( creep.spawning ) {
-                    if( creep.memory.spawning === undefined )
-                        creep.memory.spawning = 1;
-                    else creep.memory.spawning++;
+                    creep.breeding++;
                 }
                 else if( creep.ticksToLive == 1499 ){ // spawning complete
                     spawnsToProbe.push(creep.memory.mother);
                 }
 
                 var room = creep.room;
-                var spawning = creep.memory.spawning;
-                var cost = creep.memory.cost;
-                var setup = creep.memory.setup || 'unknown';
+                var spawning = creep.breeding;
+                var cost = creep.cost;
+                var setup = creep.type;
                 var action = creep.memory.action || 'idle';
                 var targetId = creep.memory.target;
                 var creepName = creep.name;

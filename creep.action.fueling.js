@@ -6,15 +6,12 @@ action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };   
 action.isAddableTarget = function(target){ 
-    return (this.maxPerTarget > 0 && (!target.creeps || !target.creeps[this.maxPerTargetType] || target.creeps[this.maxPerTargetType].length < this.maxPerTarget)) && 
-    ((target.energy < target.energyCapacity * (1-(0.18/target.room.towers.length))) || target.room.situation.invasion);
+    return (this.maxPerTarget > 0 && (!target.creeps || !target.creeps[this.maxPerTargetType] || target.creeps[this.maxPerTargetType].length < this.maxPerTarget));
 };
 action.newTarget = function(creep){
     var self = this;
-    var t = creep.room.towers.find(function(tower) { // TODO: include Nuker
-        return tower.energy < tower.energyCapacity && self.isAddableTarget(tower);
-    });
-    return t;
+    var isAddable = target => self.isAddableTarget(target);
+    return _.find(creep.room.fuelables, isAddable);
 };
 action.work = function(creep){
     return creep.transfer(creep.target, RESOURCE_ENERGY);

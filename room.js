@@ -129,6 +129,18 @@ var mod = {
                 return this._repairableSites;
             }
         });
+        Object.defineProperty(Room.prototype, 'fuelables', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._fuelables) ){
+                    var self = this; 
+                    var factor = self.situation.invasion ? 1 : (1-(0.18/self.towers.length));
+                    var fuelable = target => (target.energy < (target.energyCapacity * factor));
+                    this._fuelables = _.filter(this.towers, fuelable); // TODO: Add Nuker
+                }
+                return this._fuelables;
+            }
+        });
         Object.defineProperty(Room.prototype, 'urgentRepairableSites', {
             configurable: true,
             get: function() {

@@ -7,7 +7,7 @@ action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){ 
     var flags = _.sortBy(_.filter(Game.flags, FLAG_COLOR.defense.filter), 
         function(o) { 
-            var occupation = ( o.creeps && o.creeps[creep.memory.setup] ? o.creeps[creep.memory.setup].length : 0);
+            var occupation = ( o.creeps && o.creeps[creep.type] ? o.creeps[creep.type].length : 0);
             var distance = creep.pos.getRangeTo(o);
             return (occupation + (distance == Infinity ? 0.9 : distance/100));
         }
@@ -17,7 +17,7 @@ action.newTarget = function(creep){
 };
 action.work = function(creep){
     if( creep.room.situation.invasion ){
-        if(creep.assignAction(creep.memory.setup == 'healer' ? Creep.action.healing : Creep.action.defending))
+        if(creep.assignAction(creep.type == 'healer' ? Creep.action.healing : Creep.action.defending))
             creep.action.step(creep);
     }
     return OK;

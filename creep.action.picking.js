@@ -22,10 +22,7 @@ action.newTarget = function(creep){
 action.work = function(creep){
     var result = creep.pickup(creep.target);
     if( result == OK ){
-        // unregister & clear memory
-        creep.unregisterTarget();
-        creep.room.activities[creep.memory.action]--;
-        creep.memory.action = null;
+        // unregister
         creep.action = null;
     }
     return result;

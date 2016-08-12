@@ -5,17 +5,10 @@ behaviour.nextAction = function(creep){
     if( creep.flag && creep.flag.color == FLAG_COLOR.invade.exploit.color && creep.flag.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor)
         flag = creep.flag;
     else {
-        var flags = _.sortBy(_.filter(Game.flags, FLAG_COLOR.invade.exploit.filter), 
-            function(f) { 
-                var occupation = ( f.creeps ? f.creeps.sum : 0 );
-                var distance = creep.pos.getRangeTo(f);
-                return (occupation + (distance == Infinity ? 0.9 : distance/100));
-            }
-        );
-        if( flags && flags.length > 0 ) { 
-            flag = flags[0];
-            creep.flag = flags[0];
-            creep.memory.flag = flags[0].name;
+        flag = FlagDir.find(FLAG_COLOR.invade.exploit, creep.pos, false, FlagDir.rangeModPrivateer);
+        if( flag ) { 
+            creep.flag = flag;
+            creep.memory.flag = flag.name;
         }
     }     
     if( !flag ) { // no (more) exploit flag
@@ -26,6 +19,7 @@ behaviour.nextAction = function(creep){
     }
     if(_.sum(creep.carry) == creep.carryCapacity) { // carrier full
         if( creep.pos.roomName != creep.memory.home ){ // not at home
+            delete creep.memory.flag;
             creep.assignAction(Creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
         } 
         else { // at home

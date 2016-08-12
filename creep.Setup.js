@@ -46,12 +46,12 @@ var Setup = function(typeName){
     this.buildParams = function(spawn){
         var memory = {
             setup: null,
-            id: null, 
+            name: null, 
             parts: [], 
             cost: 0, 
             mother: null, 
             home: null, 
-            spawning: 1
+            breeding: 1
         };
         
         memory.setup = this.type;
@@ -59,14 +59,14 @@ var Setup = function(typeName){
         memory.cost = this.bodyCosts(memory.parts);  
         memory.mother = spawn.name; 
         memory.home = spawn.room.name;
-        for( var son = 1; memory.id == null || Game.creeps[memory.id]; son++ ) {
-            memory.id = this.type + '-' + memory.cost + '-' + son;
+        for( var son = 1; memory.name == null || Game.creeps[memory.name]; son++ ) {
+            memory.name = this.type + '-' + memory.cost + '-' + son;
         }
         return memory;
     }; 
     this.minEnergyAvailable = function(spawn){ return 1; }; // 1 = full
-    this.maxCount = function(spawn){ return 0; }; 
-    this.maxWeight = function(spawn){ return 0; };
+    this.maxCount = function(spawn){ return null; }; 
+    this.maxWeight = function(spawn){ return null; };
     this.isValidSetup = function(spawn){
         if( spawn.room.energyAvailable < this.minAbsEnergyAvailable || spawn.room.relativeEnergyAvailable < this.minEnergyAvailable(spawn) ) 
             return false;

@@ -45,8 +45,8 @@ var mod = {
         };
         Creep.prototype.run = function(behaviour){
             if( !this.spawning ){
-                if(!behaviour && this.memory.setup) {
-                    behaviour = Creep.behaviour[this.memory.setup];
+                if(!behaviour && this.type) {
+                    behaviour = Creep.behaviour[this.type];
                 }
                 if( behaviour ) behaviour.run(this);
             }
@@ -58,12 +58,12 @@ var mod = {
             this.memory.target = null;
             this.memory.targetAssignmentTime = null;
             // unregister
-            if( !this.memory.setup || !target) return;   
+            if( !this.type || !target) return;   
             if( !target.creeps ) return;
-            if( !target.creeps[this.memory.setup] ) return;
-            if( !target.creeps[this.memory.setup].includes(this.name) ) return;
+            if( !target.creeps[this.type] ) return;
+            if( !target.creeps[this.type].includes(this.name) ) return;
 
-            target.creeps[this.memory.setup].splice(target.creeps[this.memory.setup].indexOf(this.name), 1);
+            target.creeps[this.type].splice(target.creeps[this.type].indexOf(this.name), 1);
         };
         Creep.prototype.registerTarget = function(target){ 
             //if( !target ) console.log(JSON.stringify(this.memory));
@@ -79,31 +79,30 @@ var mod = {
             this.memory.targetAssignmentTime = Game.time;
             this.memory.target = targetId;
             //register
-            if( !this.memory.setup ) return;   
+            if( !this.type ) return;   
             if( !target.creeps ) {
                 target.creeps = {};
             }
-            if( !target.creeps[this.memory.setup] ){
-                target.creeps[this.memory.setup] = [];
+            if( !target.creeps[this.type] ){
+                target.creeps[this.type] = [];
             }
-            if( !target.creeps[this.memory.setup].includes(this.name) ) {
-                target.creeps[this.memory.setup].push(this.name);            
+            if( !target.creeps[this.type].includes(this.name) ) {
+                target.creeps[this.type].push(this.name);            
                 if( !target.creeps.sum )
                     target.creeps.sum = 1;
                 else target.creeps.sum++;
             }
         };
         Creep.prototype.validateMemoryAction = function(){
-            this.action = Creep.action[this.memory.action];
-
-            if( this.action && this.action.isValidAction(this) ){
+            let action = this.action;
+            if( action && action.isValidAction(this) ){
                 // validate target or new
-                if( !this.action.isValidTarget(this.target) || 
-                (this.action.maxTargetLease && (Game.time-this.memory.targetAssignmentTime) > this.action.maxTargetLease )){ 
+                if( !action.isValidTarget(this.target) || 
+                (action.maxTargetLease && (Game.time-this.memory.targetAssignmentTime) > action.maxTargetLease )){ 
                     // invalid. try to find a new one...
                     this.unregisterTarget();
-                    if( this.action.renewTarget ){
-                        var target = this.action.newTarget(this);
+                    if( action.renewTarget ){
+                        var target = action.newTarget(this);
                         if( target ) {
                             this.registerTarget(target);
                             return true;
@@ -113,36 +112,72 @@ var mod = {
             } 
             return false;
         };
-        Creep.prototype.registerAction = function(action){
-            if( this.memory.action )
-                this.room.activities[this.memory.action]--;
-            this.memory.action = action.name;
-            
-            if(!this.room.activities[action])
-                this.room.activities[action] = 1;
-            else this.room.activities[action]++;
-        };
-        Creep.prototype.unregisterAction = function(){
-            this.unregisterTarget();
-            if( this.memory.action && this.room.activities[this.memory.action] )
-                this.room.activities[this.memory.action]--;
-            this.memory.action = null;
-            this.action = null;
-        };
-        Creep.prototype.assignAction = function(action, target){
-            this.unregisterAction();
-            
+        Creep.prototype.assignAction = function(action, target){    
             this.action = action;
             if( target === undefined ) target = action.newTarget(this);
             
             if( target != undefined ) {
-                this.registerAction(action);
                 this.registerTarget(target);
                 return true;
             } 
 
+            this.action = null;
             return false;
         };
+        Object.defineProperty(Creep.prototype, 'type', {
+            configurable: true,
+            get: function() {
+                return this.memory.setup || 'unknown';
+            },
+            set: function(value) {
+                this.memory.setup = value;
+            }
+        });   
+        Object.defineProperty(Creep.prototype, 'cost', {
+            configurable: true,
+            get: function() {
+                return this.memory.cost || '0';
+            },
+            set: function(value) {
+                this.memory.cost = value;
+            }
+        });
+        Object.defineProperty(Creep.prototype, 'breeding', {
+            configurable: true,
+            get: function() {
+                return this.memory.breeding || this.memory.spawning || '0';
+            },
+            set: function(value) {
+                this.memory.breeding = value;
+            }
+        });
+        Object.defineProperty(Creep.prototype, 'action', {
+            configurable: true,
+            get: function() {
+                if( this.memory.action != null ) {
+                    var action = Creep.action[this.memory.action];
+                    if( action ) return action;
+                }
+                return null;
+            },
+            set: function(value) {
+                let actionName = this.memory.action;
+                this.unregisterTarget();
+                if( actionName && this.room.activities[actionName] )
+                    this.room.activities[actionName]--;
+
+                if(_.isObject(value) && value.name){
+                    this.memory.action = value.name;
+                } else this.memory.action = value;
+
+                actionName = this.memory.action;
+                if( actionName ){
+                    if(!this.room.activities[actionName])
+                        this.room.activities[actionName] = 1;
+                    else this.room.activities[actionName]++;
+                }
+            }
+        });
     }
 }
 

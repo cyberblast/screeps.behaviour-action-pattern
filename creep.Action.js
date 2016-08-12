@@ -51,8 +51,7 @@ var Action = function(actionName){
         var workResult = this.work(creep);
         if( ![OK, ERR_NOT_IN_RANGE].includes(workResult) ) {
             if( DEBUG ) ERROR_LOG(creep, workResult);
-            creep.memory.action = null;
-            creep.memory.target = null;
+            creep.action = null;
         }
         if( workResult != OK && moveResult == ERR_NO_PATH ){// get out of the way
             this.defaultAction(creep);
@@ -60,8 +59,7 @@ var Action = function(actionName){
         } 
         if( ![OK, ERR_TIRED, ERR_NO_PATH].includes(moveResult) ) {
             if( DEBUG ) ERROR_LOG(creep, moveResult);
-            creep.memory.action = null;
-            creep.memory.target = null;
+            creep.action = null;
         }
     };    
     this.work = function(creep){

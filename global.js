@@ -6,6 +6,7 @@ var mod = {
         Spawn.extend = require('./spawn').extend;        
         global.Extensions = require('./extensions');
         global.Population = require('./population');
+        global.FlagDir = require('./flagDir');
         global.MOD = {};    
         global.Tower = require('./tower');        
         global.FLAG_COLOR = {

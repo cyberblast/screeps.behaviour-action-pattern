@@ -27,7 +27,7 @@ behaviour.run = function(creep) {
     if( creep.room.constructionSites.length > 0 ) {
         // Has invalid assigned Action 
         if(creep.memory.action && creep.memory.action != 'harvesting' && creep.memory.action != 'building') {
-            creep.unregisterAction();
+            creep.action = null;
         }        
         // Last Action completed / No more energy
         if( creep.carry.energy == 0 && creep.memory.action != 'harvesting') { 

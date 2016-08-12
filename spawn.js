@@ -14,8 +14,8 @@ var mod = {
             var probe = setup => {
                 if( setup.isValidSetup(self) ){
                     var params = setup.buildParams(self);
-                    var newName = self.createCreep(params.parts, params.id, params);
-                    if( params.id == newName || ERROR_CODE(newName) === undefined ){
+                    var newName = self.createCreep(params.parts, params.name, params);
+                    if( params.name == newName || ERROR_CODE(newName) === undefined ){
                         Population.registerCreepSetup(self.room, params.setup, params.cost);
                         if(DEBUG) console.log( DYE(CRAYON.system, self.name + ' &gt; ') + DYE(CRAYON.birth, 'Good morning ' + newName + '!') );
                         return true;
