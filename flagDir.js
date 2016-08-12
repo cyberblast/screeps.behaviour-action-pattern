@@ -21,7 +21,7 @@ var mod = {
                 var r = 0;
                 let roomDist = self.roomDistance(flag.roomName, pos.roomName);
                 if( roomDist == 0 )
-                    r = _.max(Math.abs(flag.x-pos.x), Math.abs(flag.y-pos.y));
+                    r = _.max([Math.abs(flag.x-pos.x), Math.abs(flag.y-pos.y)]);
                 else r = roomDist * 100;
                 if( rangeMod ){
                     r = rangeMod(r, flag);
@@ -31,8 +31,8 @@ var mod = {
             return _.sortBy(flags, range)[0].name;
         } else return flags[0];
     }, 
-    find: function(flagColor, pos, local){
-        let id = this.findName(flagColor, pos, local);
+    find: function(flagColor, pos, local, rangeMod){
+        let id = this.findName(flagColor, pos, local, rangeMod);
         if( id === null ) 
             return null;
         return Game.flags[id];
@@ -65,7 +65,7 @@ var mod = {
         if( a == b ) return 0;
         let posA = a.split(/([N,E,S,W])/);
         let posB = b.split(/([N,E,S,W])/);
-        let xDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
+        let xDif = posA[1] == posB[1] ? Math.abs(posA[2]-posB[2]) : posA[2]+posB[2]+1;
         let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
         return xDif + yDif; 
     }, 

@@ -7,12 +7,8 @@ var Action = function(actionName){
     this.maxTargetLease = null; // ticks until target refind
     this.renewTarget = true;
     this.defaultTarget = function(creep){
-        var flags = _.sortBy(creep.room.find(FIND_FLAGS, { filter: FLAG_COLOR.idle.filter }), 
-            function(o) { 
-                return (o.creeps ? o.creeps.length : 0); 
-            }
-        );
-        if( flags ) return flags[0];
+        var flag = FlagDir.find(FLAG_COLOR.idle, creep.pos, true);
+        if( flag ) return flag;
         if( creep.home && creep.room.name != creep.home){
             // go to home room
             var exitDir = creep.room.findExitTo(creep.home);
