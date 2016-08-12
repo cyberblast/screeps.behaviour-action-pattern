@@ -12,15 +12,15 @@ behaviour.nextAction = function(creep){
         }
     }     
     if( !flag ) { // no (more) exploit flag
-        if( creep.pos.roomName != creep.memory.home ){ // not at home
-            creep.assignAction(Creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
+        if( creep.pos.roomName != creep.home ){ // not at home
+            creep.assignAction(Creep.action.settling, Game.rooms[creep.home].controller); // go home
         } else creep.run(Creep.behaviour.worker); // at home: behave as worker
         return;
     }
     if(_.sum(creep.carry) == creep.carryCapacity) { // carrier full
-        if( creep.pos.roomName != creep.memory.home ){ // not at home
+        if( creep.pos.roomName != creep.home ){ // not at home
             delete creep.memory.flag;
-            creep.assignAction(Creep.action.settling, Game.rooms[creep.memory.home].controller); // go home
+            creep.assignAction(Creep.action.settling, Game.rooms[creep.home].controller); // go home
         } 
         else { // at home
             if( _.sum(creep.carry) > creep.carry.energy ) { // has non energy sources

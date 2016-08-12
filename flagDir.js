@@ -71,8 +71,7 @@ var mod = {
     }, 
     rangeModPrivateer: function(range, flagItem){
         var flag = Game.flags[flagItem.name];
-        flag.creeps.sum * 10
-        return range + (flag.creeps.sum * 10);
+        return range + ((flag.creeps.sum || 0) * 10);
     }
 }
 module.exports = mod;

@@ -13,9 +13,9 @@ var Action = function(actionName){
             }
         );
         if( flags ) return flags[0];
-        if( creep.memory.home && creep.room.name != creep.memory.home){
+        if( creep.home && creep.room.name != creep.home){
             // go to home room
-            var exitDir = creep.room.findExitTo(creep.memory.home);
+            var exitDir = creep.room.findExitTo(creep.home);
             var exit = creep.pos.findClosestByRange(exitDir);
             return exit;
         }

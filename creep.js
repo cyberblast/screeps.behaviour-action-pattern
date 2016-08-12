@@ -132,7 +132,25 @@ var mod = {
             set: function(value) {
                 this.memory.setup = value;
             }
-        });   
+        });
+        Object.defineProperty(Creep.prototype, 'home', {
+            configurable: true,
+            get: function() {
+                return this.memory.home || 'unknown';
+            },
+            set: function(value) {
+                this.memory.home = value;
+            }
+        });
+        Object.defineProperty(Creep.prototype, 'mother', {
+            configurable: true,
+            get: function() {
+                return this.memory.mother || 'unknown';
+            },
+            set: function(value) {
+                this.memory.mother = value;
+            }
+        });
         Object.defineProperty(Creep.prototype, 'cost', {
             configurable: true,
             get: function() {
