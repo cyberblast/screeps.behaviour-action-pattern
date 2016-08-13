@@ -16,7 +16,7 @@ var mod = {
             invading: require('./creep.action.invading'),
             picking: require('./creep.action.picking'), 
             repairing: require('./creep.action.repairing'), 
-            settling: require('./creep.action.settling'), 
+            travelling: require('./creep.action.travelling'), 
             storing: require('./creep.action.storing'), 
             upgrading: require('./creep.action.upgrading'), 
             withdrawing: require('./creep.action.withdrawing')

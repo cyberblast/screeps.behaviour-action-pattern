@@ -1,8 +1,11 @@
 var mod = {
     storedStatisticsTime: (Memory.statistics && Memory.statistics.time ? Memory.statistics.time : 0 ),
     loop: function(){
+        if( _.isUndefined(Memory.statistics.reports) )
+            Memory.statistics.reports = []
+
         if( this.storedStatisticsTime > 0 ) {
-            var message = '<h3><b>Status report</b></h3>' 
+            var message = '<h3><b>Status report</b></h3> ' 
                 + '<h4>at ' + DateTimeString(LocalDate()) + ',<br/>' 
                 + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(this.storedStatisticsTime)) + ' (' + (Game.time - Memory.statistics.tick) + ' loops)</h4>';
 
@@ -10,13 +13,17 @@ var mod = {
                 bucketDif = Game.cpu.bucket - Memory.statistics.bucket;
                 message += 'CPU Bucket: ' + Game.cpu.bucket + ' ('  + (bucketDif >= 0 ? '+' : '' ) + bucketDif + ')';
             }
-            Game.notify(message);
+            Memory.statistics.reports.push(message);
         }
         
         var invaderReport = invader => {
-            message += '<li>' + invader.owner + ': ' + invader.body.replace(/"/g,'');
-            if( invader.leave === undefined ) message += " since " + TimeString(LocalDate(new Date(invader.time))) + '</li>';
-            else message += " for " + (invader.leave - invader.enter) + ' loops at ' + TimeString(LocalDate(new Date(invader.time))) + '</li>';
+            let snip = '<li>' + invader.owner + ': ' + invader.body.replace(/"/g,'');
+            if( invader.leave === undefined ) snip += " since " + TimeString(LocalDate(new Date(invader.time))) + '</li>';
+            else snip += " for " + (invader.leave - invader.enter) + ' loops at ' + TimeString(LocalDate(new Date(invader.time))) + '</li>';
+            if( message.length + snip.length > 1000 ){
+                Memory.statistics.reports.push(message);
+                message = snip;
+            } else message += snip;
         };
         
         var processRoom = room => {
@@ -26,7 +33,7 @@ var mod = {
                     message = '<ul><li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul>';
                     var isUpgraded = room.controller.progress < room.memory.statistics.controllerProgress;
                     var cdif = isUpgraded ? (room.memory.statistics.controllerProgressTotal - room.memory.statistics.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.statistics.controllerProgress); 
-                    message += '<li>Level ' + room.controller.level + ', ' + room.controller.progress + '/' + room.controller.progressTotal + ' (+' + cdif + ')' + (isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>');
+                    message += '<li>Level ' + room.controller.level + ', ' + (100*room.controller.progress/room.controller.progressTotal).toFixed(0).toString() + '% of ' + room.controller.progressTotal + ' (+' + cdif + ')' + (isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>');
     
                     // storage
                     if( room.storage && room.memory.statistics.store ){
@@ -52,16 +59,17 @@ var mod = {
                         message += '</ul>';
                     }
                     message += '</li></ul>'; 
-                    Game.notify(message);
+                    Memory.statistics.reports.push(message);
                 } 
                 else if( room.controller && !room.controller.my && room.controller.reservation ){
                     // controller
                     message = '<ul><li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul><li>Reservation: ' +
                         room.controller.reservation.ticksToEnd + ' for ' + 
                         room.controller.reservation.username + '</li></ul></li></ul>'; 
-                    Game.notify(message);
+                    Memory.statistics.reports.push(message);
                 }
             }
+
     
             // set statistics
             var present = invader => invader.leave === undefined;

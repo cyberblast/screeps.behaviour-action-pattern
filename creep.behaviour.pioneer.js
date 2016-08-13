@@ -5,7 +5,7 @@ behaviour.run = function(creep) {
     var flag = _.find(Game.flags, FLAG_COLOR.claim.spawn.filter);  
     if( flag ) { 
         if( !flag.room || flag.room.name != creep.room.name ){
-            if( creep.assignAction(Creep.action.settling, flag)) {
+            if( creep.assignAction(Creep.action.travelling, flag)) {
                 creep.action.step(creep);
                 return;
             }

@@ -153,6 +153,22 @@ var mod = {
             }
             return array;
         };
+        global.processReports = function(){
+            if( !_.isUndefined(Memory.statistics.reports) && Memory.statistics.reports.length > 0 ){
+                let mails;
+                if( Memory.statistics.reports.length <= 10 ){
+                    mails = Memory.statistics.reports;
+                    Memory.statistics.reports = [];
+                }
+                else {
+                    let chunks = _.chunk(Memory.statistics.reports, 10);
+                    mails = chunks[0];
+                    Memory.statistics.reports = _(chunks).tail().concat();
+                }
+                let send = mail => Game.notify(mail);
+                _.forEach(mails, send);
+            }
+        }
     }
 }
 module.exports = mod;

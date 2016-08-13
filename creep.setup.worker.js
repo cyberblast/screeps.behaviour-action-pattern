@@ -5,7 +5,7 @@ setup.minAbsEnergyAvailable = 200;
 setup.maxMulti = 6;
 setup.multiplicationPartwise = false;
 setup.minEnergyAvailable = function(spawn){
-    return 0.4;
+    return 0.3;
 };
 setup.maxCount = function(spawn){
     return ((spawn.room.sourceAccessibleFields*1.2) + (spawn.room.sources.length*2));

@@ -6,7 +6,7 @@ behaviour.run = function(creep) {
     else {
         var flag = _.find(Game.flags, FLAG_COLOR.destroy.filter) || _.find(Game.flags, FLAG_COLOR.invade.filter);
         if( flag ) 
-            assignment = creep.assignAction(Creep.action.settling, flag);
+            assignment = creep.assignAction(Creep.action.travelling, flag);
         else {
             assignment = creep.assignAction(Creep.action.healing);
             if(!assignment)

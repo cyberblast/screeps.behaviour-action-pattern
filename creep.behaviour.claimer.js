@@ -17,7 +17,7 @@ behaviour.run = function(creep) {
             creep.memory.flag = flags[0].name;
         }
     }
-    // TODO: Add Settling     
+    // TODO: Add travelling     
     if( !flag || !creep.assignAction(Creep.action.claiming) )
         creep.assignAction(Creep.action.idle);
     if( creep.action ) creep.action.step(creep);

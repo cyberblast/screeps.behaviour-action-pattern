@@ -33,11 +33,11 @@ behaviour.nextAction = function(creep){
         if( creep.room.ticksToDowngrade < 2000 ) {
             if( creep.assignAction(Creep.action.upgrading) ) 
                 return;
-        }        
+        }   
         var priority;
         if( creep.room.situation.invasion ) priority = [
-            Creep.action.feeding, 
             Creep.action.fueling, 
+            Creep.action.feeding, 
             Creep.action.repairing, 
             Creep.action.building, 
             Creep.action.storing, 

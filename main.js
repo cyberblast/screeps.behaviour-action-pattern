@@ -1,3 +1,4 @@
+/* https://github.com/cyberblast/screeps.behaviour-action-pattern */
 var params = require('./parameter');
 var global = require('./global')
 global.init(params);
@@ -23,4 +24,5 @@ module.exports.loop = function () {
 
     if( Game.time % TIME_REPORT == 0 ) 
         require('./statistics').loop();
+    processReports();
 };

@@ -37,9 +37,9 @@ action.step = function(creep){
     }
     else {
         workResult = creep.claimController(creep.target);
-    }
-    if( workResult == ERR_GCL_NOT_ENOUGH ){
-        workResult = creep.reserveController(creep.target);
+        if( workResult != OK ){
+            workResult = creep.reserveController(creep.target);
+        }
     }
 }
 module.exports = action;

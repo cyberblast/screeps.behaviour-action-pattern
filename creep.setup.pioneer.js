@@ -10,7 +10,8 @@ setup.minEnergyAvailable = function(spawn){
     return 0.75;
 };
 setup.maxCount = function(spawn){
-    return _.filter(Game.flags, FLAG_COLOR.claim.spawn.filter).length * 4;
+    return _.filter(Game.flags, FLAG_COLOR.claim.spawn.filter).length * 4
+    + _.filter(Game.flags, FLAG_COLOR.claim.pioneer.filter).length * 2;
 };
 setup.maxWeight = function(spawn){
     return null; // no evaluation
