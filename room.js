@@ -44,6 +44,15 @@ var mod = {
                 return this._sourceEnergyAvailable;
             }
         });
+        Object.defineProperty(Room.prototype, 'ticksToNextRegeneration', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._ticksToNextRegeneration) ){
+                    this._ticksToNextRegeneration = _(this.sources).map('ticksToRegeneration').min() || 0;
+                }
+                return this._ticksToNextRegeneration;
+            }
+        });        
         Object.defineProperty(Room.prototype, 'relativeEnergyAvailable', {
             configurable: true,
             get: function() {

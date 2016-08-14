@@ -22,7 +22,7 @@ action.newTarget = function(creep){
         // set controller as target
         return creep.flag.room.controller;
     }
-}
+};
 
 action.step = function(creep){
     if(CHATTY) creep.say(this.name);    
@@ -41,5 +41,5 @@ action.step = function(creep){
             workResult = creep.reserveController(creep.target);
         }
     }
-}
+};
 module.exports = action;

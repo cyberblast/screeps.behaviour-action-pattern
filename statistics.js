@@ -2,10 +2,10 @@ var mod = {
     storedStatisticsTime: (Memory.statistics && Memory.statistics.time ? Memory.statistics.time : 0 ),
     loop: function(){
         if( _.isUndefined(Memory.statistics.reports) )
-            Memory.statistics.reports = []
+            Memory.statistics.reports = [];
 
         if( this.storedStatisticsTime > 0 ) {
-            var message = '<h3><b>Status report</b></h3> ' 
+            var message = '<h3><b>Status report </b></h3>' 
                 + '<h4>at ' + DateTimeString(LocalDate()) + ',<br/>' 
                 + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(this.storedStatisticsTime)) + ' (' + (Game.time - Memory.statistics.tick) + ' loops)</h4>';
 
@@ -33,7 +33,7 @@ var mod = {
                     message = '<ul><li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul>';
                     var isUpgraded = room.controller.progress < room.memory.statistics.controllerProgress;
                     var cdif = isUpgraded ? (room.memory.statistics.controllerProgressTotal - room.memory.statistics.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.statistics.controllerProgress); 
-                    message += '<li>Level ' + room.controller.level + ', ' + (100*room.controller.progress/room.controller.progressTotal).toFixed(0).toString() + '% of ' + room.controller.progressTotal + ' (+' + cdif + ')' + (isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>');
+                    message += '<li>Level ' + room.controller.level + ', ' + (100*room.controller.progress/room.controller.progressTotal).toFixed(0).toString() + '% of ' + room.controller.progressTotal + ' (+' + cdif + '=' + (100*cdif/room.controller.progressTotal).toFixed(0).toString() + ')' + (isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>');
     
                     // storage
                     if( room.storage && room.memory.statistics.store ){
@@ -86,11 +86,9 @@ var mod = {
                     
         _.forEach(Game.rooms, processRoom);
 
-        Memory.statistics = {
-            tick: Game.time, 
-            time: Date.now(),
-            bucket: Game.cpu.bucket
-        }
+        Memory.statistics.tick = Game.time;
+        Memory.statistics.time = Date.now();
+        Memory.statistics.bucket =Game.cpu.bucket;
     }, 
     toTimeSpanString: function(dateA, dateB){
         var spanTicks = dateA.getTime() - dateB.getTime();

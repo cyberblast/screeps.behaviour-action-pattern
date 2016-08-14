@@ -1,4 +1,15 @@
 var mod = {
+    extend: function(){
+        Object.defineProperty(Flag.prototype, 'cloaking', {
+            configurable: true,
+            get: function() {
+                return this.memory.cloaking || '0';
+            },
+            set: function(value) {
+                this.memory.cloaking = value;
+            }
+        });
+    },
     list:[], 
     findName: function(flagColor, pos, local, rangeMod){
         let self = this;
@@ -7,7 +18,9 @@ var mod = {
 
         let filter = flagColor.filter;
         if( local && pos && pos.roomName )
-            _.assign(filter, {roomName: pos.roomName});
+            _.assign(filter, {roomName: pos.roomName, cloaking: 0});
+        else
+            _.assign(filter, {cloaking: 0});
         let flags = _.filter(this.list, filter);
 
         if( flags.length == 0 ) 
@@ -41,14 +54,17 @@ var mod = {
         this.list = [];
         var register = flag => {
             flag.creeps = {};
+            if( flag.cloaking > 0 ) flag.cloaking--;
             this.list.push({
-            name: flag.name, 
-            color: flag.color, 
-            secondaryColor: flag.secondaryColor, 
-            roomName: flag.pos.roomName,
-            x: flag.pos.x,
-            y: flag.pos.y
-        })};
+                name: flag.name, 
+                color: flag.color, 
+                secondaryColor: flag.secondaryColor, 
+                roomName: flag.pos.roomName,
+                x: flag.pos.x,
+                y: flag.pos.y, 
+                cloaking: flag.cloaking
+            });
+        };
         _.forEach(Game.flags, register);
     }, 
     count: function(flagColor, pos, local){
