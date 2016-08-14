@@ -2,10 +2,11 @@
 var params = require('./parameter');
 var global = require('./global');
 global.init(params);
-Extensions.extend();  
-Creep.extend();  
-Room.extend();  
-Spawn.extend();  
+Extensions.extend();
+Creep.extend();
+Room.extend();
+Spawn.extend();
+FlagDir.extend();
 
 module.exports.loop = function () {
     FlagDir.loop();

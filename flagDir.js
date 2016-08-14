@@ -18,9 +18,9 @@ var mod = {
 
         let filter = flagColor.filter;
         if( local && pos && pos.roomName )
-            _.assign(filter, {roomName: pos.roomName, cloaking: 0});
+            _.assign(filter, {roomName: pos.roomName, cloaking: "0"});
         else
-            _.assign(filter, {cloaking: 0});
+            _.assign(filter, {cloaking: "0"});
         let flags = _.filter(this.list, filter);
 
         if( flags.length == 0 ) 
