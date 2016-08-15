@@ -154,7 +154,7 @@ var mod = {
             return array;
         };
         global.processReports = function(){
-            if( !_.isUndefined(Memory.statistics.reports) && Memory.statistics.reports.length > 0 ){
+            if( !_.isUndefined(Memory.statistics) && !_.isUndefined(Memory.statistics.reports) && Memory.statistics.reports.length > 0 ){
                 let mails;
                 if( Memory.statistics.reports.length <= 10 ){
                     mails = Memory.statistics.reports;
@@ -168,6 +168,16 @@ var mod = {
                 let send = mail => Game.notify(mail);
                 _.forEach(mails, send);
             }
+        };
+        global.NumberFormat = function(number) {
+            // currently assuming integer .. TODO ..
+            var formatted = '';
+            var prepend = chunk => {
+                if( formatted !== '' ) formatted = '\'' + formatted;
+                formatted = chunk.reverse().join('') + formatted;
+            };  
+            _(number).toString().toArray().reverse().chunk(3).forEach(prepend);
+            return formatted;
         }
     }
 }

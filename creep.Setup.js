@@ -74,7 +74,7 @@ var Setup = function(typeName){
         var maxWeight = this.maxWeight(spawn);            
         if( maxCount == 0 || maxWeight == 0 || spawn.room.controller.level < this.minControllerLevel) 
             return false;
-        var population = this.globalMeasurement ? Game.population[this.type] : spawn.room.population[this.type];
+        var population = this.globalMeasurement ? (Game.population ? Game.population[this.type] : null ) : (spawn.room.population ? spawn.room.population[this.type] : null);
         if( !population ) 
             return true;
         if( maxCount == null ) 
