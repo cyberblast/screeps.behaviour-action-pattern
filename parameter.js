@@ -19,6 +19,8 @@ var mod = {
     USE_SUMMERTIME: true, // Please define IS_SUMMERTIME in global.js to suit to your local summertime rules 
     SPAWN_INTERVAL: 10, // loops between regular spawn probe
     MEMORY_RESYNC_INTERVAL: 100, // interval to reload spawns & towers present in a room
-    GAP_REPAIR_DECAYABLE: 800 // decayables (e.g. roads) only get repaired when that much hits are missing
+    GAP_REPAIR_DECAYABLE: 800, // decayables (e.g. roads) only get repaired when that much hits are missing
+    REPORT_MAX_LENGTH: 500,
+    REPORTS_PER_LOOP: 18
 }
 module.exports = mod;

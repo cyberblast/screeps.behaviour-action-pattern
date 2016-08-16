@@ -156,12 +156,12 @@ var mod = {
         global.processReports = function(){
             if( !_.isUndefined(Memory.statistics) && !_.isUndefined(Memory.statistics.reports) && Memory.statistics.reports.length > 0 ){
                 let mails;
-                if( Memory.statistics.reports.length <= 10 ){
+                if( Memory.statistics.reports.length <= REPORTS_PER_LOOP ){
                     mails = Memory.statistics.reports;
                     Memory.statistics.reports = [];
                 }
                 else {
-                    let chunks = _.chunk(Memory.statistics.reports, 10);
+                    let chunks = _.chunk(Memory.statistics.reports, REPORTS_PER_LOOP);
                     mails = chunks[0];
                     Memory.statistics.reports = _(chunks).tail().concat();
                 }
@@ -173,10 +173,10 @@ var mod = {
             // currently assuming integer .. TODO ..
             var formatted = '';
             var prepend = chunk => {
-                if( formatted !== '' ) formatted = '\'' + formatted;
-                formatted = chunk.reverse().join('') + formatted;
+                if( formatted !== '' ) formatted += '\'';
+                formatted += chunk.reverse().join('');
             };  
-            _(number).toString().toArray().reverse().chunk(3).forEach(prepend);
+            _(number.toString()).toArray().reverse().chunk(3).forEachRight(prepend);
             return formatted;
         }
     }

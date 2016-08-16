@@ -2,9 +2,9 @@
 var params = require('./parameter');
 var global = require('./global');
 global.init(params);
-Extensions.extend();
-Creep.extend();
-Room.extend();
+Extensions.extend();  
+Creep.extend();  
+Room.extend();  
 Spawn.extend();
 FlagDir.extend();
 

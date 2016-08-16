@@ -21,9 +21,9 @@ var mod = {
             let snip = '<li>' + invader.owner + ': ' + invader.body.replace(/"/g,'');
             if( invader.leave === undefined ) snip += " since " + TimeString(LocalDate(new Date(invader.time))) + '</li>';
             else snip += " for " + (invader.leave - invader.enter) + ' loops at ' + TimeString(LocalDate(new Date(invader.time))) + '</li>';
-            if( (message.length + snip.length) > 990 ){
+            if( (message.length + snip.length) > REPORT_MAX_LENGTH ){
                 Memory.statistics.reports.push(message + "</ul></li></ul>");
-                message = "<ul><li><ul>" + snip;
+                message = '<ul><li style="list-style-type:none"><ul>' + snip;
             } else message += snip;
         };
         
@@ -33,9 +33,12 @@ var mod = {
                     // controller
                     message = '<ul><li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul>';
                     var isUpgraded = room.controller.progress < room.memory.statistics.controllerProgress;
-                    var cdif = isUpgraded ? (room.memory.statistics.controllerProgressTotal - room.memory.statistics.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.statistics.controllerProgress); 
-                    message += '<li>Level ' + room.controller.level + ', ' + (100*room.controller.progress/room.controller.progressTotal).toFixed(0).toString() + '% of ' + room.controller.progressTotal + ' (+' + cdif + ' / ' + (100*cdif/room.controller.progressTotal).toFixed(1).toString() + '%)' + (isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>');
-    
+                    var filledPercent = (100*room.controller.progress/room.controller.progressTotal).toFixed(0);
+                    var totalDif = isUpgraded ? (room.memory.statistics.controllerProgressTotal - room.memory.statistics.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.statistics.controllerProgress); 
+                    var percDif = (100*totalDif/room.controller.progressTotal).toFixed(1);
+                    var step = (totalDif / (Game.time - Memory.statistics.tick)).toFixed(2);
+                    message += '<li>Level ' + room.controller.level + ', ' + filledPercent + '% of ' + room.controller.progressTotal + '<br/>( +' + totalDif + ' | +' + percDif + '% | +' + step + '/loop )' + (isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>');
+
                     // storage
                     if( room.storage && room.memory.statistics.store ){
                         var memoryStoreRecord = room.memory.statistics.store;
