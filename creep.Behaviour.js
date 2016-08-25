@@ -11,8 +11,6 @@ var Behaviour = function(typeName){
         }
         // TODO: Else Alert
     };
-    this.nextAction = function(creep){
-    };
+    this.nextAction = function(creep){};
 }
-
 module.exports = Behaviour;

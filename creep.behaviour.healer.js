@@ -1,19 +1,31 @@
 var behaviour = new Creep.Behaviour('healer');
 behaviour.run = function(creep) {
-    var assignment = true;
-    if( creep.room.situation.invasion )
-        assignment = Creep.action.healing.assign(creep);
+    if( creep.room.situation.invasion && (!creep.action || creep.action.name != 'healing') )
+        Creep.action.healing.assign(creep);
     else {
-        var flag = _.find(Game.flags, FLAG_COLOR.destroy.filter) || _.find(Game.flags, FLAG_COLOR.invade.filter);
-        if( flag ) 
-            assignment = Creep.action.travelling.assign(creep, flag);
-        else {
-            assignment = Creep.action.healing.assign(creep);
-            if(!assignment)
-                assignment = Creep.action.guarding.assign(creep);
+        if( !creep.flag ) {
+            let flag = FlagDir.find(FLAG_COLOR.invade, creep.pos, false);
+            if( flag ){
+                if( Creep.action.travelling.assign(creep, flag) )
+                    Population.registerCreepFlag(creep, flag);
+            }
         }
     }
-    if( !assignment ) Creep.action.idle.assign(creep);    
-    if( creep.action ) creep.action.step(creep);
+    Creep.Behaviour.prototype.run.call(this, creep);
 };
+behaviour.nextAction = function(creep){ 
+    let priority = [
+        healing, 
+        guarding, 
+        idle
+    ];
+    for(var iAction = 0; iAction < priority.length; iAction++) {
+        var action = priority[iAction];
+        if(action.isValidAction(creep) && 
+            action.isAddableAction(creep) && 
+            action.assign(creep)) {
+                return;
+        }
+    }
+}
 module.exports = behaviour;

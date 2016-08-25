@@ -1,11 +1,31 @@
 var behaviour = new Creep.Behaviour('ranger');
 behaviour.run = function(creep) {
-    var assignment = true;
-    var flag = _.find(Game.flags, FLAG_COLOR.destroy.filter) || _.find(Game.flags, FLAG_COLOR.invade.filter);
-    if( flag ) assignment = Creep.action.invading.assign(creep);
-    else if(!creep.validateMemoryAction())
-        assignment = Creep.action.guarding.assign(creep);
-    if( !assignment ) Creep.action.idle.assign(creep);
-    if( creep.action ) creep.action.step(creep);
+    if( creep.room.situation.invasion && (!creep.action || creep.action.name != 'defending') )
+        Creep.action.defending.assign(creep);
+    else {
+        if( !creep.flag ) {
+            let flag = FlagDir.find(FLAG_COLOR.invade, creep.pos, false);
+            if( !flag ) flag = FlagDir.find(FLAG_COLOR.destroy, creep.pos, false);
+            if( flag ){
+                if( Creep.action.invading.assign(creep, flag) )
+                    Population.registerCreepFlag(creep, flag);
+            }
+        }
+    }
+    Creep.Behaviour.prototype.run.call(this, creep);
 };
+behaviour.nextAction = function(creep){ 
+    let priority = [
+        guarding, 
+        idle
+    ];
+    for(var iAction = 0; iAction < priority.length; iAction++) {
+        var action = priority[iAction];
+        if(action.isValidAction(creep) && 
+            action.isAddableAction(creep) && 
+            action.assign(creep)) {
+                return;
+        }
+    }
+}
 module.exports = behaviour;

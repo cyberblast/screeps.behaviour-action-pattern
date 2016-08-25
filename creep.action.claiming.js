@@ -9,8 +9,9 @@ action.newTarget = function(creep){
         return null;
     }
     // not there, go to flagged room
-    if( !creep.flag.room || creep.flag.room.name != creep.room.name)
+    if( !creep.flag.room || creep.flag.room.name != creep.room.name){
         return creep.flag;    
+    }
     if( creep.flag.room.controller.my ) {
         // already claimed, change flag
         // TODO: only if no spawn or spawn-constructionSite present

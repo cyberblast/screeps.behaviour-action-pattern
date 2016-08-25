@@ -16,10 +16,6 @@ action.newTarget = function(creep){
     return null;
 };
 action.work = function(creep){
-    if( creep.room.situation.invasion ){
-        if((creep.data.creepType == 'healer' ? Creep.action.healing : Creep.action.defending).assign(creep))
-            creep.action.step(creep);
-    }
     return OK;
 };
 module.exports = action;

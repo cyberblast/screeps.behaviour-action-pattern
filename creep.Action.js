@@ -34,7 +34,6 @@ var Action = function(actionName){
         }
         if( workResult != OK && moveResult == ERR_NO_PATH ){// get out of the way
             Creep.action.idle.step(creep);
-            //this.defaultAction(creep);
             return;
         } 
         if( ![OK, ERR_TIRED, ERR_NO_PATH].includes(moveResult) ) {
@@ -46,12 +45,11 @@ var Action = function(actionName){
         return ERR_INVALID_ARGS;
     };
     this.validateActionTarget = function(creep, target){
-        if( this.isValidAction(creep) ){
-            // validate target or new
+        if( this.isValidAction(creep) ){ // validate target or new
             if( !this.isValidTarget(target) || 
-            (this.maxTargetLease && (Game.time-this.memory.targetAssignmentTime) > this.maxTargetLease )){ 
-                // invalid. try to find a new one...
-                if( this.renewTarget ){
+                (this.maxTargetLease && 
+                (Game.time-this.memory.targetAssignmentTime) > this.maxTargetLease )){ 
+                if( this.renewTarget ){ // invalid. try to find a new one...
                     return this.newTarget(creep);
                 }
             } else return target;
