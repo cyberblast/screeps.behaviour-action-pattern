@@ -85,7 +85,7 @@ var mod = {
         let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
         return xDif + yDif; 
     }, 
-    rangeModPrivateer: function(range, flagItem){
+    rangeMod: function(range, flagItem){
         var flag = Game.flags[flagItem.name];
         return range + ((flag.creeps.sum || 0) * 10);
     }

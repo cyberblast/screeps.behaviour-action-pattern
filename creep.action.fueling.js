@@ -5,9 +5,6 @@ action.isValidAction = function(creep){
 action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };   
-action.isAddableTarget = function(target){ 
-    return (this.maxPerTarget > 0 && (!target.creeps || !target.creeps[this.maxPerTargetType] || target.creeps[this.maxPerTargetType].length < this.maxPerTarget));
-};
 action.newTarget = function(creep){
     var self = this;
     var isAddable = target => self.isAddableTarget(target);

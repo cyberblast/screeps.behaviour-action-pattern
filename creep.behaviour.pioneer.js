@@ -1,13 +1,11 @@
 var behaviour = new Creep.Behaviour('pioneer');
-behaviour.run = function(creep) {    
-    // TODO: limit to 3 per flag or equal distribution
-    // TODO: Add memorization
-    var flag = _.find(Game.flags, FLAG_COLOR.claim.spawn.filter);  
+behaviour.nextAction = function(creep) {    
+    let flag = FlagDir.find(FLAG_COLOR.claim.spawn, creep.pos, false, FlagDir.rangeMod);
     if( flag ) { 
         if( !flag.room || flag.room.name != creep.room.name ){
-            if( creep.assignAction(Creep.action.travelling, flag)) {
-                creep.action.step(creep);
-                return;
+            if( Creep.action.travelling.assign(creep, flag)) {
+                Population.registerCreepFlag(creep, flag);
+                return true;
             }
         } 
         if( flag.room && flag.room.controller.my ) { // inside owned target room
@@ -16,6 +14,8 @@ behaviour.run = function(creep) {
                 // also remove exploit flags
                 var remove = f => f.remove();
                 _.forEach(creep.room.find(FIND_FLAGS, { filter: FLAG_COLOR.invade.exploit.filter }), remove);
+                Population.registerCreepFlag(creep, null);
+                // TODO: remove registered flags @ other creeps
             }
             else { // no spawn => build it
                 if( flag.room.constructionSites.length == 0 ) // no constructionSites // TODO: filter for spawn-constructionSite
@@ -25,30 +25,21 @@ behaviour.run = function(creep) {
     }
     // if there are construction sites prefer them
     if( creep.room.constructionSites.length > 0 ) {
-        // Has invalid assigned Action 
-        if(creep.memory.action && creep.memory.action != 'harvesting' && creep.memory.action != 'building') {
-            creep.action = null;
-        }        
         // Last Action completed / No more energy
-        if( creep.carry.energy == 0 && creep.memory.action != 'harvesting') { 
-            creep.assignAction(Creep.action.harvesting);
+        if( creep.carry.energy == 0 )  { 
+            if( Creep.action.harvesting.assign(creep) ) return;
         }    
         // no action or harvesting complete
-        else if(!creep.memory.action || (creep.memory.action == 'harvesting' && _.sum(creep.carry) == creep.carryCapacity )){
+        else {
             // urgent upgrading 
-            if( creep.room.ticksToDowngrade < 2000 ) 
-                creep.assignAction(Creep.action.upgrading);
-            else // build
-                creep.assignAction(Creep.action.building);
-        }
-        // Do some work
-        if( creep.action && creep.target ) {
-            creep.action.step(creep);
-            return;
+            if( creep.room.ticksToDowngrade < 2000 ) {
+                if( Creep.action.upgrading.assign(creep) ) return;
+            } else { 
+                if( Creep.action.building.assign(creep) ) return;
+            }
         }
     }
-    // else run as worker
-    creep.run(Creep.behaviour.worker); 
+    // else run as worker    
+    Creep.behaviour.worker.nextAction(creep);
 };
-behaviour.run.displayName = "creep.behaviour.pioneer.run";
 module.exports = behaviour;

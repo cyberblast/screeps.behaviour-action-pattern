@@ -1,5 +1,6 @@
 var mod = {
     extend: function(){
+        /*
         Object.defineProperty(Structure.prototype, 'memory', {
             configurable: true,
             get: function() {
@@ -21,19 +22,7 @@ var mod = {
                 Memory.structures[this.id] = value;
             }
         });
-        Object.defineProperty(Structure.prototype, 'creeps', {
-            // TODO: persist target assignments not only to creeps but also to targets. also not only as creepId but with activity
-            configurable: true,
-            get: function() {
-                if(_.isUndefined(this._creeps)) {
-                    this._creeps = [];
-                }
-                return this._creeps;
-            },
-            set: function(value) {
-                this._creeps = value;
-            }
-        });
+        */
         Object.defineProperty(Structure.prototype, 'towers', {
             configurable: true,
             get: function() {

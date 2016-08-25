@@ -2,19 +2,18 @@ var behaviour = new Creep.Behaviour('healer');
 behaviour.run = function(creep) {
     var assignment = true;
     if( creep.room.situation.invasion )
-        assignment = creep.assignAction(Creep.action.healing);
+        assignment = Creep.action.healing.assign(creep);
     else {
         var flag = _.find(Game.flags, FLAG_COLOR.destroy.filter) || _.find(Game.flags, FLAG_COLOR.invade.filter);
         if( flag ) 
-            assignment = creep.assignAction(Creep.action.travelling, flag);
+            assignment = Creep.action.travelling.assign(creep, flag);
         else {
-            assignment = creep.assignAction(Creep.action.healing);
+            assignment = Creep.action.healing.assign(creep);
             if(!assignment)
-                assignment = creep.assignAction(Creep.action.guarding);
+                assignment = Creep.action.guarding.assign(creep);
         }
     }
-    if( !assignment ) creep.assignAction(Creep.action.idle);    
+    if( !assignment ) Creep.action.idle.assign(creep);    
     if( creep.action ) creep.action.step(creep);
 };
-behaviour.run.displayName = "creep.behaviour.healer.run";
 module.exports = behaviour;

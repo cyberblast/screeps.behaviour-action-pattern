@@ -21,7 +21,7 @@ action.newTarget = function(creep){
 };
 action.step = function(creep){
     if(CHATTY) creep.say(this.name);
-    this.run[creep.type](creep);
+    this.run[creep.data.creepType](creep);
 };
 action.run = {
     ranger: function(creep) {

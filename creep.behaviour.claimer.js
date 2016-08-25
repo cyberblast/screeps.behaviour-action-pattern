@@ -13,15 +13,13 @@ behaviour.run = function(creep) {
         );
         if( flags && flags.length > 0 ) { 
             flag = flags[0];
-            creep.flag = flags[0];
-            creep.memory.flag = flags[0].name;
+            Population.registerCreepFlag(creep, flag);
         }
     }
     // TODO: Add travelling     
-    if( !flag || !creep.assignAction(Creep.action.claiming) )
-        creep.assignAction(Creep.action.idle);
+    if( !flag || !Creep.action.claiming.assign(creep) )
+        Creep.action.idle.assign(creep);
     if( creep.action ) creep.action.step(creep);
     return;
 };
-behaviour.run.displayName = "creep.behaviour.claimer.run";
 module.exports = behaviour;

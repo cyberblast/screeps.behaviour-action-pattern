@@ -1,121 +1,201 @@
 var mod = {
-    registerCreepSetup: function(room, setup, cost) {
-        if(room.population === undefined) room.population = {};
-        if(room.population[setup] === undefined){
-            room.population[setup] = {
-                weight: cost, 
-                count : 1
-            };
+    getCreep: function(creepName) {
+        if(_.isUndefined(Memory.population)) {
+            Memory.population = {};
         }
-        else {
-            room.population[setup].count++;
-            room.population[setup].weight += cost;
-        }
-        if(Game.population[setup] === undefined){
-            Game.population[setup] = {
-                weight: cost, 
-                count : 1
-            };
-        }
-        else {
-            Game.population[setup].count++;
-            Game.population[setup].weight += cost;
-        }
+        return Memory.population[creepName];
     },
-    registerCreepActivity: function(room, creep, setup, action, targetId){
-        if( room.activities === undefined ) room.activities = {};
-        if(room.activities[action] === undefined )
-            room.activities[action] = 1;
-        else room.activities[action]++;
+    setCreep: function(val) {
+        if(_.isUndefined(Memory.population)) {
+            Memory.population = {};
+        }
+        Memory.population[val.creepName] = val;
+    },
+    registerCreep: function(creepName, creepType, creepCost, roomName, spawnName){
+        this.setCreep({
+            creepName: creepName, 
+            creepType: creepType, 
+            weight: creepCost, 
+            roomName: roomName, 
+            homeRoom: roomName, 
+            motherSpawn: spawnName, 
+            actionName: null, 
+            targetId: null,
+            spawningTime: 0, 
+            flagName: null
+        });
+    }, 
+    unregisterCreep: function(creepName){
+        delete Memory.population[creepName];
+        delete Memory.creeps[creepName];
+    }, 
+    registerAction: function(creep, action, target, entry) {
+        if( entry === undefined ) entry = this.getCreep(creep.name);
+        if( entry.actionName != action.name ){
+            if( entry.actionName ){
+                let room = Game.rooms[entry.roomName];
+                // unregister action
+                if( room.population.actionCount[action.name] === undefined )
+                    room.population.actionCount[action.name] = 0;
+                else room.population.actionCount[action.name]--;
+                if( room.population.actionWeight[action.name] === undefined )
+                    room.population.actionWeight[action.name] = 0;
+                else room.population.actionWeight[action.name] -= entry.weight;
+                if( this.actionCount[action.name] === undefined )
+                    this.actionCount[action.name] = 0;
+                else this.actionCount[action.name]--;
+                if( this.actionWeight[action.name] === undefined )
+                    this.actionWeight[action.name] = 0;
+                else this.actionWeight[action.name] -= entry.weight;
+            }
+            
+            let room = Game.rooms[creep.room.name];
+            // register action
+            entry.actionName = action.name;
+            if( room.population.actionCount[action.name] === undefined )
+                room.population.actionCount[action.name] = 1;
+            else room.population.actionCount[action.name]++;
+            if( room.population.actionWeight[action.name] === undefined )
+                room.population.actionWeight[action.name] = entry.weight;
+            else room.population.actionWeight[action.name] += entry.weight;
+            if( this.actionCount[action.name] === undefined )
+                this.actionCount[action.name] = 1;
+            else this.actionCount[action.name]++;
+            if( this.actionWeight[action.name] === undefined )
+                this.actionWeight[action.name] = entry.weight;
+            else this.actionWeight[action.name] += entry.weight;
+        }
         
-        if( targetId ){
-            var target = Game.getObjectById(targetId) || Game.spawns[targetId] || Game.flags[targetId];
-            if( target ){
-                if( target.creeps === undefined ) target.creeps = {};
-                if( target.creeps[setup] === undefined){
-                    target.creeps[setup] = [];
-                }
-                if( !target.creeps[setup].includes(creep.name) ) { 
-                    target.creeps[setup].push(creep.name);
-                    if( !target.creeps.sum )
-                        target.creeps.sum = 1;
-                    else target.creeps.sum++;
-                }
-                // TODO: also register weight
-                
-                creep.target = target;
+        let targetId = target.id || target.name;
+        if( entry.targetId ) {
+            // unregister target
+            let oldTarget = entry.targetId ? Game.getObjectById(entry.targetId) || Game.spawns[entry.targetId] || Game.flags[entry.targetId] : null;
+            if( oldTarget && oldTarget.targetOf ){
+                let byName = elem => elem.creepName === creep.name;
+                let index = oldTarget.targetOf.findIndex(byName);
+                if( index > -1 ) oldTarget.targetOf.splice(index, 1);
+            }                
+        }
+        // register target
+        entry.targetId = targetId;
+        if( target ) {
+            if( target.targetOf === undefined )
+                target.targetOf = [entry];
+            else target.targetOf.push(entry);
+        }
+        creep.action = action;
+        creep.target = target;
+    }, 
+    registerCreepFlag: function(creep, flag) {
+        if( creep.data.flagName ){
+            // unregister flag
+            let oldFlag = Game.flags[entry.flagName];
+            if( oldTarget.targetOf ){
+                let byName = elem => elem.creepName === creep.name;
+                let index = oldFlag.targetOf.findIndex(byName);
+                if( index > -1 ) oldFlag.targetOf.splice(index, 1);
             }
         }
-    },
-    registerCreepFlag: function(creep, setup){
-        if( creep.memory.flag ){
-            var flag = Game.flags[creep.memory.flag];
-            if( !flag ) 
-                delete creep.memory.flag;
-            else {
-                if( flag.creeps === undefined ) flag.creeps = {};
-                if( flag.creeps[setup] === undefined){
-                    flag.creeps[setup] = [];
-                }
-                if( !flag.creeps[setup].includes(creep.name) ) { 
-                    flag.creeps[setup].push(creep.name);
-                    if( !flag.creeps.sum )
-                        flag.creeps.sum = 1;
-                    else flag.creeps.sum++;
-                }
-                // TODO: also register weight
-                
-                creep.flag = flag;
-            }
+        if( !flag ) 
+            delete creep.data.flagName;
+        else {
+            if( flag.targetOf === undefined ) flag.targetOf = [entry];
+            else flag.targetOf.push(entry);
+            creep.flag = flag;
+            creep.data.flagName = flag.name;
         }
     },
-    loop: function(){    
-        if( Game.population === undefined ){
-            Game.population = {};
-        }
-
-        var spawnsToProbe = [];
-        for(var creepName in Memory.creeps){
-            var creep = Game.creeps[creepName];
-
-            // Clean memory
+    loop: function(){
+        if(_.isUndefined(Memory.population)) {
+            Memory.population = {};
+        }        
+        this.typeCount = {};
+        this.typeWeight = {};
+        this.actionCount = {};
+        this.actionWeight = {};
+        let spawnsToProbe = [];
+        let loop = entry => {
+            let creep = Game.creeps[entry.creepName];
             if ( !creep ) {
-                if(DEBUG) console.log(DYE(CRAYON.system, Memory.creeps[creepName].mother + ' &gt; ') + DYE(CRAYON.death, 'Good night ' + creepName + '!') );
-                delete Memory.creeps[creepName];
+                if(DEBUG) console.log(DYE(CRAYON.system, entry.motherSpawn + ' &gt; ') + DYE(CRAYON.death, 'Good night ' + entry.creepName + '!') );
+                this.unregisterCreep(entry.creepName);
             } 
-            else {
-                // count spawning time
-                if( creep.spawning ) {
-                    creep.breeding++;
+            else {                
+                if( creep.spawning ) { // count spawning time
+                    entry.spawningTime++;
                 }
                 else if( creep.ticksToLive == 1499 ){ // spawning complete
-                    spawnsToProbe.push(creep.mother);
+                    spawnsToProbe.push(entry.motherSpawn);
                 }
-
-                var room = creep.room;
-                var spawning = creep.breeding;
-                var cost = creep.cost;
-                var setup = creep.type;
-                var action = creep.memory.action || 'idle';
-                var targetId = creep.memory.target;
-                var creepName = creep.name;
-
-                this.registerCreepFlag(creep, setup);
-                // register creep
-                if( creep.ticksToLive === undefined || creep.ticksToLive > spawning ) {
-                    this.registerCreepSetup(room, setup, cost);
-                } else if(creep.ticksToLive == spawning) { // will die in ticks equal to spawning time
-                    if(DEBUG) console.log(DYE(CRAYON.system, creepName + ' &gt; ') + DYE(CRAYON.death, 'Good night!') );
-                    if( Game.time % SPAWN_INTERVAL != 0 && !spawnsToProbe.includes(creep.mother)) { // no regular spawnprobe
-                        spawnsToProbe.push(creep.mother);
+                else if(creep.ticksToLive == entry.spawningTime) { // will die in ticks equal to spawning time
+                    if(DEBUG) console.log(DYE(CRAYON.system, entry.creepName + ' &gt; ') + DYE(CRAYON.death, 'Good night!') );
+                    if( Game.time % SPAWN_INTERVAL != 0 && !spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' ) { 
+                        spawnsToProbe.push(entry.motherSpawn);
                     }
                 }
-                this.registerCreepActivity(room, creep, setup, action, targetId);
+
+                let room = Game.rooms[entry.roomName];
+                if( room.population === undefined ) {
+                    room.population = {
+                        typeCount: {}, 
+                        typeWeight: {}, 
+                        actionCount: {},
+                        actionWeight: {}
+                    };
+                }
+
+                if( entry.creepType && ( creep.ticksToLive === undefined || creep.ticksToLive > entry.spawningTime )) { // register creepType
+                    if( room.population.typeCount[entry.creepType] === undefined )
+                        room.population.typeCount[entry.creepType] = 1;
+                    else room.population.typeCount[entry.creepType]++;
+                    if( room.population.typeWeight[entry.creepType] === undefined )
+                        room.population.typeWeight[entry.creepType] = entry.weight;
+                    else room.population.typeWeight[entry.creepType] += entry.weight;
+                    if( this.typeCount[entry.creepType] === undefined )
+                        this.typeCount[entry.creepType] = 1;
+                    else this.typeCount[entry.creepType]++;
+                    if( this.typeWeight[entry.creepType] === undefined )
+                        this.typeWeight[entry.creepType] = entry.weight;
+                    else this.typeWeight[entry.creepType] += entry.weight;
+                }
+
+                let action = ( entry.actionName && Creep.action[entry.actionName] ) ? Creep.action[entry.actionName] : null;
+                let target = action && entry.targetId ? Game.getObjectById(entry.targetId) || Game.spawns[entry.targetId] || Game.flags[entry.targetId] : null;
+                if( action ) target = action.validateActionTarget(creep, target);
+                if( !target ) {
+                    action = null;
+                    entry.actionName = null;
+                    entry.targetId = null;
+                } else this.registerAction( creep, action, target, entry );
+
+                if( entry.flagName ){
+                    var flag = Game.flags[entry.flagName];
+                    if( !flag ) 
+                        delete entry.flagName;
+                    else {
+                        if( flag.targetOf === undefined ) flag.targetOf = [entry];
+                        else flag.targetOf.push(entry);
+                        creep.flag = flag;
+                    }
+                }
+                entry.roomName = creep.pos.roomName;
+                creep.data = entry;
             }
-        }    
-        var probe = spawnName => Game.spawns[spawnName].loop();
-        _.forEach(spawnsToProbe, probe);        
+        };
+        _.forEach(Memory.population, loop);
     }
 }
-
 module.exports = mod;
+    /*
+    get memory() {
+        if(_.isUndefined(Memory.population)) {
+            Memory.population = {};
+        }
+        return Memory.population;
+    },
+    set memory(val) {
+        if(_.isUndefined(Memory.population)) {
+            Memory.population = {};
+        }
+        Memory.population = value;
+    },*/

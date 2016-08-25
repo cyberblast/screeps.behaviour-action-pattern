@@ -5,7 +5,15 @@ action.isValidAction = function(creep){ return false; };
 action.isAddableAction = function(creep){ return true; };
 action.isAddableTarget = function(target){ return true; }; 
 action.newTarget = function(creep){
-    return this.defaultTarget(creep);
+    var flag = FlagDir.find(FLAG_COLOR.idle, creep.pos, true);
+    if( flag ) return flag;
+    if( creep.data.homeRoom && creep.room.name != creep.data.homeRoom){
+        // go to home room
+        var exitDir = creep.room.findExitTo(creep.data.homeRoom);
+        var exit = creep.pos.findClosestByRange(exitDir);
+        return exit;
+    }
+    return creep.room.controller;
 };
 action.step = function(creep) {
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);

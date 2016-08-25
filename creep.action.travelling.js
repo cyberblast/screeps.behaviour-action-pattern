@@ -12,7 +12,8 @@ action.step = function(creep){
     }
     if( creep.target.pos.roomName == creep.room.name ){
         // unregister
-        creep.action = null;
+        creep.data.actionName = null;
+        creep.data.targetId = null;
     }
 }
 module.exports = action;

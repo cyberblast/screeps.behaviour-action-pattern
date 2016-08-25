@@ -84,7 +84,7 @@ action.newTarget = function(creep){
 };
 action.step = function(creep){
     if(CHATTY) creep.say(this.name);
-    this.setup[creep.type](creep);
+    this.setup[creep.data.creepType](creep);
 }
 action.setup = {
     melee: function(creep){        
