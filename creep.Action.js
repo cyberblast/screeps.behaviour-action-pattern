@@ -30,7 +30,7 @@ var Action = function(actionName){
         var workResult = this.work(creep);
         if( ![OK, ERR_NOT_IN_RANGE].includes(workResult) ) {
             if( DEBUG ) ERROR_LOG(creep, workResult);
-            creep.action = null;
+            creep.data.actionName = null;
         }
         if( workResult != OK && moveResult == ERR_NO_PATH ){// get out of the way
             Creep.action.idle.step(creep);
@@ -38,7 +38,7 @@ var Action = function(actionName){
         } 
         if( ![OK, ERR_TIRED, ERR_NO_PATH].includes(moveResult) ) {
             if( DEBUG ) ERROR_LOG(creep, moveResult);
-            creep.action = null;
+            creep.data.actionName = null;
         }
     };    
     this.work = function(creep){
