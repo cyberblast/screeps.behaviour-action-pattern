@@ -6,7 +6,13 @@ behaviour.run = function(creep) {
             Population.registerCreepFlag(creep, flag);
         }
     }
-    Creep.Behaviour.prototype.run.call(this, creep);
+    if( creep.action == null ) {
+        this.nextAction(creep);
+    }
+    // Do some work
+    if( creep.action && creep.target ) {
+        creep.action.step(creep);
+    }
 };
 behaviour.nextAction = function(creep){ 
     if( !creep.flag || !Creep.action.claiming.assign(creep) )

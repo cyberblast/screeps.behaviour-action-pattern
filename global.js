@@ -109,8 +109,7 @@ var mod = {
                         if( error ) creep.say(error);
                         else creep.say(code);
                     }
-                    var caller = arguments.callee.caller.displayName;
-                    var message = ( caller === undefined ? "" : ("Error in '" + caller + "': " )) + error + '\ncreep: '  + creep.name + '\naction: ' + creep.data.actionName + '\ntarget: ' + creep.data.targetId ;
+                    var message = error + '\ncreep: '  + creep.name + '\naction: ' + creep.data.actionName + '\ntarget: ' + creep.data.targetId ;
                     console.log( DYE(CRAYON.error, message) );
                     Game.notify( message, 120 );
                 } else console.log( DYE(CRAYON.error, 'unknown error code!') );

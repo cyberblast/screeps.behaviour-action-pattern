@@ -46,9 +46,7 @@ var Action = function(actionName){
     };
     this.validateActionTarget = function(creep, target){
         if( this.isValidAction(creep) ){ // validate target or new
-            if( !this.isValidTarget(target) || 
-                (this.maxTargetLease && 
-                (Game.time-this.memory.targetAssignmentTime) > this.maxTargetLease )){ 
+            if( !this.isValidTarget(target)){ 
                 if( this.renewTarget ){ // invalid. try to find a new one...
                     return this.newTarget(creep);
                 }

@@ -12,12 +12,18 @@ behaviour.run = function(creep) {
             }
         }
     }
-    Creep.Behaviour.prototype.run.call(this, creep);
+    if( creep.action == null ) {
+        this.nextAction(creep);
+    }
+    // Do some work
+    if( creep.action && creep.target ) {
+        creep.action.step(creep);
+    }
 };
 behaviour.nextAction = function(creep){ 
     let priority = [
-        guarding, 
-        idle
+        Creep.action.guarding, 
+        Creep.action.idle
     ];
     for(var iAction = 0; iAction < priority.length; iAction++) {
         var action = priority[iAction];
