@@ -11,6 +11,8 @@ action.isValidTarget = function(target){
     return (target != null && target.energy != null && target.energy > 0);
 };   
 action.newTarget = function(creep){
+    // TODO: Better targetting algorithm. Actually simply the last source will be selected (with same crowd). 
+    //       Compare sources regarding remaining energy & crowd/accessibleFields 
     var target = null;
     var sourceGuests = 999;
     for( var iSource = 0; iSource < creep.room.sources.length; iSource++ ){

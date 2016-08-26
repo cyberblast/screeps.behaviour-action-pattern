@@ -6,6 +6,8 @@ module.exports = {
             if( flag ) { 
                 Population.registerCreepFlag(creep, flag);
             }
+        } else if( creep.flag.pos.roomName == creep.pos.roomName ){
+            creep.data.targetId = null;
         }
         // Assign next Action
         if( creep.action == null ) {
