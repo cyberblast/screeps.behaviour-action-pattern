@@ -17,6 +17,6 @@ setup.maxCount = function(spawn){
             flag.room.controller.reservation.ticksToEnd < 4000)}).length;
 }
 setup.maxWeight = function(spawn){
-    return 0;//return null; // TODO: limit regarding to missing reservation points
+    return null; // TODO: limit regarding to missing reservation points
 }
 module.exports = setup;

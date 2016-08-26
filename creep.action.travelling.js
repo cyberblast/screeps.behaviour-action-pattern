@@ -1,6 +1,5 @@
 var action = new Creep.Action('travelling');
 action.reusePath = 15;
-action.ignoreCreeps = true;
 action.isValidTarget = function(target){ return target != null; }; 
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };

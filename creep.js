@@ -1,7 +1,6 @@
 var mod = {
     extend: function(){     
         Creep.Action = require('./creep.Action'),
-        Creep.Behaviour = require('./creep.Behaviour'),
         Creep.Setup = require('./creep.Setup'),
         Creep.action = {
             building: require('./creep.action.building'), 

@@ -1,7 +1,6 @@
 var action = new Creep.Action('idle');
 action.reusePath = 10;
-action.ignoreCreeps = true;
-action.isValidAction = function(creep){ return false; };
+action.isValidAction = function(creep){ return true; };
 action.isAddableAction = function(creep){ return true; };
 action.isAddableTarget = function(target){ return true; }; 
 action.newTarget = function(creep){
@@ -20,5 +19,7 @@ action.step = function(creep) {
     if(creep.target && creep.pos != creep.target.pos) {
         creep.moveTo(creep.target, {reusePath: this.reusePath});
     } 
+    creep.data.actionName = null;
+    creep.data.targetId = null;
 };
 module.exports = action;

@@ -75,7 +75,7 @@ var Setup = function(typeName){
         if( maxCount == 0 || maxWeight == 0 || spawn.room.controller.level < this.minControllerLevel) 
             return false;
         let population = this.globalMeasurement ? Population : spawn.room.population;
-        if( !population.typeCount[this.type] )
+        if( !population || !population.typeCount[this.type] )
             return true;
         if( maxCount == null ) 
             maxCount = Infinity;

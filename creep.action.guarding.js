@@ -1,7 +1,5 @@
 var action = new Creep.Action('guarding');
 action.reusePath = 10;
-action.ignoreCreeps = true;
-action.maxTargetLease = 12;
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){ 

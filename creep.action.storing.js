@@ -1,5 +1,4 @@
 var action = new Creep.Action('storing');
-action.maxPerTarget = 1;
 action.isValidAction = function(creep){
     return ( creep.room.storage != null && _.sum(creep.carry) > 0 && 
     ( _.sum(creep.carry) > creep.carry.energy || (

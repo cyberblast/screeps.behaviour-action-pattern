@@ -14,6 +14,6 @@ setup.maxCount = function(spawn){
     + _.filter(Game.flags, FLAG_COLOR.claim.pioneer.filter).length * 2;
 };
 setup.maxWeight = function(spawn){
-    return 0;//return null; // no evaluation
+    return null; // no evaluation
 };
 module.exports = setup;

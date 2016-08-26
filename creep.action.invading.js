@@ -84,9 +84,9 @@ action.newTarget = function(creep){
 };
 action.step = function(creep){
     if(CHATTY) creep.say(this.name);
-    this.setup[creep.data.creepType](creep);
+    this.run[creep.data.creepType](creep);
 }
-action.setup = {
+action.run = {
     melee: function(creep){        
         if( creep.target.color ){
             creep.moveTo(creep.target, {reusePath: 15});

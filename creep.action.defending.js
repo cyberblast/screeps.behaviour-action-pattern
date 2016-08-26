@@ -1,6 +1,7 @@
 var action = new Creep.Action('defending');
 action.reusePath = 0;
-action.ignoreCreeps = true;
+action.isAddableAction = function(){ return true; };
+action.isAddableTarget = function(){ return true; };
 action.isValidTarget = function(target){
     return (
         target &&
@@ -8,8 +9,6 @@ action.isValidTarget = function(target){
         target.hits > 0 &&
         target.my == false );
 }; 
-action.isAddableAction = function(){ return true; };
-action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){
     var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
         filter: function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 

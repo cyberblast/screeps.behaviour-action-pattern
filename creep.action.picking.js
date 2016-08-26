@@ -23,7 +23,8 @@ action.work = function(creep){
     var result = creep.pickup(creep.target);
     if( result == OK ){
         // unregister
-        creep.action = null;
+        creep.data.actionName = null;
+        creep.data.targetId = null;
     }
     return result;
 };

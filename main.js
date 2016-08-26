@@ -22,9 +22,8 @@ module.exports.loop = function () {
 
     if( Game.time % SPAWN_INTERVAL == 0 )   
         Spawn.loop(); 
-/*
+
     if( Memory.statistics && Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time )
         require('./statistics').loop();
     processReports();
-    */
 };

@@ -1,5 +1,4 @@
 var action = new Creep.Action('repairing');
-action.ignoreCreeps = false;
 action.isValidAction = function(creep){
     return (creep.carry.energy > 0 && creep.room.urgentRepairableSites.length > 0 );
 };

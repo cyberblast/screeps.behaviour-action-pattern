@@ -102,7 +102,7 @@ var mod = {
                 error: 'FireBrick', 
                 system: { color: '#999', 'font-size': '10px' }
             },
-            ERROR_LOG: function(creep, code) {
+            logErrorCode: function(creep, code) {
                 if( code ) {
                     var error = ERROR_CODE(code);
                     if(creep) {
@@ -113,6 +113,9 @@ var mod = {
                     console.log( DYE(CRAYON.error, message) );
                     Game.notify( message, 120 );
                 } else console.log( DYE(CRAYON.error, 'unknown error code!') );
+            },
+            logError: function(message) {
+                console.log( DYE(CRAYON.error, message) );
             },
             isObj: function(val){
                 if (val === null) { return false;}

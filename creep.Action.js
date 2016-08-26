@@ -15,21 +15,21 @@ var Action = function(actionName){
     this.isValidTarget = function(target){
         return (target != null);
     };
-    this.newTarget = function(creep){
-        return null;
-    };
     this.isAddableAction = function(creep){
         return (!creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < creep.room.maxPerJob);
     };
     this.isAddableTarget = function(target){ // target is valid to be given to an additional creep
         return (this.maxPerTarget > 0 && (!target.targetOf || target.targetOf.length < this.maxPerTarget));
     };
+    this.newTarget = function(creep){
+        return null;
+    };
     this.step = function(creep){     
         if(CHATTY) creep.say(this.name, SAY_PUBLIC);
         var moveResult = creep.moveTo(creep.target, {reusePath: this.reusePath});
         var workResult = this.work(creep);
         if( ![OK, ERR_NOT_IN_RANGE].includes(workResult) ) {
-            if( DEBUG ) ERROR_LOG(creep, workResult);
+            if( DEBUG ) logErrorCode(creep, workResult);
             creep.data.actionName = null;
         }
         if( workResult != OK && moveResult == ERR_NO_PATH ){// get out of the way
@@ -37,7 +37,7 @@ var Action = function(actionName){
             return;
         } 
         if( ![OK, ERR_TIRED, ERR_NO_PATH].includes(moveResult) ) {
-            if( DEBUG ) ERROR_LOG(creep, moveResult);
+            if( DEBUG ) logErrorCode(creep, moveResult);
             creep.data.actionName = null;
         }
     };    
