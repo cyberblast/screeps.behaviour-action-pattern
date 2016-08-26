@@ -45,10 +45,13 @@ var mod = {
         };
         Creep.prototype.run = function(behaviour){
             if( !this.spawning ){
-                if(!behaviour && this.data.creepType) {
+                if(!behaviour && this.data && this.data.creepType) {
                     behaviour = Creep.behaviour[this.data.creepType];
                 }
                 if( behaviour ) behaviour.run(this);
+                else if(!this.data){
+                    console.log( DYE(CRAYON.error, 'Corrupt creep without population entry: ' + this.name ));
+                }
             }
         };
     }

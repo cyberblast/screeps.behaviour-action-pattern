@@ -89,8 +89,8 @@ var mod = {
     registerCreepFlag: function(creep, flag) {
         if( creep.data.flagName ){
             // unregister flag
-            let oldFlag = Game.flags[entry.flagName];
-            if( oldTarget.targetOf ){
+            let oldFlag = Game.flags[creep.data.flagName];
+            if( oldFlag.targetOf ){
                 let byName = elem => elem.creepName === creep.name;
                 let index = oldFlag.targetOf.findIndex(byName);
                 if( index > -1 ) oldFlag.targetOf.splice(index, 1);
@@ -99,8 +99,8 @@ var mod = {
         if( !flag ) 
             delete creep.data.flagName;
         else {
-            if( flag.targetOf === undefined ) flag.targetOf = [entry];
-            else flag.targetOf.push(entry);
+            if( flag.targetOf === undefined ) flag.targetOf = [creep.data];
+            else flag.targetOf.push(creep.data);
             creep.flag = flag;
             creep.data.flagName = flag.name;
         }
@@ -134,7 +134,8 @@ var mod = {
                     }
                 }
 
-                let room = Game.rooms[entry.roomName];
+                let room = creep.room;
+                entry.roomName = room.name;
                 if( room.population === undefined ) {
                     room.population = {
                         typeCount: {}, 
@@ -178,7 +179,6 @@ var mod = {
                         creep.flag = flag;
                     }
                 }
-                entry.roomName = creep.pos.roomName;
                 creep.data = entry;
             }
         };

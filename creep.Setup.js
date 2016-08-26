@@ -8,7 +8,7 @@ var Setup = function(typeName){
     this.globalMeasurement = false;
     this.multiplicationPartwise = true;
     this.bodyCosts = function(body){
-        var costs = 0;
+        let costs = 0;
         if( body ){
             body.forEach(function(part){
                 costs += PART_COSTS[part];
@@ -17,27 +17,27 @@ var Setup = function(typeName){
         return costs;
     };
     this.multi = function(spawn){ 
-        var fixedCosts = this.bodyCosts(this.fixedBody);
-        var multiCosts = this.bodyCosts(this.multiBody);
+        let fixedCosts = this.bodyCosts(this.fixedBody);
+        let multiCosts = this.bodyCosts(this.multiBody);
         return _.min([Math.floor( (spawn.room.energyAvailable-fixedCosts) / multiCosts), this.maxMulti]);
     }; 
     this.setParamParts = function(spawn){
         var parts = [];
-        var multi = this.multi(spawn);
+        let multi = this.multi(spawn);
         if( this.multiplicationPartwise ) {
-            for( var iPart = 0; iPart < this.multiBody.length; iPart ++ ){
-                for( var iMulti = 0; iMulti < multi; iMulti++){
+            for( let iPart = 0; iPart < this.multiBody.length; iPart ++ ){
+                for( let iMulti = 0; iMulti < multi; iMulti++){
                     parts[parts.length] = this.multiBody[iPart];
                 }
             }
-            for( var iPart = 0; iPart < this.fixedBody.length; iPart ++ ){
+            for( let iPart = 0; iPart < this.fixedBody.length; iPart ++ ){
                 parts[parts.length] = this.fixedBody[iPart];
             }
         } else {
-            for (var iMulti = 0; iMulti < multi; iMulti++) {
+            for (let iMulti = 0; iMulti < multi; iMulti++) {
                 parts = parts.concat(this.multiBody);
             }
-            for( var iPart = 0; iPart < this.fixedBody.length; iPart ++ ){
+            for( let iPart = 0; iPart < this.fixedBody.length; iPart ++ ){
                 parts[parts.length] = this.fixedBody[iPart];
             }
         }
@@ -70,18 +70,18 @@ var Setup = function(typeName){
     this.isValidSetup = function(spawn){
         if( spawn.room.energyAvailable < this.minAbsEnergyAvailable || spawn.room.relativeEnergyAvailable < this.minEnergyAvailable(spawn) ) 
             return false;
-        var maxCount = this.maxCount(spawn);
-        var maxWeight = this.maxWeight(spawn);            
+        let maxCount = this.maxCount(spawn);
+        let maxWeight = this.maxWeight(spawn);            
         if( maxCount == 0 || maxWeight == 0 || spawn.room.controller.level < this.minControllerLevel) 
             return false;
-        var population = this.globalMeasurement ? (Game.population ? Game.population[this.type] : null ) : (spawn.room.population ? spawn.room.population[this.type] : null);
-        if( !population ) 
+        let population = this.globalMeasurement ? Population : spawn.room.population;
+        if( !population.typeCount[this.type] )
             return true;
         if( maxCount == null ) 
             maxCount = Infinity;
         if( maxWeight == null ) 
-            maxWeight = Infinity;            
-        return (population.count < maxCount && population.weight < maxWeight);
+            maxWeight = Infinity;
+        return population.typeCount[this.type] < maxCount && population.typeWeight[this.type] < maxWeight;
     };
 }
 module.exports = Setup;
