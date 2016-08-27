@@ -10,20 +10,22 @@ var mod = {
             Memory.population = {};
         }
         Memory.population[val.creepName] = val;
+        return Memory.population[val.creepName];
     },
-    registerCreep: function(creepName, creepType, creepCost, roomName, spawnName){
-        this.setCreep({
+    registerCreep: function(creepName, creepType, creepCost, room, spawnName){
+        var entry = this.setCreep({
             creepName: creepName, 
             creepType: creepType, 
             weight: creepCost, 
-            roomName: roomName, 
-            homeRoom: roomName, 
+            roomName: room.name, 
+            homeRoom: room.name, 
             motherSpawn: spawnName, 
             actionName: null, 
             targetId: null,
             spawningTime: 0, 
             flagName: null
         });
+        this.countCreep(room, entry);
     }, 
     unregisterCreep: function(creepName){
         delete Memory.population[creepName];
@@ -105,6 +107,30 @@ var mod = {
             creep.data.flagName = flag.name;
         }
     },
+    countCreep: function(room, entry){
+        entry.roomName = room.name;
+        if( room.population === undefined ) {
+            room.population = {
+                typeCount: {}, 
+                typeWeight: {}, 
+                actionCount: {},
+                actionWeight: {}
+            };
+        }
+
+        if( room.population.typeCount[entry.creepType] === undefined )
+            room.population.typeCount[entry.creepType] = 1;
+        else room.population.typeCount[entry.creepType]++;
+        if( room.population.typeWeight[entry.creepType] === undefined )
+            room.population.typeWeight[entry.creepType] = entry.weight;
+        else room.population.typeWeight[entry.creepType] += entry.weight;
+        if( this.typeCount[entry.creepType] === undefined )
+            this.typeCount[entry.creepType] = 1;
+        else this.typeCount[entry.creepType]++;
+        if( this.typeWeight[entry.creepType] === undefined )
+            this.typeWeight[entry.creepType] = entry.weight;
+        else this.typeWeight[entry.creepType] += entry.weight;
+    },
     loop: function(){
         if(_.isUndefined(Memory.population)) {
             Memory.population = {};
@@ -134,30 +160,10 @@ var mod = {
                     }
                 }
 
-                let room = creep.room;
-                entry.roomName = room.name;
-                if( room.population === undefined ) {
-                    room.population = {
-                        typeCount: {}, 
-                        typeWeight: {}, 
-                        actionCount: {},
-                        actionWeight: {}
-                    };
-                }
-
-                if( entry.creepType && ( creep.ticksToLive === undefined || creep.ticksToLive > entry.spawningTime )) { // register creepType
-                    if( room.population.typeCount[entry.creepType] === undefined )
-                        room.population.typeCount[entry.creepType] = 1;
-                    else room.population.typeCount[entry.creepType]++;
-                    if( room.population.typeWeight[entry.creepType] === undefined )
-                        room.population.typeWeight[entry.creepType] = entry.weight;
-                    else room.population.typeWeight[entry.creepType] += entry.weight;
-                    if( this.typeCount[entry.creepType] === undefined )
-                        this.typeCount[entry.creepType] = 1;
-                    else this.typeCount[entry.creepType]++;
-                    if( this.typeWeight[entry.creepType] === undefined )
-                        this.typeWeight[entry.creepType] = entry.weight;
-                    else this.typeWeight[entry.creepType] += entry.weight;
+                if( entry.creepType && 
+                    ( creep.ticksToLive === undefined || 
+                    creep.ticksToLive > entry.spawningTime )) {
+                        this.countCreep(creep.room, entry);
                 }
 
                 let action = ( entry.actionName && Creep.action[entry.actionName] ) ? Creep.action[entry.actionName] : null;

@@ -16,7 +16,7 @@ var mod = {
                     var params = setup.buildParams(self);
                     var newName = self.createCreep(params.parts, params.name, null);
                     if( params.name == newName || ERROR_CODE(newName) === undefined ){
-                        Population.registerCreep(newName, params.setup, params.cost, self.room.name, self.name);
+                        Population.registerCreep(newName, params.setup, params.cost, self.room, self.name);
                         if(DEBUG) console.log( DYE(CRAYON.system, self.name + ' &gt; ') + DYE(CRAYON.birth, 'Good morning ' + newName + '!') );
                         return true;
                     }                     
