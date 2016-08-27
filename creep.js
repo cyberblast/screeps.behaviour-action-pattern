@@ -49,7 +49,28 @@ var mod = {
                 }
                 if( behaviour ) behaviour.run(this);
                 else if(!this.data){
-                    console.log( DYE(CRAYON.error, 'Corrupt creep without population entry: ' + this.name ));
+                    let type = this.memory.setup;
+                    let weight = this.memory.cost;
+                    let home = this.memory.home;
+                    let spawn = this.memory.mother;
+                    let breeding = this.memory.breeding;
+                    if( type && weight && home && spawn && breeding  ) {
+                        console.log( DYE(CRAYON.error, 'Fixing orrupt creep without population entry: ' + this.name ));
+                        var entry = Population.setCreep({
+                            creepName: this.name, 
+                            creepType: type, 
+                            weight: weight, 
+                            roomName: this.pos.roomName, 
+                            homeRoom: home, 
+                            motherSpawn: spawn, 
+                            actionName: this.action ? this.action.name : null, 
+                            targetId: this.target ? this.target.id || this.target.name : null,
+                            spawningTime: breeding, 
+                            flagName: null
+                        });
+                        Population.countCreep(this.room, entry);
+                    } else 
+                        console.log( DYE(CRAYON.error, 'Corrupt creep without population entry unfixable!! : ' + this.name ));
                 }
             }
         };

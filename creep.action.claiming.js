@@ -12,10 +12,11 @@ action.newTarget = function(creep){
     if( !creep.flag.room || creep.flag.room.name != creep.room.name){
         return creep.flag;    
     }
-    if( creep.flag.room.controller.my ) {
+    if( creep.flag.room.controller.my ) { // TODO: AND is claim flag 
         // already claimed, change flag
         // TODO: only if no spawn or spawn-constructionSite present
         creep.flag.setColor(FLAG_COLOR.claim.spawn.color, FLAG_COLOR.claim.spawn.secondaryColor);
+        // TODO: remove expoit flags
         // no valid target for claimer
         return null;
     }

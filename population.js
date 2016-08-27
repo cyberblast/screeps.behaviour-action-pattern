@@ -34,8 +34,8 @@ var mod = {
     registerAction: function(creep, action, target, entry) {
         if( entry === undefined ) entry = this.getCreep(creep.name);
         if( entry.actionName != action.name ){
-            if( entry.actionName ){
-                let room = Game.rooms[entry.roomName];
+            let room = Game.rooms[creep.room.name];
+            if( entry.actionName && room.population ){
                 // unregister action
                 if( room.population.actionCount[action.name] === undefined )
                     room.population.actionCount[action.name] = 0;
@@ -49,9 +49,16 @@ var mod = {
                 if( this.actionWeight[action.name] === undefined )
                     this.actionWeight[action.name] = 0;
                 else this.actionWeight[action.name] -= entry.weight;
+            }            
+            if( room.population === undefined ) {
+                room.population = {
+                    typeCount: {}, 
+                    typeWeight: {}, 
+                    actionCount: {},
+                    actionWeight: {}
+                };
             }
             
-            let room = Game.rooms[creep.room.name];
             // register action
             entry.actionName = action.name;
             if( room.population.actionCount[action.name] === undefined )

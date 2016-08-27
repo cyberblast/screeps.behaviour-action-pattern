@@ -25,7 +25,7 @@ action.newTarget = function(creep){
     if( destroyFlag ) return destroyFlag;        
     // move to invasion room
     var flag = _.find(Game.flags, FLAG_COLOR.invade.filter);
-    if( flag && (!flag.room || flag.room.name != creep.room.name))
+    if( flag && (!flag.room || flag.pos.roomName != creep.pos.roomName))
         return flag; // other room    
     if( !flag ){
         // unregister 
@@ -84,6 +84,8 @@ action.newTarget = function(creep){
 };
 action.step = function(creep){
     if(CHATTY) creep.say(this.name);
+    if( creep.target.color && (creep.target.pos.roomName == creep.pos.roomName))
+        this.newTarget(creep);
     this.run[creep.data.creepType](creep);
 }
 action.run = {
