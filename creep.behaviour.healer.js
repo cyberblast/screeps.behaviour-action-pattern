@@ -4,7 +4,7 @@ module.exports = {
         if( creep.room.situation.invasion && (!creep.action || creep.action.name != 'healing') )
             Creep.action.healing.assign(creep);
         else {
-            if( !creep.flag ) {
+            if( !creep.action || creep.action.name != 'travelling' ) {
                 let flag = FlagDir.find(FLAG_COLOR.invade, creep.pos, false);
                 if( flag ){
                     if( Creep.action.travelling.assign(creep, flag) )
