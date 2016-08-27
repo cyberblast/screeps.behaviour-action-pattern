@@ -11,5 +11,6 @@ setup.minEnergyAvailable = function(spawn){
 };
 setup.maxWeight = function(spawn){
     return FlagDir.count(FLAG_COLOR.invade.exploit) * 4000;
+    //return FlagDir.count(FLAG_COLOR.invade.exploit) * 4000;
 }
 module.exports = setup;

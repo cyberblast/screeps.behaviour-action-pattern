@@ -17,6 +17,8 @@ action.newTarget = function(creep){
         // TODO: only if no spawn or spawn-constructionSite present
         creep.flag.setColor(FLAG_COLOR.claim.spawn.color, FLAG_COLOR.claim.spawn.secondaryColor);
         // TODO: remove expoit flags
+        let remove = entry => Game.flags[entry.name].remove();
+        _.forEach(_.filter(FlagDir.list, FLAG_COLOR.invade.exploit.filter), remove);
         // no valid target for claimer
         return null;
     }
