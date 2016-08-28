@@ -59,7 +59,7 @@ module.exports = {
                     Creep.action.upgrading, 
                     Creep.action.idle];
             if( creep.room.ticksToDowngrade < 2000 ) { // urgent upgrading 
-                priority.unshift(Creep.action.storing);
+                priority.unshift(Creep.action.upgrading);
                 //priority = _.concat(Creep.action.upgrading, priority);
             }
         }
