@@ -55,7 +55,7 @@ var mod = {
                     let spawn = this.memory.mother;
                     let breeding = this.memory.breeding;
                     if( type && weight && home && spawn && breeding  ) {
-                        //console.log( DYE(CRAYON.error, 'Fixing orrupt creep without population entry: ' + this.name ));
+                        //console.log( 'Fixing corrupt creep without population entry: ' + this.name );
                         var entry = Population.setCreep({
                             creepName: this.name, 
                             creepType: type, 
@@ -69,8 +69,28 @@ var mod = {
                             flagName: null
                         });
                         Population.countCreep(this.room, entry);
-                    } else 
-                        console.log( DYE(CRAYON.error, 'Corrupt creep without population entry unfixable!! : ' + this.name ));
+                    } else {
+                        console.log( DYE(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ));
+                        // trying to import creep
+                        if( creep.body.includes(WORK) && creep.body.includes(CARRY))
+                        {
+                            let counts = _.countBy(creep.body, 'type');
+                            let weight = (counts[WORK]*PART_COSTS[WORK]) + (counts[CARRY]*PART_COSTS[CARRY]) + (counts[MOVE]*PART_COSTS[MOVE]); 
+                            var entry = Population.setCreep({
+                                creepName: this.name, 
+                                creepType: 'worker', 
+                                weight: weight, 
+                                roomName: this.pos.roomName, 
+                                homeRoom: this.pos.roomName, 
+                                motherSpawn: null, 
+                                actionName: null, 
+                                targetId: null,
+                                spawningTime: -1, 
+                                flagName: null
+                            });
+                            Population.countCreep(this.room, entry);
+                        } else creep.suicide();
+                    }
                 }
             }
         };
