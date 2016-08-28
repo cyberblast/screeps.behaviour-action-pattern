@@ -3,7 +3,7 @@ setup.multiBody = [CARRY, WORK, MOVE];
 setup.fixedBody = [];
 setup.minAbsEnergyAvailable = 200;
 setup.maxMulti = 6;
-setup.multiplicationPartwise = false;
+setup.sortedParts = false;
 setup.minEnergyAvailable = function(spawn){
     return 0.3;
 };

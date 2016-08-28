@@ -6,7 +6,7 @@ var Setup = function(typeName){
     this.maxMulti = 6;
     this.minControllerLevel = 0;
     this.globalMeasurement = false;
-    this.multiplicationPartwise = true;
+    this.sortedParts = true;
     this.bodyCosts = function(body){
         let costs = 0;
         if( body ){
@@ -24,29 +24,16 @@ var Setup = function(typeName){
     this.setParamParts = function(spawn){
         var parts = [];
         let multi = this.multi(spawn);
-        if( this.multiplicationPartwise ) {
-            for( let iPart = 0; iPart < this.multiBody.length; iPart ++ ){
-                for( let iMulti = 0; iMulti < multi; iMulti++){
-                    parts[parts.length] = this.multiBody[iPart];
-                }
-            }
-            for( let iPart = 0; iPart < this.fixedBody.length; iPart ++ ){
-                parts[parts.length] = this.fixedBody[iPart];
-            }
-        } else {
-            for (let iMulti = 0; iMulti < multi; iMulti++) {
-                parts = parts.concat(this.multiBody);
-            }
-            for( let iPart = 0; iPart < this.fixedBody.length; iPart ++ ){
-                parts[parts.length] = this.fixedBody[iPart];
-            }
+        for( let iPart = 0; iPart < this.fixedBody.length; iPart ++ ){
+            parts[parts.length] = this.fixedBody[iPart];
         }
-
-        parts.sort(this.partsComparator); 
-
+        for (let iMulti = 0; iMulti < multi; iMulti++) {
+            parts = parts.concat(this.multiBody);
+        }
+        if( this.sortedParts ) 
+            parts.sort(this.partsComparator);
         return parts;
     };
-
     this.partsComparator = function (a, b) {
         let partsOrder = [TOUGH, MOVE, WORK, CARRY, CLAIM, HEAL, ATTACK, RANGED_ATTACK];
         let indexOfA = partsOrder.indexOf(a);
@@ -60,7 +47,6 @@ var Setup = function(typeName){
             return 0;
         }
     };
-
     this.buildParams = function(spawn){
         var memory = {
             setup: null,
@@ -70,8 +56,7 @@ var Setup = function(typeName){
             mother: null, 
             home: null, 
             breeding: 1
-        };
-        
+        };        
         memory.setup = this.type;
         memory.parts = this.setParamParts(spawn);
         memory.cost = this.bodyCosts(memory.parts);  
