@@ -35,7 +35,6 @@ module.exports = {
                     Creep.action.idle];       
             if( _.sum(creep.carry) > creep.carry.energy ) {
                 priority.unshift(Creep.action.storing);
-                //priority = _.concat(Creep.action.storing, priority);
             }
         }    
         else {	  
@@ -60,7 +59,6 @@ module.exports = {
                     Creep.action.idle];
             if( creep.room.ticksToDowngrade < 2000 ) { // urgent upgrading 
                 priority.unshift(Creep.action.upgrading);
-                //priority = _.concat(Creep.action.upgrading, priority);
             }
         }
         for(var iAction = 0; iAction < priority.length; iAction++) {

@@ -1,15 +1,22 @@
 module.exports = {
     name: 'ranger',
     run: function(creep) {
-        if( creep.room.situation.invasion && (!creep.action || creep.action.name != 'defending') )
-            Creep.action.defending.assign(creep);
-        else {
-            if( !creep.action || creep.action.name != 'invading' ) {
-                let flag = FlagDir.find(FLAG_COLOR.invade, creep.pos, false);
-                if( !flag ) flag = FlagDir.find(FLAG_COLOR.destroy, creep.pos, false);
-                if( flag ){
-                    if( Creep.action.invading.assign(creep, flag) )
-                        Population.registerCreepFlag(creep, flag);
+        let oldAction = creep.action === undefined ? 'idle' : creep.action.name;
+        if( ['guarding','idle'].includes(oldAction)) { // no task assigned
+            // TODO: Dont use this kind of 'action breaking'. 
+            //      Add defending & invading to 'nextAction' and implement correct 'isValidAction', 'isAddableAction' and targetting rules
+            //      Also check other behaviours.
+            if( creep.room.situation.invasion ) {
+                if( oldAction != 'defending') 
+                    Creep.action.defending.assign(creep);
+            } else {
+                if( oldAction != 'invading' ) {
+                    let flag = FlagDir.find(FLAG_COLOR.invade, creep.pos, false);
+                    if( !flag ) flag = FlagDir.find(FLAG_COLOR.destroy, creep.pos, false);
+                    if( flag ){
+                        if( Creep.action.invading.assign(creep, flag) )
+                            Population.registerCreepFlag(creep, flag);
+                    }
                 }
             }
         }

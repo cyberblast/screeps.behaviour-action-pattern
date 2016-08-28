@@ -93,10 +93,10 @@ var mod = {
         creep.target = target;
     }, 
     registerCreepFlag: function(creep, flag) {
-        if( creep.data.flagName ){
+        if( creep.data && creep.data.flagName ){
             // unregister flag
             let oldFlag = Game.flags[creep.data.flagName];
-            if( oldFlag.targetOf ){
+            if( oldFlag && oldFlag.targetOf ){
                 let byName = elem => elem.creepName === creep.name;
                 let index = oldFlag.targetOf.findIndex(byName);
                 if( index > -1 ) oldFlag.targetOf.splice(index, 1);
@@ -151,6 +151,7 @@ var mod = {
                 this.unregisterCreep(entry.creepName);
             } 
             else {                
+                creep.data = entry;        
                 if( creep.spawning ) { // count spawning time
                     entry.spawningTime++;
                 }

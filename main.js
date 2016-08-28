@@ -10,7 +10,7 @@ FlagDir.extend();
 
 module.exports.loop = function () {
     FlagDir.loop();
-    Population.loop();  
+    Population.loop();
 
     var roomLoop = room => {
         room.loop();
