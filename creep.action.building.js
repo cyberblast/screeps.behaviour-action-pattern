@@ -7,7 +7,8 @@ action.isValidTarget = function(target){
     return (target != null && target.progress != null && target.progress < target.progressTotal);
 };  
 action.isAddableAction = function(creep){
-    return (!creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < creep.room.maxPerJob*2);
+    if(creep.pos.roomName == 'W42N2')console.log(creep.room.population.actionCount[this.name] + ' < ' + creep.room.maxPerJob*1.3);
+    return (!creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < creep.room.maxPerJob*1.3);
 };
 action.newTarget = function(creep){
     var self = this;

@@ -55,7 +55,7 @@ var mod = {
                     let spawn = this.memory.mother;
                     let breeding = this.memory.breeding;
                     if( type && weight && home && spawn && breeding  ) {
-                        console.log( DYE(CRAYON.error, 'Fixing orrupt creep without population entry: ' + this.name ));
+                        //console.log( DYE(CRAYON.error, 'Fixing orrupt creep without population entry: ' + this.name ));
                         var entry = Population.setCreep({
                             creepName: this.name, 
                             creepType: type, 

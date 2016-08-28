@@ -195,7 +195,7 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._maxPerJob) ){ 
-                        this._maxPerJob = _.max([1,(this.population && this.population.worker ? this.population.worker.count : 0)/3.1]);
+                        this._maxPerJob = _.max([1,(this.population && this.population.typeCount.worker ? this.population.typeCount.worker : 0)/3.5]);
                     }
                     return this._maxPerJob;
                 }

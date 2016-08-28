@@ -77,6 +77,16 @@ var mod = {
             _.assign(filter, {roomName: pos.roomName});
         return _.countBy(this.list, filter).true;
     },
+    filter: function(flagColor, pos, local){
+        let self = this;
+        if( flagColor == null || this.list.length == 0) 
+            return 0;
+
+        let filter = flagColor.filter;
+        if( local && pos && pos.roomName )
+            _.assign(filter, {roomName: pos.roomName});
+        return _.filter(this.list, filter);
+    },
     roomDistance: function(a, b){
         if( a == b ) return 0;
         let posA = a.split(/([N,E,S,W])/);

@@ -25,8 +25,9 @@ module.exports = {
                 if( flag.room.spawns && flag.room.spawns.length > 0 ){ // spawn complete
                     flag.remove();
                     // also remove exploit flags
-                    var remove = f => f.remove();
-                    _.forEach(creep.room.find(FIND_FLAGS, { filter: FLAG_COLOR.invade.exploit.filter }), remove);
+                    let remove = f => Game.flags[f.name].remove();
+                    _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit.filter, flag.pos, true), remove);
+                    
                     Population.registerCreepFlag(creep, null);
                     // TODO: remove registered flags @ other creeps
                 }
@@ -61,6 +62,6 @@ module.exports = {
             }
         }
         // else run as worker    
-        return Creep.behaviour.worker.nextAction(creep);
+        Creep.behaviour.worker.nextAction(creep);
     }
 }

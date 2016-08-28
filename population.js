@@ -33,47 +33,44 @@ var mod = {
     }, 
     registerAction: function(creep, action, target, entry) {
         if( entry === undefined ) entry = this.getCreep(creep.name);
-        if( entry.actionName != action.name ){
-            let room = Game.rooms[creep.room.name];
-            if( entry.actionName && room.population ){
-                // unregister action
-                if( room.population.actionCount[action.name] === undefined )
-                    room.population.actionCount[action.name] = 0;
-                else room.population.actionCount[action.name]--;
-                if( room.population.actionWeight[action.name] === undefined )
-                    room.population.actionWeight[action.name] = 0;
-                else room.population.actionWeight[action.name] -= entry.weight;
-                if( this.actionCount[action.name] === undefined )
-                    this.actionCount[action.name] = 0;
-                else this.actionCount[action.name]--;
-                if( this.actionWeight[action.name] === undefined )
-                    this.actionWeight[action.name] = 0;
-                else this.actionWeight[action.name] -= entry.weight;
-            }            
-            if( room.population === undefined ) {
-                room.population = {
-                    typeCount: {}, 
-                    typeWeight: {}, 
-                    actionCount: {},
-                    actionWeight: {}
-                };
-            }
-            
-            // register action
-            entry.actionName = action.name;
-            if( room.population.actionCount[action.name] === undefined )
-                room.population.actionCount[action.name] = 1;
-            else room.population.actionCount[action.name]++;
-            if( room.population.actionWeight[action.name] === undefined )
-                room.population.actionWeight[action.name] = entry.weight;
-            else room.population.actionWeight[action.name] += entry.weight;
-            if( this.actionCount[action.name] === undefined )
-                this.actionCount[action.name] = 1;
-            else this.actionCount[action.name]++;
-            if( this.actionWeight[action.name] === undefined )
-                this.actionWeight[action.name] = entry.weight;
-            else this.actionWeight[action.name] += entry.weight;
+        let room = creep.room;
+        if( room.population === undefined ) {
+            room.population = {
+                typeCount: {}, 
+                typeWeight: {}, 
+                actionCount: {},
+                actionWeight: {}
+            };
         }
+        if( creep.action ){
+            // unregister action
+            if( room.population.actionCount[creep.action.name] === undefined )
+                room.population.actionCount[creep.action.name] = 0;
+            else room.population.actionCount[creep.action.name]--;
+            if( room.population.actionWeight[creep.action.name] === undefined )
+                room.population.actionWeight[creep.action.name] = 0;
+            else room.population.actionWeight[creep.action.name] -= entry.weight;
+            if( this.actionCount[creep.action.name] === undefined )
+                this.actionCount[creep.action.name] = 0;
+            else this.actionCount[creep.action.name]--;
+            if( this.actionWeight[creep.action.name] === undefined )
+                this.actionWeight[creep.action.name] = 0;
+            else this.actionWeight[creep.action.name] -= entry.weight;
+        }
+        // register action
+        entry.actionName = action.name;
+        if( room.population.actionCount[action.name] === undefined )
+            room.population.actionCount[action.name] = 1;
+        else room.population.actionCount[action.name]++;
+        if( room.population.actionWeight[action.name] === undefined )
+            room.population.actionWeight[action.name] = entry.weight;
+        else room.population.actionWeight[action.name] += entry.weight;
+        if( this.actionCount[action.name] === undefined )
+            this.actionCount[action.name] = 1;
+        else this.actionCount[action.name]++;
+        if( this.actionWeight[action.name] === undefined )
+            this.actionWeight[action.name] = entry.weight;
+        else this.actionWeight[action.name] += entry.weight;
         
         let targetId = target.id || target.name;
         if( entry.targetId ) {
