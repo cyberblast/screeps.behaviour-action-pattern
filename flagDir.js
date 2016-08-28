@@ -11,7 +11,7 @@ var mod = {
         });
     },
     list:[], 
-    findName: function(flagColor, pos, local, rangeMod){
+    findName: function(flagColor, pos, local, rangeMod, rangeModPerCrowd, rangeModByType){
         let self = this;
         if( flagColor == null || this.list.length == 0) 
             return null;
@@ -37,15 +37,15 @@ var mod = {
                     r = _.max([Math.abs(flag.x-pos.x), Math.abs(flag.y-pos.y)]);
                 else r = roomDist * 100;
                 if( rangeMod ){
-                    r = rangeMod(r, flag);
+                    r = rangeMod(r, flag, rangeModPerCrowd, rangeModByType);
                 }
                 return r;
             };
             return _.sortBy(flags, range)[0].name;
         } else return flags[0];
     }, 
-    find: function(flagColor, pos, local, rangeMod){
-        let id = this.findName(flagColor, pos, local, rangeMod);
+    find: function(flagColor, pos, local, rangeMod, rangeModPerCrowd, rangeModByType){
+        let id = this.findName(flagColor, pos, local, rangeMod, rangeModPerCrowd, rangeModByType);
         if( id === null ) 
             return null;
         return Game.flags[id];
@@ -75,7 +75,7 @@ var mod = {
         let filter = flagColor.filter;
         if( local && pos && pos.roomName )
             _.assign(filter, {roomName: pos.roomName});
-        return _.countBy(this.list, filter).true;
+        return _.countBy(this.list, filter).true || 0;
     },
     filter: function(flagColor, pos, local){
         let self = this;
@@ -95,9 +95,17 @@ var mod = {
         let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
         return xDif + yDif; 
     }, 
-    rangeMod: function(range, flagItem){
+    rangeMod: function(range, flagItem, rangeModPerCrowd, rangeModByType){
         var flag = Game.flags[flagItem.name];
-        return range + ((flag.creeps.sum || 0) * 10);
+        let crowd;
+        if( flag.targetOf ){ // flag is targetted
+            if( rangeModByType ) { // count defined creep type only
+                let count = _.countBy(flag.targetOf, 'creepType')[rangeModByType];
+                crowd = count || 0; 
+            } else // count all creeps
+                crowd = flag.targetOf.length;
+        } else crowd = 0; // not targetted
+        return range + ( crowd * (rangeModPerCrowd || 10) );
     }
 }
 module.exports = mod;
