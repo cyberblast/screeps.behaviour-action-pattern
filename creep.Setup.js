@@ -41,8 +41,26 @@ var Setup = function(typeName){
                 parts[parts.length] = this.fixedBody[iPart];
             }
         }
+
+        parts.sort(this.partsComparator); 
+
         return parts;
     };
+
+    this.partsComparator = function (a, b) {
+        let partsOrder = [TOUGH, MOVE, WORK, CARRY, CLAIM, HEAL, ATTACK, RANGED_ATTACK];
+        let indexOfA = partsOrder.indexOf(a);
+        let indexOfB = partsOrder.indexOf(b);
+  
+        if (indexOfA < indexOfB) {
+            return -1;
+        } else if (indexOfA > indexOfB) {
+            return 1;
+        } else {
+            return 0;
+        }
+    };
+
     this.buildParams = function(spawn){
         var memory = {
             setup: null,
