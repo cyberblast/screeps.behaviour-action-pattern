@@ -1,6 +1,6 @@
 var action = new Creep.Action('invading');
 action.reusePath = 0;
-action.isValidAction = function(){ return true; };
+action.isValidAction = function(creep){ return FlagDir.hasInvasionFlag(); };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.getFlaggedStructure = function(flagColor){
@@ -22,16 +22,21 @@ action.getFlaggedStructure = function(flagColor){
 }
 action.newTarget = function(creep){
     var destroyFlag = this.getFlaggedStructure(FLAG_COLOR.destroy);
-    if( destroyFlag ) return destroyFlag;        
+    if( destroyFlag ) {
+        Population.registerCreepFlag(creep, destroyFlag);
+        return destroyFlag;
+    }        
     // move to invasion room
-    var flag = _.find(Game.flags, FLAG_COLOR.invade.filter);
-    if( flag && (!flag.room || flag.pos.roomName != creep.pos.roomName))
+    var flag = FlagDir.find(FLAG_COLOR.invade, creep.pos);
+    if( flag && (!flag.room || flag.pos.roomName != creep.pos.roomName)){
+        Population.registerCreepFlag(creep, flag);
         return flag; // other room    
+    }
     if( !flag ){
         // unregister 
         creep.action = null;
         return;
-    }    
+    }
     if( !flag.room.controller || !flag.room.controller.my ) {        
         //attack healer
         var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {

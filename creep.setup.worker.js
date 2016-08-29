@@ -11,6 +11,6 @@ setup.maxCount = function(spawn){
     return ((spawn.room.sourceAccessibleFields*1.2) + (spawn.room.sources.length*2));
 };
 setup.maxWeight = function(spawn){
-    return (spawn.room.sources.length * 3000);
+    return (spawn.room.sources.length * 3600);
 };
 module.exports = setup;

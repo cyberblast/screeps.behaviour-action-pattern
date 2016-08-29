@@ -3,7 +3,7 @@ setup.multiBody = [RANGED_ATTACK, MOVE];
 setup.minAbsEnergyAvailable = 200;
 setup.maxMulti = 5;
 setup.globalMeasurement = true;
-setup.minControllerLevel = 3;
+setup.minControllerLevel = 5;
 setup.minEnergyAvailable = function(spawn){
     return 0.8;
 }

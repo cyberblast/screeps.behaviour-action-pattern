@@ -106,6 +106,12 @@ var mod = {
                 crowd = flag.targetOf.length;
         } else crowd = 0; // not targetted
         return range + ( crowd * (rangeModPerCrowd || 10) );
+    }, 
+    hasInvasionFlag: function(){
+        if( _.isUndefined(this._hasInvasionFlag) ) {
+            this._hasInvasionFlag = this.findName(FLAG_COLOR.invade) != null || this.findName(FLAG_COLOR.destroy) != null;
+        }
+        return this._hasInvasionFlag;
     }
 }
 module.exports = mod;

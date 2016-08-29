@@ -2,7 +2,7 @@ module.exports = {
     name: 'worker',
     run: function(creep) {
         // Assign next Action
-        if( creep.action == null ) {
+        if( creep.action == null || creep.action.name == 'idle' ) {
             this.nextAction(creep);
         }
         // Do some work

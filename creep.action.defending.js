@@ -1,5 +1,6 @@
 var action = new Creep.Action('defending');
 action.reusePath = 0;
+action.isValidAction = function(creep){ return creep.room.situation.invasion; };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.isValidTarget = function(target){

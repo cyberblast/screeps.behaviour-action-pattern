@@ -1,13 +1,16 @@
 var action = new Creep.Action('claiming');
 action.reusePath = 10;
+action.isValidAction = function(creep){ return true; }; 
 action.isValidTarget = function(target){ return true; }; 
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; }; 
 action.newTarget = function(creep){
-    // get claim flag
-    if( !creep.flag ){
-        return null;
-    }
+    let flag = FlagDir.find(FLAG_COLOR.claim, creep.pos, false, FlagDir.rangeMod);
+    if( flag ) { 
+        Population.registerCreepFlag(creep, flag);
+    } 
+    else return null;
+
     // not there, go to flagged room
     if( !creep.flag.room || creep.flag.room.name != creep.room.name){
         return creep.flag;    
@@ -32,6 +35,8 @@ action.step = function(creep){
     if(CHATTY) creep.say(this.name);    
     if( creep.target.color ){
         creep.moveTo(creep.target);
+        if( creep.flag.room.name == creep.room.name ) 
+            creep.data.targetId = null;
         return;
     }    
     var moveResult = creep.moveTo(creep.target, {reusePath: this.reusePath});

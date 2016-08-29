@@ -4,7 +4,9 @@ action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){     
     var flag = FlagDir.find(FLAG_COLOR.defense, creep.pos, false, 
-        FlagDir.rangeMod, 200, creep.data.creepType);
+        FlagDir.rangeMod, 240, creep.data.creepType);
+    if( creep.action && creep.action.name == 'guarding' && creep.flag && creep.flag.pos.roomName == creep.pos.roomName )
+        return creep.flag;
     if( flag ) Population.registerCreepFlag(creep, flag);
     return flag;
 };

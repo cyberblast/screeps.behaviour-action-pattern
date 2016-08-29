@@ -1,18 +1,8 @@
 module.exports = {
     name: 'healer',
     run: function(creep) {
-        let oldAction = creep.action === undefined ? 'idle' : creep.action.name;
-        if( ['guarding','idle'].includes(oldAction)) { // no task assigned
-            if( oldAction != 'travelling' ) {
-                let flag = FlagDir.find(FLAG_COLOR.invade, creep.pos, false);
-                if( flag ){
-                    if( Creep.action.travelling.assign(creep, flag) )
-                        Population.registerCreepFlag(creep, flag);
-                }
-            }
-        }
         // Assign next Action
-        if( creep.action == null ) {
+        if( creep.action == null || ['guarding','idle'].includes(creep.action.name)) {
             this.nextAction(creep);
         }
         // Do some work
