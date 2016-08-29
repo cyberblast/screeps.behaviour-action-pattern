@@ -1,7 +1,7 @@
 module.exports = {
     name: 'melee',
     run: function(creep) {
-        let oldAction = creep.action === undefined ? 'idle' : creep.action.name;
+        let oldAction = creep.action == null ? 'idle' : creep.action.name;
         if( ['guarding','idle'].includes(oldAction)) { // no task assigned
             // TODO: Dont use this kind of 'action breaking'. 
             //      Add defending & invading to 'nextAction' and implement correct 'isValidAction', 'isAddableAction' and targetting rules

@@ -4,7 +4,7 @@ action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){     
     var flag = FlagDir.find(FLAG_COLOR.defense, creep.pos, false, 
-        FlagDir.rangeMod, 110, creep.data.creepType);
+        FlagDir.rangeMod, 200, creep.data.creepType);
     if( flag ) Population.registerCreepFlag(creep, flag);
     return flag;
 };

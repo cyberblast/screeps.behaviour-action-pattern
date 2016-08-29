@@ -11,6 +11,6 @@ setup.maxCount = function(spawn){
     return FlagDir.count(FLAG_COLOR.defense);
 }
 setup.maxWeight = function(spawn){
-    return null;
+    return 0;
 }
 module.exports = setup;
