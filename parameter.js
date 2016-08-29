@@ -16,7 +16,7 @@ var mod = {
         8: Infinity
     }, 
     TIME_ZONE: 1, // zone offset in hours (-12 through +12) from UTC
-    USE_SUMMERTIME: true, // Please define IS_SUMMERTIME in global.js to suit to your local summertime rules 
+    USE_SUMMERTIME: true, // Please define isSummerTime in global.js to suit to your local summertime rules 
     SPAWN_INTERVAL: 10, // loops between regular spawn probe
     MEMORY_RESYNC_INTERVAL: 100, // interval to reload spawns & towers present in a room
     GAP_REPAIR_DECAYABLE: 800, // decayables (e.g. roads) only get repaired when that much hits are missing

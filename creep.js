@@ -70,7 +70,7 @@ var mod = {
                         });
                         Population.countCreep(this.room, entry);
                     } else {
-                        console.log( DYE(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ));
+                        console.log( dye(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ));
                         // trying to import creep
                         if( creep.body.includes(WORK) && creep.body.includes(CARRY))
                         {

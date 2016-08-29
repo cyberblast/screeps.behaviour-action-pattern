@@ -1,15 +1,6 @@
 module.exports = {
     name: 'claimer',
     run: function(creep) {
-        /*
-        if( !creep.flag ) {
-            let flag = FlagDir.find(FLAG_COLOR.claim, creep.pos, false, FlagDir.rangeMod);
-            if( flag ) { 
-                Population.registerCreepFlag(creep, flag);
-            }
-        } else if( creep.flag.pos.roomName == creep.pos.roomName ){
-            creep.data.targetId = null;
-        }*/
         // Assign next Action
         if( creep.action == null || creep.action.name == 'idle') {
             this.nextAction(creep);
@@ -33,10 +24,6 @@ module.exports = {
                 action.assign(creep)) {
                     return;
             }
-        }
-        /*
-        if( !creep.flag || !Creep.action.claiming.assign(creep) )
-            Creep.action.idle.assign(creep);
-        return;*/        
+        }    
     }
 }

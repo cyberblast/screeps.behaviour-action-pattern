@@ -15,7 +15,7 @@ var mod = {
                     }
                     if( _.isUndefined(this._sources) ){  
                         this._sources = [];
-                        var addSource = id => { AddById(this._sources, id); };
+                        var addSource = id => { addById(this._sources, id); };
                         _.forEach(this.memory.sourceIds, addSource);
                     }
                     return this._sources;
@@ -76,7 +76,7 @@ var mod = {
                     }
                     if( _.isUndefined(this._spawns) ){ 
                         this._spawns = [];
-                        var addSpawn = id => { AddById(this._spawns, id); };
+                        var addSpawn = id => { addById(this._spawns, id); };
                         _.forEach(this.memory.spawns, addSpawn);
                     }
                     return this._spawns;
@@ -97,7 +97,7 @@ var mod = {
                     }
                     if( _.isUndefined(this._towers) ){ 
                         this._towers = [];
-                        var add = id => { AddById(this._towers, id); };
+                        var add = id => { addById(this._towers, id); };
                         _.forEach(this.memory.towers, add);
                     }
                     return this._towers;
@@ -234,7 +234,7 @@ var mod = {
                         if( !self.memory.hostileIds.includes(creep.id) ){
                             var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
                             if( creep.owner.username != 'Invader' ){
-                                var message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + self.name + ' at ' + DateTimeString(LocalDate(new Date()));
+                                var message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + self.name + ' at ' + toDateTimeString(toLocalDate(new Date()));
                                 Game.notify(message);
                                 console.log(message);
                             }

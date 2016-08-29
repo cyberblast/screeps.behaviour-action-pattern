@@ -149,7 +149,7 @@ var mod = {
         let register = entry => {
             let creep = Game.creeps[entry.creepName];
             if ( !creep ) {
-                if(DEBUG) console.log(DYE(CRAYON.system, entry.motherSpawn + ' &gt; ') + DYE(CRAYON.death, 'Good night ' + entry.creepName + '!') );
+                if(DEBUG) console.log(dye(CRAYON.system, entry.motherSpawn + ' &gt; ') + dye(CRAYON.death, 'Good night ' + entry.creepName + '!') );
                 this.unregisterCreep(entry.creepName);
             } 
             else {                
@@ -161,7 +161,7 @@ var mod = {
                     spawnsToProbe.push(entry.motherSpawn);
                 }
                 else if(creep.ticksToLive == entry.spawningTime) { // will die in ticks equal to spawning time
-                    if(DEBUG) console.log(DYE(CRAYON.system, entry.creepName + ' &gt; ') + DYE(CRAYON.death, 'Good night!') );
+                    if(DEBUG) console.log(dye(CRAYON.system, entry.creepName + ' &gt; ') + dye(CRAYON.death, 'Good night!') );
                     if( Game.time % SPAWN_INTERVAL != 0 && !spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' ) { 
                         spawnsToProbe.push(entry.motherSpawn);
                     }
@@ -218,16 +218,3 @@ var mod = {
     }
 }
 module.exports = mod;
-    /*
-    get memory() {
-        if(_.isUndefined(Memory.population)) {
-            Memory.population = {};
-        }
-        return Memory.population;
-    },
-    set memory(val) {
-        if(_.isUndefined(Memory.population)) {
-            Memory.population = {};
-        }
-        Memory.population = value;
-    },*/

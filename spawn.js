@@ -15,12 +15,12 @@ var mod = {
                 if( setup.isValidSetup(self) ){
                     var params = setup.buildParams(self);
                     var newName = self.createCreep(params.parts, params.name, null);
-                    if( params.name == newName || ERROR_CODE(newName) === undefined ){
+                    if( params.name == newName || translateErrorCode(newName) === undefined ){
                         Population.registerCreep(newName, params.setup, params.cost, self.room, self.name);
-                        if(DEBUG) console.log( DYE(CRAYON.system, self.name + ' &gt; ') + DYE(CRAYON.birth, 'Good morning ' + newName + '!') );
+                        if(DEBUG) console.log( dye(CRAYON.system, self.name + ' &gt; ') + dye(CRAYON.birth, 'Good morning ' + newName + '!') );
                         return true;
                     }                     
-                    console.log( DYE(CRAYON.system, self.name + ' &gt; ') + DYE(CRAYON.error, 'Offspring failed: ' + ERROR_CODE(newName)) );
+                    console.log( dye(CRAYON.system, self.name + ' &gt; ') + dye(CRAYON.error, 'Offspring failed: ' + translateErrorCode(newName)) );
                 }
                 return false;
             }

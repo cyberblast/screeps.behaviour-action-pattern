@@ -7,7 +7,7 @@ var mod = {
         var message;
         if( this.storedStatisticsTime > 0 ) {
             message = '<h3><b>Status report </b></h3>' 
-                + '<h4>at ' + DateTimeString(LocalDate()) + ',<br/>' 
+                + '<h4>at ' + toDateTimeString(toLocalDate()) + ',<br/>' 
                 + 'comparison to state before: ' + this.toTimeSpanString(new Date(), new Date(this.storedStatisticsTime)) + ' (' + (Game.time - Memory.statistics.tick) + ' loops)</h4>';
 
             if( Game.cpu.bucket ){
@@ -19,8 +19,8 @@ var mod = {
         
         var invaderReport = invader => {
             let snip = '<li>' + invader.owner + ': ' + invader.body.replace(/"/g,'');
-            if( invader.leave === undefined ) snip += " since " + TimeString(LocalDate(new Date(invader.time))) + '</li>';
-            else snip += " for " + (invader.leave - invader.enter) + ' loops at ' + TimeString(LocalDate(new Date(invader.time))) + '</li>';
+            if( invader.leave === undefined ) snip += " since " + toTimeString(toLocalDate(new Date(invader.time))) + '</li>';
+            else snip += " for " + (invader.leave - invader.enter) + ' loops at ' + toTimeString(toLocalDate(new Date(invader.time))) + '</li>';
             if( (message.length + snip.length) > REPORT_MAX_LENGTH ){
                 Memory.statistics.reports.push(message + "</ul></li></ul>");
                 message = '<ul><li style="list-style-type:none"><ul>' + snip;

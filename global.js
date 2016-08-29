@@ -66,7 +66,7 @@ var mod = {
                 claim: 600, 
                 tough: 10
             },
-            ERROR_CODE: function(code){
+            translateErrorCode: function(code){
                 var codes = {
                     0: 'OK',
                     1: 'ERR_NOT_OWNER',
@@ -85,7 +85,7 @@ var mod = {
                     15: 'ERR_GCL_NOT_ENOUGH'};
                 return codes[code*-1];
             },
-            DYE: function(style, text){
+            dye: function(style, text){
                 if( isObj(style) ) {
                     var css = "";
                     var format = key => css += key + ":" + style[key] + ";";
@@ -104,39 +104,39 @@ var mod = {
             },
             logErrorCode: function(creep, code) {
                 if( code ) {
-                    var error = ERROR_CODE(code);
+                    var error = translateErrorCode(code);
                     if(creep) {
                         if( error ) creep.say(error);
                         else creep.say(code);
                     }
                     var message = error + '\ncreep: '  + creep.name + '\naction: ' + creep.data.actionName + '\ntarget: ' + creep.data.targetId ;
-                    console.log( DYE(CRAYON.error, message) );
+                    console.log( dye(CRAYON.error, message) );
                     Game.notify( message, 120 );
-                } else console.log( DYE(CRAYON.error, 'unknown error code!') );
+                } else console.log( dye(CRAYON.error, 'unknown error code!') );
             },
             logError: function(message) {
-                console.log( DYE(CRAYON.error, message) );
+                console.log( dye(CRAYON.error, message) );
             },
             isObj: function(val){
                 if (val === null) { return false;}
                 return ( (typeof val === 'function') || (typeof val === 'object') );
             },
-            LocalDate: function(date){
+            toLocalDate: function(date){
                 if( !date ) date = new Date(); 
                 var offset = TIME_ZONE;
-                if( USE_SUMMERTIME && IS_SUMMERTIME(date) ) offset++;
+                if( USE_SUMMERTIME && isSummerTime(date) ) offset++;
                 return new Date(date.getTime() + (3600000 * offset));
             },
-            DateTimeString: function(date){
-                return (Len(date.getDate()) + "." + Len(date.getMonth()+1) + "." + Len(date.getFullYear()) + " " + Len(date.getHours()) + ":" + Len(date.getMinutes()) + ":" + Len(date.getSeconds()));
+            toDateTimeString: function(date){
+                return (len(date.getDate()) + "." + len(date.getMonth()+1) + "." + len(date.getFullYear()) + " " + len(date.getHours()) + ":" + len(date.getMinutes()) + ":" + len(date.getSeconds()));
             },
-            TimeString: function(date){
-                return (Len(date.getHours()) + ":" + Len(date.getMinutes()) + ":" + Len(date.getSeconds()));
+            toTimeString: function(date){
+                return (len(date.getHours()) + ":" + len(date.getMinutes()) + ":" + len(date.getSeconds()));
             },
-            Len: function(number){
+            len: function(number){
                 return ("00" + number).slice(-2);
             },
-            IS_SUMMERTIME: function(date){
+            isSummerTime: function(date){
                 var year = date.getFullYear();
                 // last sunday of march
                 var temp = new Date(year, 2, 31);
@@ -147,7 +147,7 @@ var mod = {
 
                 return ( begin < date && date < end );
             },
-            AddById: function(array, id){
+            addById: function(array, id){
                 if(array == null) array = [];
                 var obj = Game.getObjectById(id);
                 if( !_.isUndefined(obj) ){
@@ -170,16 +170,6 @@ var mod = {
                     let send = mail => Game.notify(mail);
                     _.forEach(mails, send);
                 }
-            },
-            NumberFormat: function(number) {
-                // currently assuming integer .. TODO ..
-                var formatted = '';
-                var prepend = chunk => {
-                    if( formatted !== '' ) formatted += '\'';
-                    formatted += chunk.reverse().join('');
-                };  
-                _(number.toString()).toArray().reverse().chunk(3).forEachRight(prepend);
-                return formatted;
             }
         });
     }
