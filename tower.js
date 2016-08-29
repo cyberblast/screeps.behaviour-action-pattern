@@ -5,14 +5,17 @@ var mod = {
     },
     run: function(tower){
         if(tower) {
-            // TODO: Calculate Values only once initial
             // TODO: convert to action pattern  
             if( tower.room.casualties.length > 0) {
                 // Heal
                 var target = tower.room.casualties[0];
-                tower.heal(target);
-                if( target.towers === undefined ) target.towers = [];
+                if(target.hitsMax - target.hits >= 400 || !tower.room.situation.invasion) {
+                    if( target.towers === undefined ) {
+                        target.towers = [];
+                    }
                     target.towers.push(tower.id);
+                    tower.heal(target);
+                }
             } 
             else if( tower.room.urgentRepairableSites.length > 0 ) { 
                 // urgent Repair
