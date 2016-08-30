@@ -15,7 +15,7 @@ module.exports = {
     nextAction: function(creep) {    
         let flag = FlagDir.find(FLAG_COLOR.claim.spawn, creep.pos, false, FlagDir.rangeMod);
         if( flag ) { 
-            if( !flag.room || flag.room.name != creep.room.name ){
+            if( !flag.room || flag.pos.roomName != creep.pos.roomName ){
                 if( Creep.action.travelling.assign(creep, flag)) {
                     Population.registerCreepFlag(creep, flag);
                     return true;
@@ -27,7 +27,6 @@ module.exports = {
                     // also remove exploit flags
                     let remove = f => Game.flags[f.name].remove();
                     _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit.filter, flag.pos, true), remove);
-                    
                     Population.registerCreepFlag(creep, null);
                     // TODO: remove registered flags @ other creeps
                 }
@@ -38,13 +37,13 @@ module.exports = {
             }
         } else {
             flag = FlagDir.find(FLAG_COLOR.claim.pioneer, creep.pos, false, FlagDir.rangeMod);
-            if( flag && ( !flag.room || flag.room.name != creep.room.name) ){
+            if( flag && ( !flag.room || flag.pos.roomName != creep.pos.roomName) ){
                 if( Creep.action.travelling.assign(creep, flag)) {
                     Population.registerCreepFlag(creep, flag);
                     return true;
                 }
             } 
-        }
+        } 
         // if there are construction sites prefer them
         if( creep.room.constructionSites.length > 0 ) {
             // Last Action completed / No more energy

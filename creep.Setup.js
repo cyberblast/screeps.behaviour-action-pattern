@@ -61,7 +61,7 @@ var Setup = function(typeName){
         memory.parts = this.setParamParts(spawn);
         memory.cost = this.bodyCosts(memory.parts);  
         memory.mother = spawn.name; 
-        memory.home = spawn.room.name;
+        memory.home = spawn.pos.roomName;
         for( var son = 1; memory.name == null || Game.creeps[memory.name]; son++ ) {
             memory.name = this.type + '-' + memory.cost + '-' + son;
         }

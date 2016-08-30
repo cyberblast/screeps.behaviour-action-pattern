@@ -12,7 +12,7 @@ action.newTarget = function(creep){
     else return null;
 
     // not there, go to flagged room
-    if( !creep.flag.room || creep.flag.room.name != creep.room.name){
+    if( !creep.flag.room || creep.flag.pos.roomName != creep.pos.roomName){
         return creep.flag;    
     }
     if( creep.flag.room.controller.my ) { // TODO: AND is claim flag 
@@ -35,7 +35,7 @@ action.step = function(creep){
     if(CHATTY) creep.say(this.name);    
     if( creep.target.color ){
         creep.moveTo(creep.target);
-        if( creep.flag.room.name == creep.room.name ) 
+        if( creep.flag.pos.roomName == creep.pos.roomName ) 
             creep.data.targetId = null;
         return;
     }    

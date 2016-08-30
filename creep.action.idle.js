@@ -6,7 +6,7 @@ action.isAddableTarget = function(target){ return true; };
 action.newTarget = function(creep){
     var flag = FlagDir.find(FLAG_COLOR.idle, creep.pos, true);
     if( flag ) return flag;
-    if( creep.data.homeRoom && creep.room.name != creep.data.homeRoom){
+    if( creep.data.homeRoom && creep.pos.roomName != creep.data.homeRoom){
         // go to home room
         var exitDir = creep.room.findExitTo(creep.data.homeRoom);
         var exit = creep.pos.findClosestByRange(exitDir);

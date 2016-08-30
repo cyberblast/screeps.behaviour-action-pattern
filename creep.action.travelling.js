@@ -9,7 +9,7 @@ action.step = function(creep){
     if( creep.target ){
         creep.moveTo(creep.target, {reusePath: this.reusePath});
     }
-    if( creep.target.pos.roomName == creep.room.name ){
+    if( creep.target.pos.roomName == creep.pos.roomName ){
         // unregister
         creep.data.actionName = null;
         creep.data.targetId = null;
