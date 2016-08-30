@@ -24,11 +24,11 @@ var Setup = function(typeName){
     this.setParamParts = function(spawn){
         var parts = [];
         let multi = this.multi(spawn);
-        for( let iPart = 0; iPart < this.fixedBody.length; iPart ++ ){
-            parts[parts.length] = this.fixedBody[iPart];
-        }
         for (let iMulti = 0; iMulti < multi; iMulti++) {
             parts = parts.concat(this.multiBody);
+        }
+        for( let iPart = 0; iPart < this.fixedBody.length; iPart ++ ){
+            parts[parts.length] = this.fixedBody[iPart];
         }
         if( this.sortedParts ) 
             parts.sort(this.partsComparator);

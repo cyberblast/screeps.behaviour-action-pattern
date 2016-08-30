@@ -3,7 +3,7 @@ var mod = {
     loop: function(){
         if( _.isUndefined(Memory.statistics.reports) )
             Memory.statistics.reports = [];
-        
+
         var message;
         if( this.storedStatisticsTime > 0 ) {
             message = '<h3><b>Status report </b></h3>' 
@@ -16,7 +16,7 @@ var mod = {
             }
             Memory.statistics.reports.push(message);
         }
-        
+
         var invaderReport = invader => {
             let snip = '<li>' + invader.owner + ': ' + invader.body.replace(/"/g,'');
             if( invader.leave === undefined ) snip += " since " + toTimeString(toLocalDate(new Date(invader.time))) + '</li>';
@@ -26,68 +26,69 @@ var mod = {
                 message = '<ul><li style="list-style-type:none"><ul>' + snip;
             } else message += snip;
         };
-        
+
         var processRoom = room => {
-            if( this.storedStatisticsTime > 0 ) { // send Report
-                if( room.controller && room.controller.my ){
-                    // controller
-                    message = '<ul><li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul>';
-                    var isUpgraded = room.controller.progress < room.memory.statistics.controllerProgress;
-                    var filledPercent = (100*room.controller.progress/room.controller.progressTotal).toFixed(0);
-                    var totalDif = isUpgraded ? (room.memory.statistics.controllerProgressTotal - room.memory.statistics.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.statistics.controllerProgress); 
-                    var percDif = (100*totalDif/room.controller.progressTotal).toFixed(1);
-                    var step = (totalDif / (Game.time - Memory.statistics.tick)).toFixed(2);
-                    message += '<li>Level ' + room.controller.level + ', ' + filledPercent + '% of ' + room.controller.progressTotal + '<br/>( +' + totalDif + ' | +' + percDif + '% | +' + step + '/loop )' + (isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>');
+            if( room.controller ) {
+                if( this.storedStatisticsTime > 0 ) { // send Report
+                    if( room.controller.my ){
+                        // controller
+                        message = '<ul><li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul>';
+                        var isUpgraded = room.controller.progress < room.memory.statistics.controllerProgress;
+                        var filledPercent = (100*room.controller.progress/room.controller.progressTotal).toFixed(0);
+                        var totalDif = isUpgraded ? (room.memory.statistics.controllerProgressTotal - room.memory.statistics.controllerProgress) + room.controller.progress : (room.controller.progress - room.memory.statistics.controllerProgress); 
+                        var percDif = (100*totalDif/room.controller.progressTotal).toFixed(1);
+                        var step = (totalDif / (Game.time - Memory.statistics.tick)).toFixed(2);
+                        message += '<li>Level ' + room.controller.level + ', ' + filledPercent + '% of ' + room.controller.progressTotal + '<br/>( +' + totalDif + ' | +' + percDif + '% | +' + step + '/loop )' + (isUpgraded ? ' <b><i>Upgraded!</i></b></li></ul>' : '</li></ul>');
 
-                    // storage
-                    if( room.storage && room.memory.statistics.store ){
-                        var memoryStoreRecord = room.memory.statistics.store;
-                        var currentRecord = room.storage.store;
-                        message += '<u>Storage</u><ul>';
-                        for( var type in memoryStoreRecord ){ // changed & depleted
-                            var dif = (currentRecord[type] ? currentRecord[type] - memoryStoreRecord[type] : memoryStoreRecord[type] * -1);
-                            message += '<li>' + type + ': ' + (currentRecord[type] || 0) + ' (' + (dif > -1 ? '+' : '' ) + dif + ')</li>';  
+                        // storage
+                        if( room.storage && room.memory.statistics.store ){
+                            var memoryStoreRecord = room.memory.statistics.store;
+                            var currentRecord = room.storage.store;
+                            message += '<u>Storage</u><ul>';
+                            for( var type in memoryStoreRecord ){ // changed & depleted
+                                var dif = (currentRecord[type] ? currentRecord[type] - memoryStoreRecord[type] : memoryStoreRecord[type] * -1);
+                                message += '<li>' + type + ': ' + (currentRecord[type] || 0) + ' (' + (dif > -1 ? '+' : '' ) + dif + ')</li>';  
+                            }
+                            // new
+                            for( var type in currentRecord ){
+                                if(!memoryStoreRecord[type])
+                                    message += '<li>' + type + ': ' + currentRecord[type] + ' (+' + currentRecord[type] + ')</li>';  
+                            }
+                            message += '</ul>';
                         }
-                        // new
-                        for( var type in currentRecord ){
-                            if(!memoryStoreRecord[type])
-                                message += '<li>' + type + ': ' + currentRecord[type] + ' (+' + currentRecord[type] + ')</li>';  
+
+                        // invaders
+                        if( room.memory.statistics.invaders && room.memory.statistics.invaders.length > 0 ){
+                            message += '<u>Invaders</u><ul>';
+                            _.forEach(room.memory.statistics.invaders, invaderReport);
+                            message += '</ul>';
                         }
-                        message += '</ul>';
+                        message += '</li></ul>'; 
+                        Memory.statistics.reports.push(message);
+                    } 
+                    else if( !room.controller.my && room.controller.reservation ){
+                        // controller
+                        message = '<ul><li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul><li>Reservation: ' +
+                            room.controller.reservation.ticksToEnd + ' for ' + 
+                            room.controller.reservation.username + '</li></ul></li></ul>'; 
+                        Memory.statistics.reports.push(message);
                     }
-    
-                    // invaders
-                    if( room.memory.statistics.invaders && room.memory.statistics.invaders.length > 0 ){
-                        message += '<u>Invaders</u><ul>';
-                        _.forEach(room.memory.statistics.invaders, invaderReport);
-                        message += '</ul>';
-                    }
-                    message += '</li></ul>'; 
-                    Memory.statistics.reports.push(message);
-                } 
-                else if( room.controller && !room.controller.my && room.controller.reservation ){
-                    // controller
-                    message = '<ul><li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul><li>Reservation: ' +
-                        room.controller.reservation.ticksToEnd + ' for ' + 
-                        room.controller.reservation.username + '</li></ul></li></ul>'; 
-                    Memory.statistics.reports.push(message);
                 }
-            }
 
-    
-            // set statistics
-            var present = invader => invader.leave === undefined;
-            var invaders = _.filter(room.memory.statistics.invader, present);
-            room.memory.statistics = {
-                tick: Game.time, 
-                time: Date.now(),
-                store: room.storage ? room.storage.store : null, 
-                controllerProgress: room.controller.progress, 
-                controllerProgressTotal: room.controller.progressTotal, 
-                invaders: invaders
-            };  
+                // set statistics
+                var present = invader => invader.leave === undefined;
+                var invaders = _.filter(room.memory.statistics.invader, present);
+                room.memory.statistics = {
+                    tick: Game.time, 
+                    time: Date.now(),
+                    store: room.storage ? room.storage.store : null, 
+                    controllerProgress: room.controller.progress, 
+                    controllerProgressTotal: room.controller.progressTotal, 
+                    invaders: invaders
+                };  
+            }
         }
-                    
+
         _.forEach(Game.rooms, processRoom);
 
         Memory.statistics.tick = Game.time;
