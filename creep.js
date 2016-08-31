@@ -47,21 +47,6 @@ var mod = {
                 if(!behaviour && this.data && this.data.creepType) {
                     behaviour = Creep.behaviour[this.data.creepType];
                 }
-                if( !CHATTY && SING ){
-                    let s = {
-                        worker: 0,
-                        privateer: 1,
-                        claimer: 5,
-                        pioneer: 6,
-                        melee: 2,
-                        ranger: 3, 
-                        healer: 4
-                    }[this.data.creepType];
-                    if(s != null){
-                        let song = SONG[s];
-                        this.say( song[Game.time % song.length], true );
-                    }
-                } 
                 if( behaviour ) behaviour.run(this);
                 else if(!this.data){
                     let type = this.memory.setup;

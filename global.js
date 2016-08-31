@@ -170,44 +170,7 @@ var mod = {
                     let send = mail => Game.notify(mail);
                     _.forEach(mails, send);
                 }
-            }, 
-            SONG: [
-['Come on', 'u target', '4 faraway', 'laughter,', 
-'Come on', 'u stranger,', 'u legend,', 'u martyr,', 'and shine!',
-'SHINE', 'ON', 'YOU CRAZY', 'DIAMOND!','🔆',
-'Come on', 'u raver,', 'u seer', 'of visions,',
-'Come on', 'u painter,', 'u piper,', 'u prisoner,', 'and shine!',
-'SHINE', 'ON', 'YOU CRAZY', 'DIAMOND!', '🔆'], 
-['So, so', 'you think', 'u can tell',
-'Heaven', 'from Hell', 
-'Blue skies', 'from pain.', 
-'Can u tella', 'green field', 
-'Froma cold', 'steel rail', 
-'A smile', 'from', 'a veil?', 
-'Do u think', 'u can tell?', 
-'Did they', 'get you', 'to trade', 
-'Ur heroes', 'for ghosts', 
-'Hot ashes', 'for trees?', 
-'Hot air', 'for a cool', 'breeze?', 
-'Cold', 'comfort', 'for change?', 
-'And did u', 'exchange', 
-'A walk', 'on part', 'in the war', 
-'For a lead', 'role in', 'a cage?', 
-'How I wish,', 'how I wish', 'u were here.', 
-'We\'re just', '2 lost souls', 
-'Swimming', 'in a', 'fish bowl', 
-'Year ', 'after year', 
-'Running', 'over', 'the same', 'old ground.', 
-'What have', 'we found', 
-'The same', 'old fears.', 
-'Wish you', 'were here.'],
-['shut the', 'fuck up!'], 
-['stop it!', 'freeze!', 'silence!'], 
-['come on!', 'I kill you!', 'silence!'], 
-['A', 'saucerful', 'of', 'secrets'], 
-['We', 'are', 'many!']
-], 
-            SING: true
+            }
         });
     }
 }
