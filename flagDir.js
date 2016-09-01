@@ -52,9 +52,10 @@ var mod = {
     },
     loop: function(){
         this.list = [];
+        delete this._hasInvasionFlag;
         var register = flag => {
             flag.creeps = {};
-            if( flag.cloaking > 0 ) flag.cloaking--;
+            if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
             this.list.push({
                 name: flag.name, 
                 color: flag.color, 
@@ -108,9 +109,8 @@ var mod = {
         return range + ( crowd * (rangeModPerCrowd || 10) );
     }, 
     hasInvasionFlag: function(){
-        debugger;
         if( _.isUndefined(this._hasInvasionFlag) ) {
-            this._hasInvasionFlag = this.findName(FLAG_COLOR.invade) != null || this.findName(FLAG_COLOR.destroy) != null;
+            this._hasInvasionFlag = (this.findName(FLAG_COLOR.invade) != null) || (this.findName(FLAG_COLOR.destroy) != null);
         }
         return this._hasInvasionFlag;
     }
