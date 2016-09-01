@@ -153,7 +153,10 @@ var mod = {
                 this.unregisterCreep(entry.creepName);
             } 
             else {                
-                creep.data = entry;        
+                creep.data = entry;
+                delete creep.action;
+                delete creep.target;
+                delete creep.flag;
                 if( creep.spawning ) { // count spawning time
                     entry.spawningTime++;
                 }

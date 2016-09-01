@@ -26,7 +26,8 @@ var mod = {
         Object.defineProperty(Structure.prototype, 'towers', {
             configurable: true,
             get: function() {
-                if(_.isUndefined(this._towers)) {
+                if(_.isUndefined(this._towers) || this._towersSet != Game.time) {
+                    this._towersSet = Game.time;
                     this._towers = [];
                 }
                 return this._towers;
@@ -70,7 +71,8 @@ var mod = {
         Object.defineProperty(StructureStorage.prototype, 'sum', {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._sum) ) {
+                if( _.isUndefined(this._sum) || this._sumSet != Game.time ) {
+                    this._sumSet = Game.time;
                     this._sum = _.sum(this.store);
                 }
                 return this._sum;

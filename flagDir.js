@@ -55,6 +55,7 @@ var mod = {
         delete this._hasInvasionFlag;
         var register = flag => {
             flag.creeps = {};
+            delete flag.targetOf;
             if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
             this.list.push({
                 name: flag.name, 
@@ -88,13 +89,14 @@ var mod = {
             _.assign(filter, {roomName: pos.roomName});
         return _.filter(this.list, filter);
     },
-    roomDistance: function(a, b){
-        if( a == b ) return 0;
-        let posA = a.split(/([N,E,S,W])/);
-        let posB = b.split(/([N,E,S,W])/);
+    roomDistance: function(roomName1, roomName2){
+        if( roomName1 == roomName2 ) return 0;
+        let posA = roomName1.split(/([N,E,S,W])/);
+        let posB = roomName2.split(/([N,E,S,W])/);
         let xDif = posA[1] == posB[1] ? Math.abs(posA[2]-posB[2]) : posA[2]+posB[2]+1;
         let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
-        return xDif + yDif; 
+        return xDif + yDif; // count diagonal as 2
+        // return Math.max(xDif, yDif); // count diagonal as 1
     }, 
     rangeMod: function(range, flagItem, rangeModPerCrowd, rangeModByType){
         var flag = Game.flags[flagItem.name];
@@ -113,6 +115,9 @@ var mod = {
             this._hasInvasionFlag = (this.findName(FLAG_COLOR.invade) != null) || (this.findName(FLAG_COLOR.destroy) != null);
         }
         return this._hasInvasionFlag;
+    }, 
+    setTest: function(val){
+        this._test = val;
     }
 }
 module.exports = mod;

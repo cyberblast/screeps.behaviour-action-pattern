@@ -222,6 +222,20 @@ var mod = {
             }
         });        
         Room.prototype.loop = function(){
+            delete this._sourceEnergyAvailable;
+            delete this._ticksToNextRegeneration;
+            delete this._relativeEnergyAvailable;
+            delete this._towerFreeCapacity;
+            delete this._constructionSites;
+            delete this._repairableSites;
+            delete this._fuelables;
+            delete this._urgentRepairableSites;
+            delete this._hostiles;
+            delete this._hostileIds;
+            delete this._situation;
+            delete this._maxPerJob;
+            delete this._creeps
+            delete this._casualties;
             var self = this;               
             try {
                 if( this.memory.hostileIds === undefined )
