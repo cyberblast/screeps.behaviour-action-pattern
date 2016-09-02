@@ -1,5 +1,6 @@
 var mod = {
     CHATTY: false, // creeps like talking 
+    HONK: true, // HONK when stored path is blocked by other creeps
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details
     LIMIT_URGENT_REPAIRING: 1000, // urgent repair when hits below

@@ -69,9 +69,9 @@ var Action = function(actionName){
                 } else logErrorCode(creep, moveResult);
             } else creep.say('NO PATH!');
         } else if( rangeToTarget > this.targetRange ) {
-            creep.say('Honk!', true);
+            if( HONK ) creep.say('HONK', SAY_PUBLIC);
             if( creep.data.moveMode == 'auto' ) {
-                // try again to use path.            
+                // try again to use path.     
                 if( creep.data.path && creep.data.path.length > 1 )
                     creep.data.path.shift();
                 else creep.data.path = this.getPath(creep, targetPos, true);
