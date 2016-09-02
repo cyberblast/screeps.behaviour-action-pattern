@@ -1,4 +1,5 @@
 var action = new Creep.Action('upgrading');
+action.targetRange = 3;
 action.isAddableAction = function(creep){ return true; },
 action.isAddableTarget = function(target){ return true; }, 
 action.isValidAction = function(creep){
