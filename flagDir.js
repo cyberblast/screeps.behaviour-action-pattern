@@ -35,7 +35,7 @@ var mod = {
                 let roomDist = self.roomDistance(flag.roomName, pos.roomName);
                 if( roomDist == 0 )
                     r = _.max([Math.abs(flag.x-pos.x), Math.abs(flag.y-pos.y)]);
-                else r = roomDist * 100;
+                else r = roomDist * 50;
                 if( rangeMod ){
                     r = rangeMod(r, flag, rangeModPerCrowd, rangeModByType);
                 }
@@ -89,14 +89,14 @@ var mod = {
             _.assign(filter, {roomName: pos.roomName});
         return _.filter(this.list, filter);
     },
-    roomDistance: function(roomName1, roomName2){
+    roomDistance: function(roomName1, roomName2, diagonal){
         if( roomName1 == roomName2 ) return 0;
         let posA = roomName1.split(/([N,E,S,W])/);
         let posB = roomName2.split(/([N,E,S,W])/);
         let xDif = posA[1] == posB[1] ? Math.abs(posA[2]-posB[2]) : posA[2]+posB[2]+1;
         let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
-        return xDif + yDif; // count diagonal as 2
-        // return Math.max(xDif, yDif); // count diagonal as 1
+        if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1 
+        return xDif + yDif; // count diagonal as 2        
     }, 
     rangeMod: function(range, flagItem, rangeModPerCrowd, rangeModByType){
         var flag = Game.flags[flagItem.name];

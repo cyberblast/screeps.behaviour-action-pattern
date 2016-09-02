@@ -4,17 +4,15 @@
 
 I'm quite unsure about the corresponding timeline, but the order should fit. 
 
-* 2016 August  
-  Refactoring & cleanup
-
 * 2016 September  
   Pathfinding
 
 * 2016 October  
-  Redesign/improvement of the worker concept. Utilizing containers & specialized 'workers'
+  Redesign/improvement of the worker concept.  
+  Utilizing containers & specialized 'workers'
 
 * 2016 November  
   Build automation
 
 * 2016 December  
-  Going macro and focussing on colony behaviour
+  Colony behaviour
