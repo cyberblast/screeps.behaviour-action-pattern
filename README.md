@@ -5,14 +5,16 @@
 I'm quite unsure about the corresponding timeline, but the order should fit. 
 
 * 2016 September  
-  Pathfinding
+  * Pathfinding  
+  * Redesign/improvement of the worker concept.  
+    Utilizing containers & specialized 'workers'
 
 * 2016 October  
-  Redesign/improvement of the worker concept.  
-  Utilizing containers & specialized 'workers'
-
-* 2016 November  
   Build automation
 
-* 2016 December  
+* 2016 November  
   Colony behaviour
+
+* 2016 December  
+  Extending functionality  
+  Utilize new structures & actions
