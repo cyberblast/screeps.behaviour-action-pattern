@@ -19,11 +19,16 @@ module.exports = {
             Creep.action.guarding, 
             Creep.action.idle
         ];
+        let oldActionName = creep.action.name;
         for(var iAction = 0; iAction < priority.length; iAction++) {
             var action = priority[iAction];
             if(action.isValidAction(creep) && 
                 action.isAddableAction(creep) && 
                 action.assign(creep)) {
+                    if( oldActionName != action.name ) {
+                        creep.data.moveMode = null;
+                        delete creep.data.path;
+                    }
                     return;
             }
         }

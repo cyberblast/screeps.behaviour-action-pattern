@@ -59,6 +59,7 @@ var Action = function(actionName){
         creep.data.lastPos = new RoomPosition(creep.pos.x, creep.pos.y, creep.pos.roomName);
         if( creep.data.moveMode == null || 
             (lastPos && (lastPos.x != creep.pos.x || lastPos.y != creep.pos.y || lastPos.roomName != creep.pos.roomName)) ) {
+            if( creep.data.moveMode == null) creep.data.moveMode = 'auto';
             if( creep.data.path && creep.data.path.length > 1 )
                 creep.data.path.shift();
             else creep.data.path = this.getPath(creep, targetPos, true);
@@ -72,14 +73,13 @@ var Action = function(actionName){
             if( HONK ) creep.say('HONK', SAY_PUBLIC);
             if( creep.data.moveMode == 'auto' ) {
                 // try again to use path.     
-                if( creep.data.path && creep.data.path.length > 1 )
-                    creep.data.path.shift();
-                else creep.data.path = this.getPath(creep, targetPos, true);
+                if( !creep.data.path || creep.data.path.length == 0 )
+                    creep.data.path = this.getPath(creep, targetPos, true);
                 if( creep.data.path && creep.data.path.length > 0 ) {
                     let moveResult = creep.move(creep.data.path[0].direction);
                     if( moveResult != OK ) logErrorCode(creep, moveResult);
                 } else creep.say('NO PATH!');
-                creep.data.moveMode = 'single';
+                creep.data.moveMode = 'evade';
             } else {
                 // get path (don't ignore creeps)
                 // try to move. 
@@ -115,8 +115,6 @@ var Action = function(actionName){
         if( target === undefined ) target = this.newTarget(creep);
         if( target != null ) {
             Population.registerAction(creep, this, target);
-            creep.data.moveMode = null;
-            delete creep.data.path;
             return true;
         }
         return false;
