@@ -2,8 +2,13 @@ module.exports = {
     name: 'privateer',
     run: function(creep) {
         // Assign next Action
+        let oldTargetId = creep.data.targetId;
         if( creep.action == null  || creep.action.name == 'idle' ) {
             this.nextAction(creep);
+        }
+        if( creep.data.targetId != oldTargetId ) {
+            creep.data.moveMode = null;
+            delete creep.data.path;
         }
         // Do some work
         if( creep.action && creep.target ) {
