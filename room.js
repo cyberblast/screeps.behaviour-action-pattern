@@ -66,13 +66,8 @@ var mod = {
             'spawns': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.memory.spawns) || Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
-                        this.memory.spawns = [];
-                        let spawns = this.find(FIND_MY_SPAWNS);
-                        if( spawns.length > 0 ){
-                            var spawnId = spawn => spawn.id;
-                            this.memory.spawns = _.map(spawns, spawnId);
-                        } else this.memory.spawns = [];
+                    if( _.isUndefined(this.memory.spawns) ) {
+                        this.saveSpawns();
                     }
                     if( _.isUndefined(this._spawns) ){ 
                         this._spawns = [];
@@ -85,15 +80,8 @@ var mod = {
             'towers': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.memory.towers) || Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
-                        this.memory.towers = [];
-                        let towers = this.find(FIND_MY_STRUCTURES, {
-                            filter: {structureType: STRUCTURE_TOWER}
-                        });
-                        if( towers.length > 0 ){
-                            var id = obj => obj.id;
-                            this.memory.towers = _.map(towers, id);
-                        } else this.memory.towers = [];
+                    if( _.isUndefined(this.memory.towers)) {
+                        this.saveTowers();
                     }
                     if( _.isUndefined(this._towers) ){ 
                         this._towers = [];
@@ -131,7 +119,7 @@ var mod = {
                             filter: (structure) => (
                                 structure.hits < structure.hitsMax && 
                                 structure.hits < TOWER_REPAIR_LIMITS[this.controller.level] && 
-                                (structure.structureType != STRUCTURE_ROAD || structure.hitsMax - structure.hits > GAP_REPAIR_DECAYABLE ) && 
+                                ( ![STRUCTURE_ROAD, STRUCTURE_CONTAINER].includes(structure.structureType) || structure.hitsMax - structure.hits > GAP_REPAIR_DECAYABLE ) && 
                                 (structure.towers === undefined || structure.towers.length == 0)) }) , 
                             'hits'
                         );
@@ -139,12 +127,51 @@ var mod = {
                     return this._repairableSites;
                 }
             },
+            'chargeables': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.memory.chargeables)) {
+                        this.saveChargeables();
+                    }
+                    if( _.isUndefined(this._chargeables) ){ 
+                        this._chargeables = [];
+                        let add = id => { addById(this._chargeables, id); };
+                        _.forEach(this.memory.chargeables, add);
+                        let categorize = c => {
+                            let s = c.pos.findInRange(this.sources, 3);
+                            c.chargeableType = s.length > 0 ? 'IN' : 'OUT';
+                        };
+                        _.forEach(this._chargeables, categorize);
+                    }
+                    return this._chargeables;
+                }
+            },
+            'chargeablesIn': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._chargeablesIn) ){ 
+                        let byType = c => c.chargeableType == 'IN';
+                        this._chargeablesIn = _.filter(this.chargeables, byType);
+                    }
+                    return this._chargeablesIn;
+                }
+            },
+            'chargeablesOut': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._chargeablesOut) ){ 
+                        let byType = c => c.chargeableType == 'OUT';
+                        this._chargeablesOut = _.filter(this.chargeables, byType);
+                    }
+                    return this._chargeablesOut;
+                }
+            },
             'fuelables': {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._fuelables) ){
-                        var self = this; 
-                        var factor = self.situation.invasion ? 1 : (1-(0.18/self.towers.length));
+                        var that = this; 
+                        var factor = that.situation.invasion ? 1 : (1-(0.18/that.towers.length));
                         var fuelable = target => (target.energy < (target.energyCapacity * factor));
                         this._fuelables = _.filter(this.towers, fuelable); // TODO: Add Nuker
                     }
@@ -220,7 +247,36 @@ var mod = {
                     return this._casualties;
                 }
             }
-        });        
+        });
+
+        Room.prototype.saveTowers = function(){
+            let towers = this.find(FIND_MY_STRUCTURES, {
+                filter: {structureType: STRUCTURE_TOWER}
+            });
+            if( towers.length > 0 ){
+                var id = obj => obj.id;
+                this.memory.towers = _.map(towers, id);
+            } else this.memory.towers = [];
+        };            
+        Room.prototype.saveSpawns = function(){
+            let spawns = this.find(FIND_MY_SPAWNS);
+            if( spawns.length > 0 ){
+                var spawnId = spawn => spawn.id;
+                this.memory.spawns = _.map(spawns, spawnId);
+            } else this.memory.spawns = [];
+        };
+        Room.prototype.saveChargeables = function(){
+            let chargeables = this.find(FIND_STRUCTURES, {
+                filter: (structure) => (
+                    structure.structureType == STRUCTURE_CONTAINER ||
+                    structure.structureType == STRUCTURE_LINK)
+            });
+            if( chargeables.length > 0 ){
+                var id = obj => obj.id;
+                this.memory.chargeables = _.map(chargeables, id);
+            } else this.memory.chargeables = [];
+        };
+
         Room.prototype.loop = function(){
             delete this._sourceEnergyAvailable;
             delete this._ticksToNextRegeneration;
@@ -236,7 +292,15 @@ var mod = {
             delete this._maxPerJob;
             delete this._creeps
             delete this._casualties;
-            var self = this;               
+            delete this._chargeables;
+
+            if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
+                this.saveTowers();
+                this.saveSpawns();
+                this.saveChargeables();
+            }
+
+            var that = this;               
             try {
                 if( this.memory.hostileIds === undefined )
                     this.memory.hostileIds = [];
@@ -245,16 +309,16 @@ var mod = {
 
                 if( this.controller && this.controller.my ) {
                     var registerHostile = creep => {
-                        if( !self.memory.hostileIds.includes(creep.id) ){
+                        if( !that.memory.hostileIds.includes(creep.id) ){
                             var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
                             if( creep.owner.username != 'Invader' ){
-                                var message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + self.name + ' at ' + toDateTimeString(toLocalDate(new Date()));
+                                var message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + that.name + ' at ' + toDateTimeString(toLocalDate(new Date()));
                                 Game.notify(message);
                                 console.log(message);
                             }
-                            if(self.memory.statistics.invaders === undefined)
-                                self.memory.statistics.invaders = [];
-                            self.memory.statistics.invaders.push({
+                            if(that.memory.statistics.invaders === undefined)
+                                that.memory.statistics.invaders = [];
+                            that.memory.statistics.invaders.push({
                                 owner: creep.owner.username, 
                                 id: creep.id,
                                 body: bodyCount, 
@@ -266,9 +330,9 @@ var mod = {
                     _.forEach(this.hostiles, registerHostile);
                     
                     var registerHostileLeave = id => {
-                        if( !self.hostileIds.includes(id) && self.memory.statistics && self.memory.statistics.invaders !== undefined && self.memory.statistics.invaders.length > 0){
+                        if( !that.hostileIds.includes(id) && that.memory.statistics && that.memory.statistics.invaders !== undefined && that.memory.statistics.invaders.length > 0){
                             var select = invader => invader.id == id && invader.leave === undefined;
-                            var entry = _.find(self.memory.statistics.invaders, select);
+                            var entry = _.find(that.memory.statistics.invaders, select);
                             if( entry != undefined ) entry.leave = Game.time;
                         }
                     }

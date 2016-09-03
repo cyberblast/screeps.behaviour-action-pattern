@@ -4,6 +4,7 @@ var Setup = function(typeName){
     this.multiBody = []; 
     this.minAbsEnergyAvailable = 0; 
     this.maxMulti = 6;
+    this.minRcl = 0;
     this.minControllerLevel = 0;
     this.globalMeasurement = false;
     this.sortedParts = true;
@@ -71,11 +72,11 @@ var Setup = function(typeName){
     this.maxCount = function(spawn){ return null; }; 
     this.maxWeight = function(spawn){ return null; };
     this.isValidSetup = function(spawn){
-        if( spawn.room.energyAvailable < this.minAbsEnergyAvailable || spawn.room.relativeEnergyAvailable < this.minEnergyAvailable(spawn) ) 
+        if( spawn.room.controller.level < this.minControllerLevel || spawn.room.energyAvailable < this.minAbsEnergyAvailable || spawn.room.relativeEnergyAvailable < this.minEnergyAvailable(spawn) ) 
             return false;
         let maxCount = this.maxCount(spawn);
         let maxWeight = this.maxWeight(spawn);            
-        if( maxCount == 0 || maxWeight == 0 || spawn.room.controller.level < this.minControllerLevel) 
+        if( maxCount == 0 || maxWeight == 0 ) 
             return false;
         let population = this.globalMeasurement ? Population : spawn.room.population;
         if( !population || !population.typeCount[this.type] )

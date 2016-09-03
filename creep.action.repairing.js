@@ -9,8 +9,8 @@ action.isValidTarget = function(target){
     target.hits < LIMIT_URGENT_REPAIRING);
 };   
 action.newTarget = function(creep){
-    var self = this;
-    var isAddable = target => self.isAddableTarget(target);
+    var that = this;
+    var isAddable = target => that.isAddableTarget(target);
     return _.find(creep.room.urgentRepairableSites, isAddable);
 };
 action.work = function(creep){

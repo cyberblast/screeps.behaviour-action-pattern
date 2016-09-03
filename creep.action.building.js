@@ -8,11 +8,11 @@ action.isValidTarget = function(target){
     return (target != null && target.progress != null && target.progress < target.progressTotal);
 };  
 action.isAddableAction = function(creep){
-    return (!creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < creep.room.maxPerJob*1.3);
+    return true; //(!creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < 3);
 };
 action.newTarget = function(creep){
-    var self = this;
-    var isAddable = target => self.isAddableTarget(target);
+    var that = this;
+    var isAddable = target => that.isAddableTarget(target);
     return _.find(creep.room.constructionSites, isAddable);
 };
 action.work = function(creep){

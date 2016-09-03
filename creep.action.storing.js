@@ -1,9 +1,10 @@
 var action = new Creep.Action('storing');
 action.isValidAction = function(creep){
     return ( creep.room.storage != null && _.sum(creep.carry) > 0 && 
+    (creep.data.creepType == 'hauler' ||
     ( _.sum(creep.carry) > creep.carry.energy || (
     (!creep.room.population || (creep.room.population.actionCount.upgrading != null && (creep.room.population.actionCount.upgrading >= 1))) &&
-    creep.room.sourceEnergyAvailable > 0 && creep.room.storage.store.energy <= LIMIT_STORAGE_ENERGY)));
+    creep.room.sourceEnergyAvailable > 0 && creep.room.storage.store.energy <= LIMIT_STORAGE_ENERGY))));
 };
 action.isValidTarget = function(target){
     return ((target != null) && (target.store != null) && target.sum < target.storeCapacity);

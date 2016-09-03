@@ -4,6 +4,7 @@ var mod = {
         Creep.Setup = require('./creep.Setup'),
         Creep.action = {
             building: require('./creep.action.building'), 
+            charging: require('./creep.action.charging'),
             claiming: require('./creep.action.claiming'), 
             defending: require('./creep.action.defending'),
             feeding: require('./creep.action.feeding'), 
@@ -17,25 +18,32 @@ var mod = {
             repairing: require('./creep.action.repairing'), 
             travelling: require('./creep.action.travelling'), 
             storing: require('./creep.action.storing'), 
+            uncharging: require('./creep.action.uncharging'),
             upgrading: require('./creep.action.upgrading'), 
             withdrawing: require('./creep.action.withdrawing')
         };
         Creep.behaviour = {
             claimer: require('./creep.behaviour.claimer'),
+            hauler: require('./creep.behaviour.hauler'),
             healer: require('./creep.behaviour.healer'),
             melee: require('./creep.behaviour.melee'),
+            miner: require('./creep.behaviour.miner'),
             pioneer: require('./creep.behaviour.pioneer'),
             privateer: require('./creep.behaviour.privateer'),
             ranger: require('./creep.behaviour.ranger'),
+            upgrader: require('./creep.behaviour.upgrader'),
             worker: require('./creep.behaviour.worker')
         };
         Creep.setup = {
             claimer: require('./creep.setup.claimer'),
+            hauler: require('./creep.setup.hauler'),
             healer: require('./creep.setup.healer'), 
             melee: require('./creep.setup.melee'),
+            miner: require('./creep.setup.miner'),
             pioneer: require('./creep.setup.pioneer'),
             privateer: require('./creep.setup.privateer'),
             ranger: require('./creep.setup.ranger'),
+            upgrader: require('./creep.setup.upgrader'),
             worker: require('./creep.setup.worker')
         };
         Creep.loop = function(){

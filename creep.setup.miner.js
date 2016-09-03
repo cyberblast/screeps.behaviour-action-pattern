@@ -1,15 +1,16 @@
-var setup = new Creep.Setup('worker');
-setup.multiBody = [CARRY, WORK, MOVE];
+var setup = new Creep.Setup('miner');
+setup.multiBody = [WORK];
+setup.fixedBody = [CARRY, MOVE];
 setup.minAbsEnergyAvailable = 200;
-setup.maxMulti = 6;
+setup.maxMulti = 5;
 setup.sortedParts = false;
 setup.minEnergyAvailable = function(spawn){
     return 0.3;
 };
 setup.maxCount = function(spawn){
-    return 5;
+    return spawn.room.sources.length;
 };
 setup.maxWeight = function(spawn){
-    return 1200;
+    return null;
 };
 module.exports = setup;

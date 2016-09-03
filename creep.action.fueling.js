@@ -6,8 +6,8 @@ action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };   
 action.newTarget = function(creep){
-    var self = this;
-    var isAddable = target => self.isAddableTarget(target);
+    var that = this;
+    var isAddable = target => that.isAddableTarget(target);
     return _.find(creep.room.fuelables, isAddable);
 };
 action.work = function(creep){

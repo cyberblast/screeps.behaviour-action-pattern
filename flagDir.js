@@ -12,7 +12,7 @@ var mod = {
     },
     list:[], 
     findName: function(flagColor, pos, local, rangeMod, rangeModPerCrowd, rangeModByType){
-        let self = this;
+        let that = this;
         if( flagColor == null || this.list.length == 0) 
             return null;
 
@@ -32,7 +32,7 @@ var mod = {
         if( pos && pos.roomName ){
             var range = flag => {
                 var r = 0;
-                let roomDist = self.roomDistance(flag.roomName, pos.roomName);
+                let roomDist = that.roomDistance(flag.roomName, pos.roomName);
                 if( roomDist == 0 )
                     r = _.max([Math.abs(flag.x-pos.x), Math.abs(flag.y-pos.y)]);
                 else r = roomDist * 50;
@@ -70,7 +70,7 @@ var mod = {
         _.forEach(Game.flags, register);
     }, 
     count: function(flagColor, pos, local){
-        let self = this;
+        let that = this;
         if( flagColor == null || this.list.length == 0) 
             return 0;
 
@@ -80,7 +80,7 @@ var mod = {
         return _.countBy(this.list, filter).true || 0;
     },
     filter: function(flagColor, pos, local){
-        let self = this;
+        let that = this;
         if( flagColor == null || this.list.length == 0) 
             return 0;
 
