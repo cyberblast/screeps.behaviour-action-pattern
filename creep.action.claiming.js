@@ -36,7 +36,7 @@ action.step = function(creep){
         if( creep.target.color ){
             if( creep.flag.pos.roomName == creep.pos.roomName ) 
                 creep.data.targetId = null;
-            this.drive(creep, creep.target.pos, range);
+            this.drive(creep, creep.target.pos, Infinity);
             return;
         }
 

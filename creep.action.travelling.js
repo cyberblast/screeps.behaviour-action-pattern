@@ -6,7 +6,7 @@ action.newTarget = function(creep){ return null; }
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
     if( creep.target ){
-        this.drive(creep, creep.target.pos, 1);
+        this.drive(creep, creep.target.pos, Infinity);
     }
     if( creep.target.pos.roomName == creep.pos.roomName ){
         // unregister
