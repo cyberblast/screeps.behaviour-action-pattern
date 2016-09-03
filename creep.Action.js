@@ -24,10 +24,9 @@ var Action = function(actionName){
     this.newTarget = function(creep){
         return null;
     };
-    this.step = function(creep){     
+    this.step = function(creep){
         if(CHATTY) creep.say(this.name, SAY_PUBLIC);
         let range = creep.pos.getRangeTo(creep.target);
-        //var moveResult = creep.moveTo(creep.target, {reusePath: this.reusePath});
         if( range <= this.targetRange ) {
             var workResult = this.work(creep);
             if( workResult != OK ) {
@@ -37,67 +36,70 @@ var Action = function(actionName){
         } 
         if( range > 1 )
             this.drive(creep, creep.target.pos, range);
-        /*
-        if( workResult != OK && moveResult == ERR_NO_PATH ){// get out of the way
-            Creep.action.idle.step(creep);
-            return;
-        } 
-        if( ![OK, ERR_TIRED, ERR_NO_PATH].includes(moveResult) ) {
-            if( DEBUG ) logErrorCode(creep, moveResult);
-            creep.data.actionName = null;
-        }
-        */
     };
     this.work = function(creep){
         return ERR_INVALID_ARGS;
     };
     this.drive = function(creep, targetPos, rangeToTarget) {
+        // temporary deletion of old path storage as array
+        if( creep.data.path && typeof creep.data.path !== 'string' )
+            creep.data.path = null;
+
         if( creep.fatigue > 0 ) {
             return;
         }
         let lastPos = creep.data.lastPos;
         creep.data.lastPos = new RoomPosition(creep.pos.x, creep.pos.y, creep.pos.roomName);
         if( creep.data.moveMode == null || 
-            (lastPos && (lastPos.x != creep.pos.x || lastPos.y != creep.pos.y || lastPos.roomName != creep.pos.roomName)) ) {
-            if( creep.data.moveMode == null) creep.data.moveMode = 'auto';
+            (lastPos && // moved
+            (lastPos.x != creep.pos.x || lastPos.y != creep.pos.y || lastPos.roomName != creep.pos.roomName)) 
+        ) {
+            if( creep.data.moveMode == null) 
+                creep.data.moveMode = 'auto';
             if( creep.data.path && creep.data.path.length > 1 )
-                creep.data.path.shift();
-            else creep.data.path = this.getPath(creep, targetPos, true);
+                creep.data.path = creep.data.path.substr(1);
+            else 
+                creep.data.path = this.getPath(creep, targetPos, true);
             if( creep.data.path && creep.data.path.length > 0 ) {
-                let moveResult = creep.move(creep.data.path[0].direction);
+                let moveResult = creep.move(creep.data.path.charAt(0));
                 if( moveResult == OK ) {
                     creep.data.moveMode = 'auto'; 
                 } else logErrorCode(creep, moveResult);
             } else creep.say('NO PATH!');
-        } else if( rangeToTarget > this.targetRange ) {
-            if( HONK ) creep.say('HONK', SAY_PUBLIC);
-            if( creep.data.moveMode == 'auto' ) {
-                // try again to use path.     
-                if( !creep.data.path || creep.data.path.length == 0 )
-                    creep.data.path = this.getPath(creep, targetPos, true);
-                if( creep.data.path && creep.data.path.length > 0 ) {
-                    let moveResult = creep.move(creep.data.path[0].direction);
-                    if( moveResult != OK ) logErrorCode(creep, moveResult);
-                } else creep.say('NO PATH!');
+        } else if( creep.data.moveMode == 'auto' ) {
+            // try again to use path.
+            if( rangeToTarget > this.targetRange ) {
+                if( HONK ) creep.say('HONK', SAY_PUBLIC);
                 creep.data.moveMode = 'evade';
-            } else {
-                // get path (don't ignore creeps)
-                // try to move. 
-                delete creep.data.path;
-                creep.data.path = this.getPath(creep, targetPos, false);
-                if( creep.data.path && creep.data.path.length > 0 ) {
-                    if( creep.data.path.length > 5 ) creep.data.path = creep.data.path.slice(0,4);
-                    let moveResult = creep.move(creep.data.path[0].direction);
-                    if( moveResult != OK ) logErrorCode(creep, moveResult);
-                } else creep.say('NO PATH!');
             }
+            if( !creep.data.path || creep.data.path.length == 0 )
+                creep.data.path = this.getPath(creep, targetPos, true);
+            if( creep.data.path && creep.data.path.length > 0 ) {
+                let moveResult = creep.move(creep.data.path.charAt(0));
+                if( moveResult != OK ) logErrorCode(creep, moveResult);
+            } else creep.say('NO PATH!');
+        } else { // evade
+            // get path (don't ignore creeps)
+            // try to move. 
+            if( HONK ) creep.say('HONK', SAY_PUBLIC);
+            delete creep.data.path;
+            creep.data.path = this.getPath(creep, targetPos, false);
+            if( creep.data.path && creep.data.path.length > 0 ) {
+                if( creep.data.path.length > 5 ) 
+                    creep.data.path = creep.data.path.substr(0,4);
+                let moveResult = creep.move(creep.data.path.charAt(0));
+                if( moveResult != OK ) logErrorCode(creep, moveResult);
+            } else creep.say('NO PATH!');
         }
     };
     this.getPath = function(creep, target, ignoreCreeps) {
-        return creep.room.findPath(creep.pos, target, {
-            serialize: false, 
+        let path = creep.room.findPath(creep.pos, target, {
+            serialize: true, 
             ignoreCreeps: ignoreCreeps
-        })
+        });
+        if( path && path.length > 4 ) 
+            return path.substr(4);
+        else return null;
     };
     this.validateActionTarget = function(creep, target){
         if( this.isValidAction(creep) ){ // validate target or new

@@ -15,29 +15,29 @@ var mod = {
                     }
                     target.towers.push(tower.id);
                     tower.heal(target);
+                    return;
                 }
             } 
-            else if( tower.room.urgentRepairableSites.length > 0 ) { 
+            if( tower.room.urgentRepairableSites.length > 0 ) { 
                 // urgent Repair
                 var target = tower.room.urgentRepairableSites[0]; 
                 tower.repair(target);
                 if( target.towers === undefined ) target.towers = [];
                     target.towers.push(tower.id);
+                return;
             } 
-            else {
-                var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-                if(closestHostile) {
-                    // Attack    
-                    tower.attack(closestHostile);
-                } 
-                else if( (tower.room.repairableSites.length > 0) && (tower.energy > (tower.energyCapacity * (1-(0.2/tower.room.towers.length)))) ) {
-                    // Repair
-                    var isAddable = target => (target.towers === undefined || target.towers.length == 0);
-                    var target = _.find(tower.room.repairableSites, isAddable);
-                    if( !_.isUndefined(target) ){
-                        target.towers.push(tower.id);
-                        tower.repair(target);
-                    }
+            var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+            if(closestHostile) {
+                // Attack    
+                tower.attack(closestHostile);
+            } 
+            else if( (tower.room.repairableSites.length > 0) && (tower.energy > (tower.energyCapacity * (1-(0.2/tower.room.towers.length)))) ) {
+                // Repair
+                var isAddable = target => (target.towers === undefined || target.towers.length == 0);
+                var target = _.find(tower.room.repairableSites, isAddable);
+                if( !_.isUndefined(target) ){
+                    target.towers.push(tower.id);
+                    tower.repair(target);
                 }
             }
         }

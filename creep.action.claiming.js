@@ -32,14 +32,26 @@ action.newTarget = function(creep){
 };
 
 action.step = function(creep){
-    if(CHATTY) creep.say(this.name);    
-    if( creep.target.color ){
-        creep.moveTo(creep.target);
-        if( creep.flag.pos.roomName == creep.pos.roomName ) 
-            creep.data.targetId = null;
-        return;
-    }    
-    var moveResult = creep.moveTo(creep.target, {reusePath: this.reusePath});
+        if(CHATTY) creep.say(this.name, SAY_PUBLIC);  
+        if( creep.target.color ){
+            if( creep.flag.pos.roomName == creep.pos.roomName ) 
+                creep.data.targetId = null;
+            this.drive(creep, creep.target.pos, range);
+            return;
+        }
+
+        let range = creep.pos.getRangeTo(creep.target);
+        if( range <= this.targetRange ) {
+            var workResult = this.work(creep);
+            if( workResult != OK ) {
+                if( DEBUG ) logErrorCode(creep, workResult);
+                creep.data.actionName = null;
+            }
+        } 
+        if( range > 1 )
+            this.drive(creep, creep.target.pos, range);
+};
+action.work = function(creep){
     var workResult;
     if( creep.target.owner && !creep.target.my ){
         workResult = creep.attackController(creep.target);
@@ -50,5 +62,6 @@ action.step = function(creep){
             workResult = creep.reserveController(creep.target);
         }
     }
+    return workResult;
 };
 module.exports = action;
