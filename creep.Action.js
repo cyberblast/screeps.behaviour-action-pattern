@@ -64,6 +64,7 @@ var Action = function(actionName){
             if( creep.data.path && creep.data.path.length > 0 ) {
                 let moveResult = creep.move(creep.data.path.charAt(0));
                 if( moveResult == OK ) {
+                    creep.room.recordMove(creep.pos.x,creep.pos.y);
                     creep.data.moveMode = 'auto'; 
                 } else logErrorCode(creep, moveResult);
             } else creep.say('NO PATH!');

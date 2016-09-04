@@ -248,8 +248,78 @@ var mod = {
                     }
                     return this._casualties;
                 }
-            }
+            },
+            'routePlaner': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this.memory.routePlaner) ) {
+
+                        this.memory.routePlaner = {
+                            'tick':(Game.time + 500),
+                            'data':{},
+                        }
+                    }
+                    return this.memory.routePlaner;
+                }
+            },
+
         });
+
+        Room.prototype.roadTick = function(next = 50) {
+            this.routePlaner.tick = Game.time + next;
+            // go over data and find cordinates stamped most and decrise counts removin all <0
+            var data = Object.keys(this.routePlaner.data)
+                .map(k =>  {
+                    return {
+                        'key':k,
+                        'n':this.routePlaner.data[k]
+                    }});
+
+            var mean = Math.floor( data.map(e => e['n']).reduce((a,b) => a+ b ,0) / data.length)
+            // redo map by redcing all element by mean and filtring out thouse below 0
+
+            const reduced = data
+                .filter(e => { return e.n > mean;})
+                .map( e => { return {'key':e.key,'n':e.n-mean }; })
+                .filter(e => { return e.n > 0 }).sort( (a,b) => b.n - a.n )
+
+                .map( e => { return {
+                    'key':e.key,
+                    'n':e.n,
+                    'x':e.key.charCodeAt(0)-32,
+                    'y':e.key.charCodeAt(1)-32,
+                };})
+
+
+            let t =  reduced.filter( e => {
+                return this.lookForAt(LOOK_STRUCTURES,e.x,e.y).length == 0 &&
+                    this.lookForAt(LOOK_CONSTRUCTION_SITES,e.x,e.y).length == 0
+            });
+            if (t.length > 0) {
+                console.log("Constucting at", t[0].x, t[0].y)
+                this.createConstructionSite(t[0].x, t[0].y, STRUCTURE_ROAD);
+            }
+            if (t.length > 1) {
+                console.log("Constucting at",t[1].x,t[1].y)
+                this.createConstructionSite(t[1].x,t[1].y, STRUCTURE_ROAD);
+            }
+
+
+            this.routePlaner.data = t.reduce((h,e) => {
+                h[e.key]=e.n;return h;
+            },{});
+
+        };
+        Room.prototype.recordMove = function(x,y){
+
+            if (this.lookForAt(LOOK_STRUCTURES,x,y).length != 0 ||
+                this.lookForAt(LOOK_CONSTRUCTION_SITES,x,y).length !=0) return;
+
+            //console.log(obj,obj.lookAt())
+            const cord = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
+            if(!this.routePlaner.data[cord]) this.routePlaner.data[cord]=0;
+            this.routePlaner.data[cord]  = this.routePlaner.data[cord] + 1;
+        };
 
         Room.prototype.saveTowers = function(){
             let towers = this.find(FIND_MY_STRUCTURES, {
@@ -302,12 +372,19 @@ var mod = {
                 this.saveChargeables();
             }
 
+
             var that = this;               
             try {
                 if( this.memory.hostileIds === undefined )
                     this.memory.hostileIds = [];
                 if( this.memory.statistics === undefined)
                     this.memory.statistics = {};
+
+                if( this.routePlaner.tick  < Game.time && !this.constructionSites.find(c=> c.structureType == STRUCTURE_ROAD))
+                {
+                    this.roadTick();
+                }
+
 
                 if( this.controller && this.controller.my ) {
                     var registerHostile = creep => {
