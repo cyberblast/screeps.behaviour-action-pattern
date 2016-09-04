@@ -22,6 +22,8 @@ var mod = {
     MEMORY_RESYNC_INTERVAL: 100, // interval to reload spawns & towers present in a room
     GAP_REPAIR_DECAYABLE: 800, // decayables (e.g. roads) only get repaired when that much hits are missing
     REPORT_MAX_LENGTH: 500,
-    REPORTS_PER_LOOP: 18
+    REPORTS_PER_LOOP: 18, 
+    ROUTE_PLANNER_INTERVAL: 500, 
+    ROUTE_PLANNER_MIN_VISITS: 10
 }
 module.exports = mod;

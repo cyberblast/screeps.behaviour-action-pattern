@@ -219,17 +219,6 @@ var mod = {
                     return this._situation;
                 }
             },
-            /*
-            'maxPerJob': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._maxPerJob) ){ 
-                        this._maxPerJob = _.max([1,(this.population && this.population.typeCount.worker ? this.population.typeCount.worker : 0)/3.5]);
-                    }
-                    return this._maxPerJob;
-                }
-            },
-            */
             'creeps': {
                 configurable: true,
                 get: function() {
@@ -265,56 +254,38 @@ var mod = {
 
         });
 
-        Room.prototype.roadTick = function(next = 50) {
-            this.routePlaner.tick = Game.time + next;
-            // go over data and find cordinates stamped most and decrise counts removin all <0
-            var data = Object.keys(this.routePlaner.data)
-                .map(k =>  {
-                    return {
-                        'key':k,
-                        'n':this.routePlaner.data[k]
-                    }});
+        Room.prototype.roadTick = function(next = ROUTE_PLANNER_INTERVAL, minVisits = ROUTE_PLANNER_MIN_VISITS) {
+            this.routePlaner.tick = Game.time + next; // next check
+            let min = Math.min( // min or mean
+                minVisits, 
+                this.routePlaner.data.reduce( (a,b) => a + b ) / this.routePlaner.data); 
 
-            // calculate mean of stamps/spot
-            var mean = Math.floor( data.map(e => e['n']).reduce((a,b) => a+ b ,0) / data.length)
-            // redo map by reducing all element by mean and filtering out those below 0
+            let data = Object.keys(this.routePlaner.data)
+                .map( k => { 
+                    return { // convert to [{key,n,x,y}]
+                        'key': k, // keep key around to re-assemble data
+                        'n': this.routePlaner.data[k], // count of steps on x,y cordinates
+                        'x': k.charCodeAt(0)-32, // extract x from key
+                        'y': k.charCodeAt(1)-32 // extraxt y from key
+                    };
+                }).filter( e => {
+                    return e.n > min && 
+                        this.lookForAt(LOOK_STRUCTURES,e.x,e.y).length == 0 &&
+                        this.lookForAt(LOOK_CONSTRUCTION_SITES,e.x,e.y).length == 0;
+                });
+            
+            // build roads on all most frequent used fields
+            let setSite = pos => {
+                if( DEBUG ) console.log('Constructing new road in ' + this.name + ' at', posx, pos.y);
+                this.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD);
+            };
+            _.forEach(data, setSite);
 
-            const reduced = data
-                .filter(e => { return e.n > mean;})  // take only most stamed spots
-                .map( e => { return {'key':e.key,'n':e.n-mean }; }) // convert to [{key,n}]
-                .filter(e => { return e.n > 0 }).sort( (a,b) => b.n - a.n ) // sort by most used
-
-                .map( e => { return {
-                    'key':e.key, // keep key arond to re-asemble data
-                    'n':e.n, // count of steps on x,y cordinates
-                    'x':e.key.charCodeAt(0)-32, // extract x from key
-                    'y':e.key.charCodeAt(1)-32, // extraxt y from key
-                };})
-
-            // todo this is not really needed just remove top 2 from list after addning construcion sites
-            let t =  reduced.filter( e => {
-                return this.lookForAt(LOOK_STRUCTURES,e.x,e.y).length == 0 &&
-                    this.lookForAt(LOOK_CONSTRUCTION_SITES,e.x,e.y).length == 0
-            });
-
-            if (t.length > 0 && t[0].n > 10) {
-                console.log("Constucting at", t[0].x, t[0].y)
-                this.createConstructionSite(t[0].x, t[0].y, STRUCTURE_ROAD);
-            }
-            if (t.length > 1 && t[1].n > 10 ) {
-                console.log("Constucting at",t[1].x,t[1].y)
-                this.createConstructionSite(t[1].x,t[1].y, STRUCTURE_ROAD);
-            }
-
-            // reasemble back into data
-            this.routePlaner.data = t.reduce((h,e) => {
-                h[e.key]=e.n;return h;
-            },{});
-
+            // clear old data
+            this.routePlaner.data = {};
         };
 
         Room.prototype.recordMove = function(x,y){
-
             if (this.lookForAt(LOOK_STRUCTURES,x,y).length != 0 ||
                 this.lookForAt(LOOK_CONSTRUCTION_SITES,x,y).length !=0) return;
 
@@ -377,7 +348,6 @@ var mod = {
                 this.saveChargeables();
             }
 
-
             var that = this;               
             try {
                 if( this.memory.hostileIds === undefined )
@@ -385,11 +355,10 @@ var mod = {
                 if( this.memory.statistics === undefined)
                     this.memory.statistics = {};
 
-                if( this.routePlaner.tick  < Game.time && !this.constructionSites.find(c=> c.structureType == STRUCTURE_ROAD))
+                if( this.routePlaner.tick < Game.time && !this.constructionSites.find(c=> c.structureType == STRUCTURE_ROAD))
                 {
                     this.roadTick();
                 }
-
 
                 if( this.controller && this.controller.my ) {
                     var registerHostile = creep => {
