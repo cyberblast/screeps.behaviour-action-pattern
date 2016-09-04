@@ -52,6 +52,15 @@ action.newTarget = function(creep){
     return target;
 };
 action.work = function(creep){
+    if( creep.data.creepType == "miner" && creep.carry.energy > creep.carryCapacity*0.5 ) {
+        let cont = creep.pos.findInRange(creep.room.chargeables, 1, {
+            filter: function(c){ 
+                return _.sum(c.store) < c.storeCapacity;
+            }
+        });
+        if( cont ) creep.transfer(cont[0], RESOURCE_ENERGY);
+    }
+    
     return creep.harvest(creep.target);
 };
 module.exports = action;
