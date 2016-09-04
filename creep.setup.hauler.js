@@ -11,6 +11,6 @@ setup.maxCount = function(spawn){
     return (spawn.room.chargeablesOut.length > 0 || spawn.room.storage ) ? 3 : 0; 
 };
 setup.maxWeight = function(spawn){
-    return 3000;
+    return 2000;
 };
 module.exports = setup;
