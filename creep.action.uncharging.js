@@ -12,8 +12,10 @@ action.newTarget = function(creep){
         let target = null;
         let energy = 0; 
         let fullest = o => {
-            if( o.store.energy > energy ){
-                energy = o.store.energy;
+            let count = o.targetOf ? _.countBy(o.targetOf, 'creepType')['hauler'] : 0;
+            let e = o.store.energy / (count ? count+1 : 1);
+            if( e  > energy ){
+                energy = e ;
                 target = o;
             }
         };

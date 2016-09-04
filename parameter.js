@@ -4,7 +4,7 @@ var mod = {
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details
     LIMIT_URGENT_REPAIRING: 1000, // urgent repair when hits below
-    LIMIT_STORAGE_ENERGY: 100000,// stop storing energy when reached
+    LIMIT_STORAGE_ENERGY: 200000,// stop storing energy when reached
     TIME_REPORT: 12500, // ticks between room reports
     HIVE_ENERGY_URGENT: 0.4, // prefer withdraw & add more feeding below this relative amount of available energy
     TOWER_REPAIR_LIMITS: { // Limits how high structures get repaired by towers, regarding RCL

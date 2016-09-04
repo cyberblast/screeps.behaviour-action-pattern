@@ -1,6 +1,7 @@
 var Action = function(actionName){
     this.name = actionName;
     this.maxPerTarget = 1;
+    this.maxPerAction = 1;
     this.targetRange = 1;
     this.renewTarget = true;
     this.getTargetId = function(target){ 
@@ -16,10 +17,10 @@ var Action = function(actionName){
         return (target != null);
     };
     this.isAddableAction = function(creep){
-        return (!creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < creep.room.maxPerJob);
+        return (!creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
     };
     this.isAddableTarget = function(target){ // target is valid to be given to an additional creep
-        return (this.maxPerTarget > 0 && (!target.targetOf || target.targetOf.length < this.maxPerTarget));
+        return (!target.targetOf || target.targetOf.length < this.maxPerTarget);
     };
     this.newTarget = function(creep){
         return null;

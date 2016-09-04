@@ -16,6 +16,18 @@ action.newTarget = function(creep){
         if( !target ) delete creep.data.determinatedTarget;
         else return target;
     }
+    if( creep.data.creepType == "miner" ) {
+        let notDeterminated = source => {
+            let hasThisSource = data => {return data.determinatedTarget == source.id};
+            let existingBranding = _.find(Memory.population, hasThisSource);
+            return !existingBranding;
+        };
+        let target = _.find(creep.room.sources, notDeterminated);
+        if( target ) {
+            creep.data.determinatedTarget = target.id;
+            return target;
+        }
+    }
     let target = null;
     let sourceGuests = 999;
     for( var iSource = 0; iSource < creep.room.sources.length; iSource++ ){
@@ -36,11 +48,6 @@ action.newTarget = function(creep){
                 }
             }
         }
-    }
-    if( creep.data.creepType == "miner" && sourceGuests == 0 ){ // branding
-        let hasThisTarget = data => data.determinatedTarget == target.id;
-        let existingBranding = _.find(Memory.population, hasThisTarget);
-        if( !existingBranding ) creep.data.determinatedTarget = target.id;
     }
     return target;
 };

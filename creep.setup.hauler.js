@@ -8,9 +8,9 @@ setup.minEnergyAvailable = function(spawn){
     return 0.4;
 };
 setup.maxCount = function(spawn){
-    return (spawn.room.chargeablesOut.length > 0 || spawn.room.controller ) ? 3 : 0; 
+    return (spawn.room.chargeablesOut.length > 0 || spawn.room.storage ) ? 3 : 0; 
 };
 setup.maxWeight = function(spawn){
-    return 1000;
+    return 3000;
 };
 module.exports = setup;

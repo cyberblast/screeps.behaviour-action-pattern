@@ -218,6 +218,7 @@ var mod = {
                     return this._situation;
                 }
             },
+            /*
             'maxPerJob': {
                 configurable: true,
                 get: function() {
@@ -227,6 +228,7 @@ var mod = {
                     return this._maxPerJob;
                 }
             },
+            */
             'creeps': {
                 configurable: true,
                 get: function() {
