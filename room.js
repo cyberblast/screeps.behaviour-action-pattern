@@ -275,50 +275,55 @@ var mod = {
                         'n':this.routePlaner.data[k]
                     }});
 
+            // calculate mean of stamps/spot
             var mean = Math.floor( data.map(e => e['n']).reduce((a,b) => a+ b ,0) / data.length)
-            // redo map by redcing all element by mean and filtring out thouse below 0
+            // redo map by reducing all element by mean and filtering out those below 0
 
             const reduced = data
-                .filter(e => { return e.n > mean;})
-                .map( e => { return {'key':e.key,'n':e.n-mean }; })
-                .filter(e => { return e.n > 0 }).sort( (a,b) => b.n - a.n )
+                .filter(e => { return e.n > mean;})  // take only most stamed spots
+                .map( e => { return {'key':e.key,'n':e.n-mean }; }) // convert to [{key,n}]
+                .filter(e => { return e.n > 0 }).sort( (a,b) => b.n - a.n ) // sort by most used
 
                 .map( e => { return {
-                    'key':e.key,
-                    'n':e.n,
-                    'x':e.key.charCodeAt(0)-32,
-                    'y':e.key.charCodeAt(1)-32,
+                    'key':e.key, // keep key arond to re-asemble data
+                    'n':e.n, // count of steps on x,y cordinates
+                    'x':e.key.charCodeAt(0)-32, // extract x from key
+                    'y':e.key.charCodeAt(1)-32, // extraxt y from key
                 };})
 
-
+            // todo this is not really needed just remove top 2 from list after addning construcion sites
             let t =  reduced.filter( e => {
                 return this.lookForAt(LOOK_STRUCTURES,e.x,e.y).length == 0 &&
                     this.lookForAt(LOOK_CONSTRUCTION_SITES,e.x,e.y).length == 0
             });
-            if (t.length > 0) {
+
+            if (t.length > 0 && t.n > 10) {
                 console.log("Constucting at", t[0].x, t[0].y)
                 this.createConstructionSite(t[0].x, t[0].y, STRUCTURE_ROAD);
             }
-            if (t.length > 1) {
+            if (t.length > 1 && t.n > 10 ) {
                 console.log("Constucting at",t[1].x,t[1].y)
                 this.createConstructionSite(t[1].x,t[1].y, STRUCTURE_ROAD);
             }
 
-
+            // reasemble back into data
             this.routePlaner.data = t.reduce((h,e) => {
                 h[e.key]=e.n;return h;
             },{});
 
         };
+
         Room.prototype.recordMove = function(x,y){
 
             if (this.lookForAt(LOOK_STRUCTURES,x,y).length != 0 ||
                 this.lookForAt(LOOK_CONSTRUCTION_SITES,x,y).length !=0) return;
 
-            //console.log(obj,obj.lookAt())
             const cord = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
-            if(!this.routePlaner.data[cord]) this.routePlaner.data[cord]=0;
-            this.routePlaner.data[cord]  = this.routePlaner.data[cord] + 1;
+
+            if( !this.routePlaner.data[cord] )
+                this.routePlaner.data[cord]=0;
+
+            this.routePlaner.data[cord] = this.routePlaner.data[cord] + 1;
         };
 
         Room.prototype.saveTowers = function(){
