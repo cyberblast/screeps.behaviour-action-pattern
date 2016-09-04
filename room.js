@@ -297,11 +297,11 @@ var mod = {
                     this.lookForAt(LOOK_CONSTRUCTION_SITES,e.x,e.y).length == 0
             });
 
-            if (t.length > 0 && t.n > 10) {
+            if (t.length > 0 && t[0].n > 10) {
                 console.log("Constucting at", t[0].x, t[0].y)
                 this.createConstructionSite(t[0].x, t[0].y, STRUCTURE_ROAD);
             }
-            if (t.length > 1 && t.n > 10 ) {
+            if (t.length > 1 && t[1].n > 10 ) {
                 console.log("Constucting at",t[1].x,t[1].y)
                 this.createConstructionSite(t[1].x,t[1].y, STRUCTURE_ROAD);
             }
