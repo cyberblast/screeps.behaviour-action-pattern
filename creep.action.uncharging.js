@@ -7,8 +7,9 @@ action.isValidTarget = function(target){
 };   
 action.newTarget = function(creep){
     var that = this;
-    let isAddable = target => that.isValidTarget(target); 
-    if( creep.data.creepType == 'hauler' && creep.room.chargeablesIn.length > 0 && creep.room.chargeablesOut.length > 0 ) {
+    let isAddable = target => that.isValidTarget(target);    
+    if( ['hauler', 'worker'].includes(creep.data.creepType) && creep.room.chargeablesIn.length > 0 && creep.room.chargeablesOut.length > 0 ) {
+        // take from fullest IN container 
         let target = null;
         let energy = 0; 
         let fullest = o => {
@@ -22,10 +23,12 @@ action.newTarget = function(creep){
         _.forEach(creep.room.chargeablesIn, fullest);
         return target;
     } else if( creep.data.creepType == 'upgrader' && creep.room.chargeablesIn.length > 0 && creep.room.chargeablesOut.length > 0 ) {
+        // take from OUT container
         return creep.pos.findClosestByRange(creep.room.chargeablesOut, {
             filter: isAddable
         });
     } else {
+        // take from any container
         return creep.pos.findClosestByRange(creep.room.chargeables, {
             filter: isAddable
         });

@@ -7,7 +7,7 @@ action.isValidTarget = function(target){
 action.isAddableTarget = function(target){ return true;}
 action.newTarget = function(creep){
     var that = this;
-    if( creep.data.creepType == 'hauler' ) {
+    if( ['hauler', 'worker', 'privateer', 'pioneer'].includes(creep.data.creepType) && creep.room.chargeablesOut.length > 0 ) {
         let target = null;
         let maxFree = 0; 
         var emptyest = o => {

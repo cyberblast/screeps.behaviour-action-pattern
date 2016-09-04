@@ -1,6 +1,6 @@
 var setup = new Creep.Setup('miner');
 setup.multiBody = [WORK];
-setup.fixedBody = [CARRY, MOVE];
+setup.fixedBody = [WORK, CARRY, MOVE];
 setup.minAbsEnergyAvailable = 200;
 setup.maxMulti = 5;
 setup.sortedParts = false;

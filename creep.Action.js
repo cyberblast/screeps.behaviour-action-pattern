@@ -55,6 +55,10 @@ var Action = function(actionName){
             (lastPos && // moved
             (lastPos.x != creep.pos.x || lastPos.y != creep.pos.y || lastPos.roomName != creep.pos.roomName)) 
         ) {
+            // at this point its sure, that the creep DID move in the last loop. 
+            // from lastPos to creep.pos 
+            creep.room.recordMove(creep.pos.x,creep.pos.y);
+
             if( creep.data.moveMode == null) 
                 creep.data.moveMode = 'auto';
             if( creep.data.path && creep.data.path.length > 1 )
@@ -63,8 +67,7 @@ var Action = function(actionName){
                 creep.data.path = this.getPath(creep, targetPos, true);
             if( creep.data.path && creep.data.path.length > 0 ) {
                 let moveResult = creep.move(creep.data.path.charAt(0));
-                if( moveResult == OK ) {
-                    creep.room.recordMove(creep.pos.x,creep.pos.y);
+                if( moveResult == OK ) { // OK is no guarantee that it will move to the next pos. 
                     creep.data.moveMode = 'auto'; 
                 } else logErrorCode(creep, moveResult);
             } else creep.say('NO PATH!');
