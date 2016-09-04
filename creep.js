@@ -80,9 +80,9 @@ var mod = {
                     } else {
                         console.log( dye(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ));
                         // trying to import creep
-                        if( creep.body.includes(WORK) && creep.body.includes(CARRY))
+                        if( this.body.includes(WORK) && this.body.includes(CARRY))
                         {
-                            let counts = _.countBy(creep.body, 'type');
+                            let counts = _.countBy(this.body, 'type');
                             let weight = (counts[WORK]*PART_COSTS[WORK]) + (counts[CARRY]*PART_COSTS[CARRY]) + (counts[MOVE]*PART_COSTS[MOVE]); 
                             var entry = Population.setCreep({
                                 creepName: this.name, 
@@ -97,7 +97,7 @@ var mod = {
                                 flagName: null
                             });
                             Population.countCreep(this.room, entry);
-                        } else creep.suicide();
+                        } else this.suicide();
                     }
                 }
             }
