@@ -277,7 +277,7 @@ var mod = {
             
             // build roads on all most frequent used fields
             let setSite = pos => {
-                if( DEBUG ) console.log('Constructing new road in ' + this.name + ' at', posx, pos.y);
+                if( DEBUG ) console.log('Constructing new road in ' + this.name + ' at', pos.x, pos.y, 'n:', pos.n);
                 this.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD);
             };
             _.forEach(data, setSite);
