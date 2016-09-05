@@ -1,7 +1,7 @@
 var setup = new Creep.Setup('worker');
 setup.multiBody = [CARRY, WORK, MOVE];
 setup.minAbsEnergyAvailable = 200;
-setup.maxMulti = 6;
+setup.maxMulti = 8;
 setup.sortedParts = false;
 setup.minEnergyAvailable = function(spawn){
     return 0.3;
