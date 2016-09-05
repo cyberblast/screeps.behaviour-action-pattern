@@ -265,7 +265,7 @@ var mod = {
                     };
                 });
                 
-            let min = Math.min( // min or mean
+            let min = Math.max( // min or mean
                 minVisits, 
                 (data.reduce( (_sum , b) => _sum + b.n, 0 ) ) / data.length);
 
