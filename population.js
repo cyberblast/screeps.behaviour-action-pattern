@@ -12,7 +12,7 @@ var mod = {
         Memory.population[val.creepName] = val;
         return Memory.population[val.creepName];
     },
-    registerCreep: function(creepName, creepType, creepCost, room, spawnName){
+    registerCreep: function(creepName, creepType, creepCost, room, spawnName, body){
         var entry = this.setCreep({
             creepName: creepName, 
             creepType: creepType, 
@@ -23,7 +23,8 @@ var mod = {
             actionName: null, 
             targetId: null,
             spawningTime: 0, 
-            flagName: null
+            flagName: null,
+            body: _.countBy(this.body, 'type')
         });
         this.countCreep(room, entry);
     }, 

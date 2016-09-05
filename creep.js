@@ -74,7 +74,8 @@ var mod = {
                             actionName: this.action ? this.action.name : null, 
                             targetId: this.target ? this.target.id || this.target.name : null,
                             spawningTime: breeding, 
-                            flagName: null
+                            flagName: null, 
+                            body: _.countBy(this.body, 'type')
                         });
                         Population.countCreep(this.room, entry);
                     } else {
@@ -94,7 +95,8 @@ var mod = {
                                 actionName: null, 
                                 targetId: null,
                                 spawningTime: -1, 
-                                flagName: null
+                                flagName: null, 
+                                body: _.countBy(this.body, 'type')
                             });
                             Population.countCreep(this.room, entry);
                         } else this.suicide();
