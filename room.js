@@ -173,7 +173,7 @@ var mod = {
                         var that = this; 
                         var factor = that.situation.invasion ? 1 : (1-(0.18/that.towers.length));
                         var fuelable = target => (target.energy < (target.energyCapacity * factor));
-                        this._fuelables = _.filter(this.towers, fuelable); // TODO: Add Nuker
+                        this._fuelables = _.sortBy( _.filter(this.towers, fuelable), 'energy') ; // TODO: Add Nuker
                     }
                     return this._fuelables;
                 }
@@ -243,7 +243,6 @@ var mod = {
                 get: function () {
                     if (_.isUndefined(this.memory.routePlaner) ) {
                         this.memory.routePlaner = {
-                            'tick':(Game.time + 500),
                             'data':{},
                         }
                     }
@@ -253,9 +252,7 @@ var mod = {
 
         });
 
-        Room.prototype.roadTick = function(next = ROUTE_PLANNER_INTERVAL, minVisits = ROUTE_PLANNER_MIN_VISITS) {
-            this.routePlaner.tick = Game.time + next; // next check
-
+        Room.prototype.roadTick = function( minDeviation = ROUTEPLANNER_MIN_DEVIATION) {
             let data = Object.keys(this.routePlaner.data)
                 .map( k => { 
                     return { // convert to [{key,n,x,y}]
@@ -265,17 +262,20 @@ var mod = {
                     };
                 });
                 
-            let min = Math.max( // min or mean
-                minVisits, 
-                (data.reduce( (_sum , b) => _sum + b.n, 0 ) ) / data.length);
+            if( DEBUG ) console.log('routePlaner total logged locations: ' + data.length);
 
-            console.log(min);
+            let min = (data.reduce( (_sum, b) => _sum + b.n, 0 ) / data.length) * minDeviation;
+            
+            if( DEBUG ) console.log('routePlaner mean value: ' + (data.reduce( (_sum, b) => _sum + b.n, 0 ) ) / data.length);
+            if( DEBUG ) console.log('routePlaner min value: ' + min);
                 
             data = data.filter( e => {
                 return e.n > min && 
                     this.lookForAt(LOOK_STRUCTURES,e.x,e.y).length == 0 &&
                     this.lookForAt(LOOK_CONSTRUCTION_SITES,e.x,e.y).length == 0;
             });
+
+            if( DEBUG ) console.log('routePlaner reduced locations: ' + data.length);
             
             // build roads on all most frequent used fields
             let setSite = pos => {
@@ -289,7 +289,8 @@ var mod = {
         };
 
         Room.prototype.recordMove = function(x,y){
-            if (this.lookForAt(LOOK_STRUCTURES,x,y).length != 0 ||
+            if ( x == 0 || y == 0 || x == 49 || y == 49 ||
+                this.lookForAt(LOOK_STRUCTURES,x,y).length != 0 ||
                 this.lookForAt(LOOK_CONSTRUCTION_SITES,x,y).length !=0) return;
 
             const cord = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
@@ -358,7 +359,7 @@ var mod = {
                 if( this.memory.statistics === undefined)
                     this.memory.statistics = {};
 
-                if( this.routePlaner.tick < Game.time && !this.constructionSites.find(c=> c.structureType == STRUCTURE_ROAD))
+                if( Game.time % ROUTE_PLANNER_INTERVAL == 0 && !this.constructionSites.find(c=> c.structureType == STRUCTURE_ROAD))
                 {
                     this.roadTick();
                 }
