@@ -1,11 +1,11 @@
-var action = new Creep.Action('claiming');
+var action = new Creep.Action('reserving');
 action.reusePath = 10;
 action.isValidAction = function(creep){ return true; }; 
 action.isValidTarget = function(target){ return true; }; 
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; }; 
 action.newTarget = function(creep){
-    let flag = FlagDir.find(FLAG_COLOR.claim, creep.pos, false, FlagDir.rangeMod);
+    let flag = FlagDir.find(FLAG_COLOR.reserve, creep.pos, false, FlagDir.rangeMod);
     if( flag ) { 
         Population.registerCreepFlag(creep, flag);
     } 
@@ -15,7 +15,7 @@ action.newTarget = function(creep){
     if( !creep.flag.room || creep.flag.pos.roomName != creep.pos.roomName){
         return creep.flag;    
     }
-    if( creep.flag.room.controller.my ) { // TODO: AND is claim flag 
+    if( creep.flag.room.controller.my ) { // TODO: AND is reserve flag
         // already claimed, change flag
         // TODO: only if no spawn or spawn-constructionSite present
         creep.flag.setColor(FLAG_COLOR.claim.spawn.color, FLAG_COLOR.claim.spawn.secondaryColor);
@@ -57,10 +57,7 @@ action.work = function(creep){
         workResult = creep.attackController(creep.target);
     }
     else {
-        workResult = creep.claimController(creep.target);
-        if( workResult != OK ){
-            workResult = creep.reserveController(creep.target);
-        }
+        workResult = creep.reserveController(creep.target);
     }
     return workResult;
 };
