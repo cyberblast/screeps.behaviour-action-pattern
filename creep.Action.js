@@ -17,7 +17,7 @@ var Action = function(actionName){
         return (target != null);
     };
     this.isAddableAction = function(creep){
-        return (!creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
+        return true;//(!creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
     };
     this.isAddableTarget = function(target){ // target is valid to be given to an additional creep
         return (!target.targetOf || target.targetOf.length < this.maxPerTarget);
@@ -57,7 +57,7 @@ var Action = function(actionName){
         ) {
             // at this point its sure, that the creep DID move in the last loop. 
             // from lastPos to creep.pos 
-            creep.room.recordMove(creep.pos.x,creep.pos.y);
+            if( creep.carry.energy > 0 ) creep.room.recordMove(creep.pos.x,creep.pos.y);
 
             if( creep.data.moveMode == null) 
                 creep.data.moveMode = 'auto';
