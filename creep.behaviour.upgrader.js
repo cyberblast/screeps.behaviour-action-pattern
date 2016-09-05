@@ -18,7 +18,7 @@ module.exports = {
                 return;
             }
             if(CHATTY) creep.say('upgrading', SAY_PUBLIC);
-            
+
             let contRange = creep.pos.getRangeTo(container);
             let controllerRange = creep.pos.getRangeTo(creep.room.controller);
 
@@ -26,7 +26,7 @@ module.exports = {
             if( controllerRange < 4 ) creep.upgradeController(creep.room.controller);
             if( contRange > 0 ) Creep.action.upgrading.drive(creep, container.pos, Infinity);
         } else {
-
+            logError(`Upgrader ${creep.name} has no container in reach of the controller in room ${creep.pos.roomName}!`);
         }
     }
 }
