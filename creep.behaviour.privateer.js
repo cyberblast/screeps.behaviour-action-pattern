@@ -45,6 +45,8 @@ module.exports = {
             // at target room
             if( creep.flag && creep.flag.pos.roomName == creep.pos.roomName ){
                 // carrier not full
+
+
                 if( _.sum(creep.carry) < creep.carryCapacity ) {
                     // sources depleted
                     if( creep.room.sourceEnergyAvailable == 0 ){
@@ -64,7 +66,11 @@ module.exports = {
                     // energy available
                     else {
                         // harvesting or picking
-                        var actions = [Creep.action.picking, Creep.action.harvesting];
+                        var actions = [
+                            Creep.action.borrowing,
+                            Creep.action.picking,
+                            Creep.action.harvesting
+                        ];
                         // TODO: Add extracting (if extractor present)
                         for(var iAction = 0; iAction < actions.length; iAction++) {   
                             var action = actions[iAction];             
