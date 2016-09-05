@@ -6,11 +6,12 @@ action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };   
 action.newTarget = function(creep){
-    var that = this;
-    var isAddable = target => that.isAddableTarget(target);
-    return _.find(creep.room.fuelables, isAddable);
+    return creep.room.fuelables.length > 0 ? creep.room.fuelables[0] : null;
 };
 action.work = function(creep){
-    return creep.transfer(creep.target, RESOURCE_ENERGY);
+    let response = creep.transfer(creep.target, RESOURCE_ENERGY);
+    if( creep.target.energyCapacity - creep.target.energy < 20 ) 
+        creep.data.targetId = null;
+    return response;
 };
 module.exports = action;
