@@ -285,9 +285,8 @@ var mod = {
             let x = creep.pos.x;
             let y = creep.pos.y;
             if ( x == 0 || y == 0 || x == 49 || y == 49 || 
-                creep.carry.energy == 0 || creep.data.actionName == 'building' ||
-                this.lookForAt(LOOK_STRUCTURES,x,y).length != 0 ||
-                this.lookForAt(LOOK_CONSTRUCTION_SITES,x,y).length !=0 ) return;
+                creep.carry.energy == 0 || creep.data.actionName == 'building' ) 
+                return;
 
             const cord = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
 
