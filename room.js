@@ -267,7 +267,9 @@ var mod = {
                 
             let min = Math.min( // min or mean
                 minVisits, 
-                (data.reduce( (a,b) => a.n + b.n ) ) / data.length); 
+                (data.reduce( (_sum , b) => _sum + b.n, 0 ) ) / data.length);
+
+            console.log(min);
                 
             data = data.filter( e => {
                 return e.n > min && 
