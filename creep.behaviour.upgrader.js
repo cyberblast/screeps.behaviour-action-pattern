@@ -14,7 +14,7 @@ module.exports = {
         if( creep.action && creep.target ) {
             creep.action.step(creep);
         } else {
-            logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
+            // logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
         }
     },
     nextAction: function(creep){
