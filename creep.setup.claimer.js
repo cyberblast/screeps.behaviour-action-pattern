@@ -5,13 +5,13 @@ setup.minAbsEnergyAvailable = 1300;
 setup.maxMulti = 0;
 setup.minControllerLevel = 3;
 setup.globalMeasurement = true;
-setup.sortedParts = false;
+setup.sortedParts = true;
 setup.minEnergyAvailable = function(spawn){
     return 0.75;
 }
 setup.maxCount = function(spawn){
     return _.filter(Game.flags, function(flag){
-        return flag.color == FLAG_COLOR.claim.color && flag.secondaryColor == FLAG_COLOR.claim.secondaryColor && 
+        return ((flag.color == FLAG_COLOR.claim.color && flag.secondaryColor == FLAG_COLOR.claim.secondaryColor) || (flag.color == FLAG_COLOR.reserve.color && flag.secondaryColor == FLAG_COLOR.reserve.secondaryColor)) &&
             (!flag.room || 
             (!flag.room.controller || !flag.room.controller.reservation) || 
             flag.room.controller.reservation.ticksToEnd < 4000)}).length;
