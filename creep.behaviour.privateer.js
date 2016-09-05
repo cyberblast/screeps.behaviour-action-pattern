@@ -25,7 +25,7 @@ module.exports = {
                 return; 
             // has energy
             if( creep.carry.energy > 0 ){
-                if( !Creep.action.charging.assign(creep) )
+                if( !Creep.action.charging.assign(creep) && !Creep.action.storing.assign(creep) )
                     Creep.behaviour.worker.nextAction(creep);
                 return;
             }

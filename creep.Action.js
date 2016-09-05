@@ -17,7 +17,7 @@ var Action = function(actionName){
         return (target != null);
     };
     this.isAddableAction = function(creep){
-        return true;//(!creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
+        return (!creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
     };
     this.isAddableTarget = function(target){ // target is valid to be given to an additional creep
         return (!target.targetOf || target.targetOf.length < this.maxPerTarget);

@@ -36,7 +36,7 @@ var Setup = function(typeName){
         return parts;
     };
     this.partsComparator = function (a, b) {
-        let partsOrder = [TOUGH, CLAIM, WORK, CARRY, MOVE, HEAL, ATTACK, RANGED_ATTACK];
+        let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, HEAL, MOVE];
         let indexOfA = partsOrder.indexOf(a);
         let indexOfB = partsOrder.indexOf(b);
   
