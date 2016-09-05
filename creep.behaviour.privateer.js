@@ -78,12 +78,16 @@ module.exports = {
                 // carrier full
                 else {
                     Population.registerCreepFlag(creep, null);
-                    if (creep.room.constructionSites.filter((s) => s.structureType == STRUCTURE_ROAD).length >0 ) {
-                        Creep.behaviour.worker.nextAction(creep);
-                    } else {
-                        Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
-                    }
 
+                    var actions = [Creep.action.building, Creep.action.repairing];
+                    for(var iAction = 0; iAction < actions.length; iAction++) {   
+                        var action = actions[iAction];             
+                        if(action.isValidAction(creep) && 
+                            action.isAddableAction(creep) && 
+                            action.assign(creep))
+                            return;
+                    }
+                    Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
                     return;
                 }
             }
