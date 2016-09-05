@@ -22,8 +22,7 @@ module.exports = {
         // Last Action completed / No more energy
         if( creep.carry.energy == 0 ) { 
             priority = [
-                Creep.action.harvesting, 
-                Creep.action.idle];
+                Creep.action.harvesting];
         }
         else {	  
             priority = [
