@@ -162,7 +162,6 @@ var mod = {
                     if( _.isUndefined(this._chargeablesOut) ){ 
                         let byType = c => c.chargeableType == 'OUT';
                         this._chargeablesOut = _.filter(this.chargeables, byType);
-                        if( this.storage ) this._chargeablesOut.push(this.storage);
                     }
                     return this._chargeablesOut;
                 }

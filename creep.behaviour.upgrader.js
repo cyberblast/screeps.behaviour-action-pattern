@@ -21,15 +21,11 @@ module.exports = {
         let priority;
         if( creep.carry.energy == 0 ) { 
             priority = [
-                Creep.action.uncharging, 
-                Creep.action.withdrawing, 
-                Creep.action.harvesting, 
-                Creep.action.idle];
+                Creep.action.uncharging];
         }    
         else {	  
             priority = [
-                Creep.action.upgrading, 
-                Creep.action.idle];
+                Creep.action.upgrading];
         }
         for(var iAction = 0; iAction < priority.length; iAction++) {
             var action = priority[iAction];
