@@ -11,7 +11,7 @@ setup.minEnergyAvailable = function(spawn){
 }
 setup.maxCount = function(spawn){
     return _.filter(Game.flags, function(flag){
-        return ((flag.color == FLAG_COLOR.claim.color && flag.secondaryColor == FLAG_COLOR.claim.secondaryColor) || (flag.color == FLAG_COLOR.reserve.color && flag.secondaryColor == FLAG_COLOR.reserve.secondaryColor)) &&
+        return ((flag.color == FLAG_COLOR.claim.color && flag.secondaryColor == FLAG_COLOR.claim.secondaryColor) || (flag.color == FLAG_COLOR.claim.reserve.color && flag.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor)) &&
             (!flag.room || 
             (!flag.room.controller || !flag.room.controller.reservation) || 
             flag.room.controller.reservation.ticksToEnd < 4000)}).length;

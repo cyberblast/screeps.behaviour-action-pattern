@@ -38,12 +38,8 @@ var mod = {
                     secondaryColor: COLOR_ORANGE,
                     filter: {'color': COLOR_ORANGE, 'secondaryColor': COLOR_ORANGE }
                 },
-                //COLOR_BROWN,
-                reserve: { // reserve this room
-                    color: COLOR_GREY,
-                    secondaryColor: COLOR_GREY,
-                    filter: {'color': COLOR_GREY, 'secondaryColor': COLOR_GREY },
-                },
+                // COLOR_BROWN,
+                // COLOR_GREY
                 claim: { // claim this room
                     color: COLOR_WHITE, 
                     secondaryColor: COLOR_WHITE,
@@ -57,6 +53,11 @@ var mod = {
                         color: COLOR_WHITE, 
                         secondaryColor: COLOR_RED,
                         filter: {'color': COLOR_WHITE, 'secondaryColor': COLOR_RED }
+                    },                    
+                    reserve: { // reserve this room
+                        color: COLOR_WHITE,
+                        secondaryColor: COLOR_GREY,
+                        filter: {'color': COLOR_WHITE, 'secondaryColor': COLOR_GREY },
                     }
                 }
             },
