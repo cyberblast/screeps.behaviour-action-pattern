@@ -19,7 +19,7 @@ var mod = {
                         secondaryColor: COLOR_GREEN,
                         filter: {'color': COLOR_RED, 'secondaryColor': COLOR_GREEN }
                     },
-                    borrowing: { // the privaters borrow all energy from enemy storages :)
+                    robbing: { // the privaters borrow all energy from enemy storages :)
                         color: COLOR_RED,
                         secondaryColor: COLOR_YELLOW,
                         filter: {'color': COLOR_RED, 'secondaryColor': COLOR_YELLOW }

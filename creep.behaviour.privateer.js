@@ -68,7 +68,7 @@ module.exports = {
                     else {
                         // harvesting or picking
                         var actions = [
-                            Creep.action.borrowing,
+                            Creep.action.robbing,
                             Creep.action.picking,
                             Creep.action.harvesting
                         ];

@@ -22,7 +22,7 @@ var mod = {
             uncharging: require('./creep.action.uncharging'),
             upgrading: require('./creep.action.upgrading'), 
             withdrawing: require('./creep.action.withdrawing'),
-            borrowing:require('./creep.action.borrowing')
+            robbing:require('./creep.action.robbing')
         };
         Creep.behaviour = {
             claimer: require('./creep.behaviour.claimer'),

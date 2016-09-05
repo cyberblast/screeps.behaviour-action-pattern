@@ -1,11 +1,11 @@
-var action = new Creep.Action('borrowing');
+var action = new Creep.Action('robbing');
 action.maxPerTarget = 2;
 action.isAddableAction = function (target) {
     return true;
 }
 action.isValidAction = function(creep){
     return (_.sum(creep.carry) < creep.carryCapacity &&
-    FlagDir.find(FLAG_COLOR.invade.borrowing, creep.pos) != null
+    FlagDir.find(FLAG_COLOR.invade.robbing, creep.pos) != null
         // && (creep.room.energyAvailable < creep.room.energyCapacityAvailable || creep.room.towerFreeCapacity > 500 )
     );
 };
@@ -15,7 +15,10 @@ action.isValidTarget = function(target){
 action.newTarget = function(creep){
     let t = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
         filter: function(o){
-            return o.energy >=  (creep.carryCapacity -   _.sum(creep.carry)*0.5);
+            return o.energy >=  (creep.carryCapacity - _.sum(creep.carry)); 
+            // TODO: check for ANY resource
+            // TODO: o.energy correct? may be o.store.energy
+            // TODO: testing
         }
     });
     return t;
