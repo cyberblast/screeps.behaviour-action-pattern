@@ -57,7 +57,7 @@ var Action = function(actionName){
         ) {
             // at this point its sure, that the creep DID move in the last loop. 
             // from lastPos to creep.pos 
-            if( creep.carry.energy > 0 ) creep.room.recordMove(creep.pos.x,creep.pos.y);
+            creep.room.recordMove(creep);
 
             if( creep.data.moveMode == null) 
                 creep.data.moveMode = 'auto';

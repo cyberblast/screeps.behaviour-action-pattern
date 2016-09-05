@@ -6,7 +6,7 @@ action.isValidAction = function(creep){
     return creep.carry.energy > 0;
 };
 action.isValidTarget = function(target){
-    return (target != null ) && ( target.progress != null ) && (target.my);
+    return (target != null ) && ( target.structureType == 'controller' || (target.structureType == 'container') ) && (target.my);
 };   
 action.newTarget = function(creep){
     return ( creep.room.controller && creep.room.controller.my) ? creep.room.controller : null;
@@ -21,8 +21,8 @@ action.work = function(creep){
             });
             if( cont ) creep.withdraw(cont[0], RESOURCE_ENERGY);
         } 
-        creep.upgradeController(creep.room.controller);
-        return OK;
+        let result = creep.upgradeController(creep.room.controller);
+        return result == ERR_NOT_ENOUGH_RESOURCES ? OK : result;
     }
     return creep.upgradeController(creep.room.controller);
 }; 
@@ -36,15 +36,7 @@ action.step = function(creep){
             creep.data.actionName = null;
         }
     } 
-    if( creep.data.creepType == "upgrader" && range <= this.targetRange ){ // stay at container
-        let cont = creep.pos.findInRange(creep.room.chargeablesOut, 1 );
-        if( cont.length > 0 ) {
-            if( creep.pos.x != cont[0].pos.x || creep.pos.y != cont[0].pos.y)
-                creep.moveTo(cont[0], {reusePath:0});
-            return;
-        }
-    }
-    if( range > 1 )
+    if( range > 1 || (range== 1 && creep.data.creepType == "upgrader" && creep.target.structureType == 'container' ))
         this.drive(creep, creep.target.pos, range);
 };
 

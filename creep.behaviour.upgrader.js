@@ -2,7 +2,9 @@ module.exports = {
     name: 'upgrader',
     run: function(creep) {
         if( !creep.target ){
-            let cont = creep.room.controller.pos.findInRange(creep.room.chargeablesOut, 3 ); // or storage
+            let conts = creep.room.chargeablesOut;
+            if( creep.room.storage) conts.push(creep.room.storage);
+            let cont = creep.room.controller.pos.findInRange(conts, 3 ); 
             if( cont.length > 0 ) {
                 Population.registerAction(creep, Creep.action.upgrading, cont[0]);
             }

@@ -1,7 +1,7 @@
 var action = new Creep.Action('harvesting');
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(target){ 
-    return (target.targetOf === undefined || target.targetOf.length < (target.accessibleFields*1.5));
+    return (target.targetOf === undefined || target.targetOf.length < (target.accessibleFields));
 };
 action.isValidAction = function(creep){
     return ( _.sum(creep.carry) < creep.carryCapacity && 

@@ -262,24 +262,17 @@ var mod = {
                     };
                 });
                 
-            if( DEBUG ) console.log('routePlaner total logged locations: ' + data.length);
-
             let min = (data.reduce( (_sum, b) => _sum + b.n, 0 ) / data.length) * minDeviation;
-            
-            if( DEBUG ) console.log('routePlaner mean value: ' + (data.reduce( (_sum, b) => _sum + b.n, 0 ) ) / data.length);
-            if( DEBUG ) console.log('routePlaner min value: ' + min);
-                
+                            
             data = data.filter( e => {
                 return e.n > min && 
                     this.lookForAt(LOOK_STRUCTURES,e.x,e.y).length == 0 &&
                     this.lookForAt(LOOK_CONSTRUCTION_SITES,e.x,e.y).length == 0;
             });
-
-            if( DEBUG ) console.log('routePlaner reduced locations: ' + data.length);
             
             // build roads on all most frequent used fields
             let setSite = pos => {
-                if( DEBUG ) console.log('Constructing new road in ' + this.name + ' at', pos.x, pos.y, 'n:', pos.n);
+                if( DEBUG ) console.log(`Constructing new road in ${this.name} at ${pos.x}'${pos.y} (${pos.n} traces)`);
                 this.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD);
             };
             _.forEach(data, setSite);
@@ -288,10 +281,13 @@ var mod = {
             this.routePlaner.data = {};
         };
 
-        Room.prototype.recordMove = function(x,y){
-            if ( x == 0 || y == 0 || x == 49 || y == 49 ||
+        Room.prototype.recordMove = function(creep){
+            let x = creep.pos.x;
+            let y = creep.pos.y;
+            if ( x == 0 || y == 0 || x == 49 || y == 49 || 
+                creep.carry.energy == 0 || creep.data.actionName == 'building' ||
                 this.lookForAt(LOOK_STRUCTURES,x,y).length != 0 ||
-                this.lookForAt(LOOK_CONSTRUCTION_SITES,x,y).length !=0) return;
+                this.lookForAt(LOOK_CONSTRUCTION_SITES,x,y).length !=0 ) return;
 
             const cord = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
 
