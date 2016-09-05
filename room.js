@@ -259,7 +259,6 @@ var mod = {
             let data = Object.keys(this.routePlaner.data)
                 .map( k => { 
                     return { // convert to [{key,n,x,y}]
-                        'key': k, // keep key around to re-assemble data
                         'n': this.routePlaner.data[k], // count of steps on x,y cordinates
                         'x': k.charCodeAt(0)-32, // extract x from key
                         'y': k.charCodeAt(1)-32 // extraxt y from key
