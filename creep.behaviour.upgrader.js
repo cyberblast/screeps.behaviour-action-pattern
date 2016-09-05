@@ -1,36 +1,32 @@
 module.exports = {
     name: 'upgrader',
     run: function(creep) {
-        if( !creep.target ){
+        // get container @ controller
+        if( !creep.data.conti ){
             let conts = creep.room.chargeablesOut;
             if( creep.room.storage) conts.push(creep.room.storage);
             let cont = creep.room.controller.pos.findInRange(conts, 3 ); 
             if( cont.length > 0 ) {
-                Population.registerAction(creep, Creep.action.upgrading, cont[0]);
+                creep.data.conti = cont[0].id;
             }
         }
-        if( creep.action && creep.target ) {
-            if(CHATTY) creep.say('upgrading', SAY_PUBLIC);
 
-            if( creep.pos.getRangeTo(creep.room.controller) <= 3 ) {
-                let workResult = creep.upgradeController(creep.room.controller);
-                if( [ERR_NOT_ENOUGH_RESOURCES, OK].includes(workResult) ) {
-                } else {
-                    if( DEBUG ) logErrorCode(creep, workResult);
-                    creep.data.actionName = null;
-                }
-            }             
-            if(creep.carry.energy < (creep.carryCapacity * 0.5) ) {
-                let cont = creep.pos.findInRange(creep.room.chargeablesOut, 1, {
-                    filter: function(c){ 
-                        return c && c.store && c.store[RESOURCE_ENERGY] > 0;
-                    }
-                });
-                if( cont ) creep.withdraw(cont[0], RESOURCE_ENERGY);
-            } 
-            let range = creep.pos.getRangeTo(creep.target);
-            if( range > 0 )
-                creep.action.drive(creep, creep.target.pos, 5);
+        if( creep.data.conti ){                
+            let container = Game.getObjectById(creep.data.conti);
+            if( !container ){
+                delete creep.data.conti;
+                return;
+            }
+            if(CHATTY) creep.say('upgrading', SAY_PUBLIC);
+            
+            let contRange = creep.pos.getRangeTo(container);
+            let controllerRange = creep.pos.getRangeTo(creep.room.controller);
+
+            if( contRange < 2 ) creep.withdraw(container, RESOURCE_ENERGY);
+            if( controllerRange < 4 ) creep.upgradeController(creep.room.controller);
+            if( contRange > 0 ) Creep.action.upgrading.drive(creep, container.pos, Infinity);
+        } else {
+
         }
     }
 }
