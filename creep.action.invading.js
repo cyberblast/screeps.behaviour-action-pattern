@@ -96,8 +96,7 @@ action.step = function(creep){
 action.run = {
     melee: function(creep){        
         if( creep.target.color ){
-            //creep.moveTo(creep.target, {reusePath: 15});
-            this.drive(creep, creep.target.pos, Infinity);
+            creep.action.drive(creep, creep.target.pos, Infinity);
             return;
         }        
         var moveResult = creep.moveTo(creep.target, {reusePath: 0});
@@ -106,8 +105,7 @@ action.run = {
     }, 
     ranger: function(creep){     
         if( creep.target.color ){
-            //creep.moveTo(creep.target, {reusePath: 15});
-            this.drive(creep, creep.target.pos, Infinity);
+            creep.action.drive(creep, creep.target.pos, Infinity);
             return;
         }
         var range = creep.pos.getRangeTo(creep.target);
