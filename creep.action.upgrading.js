@@ -9,7 +9,7 @@ action.isValidTarget = function(target){
     return (target != null ) && ( target.progress != null ) && (target.my);
 };   
 action.newTarget = function(creep){
-    return creep.room.controller;
+    return ( creep.room.controller && creep.room.controller.my) ? creep.room.controller : null;
 };
 action.work = function(creep){
     return creep.upgradeController(creep.target);
