@@ -59,7 +59,7 @@ action.work = function(creep){
                     return _.sum(c.store) < c.storeCapacity;
                 }
             });
-            if( cont ) creep.transfer(cont[0], RESOURCE_ENERGY);
+            if( cont.length >0 ) creep.transfer(cont[0], RESOURCE_ENERGY);
         }
         let result = creep.harvest(creep.target);
         if (result == ERR_NOT_ENOUGH_RESOURCES) result = OK;
