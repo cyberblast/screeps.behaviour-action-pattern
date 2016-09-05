@@ -5,7 +5,8 @@ var mod = {
         Creep.action = {
             building: require('./creep.action.building'), 
             charging: require('./creep.action.charging'),
-            claiming: require('./creep.action.claiming'), 
+            claiming: require('./creep.action.claiming'),
+            reserving: require('./creep.action.reserving'),
             defending: require('./creep.action.defending'),
             feeding: require('./creep.action.feeding'), 
             fueling: require('./creep.action.fueling'), 
