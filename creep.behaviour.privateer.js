@@ -78,7 +78,12 @@ module.exports = {
                 // carrier full
                 else {
                     Population.registerCreepFlag(creep, null);
-                    Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+                    if (creep.room.constructionSites.filter((s) => s.structureType == STRUCTURE_ROAD).length >0 ) {
+                        Creep.behaviour.worker.nextAction(creep);
+                    } else {
+                        Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+                    }
+
                     return;
                 }
             }

@@ -259,7 +259,6 @@ var mod = {
             let data = Object.keys(this.routePlaner.data)
                 .map( k => { 
                     return { // convert to [{key,n,x,y}]
-                        'key': k, // keep key around to re-assemble data
                         'n': this.routePlaner.data[k], // count of steps on x,y cordinates
                         'x': k.charCodeAt(0)-32, // extract x from key
                         'y': k.charCodeAt(1)-32 // extraxt y from key
@@ -268,7 +267,9 @@ var mod = {
                 
             let min = Math.min( // min or mean
                 minVisits, 
-                (data.reduce( (a,b) => a.n + b.n ) ) / data.length); 
+                (data.reduce( (_sum , b) => _sum + b.n, 0 ) ) / data.length);
+
+            console.log(min);
                 
             data = data.filter( e => {
                 return e.n > min && 
@@ -278,7 +279,7 @@ var mod = {
             
             // build roads on all most frequent used fields
             let setSite = pos => {
-                if( DEBUG ) console.log('Constructing new road in ' + this.name + ' at', posx, pos.y);
+                if( DEBUG ) console.log('Constructing new road in ' + this.name + ' at', pos.x, pos.y, 'n:', pos.n);
                 this.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD);
             };
             _.forEach(data, setSite);
