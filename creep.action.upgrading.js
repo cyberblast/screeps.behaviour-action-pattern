@@ -34,7 +34,11 @@ action.step = function(creep){
     } 
     if( creep.data.creepType == "upgrader" && range <= this.targetRange ){ // stay at container
         let cont = creep.pos.findInRange(creep.room.chargeablesOut, 1 );
-        if( cont.length > 0 ) return;
+        if( cont.length > 0 ) {
+            if( creep.pos.x != cont[0].pos.x || creep.pos.y != cont[0].pos.y)
+                creep.moveTo(cont[0], {reusePath:0});
+            return;
+        }
     }
     if( range > 1 )
         this.drive(creep, creep.target.pos, range);
