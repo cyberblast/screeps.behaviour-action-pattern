@@ -32,7 +32,7 @@ module.exports = {
                 Creep.action.building, 
                 Creep.action.fueling, 
                 Creep.action.feeding, 
-                Creep.action.storing, 
+                //Creep.action.storing, 
                 Creep.action.upgrading, 
                 Creep.action.idle];
             if( creep.room.controller && creep.room.controller.ticksToDowngrade < 2000 ) { // urgent upgrading 
