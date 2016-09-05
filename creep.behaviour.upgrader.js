@@ -1,15 +1,13 @@
 module.exports = {
     name: 'upgrader',
-    run: function(creep) {debugger;
-        // Assign next Action
-        let oldTargetId = creep.data.targetId;
-        if( creep.action == null || creep.action.name == 'idle' ) {
-            this.nextAction(creep);
+    run: function(creep) {
+        if( !creep.target ){
+            let cont = creep.room.controller.pos.findInRange(creep.room.chargeablesOut, 3 ); // or storage
+            if( cont.length > 0 ) {
+                Population.registerAction(creep, Creep.action.upgrading, cont[0]);
+            }
         }
-        if( creep.data.targetId != oldTargetId ) {
-            creep.data.moveMode = null;
-            delete creep.data.path;
-        }
+
         // Do some work
         if( creep.action && creep.target ) {
             creep.action.step(creep);

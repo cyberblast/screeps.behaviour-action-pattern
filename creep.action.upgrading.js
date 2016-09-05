@@ -12,15 +12,19 @@ action.newTarget = function(creep){
     return ( creep.room.controller && creep.room.controller.my) ? creep.room.controller : null;
 };
 action.work = function(creep){
-    if( creep.data.creepType == "upgrader" && creep.carry.energy < creep.carryCapacity*0.5 ) {
-        let cont = creep.pos.findInRange(creep.room.chargeablesOut, 1, {
-            filter: function(c){ 
-                return c && c.store && c.store[RESOURCE_ENERGY] > 0;
-            }
-        });
-        if( cont ) creep.withdraw(cont[0], RESOURCE_ENERGY);
-    } 
-    return creep.upgradeController(creep.target);
+    if( creep.data.creepType == "upgrader"){
+        if(creep.carry.energy < creep.carryCapacity*0.5 ) {
+            let cont = creep.pos.findInRange(creep.room.chargeablesOut, 1, {
+                filter: function(c){ 
+                    return c && c.store && c.store[RESOURCE_ENERGY] > 0;
+                }
+            });
+            if( cont ) creep.withdraw(cont[0], RESOURCE_ENERGY);
+        } 
+        creep.upgradeController(creep.room.controller);
+        return OK;
+    }
+    return creep.upgradeController(creep.room.controller);
 }; 
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
