@@ -9,31 +9,28 @@ module.exports = {
                 Population.registerAction(creep, Creep.action.upgrading, cont[0]);
             }
         }
-
-        // Do some work
         if( creep.action && creep.target ) {
-            creep.action.step(creep);
-        } else {
-            // logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
-        }
-    },
-    nextAction: function(creep){
-        let priority;
-        if( creep.carry.energy == 0 ) { 
-            priority = [
-                Creep.action.uncharging];
-        }    
-        else {	  
-            priority = [
-                Creep.action.upgrading];
-        }
-        for(var iAction = 0; iAction < priority.length; iAction++) {
-            var action = priority[iAction];
-            if(action.isValidAction(creep) && 
-                action.isAddableAction(creep) && 
-                action.assign(creep)) {
-                    return;
-            }
+            if(CHATTY) creep.say('upgrading', SAY_PUBLIC);
+
+            if( creep.pos.getRangeTo(creep.room.controller) <= 3 ) {
+                let workResult = creep.upgradeController(creep.room.controller);
+                if( [ERR_NOT_ENOUGH_RESOURCES, OK].includes(workResult) ) {
+                } else {
+                    if( DEBUG ) logErrorCode(creep, workResult);
+                    creep.data.actionName = null;
+                }
+            }             
+            if(creep.carry.energy < (creep.carryCapacity * 0.5) ) {
+                let cont = creep.pos.findInRange(creep.room.chargeablesOut, 1, {
+                    filter: function(c){ 
+                        return c && c.store && c.store[RESOURCE_ENERGY] > 0;
+                    }
+                });
+                if( cont ) creep.withdraw(cont[0], RESOURCE_ENERGY);
+            } 
+            let range = creep.pos.getRangeTo(creep.target);
+            if( range > 0 )
+                creep.action.drive(creep, creep.target.pos, 5);
         }
     }
 }

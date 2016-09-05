@@ -208,11 +208,13 @@ var mod = {
                 let oldId = creep.target.id || creep.target.name; 
                 let target = creep.action.validateActionTarget(creep, creep.target);
                 if( !target ) {
+                    if( entry.creepType == "upgrader" ) console.log(creep.name + " new target");
                     entry.actionName = null;
                     entry.targetId = null;
                     creep.action = null;
                     creep.target = null;
                 } else if( oldId != target.id || target.name ) {
+                    if( entry.creepType == "upgrader" ) console.log(creep.name + " new target2");
                     this.registerAction( creep, creep.action, target, entry );
                 }
             }
