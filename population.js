@@ -139,6 +139,7 @@ var mod = {
         else this.typeWeight[entry.creepType] += entry.weight;
     },
     loop: function(){
+        delete Memory.population.roomName;
         if(_.isUndefined(Memory.population)) {
             Memory.population = {};
         }        
@@ -150,7 +151,7 @@ var mod = {
         let register = entry => {
             let creep = Game.creeps[entry.creepName];
             if ( !creep ) {
-                if(DEBUG) console.log(dye(CRAYON.system, entry.motherSpawn + ' &gt; ') + dye(CRAYON.death, 'Good night ' + entry.creepName + '!') );
+                if(DEBUG) console.log(dye(CRAYON.system, entry.homeRoom + ' &gt; ') + dye(CRAYON.death, 'Good night ' + entry.creepName + '!') );
                 this.unregisterCreep(entry.creepName);
             } 
             else {                
