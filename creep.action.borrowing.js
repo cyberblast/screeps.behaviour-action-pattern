@@ -1,4 +1,4 @@
-var action = new Creep.Action('withdrawing');
+var action = new Creep.Action('borrowing');
 action.maxPerTarget = 2;
 action.isAddableAction = function (target) {
     return true;
