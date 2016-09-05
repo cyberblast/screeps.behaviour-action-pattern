@@ -255,9 +255,6 @@ var mod = {
 
         Room.prototype.roadTick = function(next = ROUTE_PLANNER_INTERVAL, minVisits = ROUTE_PLANNER_MIN_VISITS) {
             this.routePlaner.tick = Game.time + next; // next check
-            let min = Math.min( // min or mean
-                minVisits, 
-                this.routePlaner.data.reduce( (a,b) => a + b ) / this.routePlaner.data); 
 
             let data = Object.keys(this.routePlaner.data)
                 .map( k => { 
@@ -267,11 +264,17 @@ var mod = {
                         'x': k.charCodeAt(0)-32, // extract x from key
                         'y': k.charCodeAt(1)-32 // extraxt y from key
                     };
-                }).filter( e => {
-                    return e.n > min && 
-                        this.lookForAt(LOOK_STRUCTURES,e.x,e.y).length == 0 &&
-                        this.lookForAt(LOOK_CONSTRUCTION_SITES,e.x,e.y).length == 0;
                 });
+                
+            let min = Math.min( // min or mean
+                minVisits, 
+                (data.reduce( (a,b) => a.n + b.n ) ) / data.length); 
+                
+            data = data.filter( e => {
+                return e.n > min && 
+                    this.lookForAt(LOOK_STRUCTURES,e.x,e.y).length == 0 &&
+                    this.lookForAt(LOOK_CONSTRUCTION_SITES,e.x,e.y).length == 0;
+            });
             
             // build roads on all most frequent used fields
             let setSite = pos => {
