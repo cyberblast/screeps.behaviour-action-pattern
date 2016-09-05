@@ -39,7 +39,11 @@ var mod = {
                     filter: {'color': COLOR_ORANGE, 'secondaryColor': COLOR_ORANGE }
                 },
                 //COLOR_BROWN,
-                // COLOR_GREY,
+                reserve: { // reserve this room
+                    color: COLOR_GREY,
+                    secondaryColor: COLOR_GREY,
+                    filter: {'color': COLOR_GREY, 'secondaryColor': COLOR_GREY },
+                },
                 claim: { // claim this room
                     color: COLOR_WHITE, 
                     secondaryColor: COLOR_WHITE,
