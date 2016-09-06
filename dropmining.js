@@ -36,6 +36,7 @@ var mod = {
                 Creep.action.upgrading, 
                 Creep.action.idle];
         }
+        if( creep.room.population && creep.room.population.typeCount['hauler'] && creep.room.population.typeCount['hauler'] > 0 ) {
             priority.unshift(Creep.action.dropping);
         }
         for(var iAction = 0; iAction < priority.length; iAction++) {
