@@ -13,7 +13,7 @@ var mod = {
         action.isAddableAction = function(creep){ return true; };
         action.isAddableTarget = function(target){ return true; }; 
         action.step = function (creep) {
-            if(HONK) creep.say("Ups..", SAY_PUBLIC);
+            if(HONK) creep.say("Oops..", SAY_PUBLIC);
             return creep.drop(RESOURCE_ENERGY);
         }
         action.newTarget = function ( creep) {
