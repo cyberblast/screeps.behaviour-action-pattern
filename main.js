@@ -1,4 +1,4 @@
-/* https://github.com/cyberblast/screeps.behaviour-action-pattern */
+/* https://github.com/cyberblast/screeps.behaviour-action-pattern */ //d
 var params = require('./parameter');
 var glob = require('./global');
 glob.init(params);
