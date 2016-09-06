@@ -22,7 +22,7 @@ module.exports = {
             let contRange = creep.pos.getRangeTo(container);
             let controllerRange = creep.pos.getRangeTo(creep.room.controller);
 
-            if( contRange < 2 && creep.carry.energy <= (creep.data.body ? creep.data.body.work : 50)) 
+            if( contRange < 2 && creep.carry.energy <= (creep.data.body&&creep.data.body.work ? creep.data.body.work : 50)) 
                 creep.withdraw(container, RESOURCE_ENERGY);
             if( controllerRange < 4 ) 
                 creep.upgradeController(creep.room.controller);

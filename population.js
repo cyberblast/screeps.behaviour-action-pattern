@@ -24,7 +24,7 @@ var mod = {
             targetId: null,
             spawningTime: 0, 
             flagName: null,
-            body: _.countBy(this.body, 'type')
+            body: _.countBy(body, 'type')
         });
         this.countCreep(room, entry);
     }, 
