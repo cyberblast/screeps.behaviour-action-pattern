@@ -79,7 +79,12 @@ module.exports = {
                                 action.isAddableAction(creep) && 
                                 action.assign(creep))
                                 return;
-                        }     
+                        }
+                        // no targets in current room
+                        creep.flag.cloaking = 10;
+                        if( this.exploitNextRoom(creep) )
+                            return;
+
                     }
                 }
                 // carrier full
