@@ -139,7 +139,6 @@ var mod = {
         else this.typeWeight[entry.creepType] += entry.weight;
     },
     loop: function(){
-        delete Memory.population.roomName;
         if(_.isUndefined(Memory.population)) {
             Memory.population = {};
         }        
