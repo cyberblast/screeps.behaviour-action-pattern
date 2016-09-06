@@ -39,14 +39,7 @@ var Setup = function(typeName){
         let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, HEAL, MOVE];
         let indexOfA = partsOrder.indexOf(a);
         let indexOfB = partsOrder.indexOf(b);
-  
-        if (indexOfA < indexOfB) {
-            return -1;
-        } else if (indexOfA > indexOfB) {
-            return 1;
-        } else {
-            return 0;
-        }
+        return indexOfA - indexOfB;
     };
     this.buildParams = function(spawn){
         var memory = {
