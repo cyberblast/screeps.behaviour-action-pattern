@@ -3,6 +3,7 @@ var mod = {
         Creep.action.dropping = this.droppingAction();
         Creep.behaviour.miner.nextAction = this.minerBehaviourNextAction;
         Creep.behaviour.hauler.nextAction = this.haulerBehaviourNextAction;
+        Creep.setup.hauler.maxCount = () => 2;
     }, 
     droppingAction: function() {
         var action = new Creep.Action('dropping');
@@ -28,13 +29,14 @@ var mod = {
         }
         else {	  
             priority = [
-                Creep.action.dropping, 
                 Creep.action.storing, 
                 Creep.action.feeding, 
                 Creep.action.building, 
                 Creep.action.repairing, 
                 Creep.action.upgrading, 
                 Creep.action.idle];
+        }
+            priority.unshift(Creep.action.dropping);
         }
         for(var iAction = 0; iAction < priority.length; iAction++) {
             var action = priority[iAction];
