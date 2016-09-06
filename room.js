@@ -174,7 +174,7 @@ var mod = {
                 get: function() {
                     if( _.isUndefined(this._fuelables) ){
                         var that = this; 
-                        var factor = that.situation.invasion ? 1 : (1-(0.18/that.towers.length));
+                        var factor = that.situation.invasion ? 1 : 0.82;
                         var fuelable = target => (target.energy < (target.energyCapacity * factor));
                         this._fuelables = _.sortBy( _.filter(this.towers, fuelable), 'energy') ; // TODO: Add Nuker
                     }
