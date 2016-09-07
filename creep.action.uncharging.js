@@ -12,19 +12,15 @@ action.newTarget = function(creep){
         // take from fullest IN container what have energy
         let target = null;
         let energy = 0;
-
         let fullest = o => {
-            let toWihdrow = o.targetOf? _.sum(o.targetOf.filter(t => t.actionName == 'uncharging')
-            .map( t => {
-                let cr = Game.creeps[t.creepName];
-                return cr.carryCapacity - _.sum(cr.carry);
-            })) : 0;
+            let toWihdrow = o.targetOf? _.sum(o.targetOf.filter(t => t.actionName == 'uncharging').map( t => t.carryCapacityLeft )) : 0;
             //let count = o.targetOf ? _.countBy(o.targetOf, 'creepType')['hauler'] : 0;
             let e = o.store.energy - toWihdrow;
             if( e  > energy ){
                 energy = e ;
                 target = o;
             }
+
         };
 
         _.forEach(creep.room.chargeablesIn, fullest);
