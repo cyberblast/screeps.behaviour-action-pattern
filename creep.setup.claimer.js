@@ -14,7 +14,7 @@ setup.maxCount = function(spawn){
         return ((flag.color == FLAG_COLOR.claim.color && flag.secondaryColor == FLAG_COLOR.claim.secondaryColor) || (flag.color == FLAG_COLOR.claim.reserve.color && flag.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor)) &&
             (!flag.room || 
             (!flag.room.controller || !flag.room.controller.reservation) || 
-            flag.room.controller.reservation.ticksToEnd < 4000)}).length;
+            flag.room.controller.reservation.ticksToEnd < 3500)}).length;
 }
 setup.maxWeight = function(spawn){
     return null; // TODO: limit regarding to missing reservation points
