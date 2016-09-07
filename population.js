@@ -60,6 +60,9 @@ var mod = {
         }
         // register action
         entry.actionName = action.name;
+        // how much we can still pickup?
+        entry.energyCapacityLeft = creep.energyCapacity - _.sum(creep.store);
+
         if( room.population.actionCount[action.name] === undefined )
             room.population.actionCount[action.name] = 1;
         else room.population.actionCount[action.name]++;

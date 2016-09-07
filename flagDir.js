@@ -11,7 +11,7 @@ var mod = {
         });
     },
     list:[], 
-    findName: function(flagColor, pos, local, rangeMod, rangeModPerCrowd, rangeModByType){
+    findName: function(flagColor, pos, local, mod, arg3, arg4){
         let that = this;
         if( flagColor == null || this.list.length == 0) 
             return null;
@@ -36,16 +36,16 @@ var mod = {
                 if( roomDist == 0 )
                     r = _.max([Math.abs(flag.x-pos.x), Math.abs(flag.y-pos.y)]);
                 else r = roomDist * 50;
-                if( rangeMod ){
-                    r = rangeMod(r, flag, rangeModPerCrowd, rangeModByType);
+                if( mod ){
+                    r = mod(r, flag, arg3, arg4);
                 }
                 return r;
             };
             return _.sortBy(flags, range)[0].name;
         } else return flags[0];
     }, 
-    find: function(flagColor, pos, local, rangeMod, rangeModPerCrowd, rangeModByType){
-        let id = this.findName(flagColor, pos, local, rangeMod, rangeModPerCrowd, rangeModByType);
+    find: function(flagColor, pos, local, mod, arg3, arg4){
+        let id = this.findName(flagColor, pos, local, mod, arg3, arg4);
         if( id === null ) 
             return null;
         return Game.flags[id];
@@ -110,6 +110,12 @@ var mod = {
         } else crowd = 0; // not targetted
         return range + ( crowd * (rangeModPerCrowd || 10) );
     }, 
+    claimMod: function(range, flagItem){
+        // add reservation amount to range (to prefer those with least reservation)
+        var flag = Game.flags[flagItem.name];
+        let ticksToEnd = flag.room && flag.room.controller && flag.room.controller.reservation ? flag.room.controller.reservation.ticksToEnd : 0;
+        return range + ticksToEnd;
+    },
     hasInvasionFlag: function(){
         if( _.isUndefined(this._hasInvasionFlag) ) {
             this._hasInvasionFlag = (this.findName(FLAG_COLOR.invade) != null) || (this.findName(FLAG_COLOR.destroy) != null);

@@ -46,8 +46,6 @@ module.exports = {
             // at target room
             if( creep.flag && creep.flag.pos.roomName == creep.pos.roomName ){
                 // carrier not full
-
-
                 if( _.sum(creep.carry) < creep.carryCapacity ) {
                     // sources depleted
                     if( creep.room.sourceEnergyAvailable == 0 ){
@@ -84,14 +82,11 @@ module.exports = {
                         creep.flag.cloaking = 10;
                         if( this.exploitNextRoom(creep) )
                             return;
-
                     }
                 }
                 // carrier full
                 else {
-                    Population.registerCreepFlag(creep, null);
-
-                    var actions = [Creep.action.building, Creep.action.repairing];
+                    var actions = [Creep.action.repairing, Creep.action.building];
                     for(var iAction = 0; iAction < actions.length; iAction++) {   
                         var action = actions[iAction];             
                         if(action.isValidAction(creep) && 
@@ -99,6 +94,7 @@ module.exports = {
                             action.assign(creep))
                             return;
                     }
+                    Population.registerCreepFlag(creep, null);
                     Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
                     return;
                 }

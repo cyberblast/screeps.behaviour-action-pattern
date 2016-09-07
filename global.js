@@ -161,9 +161,7 @@ var mod = {
             addById: function(array, id){
                 if(array == null) array = [];
                 var obj = Game.getObjectById(id);
-                if( !_.isUndefined(obj) ){
-                    array.push(obj);
-                }
+                if( obj ) array.push(obj);
                 return array;
             },
             processReports: function(){

@@ -9,15 +9,16 @@ action.newTarget = function(creep){
     var that = this;
     let isAddable = target => that.isValidTarget(target);    
     if( ['hauler', 'worker'].includes(creep.data.creepType) && creep.room.chargeablesIn.length > 0 && creep.room.chargeablesOut.length > 0 ) {
-        // take from fullest IN container 
+        // take from fullest IN container having energy
         let target = null;
-        let energy = 0; 
-        let fullest = o => {
-            let count = o.targetOf ? _.countBy(o.targetOf, 'creepType')['hauler'] : 0;
-            let e = o.store.energy / (count ? count+1 : 1);
+        let energy = 0;
+        let fullest = cont => {
+            let e = cont.targetOf ? 
+                cont.store.energy - _.sum( cont.targetOf.map( t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 ))) : 
+                cont.store.energy;
             if( e  > energy ){
                 energy = e ;
-                target = o;
+                target = cont;
             }
         };
         _.forEach(creep.room.chargeablesIn, fullest);

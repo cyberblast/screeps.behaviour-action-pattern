@@ -28,9 +28,15 @@ action.run = {
         var range = creep.pos.getRangeTo(creep.target);
         if( range > 3 ){
             var path = creep.room.findPath(creep.pos, creep.target.pos, {ignoreCreeps: true});
-            var isRampart = _.some( creep.room.lookForAt(LOOK_STRUCTURES, path[0].x, path[0].y), {'structureType': STRUCTURE_RAMPART });
-            if(!isRampart){
-                creep.move(path[0].direction);
+            if( path && path.length > 0 ) {
+                var isRampart = _.some( creep.room.lookForAt(LOOK_STRUCTURES, path[0].x, path[0].y), {'structureType': STRUCTURE_RAMPART });
+                if(!isRampart){
+                    creep.move(path[0].direction);
+                }
+            } else {
+                // no path -> try to move by direction
+                var direction = creep.pos.getDirectionTo(creep.target);
+                creep.move(direction);
             }
         }
         if( range < 3 ){

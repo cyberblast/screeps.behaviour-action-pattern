@@ -1,12 +1,11 @@
 var action = new Creep.Action('repairing');
 action.targetRange = 3;
 action.isValidAction = function(creep){
-    return (creep.carry.energy > 0 && creep.room.urgentRepairableSites.length > 0 );
+    return (creep.carry.energy > 0 );
 };
 action.isValidTarget = function(target){
     return ( target != null && target.hits != null && 
-    target.hits < target.hitsMax && 
-    target.hits < LIMIT_URGENT_REPAIRING);
+    target.hits < target.hitsMax);
 };   
 action.newTarget = function(creep){
     var that = this;

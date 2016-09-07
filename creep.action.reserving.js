@@ -5,7 +5,7 @@ action.isValidTarget = function(target){ return true; };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; }; 
 action.newTarget = function(creep){
-    let flag = FlagDir.find(FLAG_COLOR.claim.reserve, creep.pos, false, FlagDir.rangeMod);
+    let flag = FlagDir.find(FLAG_COLOR.claim.reserve, creep.pos, false, FlagDir.claimMod);
     if( flag ) { 
         Population.registerCreepFlag(creep, flag);
     } 
@@ -32,24 +32,24 @@ action.newTarget = function(creep){
 };
 
 action.step = function(creep){
-        if(CHATTY) creep.say(this.name, SAY_PUBLIC);  
-        if( creep.target.color ){
-            if( creep.flag.pos.roomName == creep.pos.roomName ) 
-                creep.data.targetId = null;
-            this.drive(creep, creep.target.pos, Infinity);
-            return;
-        }
+    if(CHATTY) creep.say(this.name, SAY_PUBLIC);  
+    if( creep.target.color ){
+        if( creep.flag.pos.roomName == creep.pos.roomName ) 
+            creep.data.targetId = null;
+        this.drive(creep, creep.target.pos, Infinity);
+        return;
+    }
 
-        let range = creep.pos.getRangeTo(creep.target);
-        if( range <= this.targetRange ) {
-            var workResult = this.work(creep);
-            if( workResult != OK ) {
-                if( DEBUG ) logErrorCode(creep, workResult);
-                creep.data.actionName = null;
-            }
-        } 
-        if( range > 1 )
-            this.drive(creep, creep.target.pos, range);
+    let range = creep.pos.getRangeTo(creep.target);
+    if( range <= this.targetRange ) {
+        var workResult = this.work(creep);
+        if( workResult != OK ) {
+            if( DEBUG ) logErrorCode(creep, workResult);
+            creep.data.actionName = null;
+        }
+    } 
+    if( range > 1 )
+        this.drive(creep, creep.target.pos, range);
 };
 action.work = function(creep){
     var workResult;
