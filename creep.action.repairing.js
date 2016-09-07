@@ -5,8 +5,7 @@ action.isValidAction = function(creep){
 };
 action.isValidTarget = function(target){
     return ( target != null && target.hits != null && 
-    target.hits < target.hitsMax && 
-    target.hits < LIMIT_URGENT_REPAIRING);
+    target.hits < target.hitsMax;
 };   
 action.newTarget = function(creep){
     var that = this;
