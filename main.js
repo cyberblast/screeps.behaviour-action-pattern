@@ -8,7 +8,8 @@ Creep.extend();
 Room.extend();  
 Spawn.extend();
 FlagDir.extend();
-require('./dropmining').extend();
+// uncomment the following line to activate dropmining
+// require('./dropmining').extend();
 
 module.exports.loop = function () {
     FlagDir.loop();
