@@ -118,10 +118,11 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._repairableSites) ){ 
-                        this._repairableSites = _.sortBy(this.find(FIND_STRUCTURES, {
+                        let that = this;
+                        this._repairableSites = _.sortBy(that.find(FIND_STRUCTURES, {
                             filter: (structure) => (
                                 structure.hits < structure.hitsMax && 
-                                structure.hits < TOWER_REPAIR_LIMITS[this.controller.level] && 
+                                (!that.controller || !that.controller.my || structure.hits < TOWER_REPAIR_LIMITS[that.controller.level] ) && 
                                 ( ![STRUCTURE_ROAD, STRUCTURE_CONTAINER].includes(structure.structureType) || structure.hitsMax - structure.hits > GAP_REPAIR_DECAYABLE ) && 
                                 (structure.towers === undefined || structure.towers.length == 0)) }) , 
                             'hits'
