@@ -80,13 +80,17 @@ var mod = {
         return _.countBy(this.list, filter).true || 0;
     },
     filter: function(flagColor, pos, local){
-        let that = this;
         if( flagColor == null || this.list.length == 0) 
             return 0;
 
         let filter = flagColor.filter;
         if( local && pos && pos.roomName )
             _.assign(filter, {roomName: pos.roomName});
+        return _.filter(this.list, filter);
+    },
+    filterCustom: function(filter){
+        if( filter == null || this.list.length == 0) 
+            return 0;
         return _.filter(this.list, filter);
     },
     roomDistance: function(roomName1, roomName2, diagonal){
@@ -108,7 +112,7 @@ var mod = {
             } else // count all creeps
                 crowd = flag.targetOf.length;
         } else crowd = 0; // not targetted
-        return range + ( crowd * (rangeModPerCrowd || 10) );
+        return range + ( crowd * (rangeModPerCrowd || 20) );
     }, 
     claimMod: function(range, flagItem){
         var flag = Game.flags[flagItem.name];
@@ -117,6 +121,13 @@ var mod = {
         // add when already assigned
         let crowd = flag.targetOf ? flag.targetOf.length : 0;
         return range + ( crowd * 300 );
+    },
+    exploitMod: function(range, flagItem){
+        var flag = Game.flags[flagItem.name];
+        let reserved = flag.targetOf ? _.sum( flag.targetOf.map( t => t.carryCapacityLeft)) : 0;
+        if( flag.room ) 
+            range /= ((flag.room.sourceEnergyAvailable-reserved)/1500);
+        return range;
     },
     hasInvasionFlag: function(){
         if( _.isUndefined(this._hasInvasionFlag) ) {

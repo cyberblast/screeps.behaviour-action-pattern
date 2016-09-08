@@ -4,7 +4,7 @@ action.isValidAction = function(creep){
     return (creep.carry.energy > 0 );
 };
 action.isValidTarget = function(target){
-    return ( target != null && target.hits != null && 
+    return ( target != null && target.hits && 
     target.hits < target.hitsMax);
 };   
 action.newTarget = function(creep){

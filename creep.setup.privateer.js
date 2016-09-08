@@ -10,6 +10,21 @@ setup.minEnergyAvailable = function(spawn){
     return 0.8;
 };
 setup.maxWeight = function(spawn){
-    return FlagDir.count(FLAG_COLOR.invade.exploit) * 3000;
+    let flagEntries = FlagDir.filter(FLAG_COLOR.invade.exploit);
+    let max = 0;
+    let base = 2800;
+    let flagWeight = flagEntry => {
+        var flag = Game.flags[flagEntry.name];
+        let room;
+        if( flag && (room = flag.room) ) {
+            max += base * room.sources.length * (
+                (room.controller && (room.controller.my || 
+                (room.controller.reservation && room.controller.reservation.username == spawn.owner.username))) 
+                ? 2 : 1);
+        }
+    };
+    _.forEach(flagEntries, flagWeight);
+    return max;
+    //return FlagDir.count(FLAG_COLOR.invade.exploit) * 3000;
 }
 module.exports = setup;

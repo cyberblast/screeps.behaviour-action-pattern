@@ -117,7 +117,7 @@ module.exports = {
         Creep.action.idle.assign(creep);
     },
     exploitNextRoom: function(creep){
-        let flag = FlagDir.find(FLAG_COLOR.invade.exploit, creep.pos, false, FlagDir.rangeMod);
+        let flag = FlagDir.find(FLAG_COLOR.invade.exploit, creep.pos, false, FlagDir.exploitMod);
         // new flag found
         if( flag ) {
             // travelling
