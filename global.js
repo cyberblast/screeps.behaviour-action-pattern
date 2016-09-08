@@ -77,6 +77,10 @@ var mod = {
                 claim: 600, 
                 tough: 10
             },
+            DECAYABLES: [
+                STRUCTURE_ROAD, 
+                STRUCTURE_CONTAINER, 
+                STRUCTURE_RAMPART], 
             translateErrorCode: function(code){
                 var codes = {
                     0: 'OK',

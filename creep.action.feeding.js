@@ -6,7 +6,7 @@ action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };   
 action.isAddableAction = function(creep){
-    return true;//(!creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < (creep.room.maxPerJob * (creep.room.relativeEnergyAvailable < HIVE_ENERGY_URGENT ? 2 : 1)) );
+    return true;
 };
 action.newTarget = function(creep){
     var that = this;
