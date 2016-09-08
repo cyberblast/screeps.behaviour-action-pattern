@@ -318,9 +318,7 @@ var mod = {
         };
         Room.prototype.saveChargeables = function(){
             let chargeables = this.find(FIND_STRUCTURES, {
-                filter: (structure) => (
-                    structure.structureType == STRUCTURE_CONTAINER ||
-                    structure.structureType == STRUCTURE_LINK)
+                filter: (structure) => ( structure.structureType == STRUCTURE_CONTAINER )
             });
             if( chargeables.length > 0 ){
                 var id = obj => obj.id;
