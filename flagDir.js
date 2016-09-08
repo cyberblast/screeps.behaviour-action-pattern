@@ -111,10 +111,12 @@ var mod = {
         return range + ( crowd * (rangeModPerCrowd || 10) );
     }, 
     claimMod: function(range, flagItem){
-        // add reservation amount to range (to prefer those with least reservation)
         var flag = Game.flags[flagItem.name];
-        let ticksToEnd = flag.room && flag.room.controller && flag.room.controller.reservation ? flag.room.controller.reservation.ticksToEnd : 0;
-        return range + ticksToEnd;
+        // add reservation amount to range (to prefer those with least reservation)
+        range += flag.room && flag.room.controller && flag.room.controller.reservation ? flag.room.controller.reservation.ticksToEnd : 0;
+        // add when already assigned
+        let crowd = flag.targetOf ? flag.targetOf.length : 0;
+        return range + ( crowd * 300 );
     },
     hasInvasionFlag: function(){
         if( _.isUndefined(this._hasInvasionFlag) ) {
