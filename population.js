@@ -34,6 +34,7 @@ var mod = {
     }, 
     registerAction: function(creep, action, target, entry) {
         if( entry === undefined ) entry = this.getCreep(creep.name);
+        entry.energyCapacityLeft = creep.carryCapacity - _.sum(creep.carry);
         let room = creep.room;
         if( room.population === undefined ) {
             room.population = {
@@ -60,9 +61,6 @@ var mod = {
         }
         // register action
         entry.actionName = action.name;
-        // how much we can still pickup?
-        entry.energyCapacityLeft = creep.energyCapacity - _.sum(creep.store);
-
         if( room.population.actionCount[action.name] === undefined )
             room.population.actionCount[action.name] = 1;
         else room.population.actionCount[action.name]++;
