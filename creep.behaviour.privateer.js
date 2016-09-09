@@ -20,17 +20,14 @@ module.exports = {
     nextAction: function(creep){
         // at home
         if( creep.pos.roomName == creep.data.homeRoom ){ 
-            // has non energy sources
-            if( _.sum(creep.carry) > creep.carry.energy && Creep.action.storing.assign(creep) ) 
-                return; 
-            // has energy
-            if( creep.carry.energy > 0 ){
-                if( Creep.action.charging.assign(creep) ) return;
+            // carrier filled
+            if( _.sum(creep.carry) > 0 ){
                 if( Creep.action.storing.assign(creep) ) return;
+                if( Creep.action.charging.assign(creep) ) return;
                 Creep.behaviour.worker.nextAction(creep);
                 return;
             }
-            // has no energy
+            // empty
             // travelling
             if( this.exploitNextRoom(creep) ) 
                 return;
