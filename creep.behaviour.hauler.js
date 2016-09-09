@@ -39,6 +39,9 @@ module.exports = {
         if( _.sum(creep.carry) > creep.carry.energy ) {
             priority.unshift(Creep.action.storing);
         }
+        if( creep.room.urgentRepairableSites.length > 0 ) {
+            priority.unshift(Creep.action.fueling); 
+        }
         for(var iAction = 0; iAction < priority.length; iAction++) {
             var action = priority[iAction];
             if(action.isValidAction(creep) && 
