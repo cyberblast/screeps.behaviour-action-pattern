@@ -21,7 +21,7 @@ action.newTarget = function(creep){
         creep.flag.setColor(FLAG_COLOR.claim.spawn.color, FLAG_COLOR.claim.spawn.secondaryColor);
         // TODO: remove exploit flags
         let remove = f => Game.flags[f.name].remove();
-        _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit.filter, creep.flag.pos, true), remove);
+        _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit, creep.flag.pos, true), remove);
         // no valid target for claimer
         return null;
     }
