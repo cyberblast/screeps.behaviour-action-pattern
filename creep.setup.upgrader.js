@@ -1,7 +1,7 @@
 var setup = new Creep.Setup('upgrader');
-setup.multiBody = [WORK, WORK, WORK, WORK, MOVE];
-setup.fixedBody = [WORK, WORK, CARRY, CARRY, MOVE];
-setup.minAbsEnergyAvailable = 350;
+setup.multiBody = [WORK, WORK, WORK, MOVE];
+setup.fixedBody = [WORK, WORK, WORK, CARRY, MOVE];
+setup.minAbsEnergyAvailable = 400;
 setup.maxMulti = 4;
 setup.minEnergyAvailable = function(spawn){
     return 0.5;
