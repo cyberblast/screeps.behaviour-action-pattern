@@ -53,6 +53,7 @@ var mod = {
     loop: function(){
         this.list = [];
         delete this._hasInvasionFlag;
+        delete this._privateerMaxWeight;
         var register = flag => {
             flag.creeps = {};
             delete flag.targetOf;
@@ -135,8 +136,25 @@ var mod = {
         }
         return this._hasInvasionFlag;
     }, 
-    setTest: function(val){
-        this._test = val;
+    privateerMaxWeight: function(spawn){
+        if( _.isUndefined(this._privateerMaxWeight) ) {
+            let flagEntries = FlagDir.filter(FLAG_COLOR.invade.exploit);
+            this._privateerMaxWeight = 0;
+            let base = 2800;
+            let flagWeight = flagEntry => {
+                var flag = Game.flags[flagEntry.name];
+                let room;
+                if( flag && (room = flag.room) ) {
+                    this._privateerMaxWeight += base * room.sources.length * (
+                        (room.controller && (room.controller.my || 
+                        (room.controller.reservation && room.controller.reservation.username == spawn.owner.username))) 
+                        ? 2 : 1);
+                }
+            };
+            _.forEach(flagEntries, flagWeight);
+        }
+        return this._privateerMaxWeight;
+        //return FlagDir.count(FLAG_COLOR.invade.exploit) * 3000;
     }
 }
 module.exports = mod;
