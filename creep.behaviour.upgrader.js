@@ -3,7 +3,7 @@ module.exports = {
     run: function(creep) {
         // get container @ controller
         if( !creep.data.conti ){
-            let conts = creep.room.chargeablesOut;
+            let conts = creep.room.containerOut;
             if( creep.room.storage) conts.push(creep.room.storage);
             let cont = creep.room.controller.pos.findInRange(conts, 3 ); 
             if( cont.length > 0 ) {

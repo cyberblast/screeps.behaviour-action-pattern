@@ -131,45 +131,16 @@ var mod = {
                     return this._repairableSites;
                 }
             },
-            'chargeables': {
+            'urgentRepairableSites': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.memory.chargeables)) {
-                        this.saveChargeables();
+                    if( _.isUndefined(this._urgentRepairableSites) ){ 
+                        var isUrgent = site => site.hits < LIMIT_URGENT_REPAIRING;
+                        this._urgentRepairableSites = _.filter(this.repairableSites, isUrgent);
                     }
-                    if( _.isUndefined(this._chargeables) ){ 
-                        this._chargeables = [];
-                        let add = id => { addById(this._chargeables, id); };
-                        _.forEach(this.memory.chargeables, add);
-                        let categorize = c => {
-                            let s = c.pos.findInRange(this.sources, 3);
-                            c.chargeableType = s.length > 0 ? 'IN' : 'OUT';
-                        };
-                        _.forEach(this._chargeables, categorize);
-                    }
-                    return this._chargeables;
+                    return this._urgentRepairableSites;
                 }
-            },
-            'chargeablesIn': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._chargeablesIn) ){ 
-                        let byType = c => c.chargeableType == 'IN';
-                        this._chargeablesIn = _.filter(this.chargeables, byType);
-                    }
-                    return this._chargeablesIn;
-                }
-            },
-            'chargeablesOut': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._chargeablesOut) ){ 
-                        let byType = c => c.chargeableType == 'OUT';
-                        this._chargeablesOut = _.filter(this.chargeables, byType);
-                    }
-                    return this._chargeablesOut;
-                }
-            },
+            }, 
             'fuelables': {
                 configurable: true,
                 get: function() {
@@ -182,16 +153,90 @@ var mod = {
                     return this._fuelables;
                 }
             },
-            'urgentRepairableSites': {
+            'container': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._urgentRepairableSites) ){ 
-                        var isUrgent = site => site.hits < LIMIT_URGENT_REPAIRING;
-                        this._urgentRepairableSites = _.filter(this.repairableSites, isUrgent);
+                    if( _.isUndefined(this.memory.container)) {
+                        this.saveContainers();
                     }
-                    return this._urgentRepairableSites;
+                    if( _.isUndefined(this._container) ){ 
+                        this._container = [];
+                        let add = entry => {
+                            let cont = Game.getObjectById(entry.id); 
+                            if( cont ) {
+                                _.assign(cont, entry);
+                                this._container.push(cont);
+                            }
+                        };
+                        _.forEach(this.memory.container, add);
+                    }
+                    return this._container;
                 }
-            }, 
+            },
+            // miners go to
+            'containerSource': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._containerSource) ){ 
+                        let byType = c => c.source === true;
+                        this._containerSource = _.filter(this.container, byType);
+                    }
+                    return this._containerSource;
+                }
+            },
+            // upgraders go to
+            'containerController': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.contai_containerControllernerController) ){ 
+                        let byType = c => c.controller == true;
+                        this._containerController = _.filter(this.container, byType);
+                    }
+                    return this._containerController;
+                }
+            },
+            // Pure IN - haulers get it
+            'containerIn': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._containerIn) ){ 
+                        let byType = c => c.source === true && c.controller == false;
+                        this._containerIn = _.filter(this.container, byType);
+                    }
+                    return this._containerIn;
+                }
+            },
+            // Pure Out - haulers fill it
+            'containerOut': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._containerOut) ){ 
+                        let byType = c => c.source === false;
+                        this._containerOut = _.filter(this.container, byType);
+                    }
+                    return this._containerOut;
+                }
+            },
+            // Managed - haulers keep it half filled
+            'containerManaged': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._containerManaged) ){ 
+                        let byType = c => c.source === true && c.controller == true;
+                        this._containerManaged = _.filter(this.container, byType);
+                    }
+                    return this._containerManaged;
+                }
+            },
+            'creeps': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._creeps) ){ 
+                        this._creeps = this.find(FIND_MY_CREEPS);
+                    }
+                    return this._creeps;
+                }
+            },
             'hostiles': {
                 configurable: true,
                 get: function() {
@@ -220,15 +265,6 @@ var mod = {
                         }
                     }
                     return this._situation;
-                }
-            },
-            'creeps': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._creeps) ){ 
-                        this._creeps = this.find(FIND_MY_CREEPS);
-                    }
-                    return this._creeps;
                 }
             },
             'casualties': {
@@ -316,14 +352,33 @@ var mod = {
                 this.memory.spawns = _.map(spawns, spawnId);
             } else this.memory.spawns = [];
         };
-        Room.prototype.saveChargeables = function(){
-            let chargeables = this.find(FIND_STRUCTURES, {
+        Room.prototype.saveContainers = function(){
+            if( _.isUndefined(this.memory.container) ){ 
+                this.memory.container = [];
+            } 
+            let containers = this.find(FIND_STRUCTURES, {
                 filter: (structure) => ( structure.structureType == STRUCTURE_CONTAINER )
             });
-            if( chargeables.length > 0 ){
-                var id = obj => obj.id;
-                this.memory.chargeables = _.map(chargeables, id);
-            } else this.memory.chargeables = [];
+            // for each memory entry, keep if existing
+            let kept = [];
+            let keep = (entry) => {
+                if( containers.find( (c) => c.id == entry.id ))
+                    kept.push(entry);                     
+            };
+            this.memory.container.forEach(keep);
+            this.memory.container = kept;
+
+            // for each container add to memory ( if not contained )
+            let add = (cont) => {
+                if( !this.memory.container.find( (i) => i.id == cont.id ) ) {
+                    this.memory.container.push({
+                        id: cont.id, 
+                        source: (!!cont.pos.findInRange(this.sources, 1)), 
+                        controller: (!!cont.pos.findInRange(this.controller, 3))
+                    });
+                }
+            };
+            containers.forEach(add);
         };
 
         Room.prototype.loop = function(){
@@ -341,12 +396,12 @@ var mod = {
             delete this._maxPerJob;
             delete this._creeps
             delete this._casualties;
-            delete this._chargeables;
+            delete this._container;
 
             if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
                 this.saveTowers();
                 this.saveSpawns();
-                this.saveChargeables();
+                this.saveContainers();
             }
 
             var that = this;               

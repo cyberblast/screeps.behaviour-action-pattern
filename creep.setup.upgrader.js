@@ -7,10 +7,10 @@ setup.minEnergyAvailable = function(spawn){
     return 0.5;
 };
 setup.maxCount = function(spawn){
-    let chargeables = spawn.room.chargeablesOut;
-    if (spawn.room.storage) chargeables.push(spawn.room.storage);
-    if (chargeables.length > 0)
-        return spawn.room.controller.pos.findInRange(chargeables, 3 ) ? 1 : 0;
+    let container = spawn.room.containerOut;
+    if (spawn.room.storage) container.push(spawn.room.storage);
+    if (container.length > 0)
+        return spawn.room.controller.pos.findInRange(container, 3 ) ? 1 : 0;
     else return 0;
 };
 setup.maxWeight = function(spawn){

@@ -58,7 +58,7 @@ action.newTarget = function(creep){
 action.work = function(creep){
     if( creep.data.creepType == "miner") {
         if( creep.carry.energy > creep.carryCapacity*0.5 ) {
-            let cont = creep.pos.findInRange(creep.room.chargeables, 1, {
+            let cont = creep.pos.findInRange(creep.room.container, 1, {
                 filter: function(c){ 
                     return _.sum(c.store) < c.storeCapacity;
                 }

@@ -32,6 +32,9 @@ module.exports = {
                 Creep.action.fueling, 
                 Creep.action.storing, 
                 Creep.action.idle];
+            if( creep.room.controller && creep.room.controller.ticksToDowngrade < 2000 ) { // urgent upgrading 
+                priority.unshift(Creep.action.upgrading);
+            }
         }
         if( !creep.room.situation.invasion && _.sum(creep.carry) < creep.carryCapacity) {
             priority.unshift(Creep.action.picking);
