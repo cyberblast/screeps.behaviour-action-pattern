@@ -10,11 +10,10 @@ var mod = {
                 // Heal
                 var target = tower.room.casualties[0];
                 if(target.hitsMax - target.hits >= 400 || !tower.room.situation.invasion) {
-                    if( target.towers === undefined ) {
-                        target.towers = [];
-                    }
-                    target.towers.push(tower.id);
                     tower.heal(target);
+                    if( target.towers === undefined ) 
+                        target.towers = [];
+                    target.towers.push(tower.id);
                     return;
                 }
             } 
@@ -22,8 +21,9 @@ var mod = {
                 // urgent Repair
                 var target = tower.room.urgentRepairableSites[0]; 
                 tower.repair(target);
-                if( target.towers === undefined ) target.towers = [];
-                    target.towers.push(tower.id);
+                if( target.towers === undefined ) 
+                    target.towers = [];
+                target.towers.push(tower.id);
                 return;
             } 
             var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
@@ -36,8 +36,10 @@ var mod = {
                 var isAddable = target => (target.towers === undefined || target.towers.length == 0);
                 var target = _.find(tower.room.repairableSites, isAddable);
                 if( !_.isUndefined(target) ){
-                    target.towers.push(tower.id);
                     tower.repair(target);
+                    if( target.towers === undefined ) 
+                        target.towers = [];
+                    target.towers.push(tower.id);
                 }
             }
         }
