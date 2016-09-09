@@ -38,13 +38,17 @@ action.newTarget = function(creep){
                 target = source;
                 break;
             } else {
-                let count = _.countBy(source.targetOf, 'creepType')[creep.data.creepType];
-                if( !count ) {
-                    sourceGuests = 0;
-                    target = source;
-                } else if( count < sourceGuests ) {
-                    sourceGuests = count;
-                    target = source;
+                let guests = _.countBy(source.targetOf, 'creepType');
+                // has dedicated miner? go away...
+                if( !guests.miner ) { 
+                    let count = guests[creep.data.creepType];
+                    if( !count ) {
+                        sourceGuests = 0;
+                        target = source;
+                    } else if( count < sourceGuests ) {
+                        sourceGuests = count;
+                        target = source;
+                    }
                 }
             }
         }
@@ -59,7 +63,7 @@ action.work = function(creep){
                     return _.sum(c.store) < c.storeCapacity;
                 }
             });
-            if( cont.length >0 ) creep.transfer(cont[0], RESOURCE_ENERGY);
+            if( cont.length > 0 ) creep.transfer(cont[0], RESOURCE_ENERGY);
         }
         let result = creep.harvest(creep.target);
         if (result == ERR_NOT_ENOUGH_RESOURCES) result = OK;
