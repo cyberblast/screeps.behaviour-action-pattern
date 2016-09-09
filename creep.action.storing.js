@@ -1,4 +1,6 @@
 var action = new Creep.Action('storing');
+action.maxPerTarget = 4;
+action.maxPerAction = 4;
 action.isValidAction = function(creep){
     return ( 
         creep.room.storage != null && 
