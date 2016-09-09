@@ -98,6 +98,29 @@ var Action = function(actionName){
         }
     };
     this.getPath = function(creep, target, ignoreCreeps) {
+
+        //defrent rooms? choose best routce main, marked or highways
+        if (creep.pos.roomName != target.roomName) {
+
+            var route = Game.map.findRoute(creep.room, target.roomName, {
+                routeCallback(roomName) {
+                    let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+                    let isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
+                    let isMyRoom = Game.rooms[roomName] &&
+                        Game.rooms[roomName].controller &&
+                        Game.rooms[roomName].controller.my;
+                    let isPrivateerRoom = FlagDir.find(FLAG_COLOR.invade.exploit, new RoomPosition(25, 28, roomName), true);
+                    if (isHighway || isMyRoom || isPrivateerRoom) {
+                        return 1;
+                    } else {
+                        return 30;
+                    }
+                }
+            });
+            if (route.length >0 )
+                target = new RoomPosition(25,25,route[0].room);
+        }
+
         let path = creep.room.findPath(creep.pos, target, {
             serialize: true, 
             ignoreCreeps: ignoreCreeps
