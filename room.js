@@ -10,8 +10,7 @@ var mod = {
                         if( sources.length > 0 ){
                             let add = source => {
                                 this.memory.sources.push({
-                                    id: source.id, 
-                                    container: null
+                                    id: source.id
                                 });
                             };
                             sources.forEach(add);
@@ -20,7 +19,7 @@ var mod = {
                     if( _.isUndefined(this._sources) ){  
                         this._sources = [];
                         var addSource = entry => { addById(this._sources, entry.id); };
-                        _.forEach(this.memory.sourceIds, addSource);
+                        _.forEach(this.memory.sources, addSource);
                     }
                     return this._sources;
                 }
@@ -221,7 +220,7 @@ var mod = {
                         this._containerOut = _.filter(this.container, byType);
                         // add managed                         
                         let isEmpty = c => _.sum(target.store) <= (target.storeCapacity * MANAGED_CONTAINER_TRIGGER);
-                        this._containerIn.concat(this.containerManaged.filter(isFull));
+                        this._containerOut.concat(this.containerManaged.filter(isFull));
                     }
                     return this._containerOut;
                 }

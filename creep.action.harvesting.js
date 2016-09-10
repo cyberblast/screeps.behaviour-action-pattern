@@ -11,23 +11,6 @@ action.isValidTarget = function(target){
     return (target != null && target.energy != null && target.energy > 0);
 };   
 action.newTarget = function(creep){
-    if( creep.data.determinatedTarget ) {
-        let target = Game.getObjectById(creep.data.determinatedTarget);
-        if( !target ) delete creep.data.determinatedTarget;
-        else return target;
-    }
-    if( creep.data.creepType == "miner" ) {
-        let notDeterminated = source => {
-            let hasThisSource = data => {return data.determinatedTarget == source.id};
-            let existingBranding = _.find(Memory.population, hasThisSource);
-            return !existingBranding;
-        };
-        let target = _.find(creep.room.sources, notDeterminated);
-        if( target ) {
-            creep.data.determinatedTarget = target.id;
-            return target;
-        }
-    }
     let target = null;
     let sourceGuests = 999;
     for( var iSource = 0; iSource < creep.room.sources.length; iSource++ ){
@@ -56,19 +39,6 @@ action.newTarget = function(creep){
     return target;
 };
 action.work = function(creep){
-    if( creep.data.creepType == "miner") {
-        if( creep.carry.energy > creep.carryCapacity*0.5 ) {
-            let cont = creep.pos.findInRange(creep.room.container, 1, {
-                filter: function(c){ 
-                    return _.sum(c.store) < c.storeCapacity;
-                }
-            });
-            if( cont.length > 0 ) creep.transfer(cont[0], RESOURCE_ENERGY);
-        }
-        let result = creep.harvest(creep.target);
-        if (result == ERR_NOT_ENOUGH_RESOURCES) result = OK;
-        return result;
-    } 
     return creep.harvest(creep.target);
 };
 module.exports = action;
