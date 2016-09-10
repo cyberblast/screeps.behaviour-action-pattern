@@ -22,6 +22,7 @@ var mod = {
     TIME_REPORT: 12500, // ticks between room reports
     REPORT_MAX_LENGTH: 500,
     REPORTS_PER_LOOP: 18, 
+    ROUTE_PLANNER_ENABLE: true, 
     ROUTE_PLANNER_INTERVAL: 500, 
     ROUTEPLANNER_MIN_DEVIATION: 1.2, 
     TIME_ZONE: 1, // zone offset in hours (-12 through +12) from UTC

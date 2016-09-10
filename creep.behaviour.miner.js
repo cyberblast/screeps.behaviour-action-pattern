@@ -44,7 +44,7 @@ module.exports = {
                 creep.drop(RESOURCE_ENERGY);
             }
         } else { 
-            logError(`Miner ${creep.name} has no source in room ${creep.pos.roomName}!`);
+            //if( DEBUG ) logError(`Miner ${creep.name} has no source in room ${creep.pos.roomName}!`);
             Creep.behaviour.worker.run(creep);
         }
     }

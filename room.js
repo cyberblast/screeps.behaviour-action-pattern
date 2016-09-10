@@ -330,6 +330,7 @@ var mod = {
         };
 
         Room.prototype.recordMove = function(creep){
+            if( !ROUTE_PLANNER_ENABLE ) return;
             let x = creep.pos.x;
             let y = creep.pos.y;
             if ( x == 0 || y == 0 || x == 49 || y == 49 || 
@@ -426,10 +427,10 @@ var mod = {
                 if( this.memory.statistics === undefined)
                     this.memory.statistics = {};
 
-                if( Game.time % ROUTE_PLANNER_INTERVAL == 0 && !this.constructionSites.find(c=> c.structureType == STRUCTURE_ROAD))
-                {
-                    this.roadTick();
-                }
+                if( ROUTE_PLANNER_ENABLE && 
+                    Game.time % ROUTE_PLANNER_INTERVAL == 0 && 
+                    !this.constructionSites.find(c=> c.structureType == STRUCTURE_ROAD))
+                        this.roadTick();
 
                 if( this.controller && this.controller.my ) {
                     var registerHostile = creep => {

@@ -8,7 +8,8 @@ setup.minEnergyAvailable = function(spawn){
     return 0.4;
 };
 setup.maxCount = function(spawn){
-    return (spawn.room.containerOut.length > 0 || spawn.room.storage ) ? 2 : 0; 
+    return (spawn.room.containerOut.length > 0 || spawn.room.storage || 
+        (creep.room.population && creep.room.population.typeCount['miner'] && creep.room.population.typeCount['miner'] > 0)) ? 2 : 0; 
 };
 setup.maxWeight = function(spawn){
     return 2000;
