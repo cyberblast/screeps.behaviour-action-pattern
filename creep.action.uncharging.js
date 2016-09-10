@@ -23,11 +23,6 @@ action.newTarget = function(creep){
         };
         _.forEach(creep.room.containerSource, fullest);
         return target;
-    } else if( creep.data.creepType == 'upgrader' && creep.room.containerSource.length > 0 && creep.room.containerOut.length > 0 ) {
-        // take from OUT container
-        return creep.pos.findClosestByRange(creep.room.containerOut, {
-            filter: isAddable
-        });
     } else {
         // take from any container
         return creep.pos.findClosestByRange(creep.room.container, {

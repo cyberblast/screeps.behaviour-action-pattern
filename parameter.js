@@ -25,6 +25,7 @@ var mod = {
     ROUTE_PLANNER_INTERVAL: 500, 
     ROUTEPLANNER_MIN_DEVIATION: 1.2, 
     TIME_ZONE: 1, // zone offset in hours (-12 through +12) from UTC
-    USE_SUMMERTIME: true // Please define isSummerTime in global.js to suit to your local summertime rules
+    USE_SUMMERTIME: true, // Please define isSummerTime in global.js to suit to your local summertime rules
+    MANAGED_CONTAINER_TRIGGER: 0.2 // managed containers get filled below this relative energy amount and emptied when above 1-this value
 }
 module.exports = mod;

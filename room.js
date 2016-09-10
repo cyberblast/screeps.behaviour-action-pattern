@@ -4,18 +4,22 @@ var mod = {
             'sources': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.memory.sourceIds) ) {
-                        this.memory.sourceIds = [];
+                    if( _.isUndefined(this.memory.sources) ) {
+                        this.memory.sources = [];
                         let sources = this.find(FIND_SOURCES);
                         if( sources.length > 0 ){
-                            var byAccess = source => source.accessibleFields;
-                            var sourceId = source => source.id;
-                            this.memory.sourceIds = _.map(_.sortBy(sources, byAccess), sourceId);
-                        } else this.memory.sourceIds = [];
+                            let add = source => {
+                                this.memory.sources.push({
+                                    id: source.id, 
+                                    container: null
+                                });
+                            };
+                            sources.forEach(add);
+                        };
                     }
                     if( _.isUndefined(this._sources) ){  
                         this._sources = [];
-                        var addSource = id => { addById(this._sources, id); };
+                        var addSource = entry => { addById(this._sources, entry.id); };
                         _.forEach(this.memory.sourceIds, addSource);
                     }
                     return this._sources;
@@ -188,31 +192,36 @@ var mod = {
             'containerController': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.contai_containerControllernerController) ){ 
+                    if( _.isUndefined(this._containerController) ){ 
                         let byType = c => c.controller == true;
                         this._containerController = _.filter(this.container, byType);
                     }
                     return this._containerController;
                 }
             },
-            // Pure IN - haulers get it
             'containerIn': {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerIn) ){ 
                         let byType = c => c.source === true && c.controller == false;
                         this._containerIn = _.filter(this.container, byType);
+                        // add managed                         
+                        let isFull = c => _.sum(target.store) >= (target.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
+                        this._containerIn.concat(this.containerManaged.filter(isFull));
+                        
                     }
                     return this._containerIn;
                 }
             },
-            // Pure Out - haulers fill it
             'containerOut': {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerOut) ){ 
                         let byType = c => c.source === false;
                         this._containerOut = _.filter(this.container, byType);
+                        // add managed                         
+                        let isEmpty = c => _.sum(target.store) <= (target.storeCapacity * MANAGED_CONTAINER_TRIGGER);
+                        this._containerIn.concat(this.containerManaged.filter(isFull));
                     }
                     return this._containerOut;
                 }
@@ -371,17 +380,24 @@ var mod = {
             // for each container add to memory ( if not contained )
             let add = (cont) => {
                 if( !this.memory.container.find( (i) => i.id == cont.id ) ) {
+                    let source = cont.pos.findInRange(this.sources, 1);
                     this.memory.container.push({
                         id: cont.id, 
-                        source: (!!cont.pos.findInRange(this.sources, 1)), 
+                        source: (!!source), 
                         controller: (!!cont.pos.findInRange(this.controller, 3))
                     });
+                    if( source ){
+                        Memory.sources[source.id].container = cont.id;
+                    }
                 }
             };
             containers.forEach(add);
         };
 
         Room.prototype.loop = function(){
+            // temporary cleanup
+            if( this.memory.sourceIds ) delete this.memory.sourceIds;
+
             delete this._sourceEnergyAvailable;
             delete this._ticksToNextRegeneration;
             delete this._relativeEnergyAvailable;
