@@ -8,7 +8,6 @@ setup.minEnergyAvailable = function(spawn){
     return 0.4;
 };
 setup.maxCount = function(spawn){
-    if (spawn.room.situation.invasion) return 0;
     return (spawn.room.chargeablesOut.length > 0 || spawn.room.storage ) ? 2 : 0; 
 };
 setup.maxWeight = function(spawn){
