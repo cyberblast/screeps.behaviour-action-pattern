@@ -25,6 +25,11 @@ var mod = {
     ROUTE_PLANNER_INTERVAL: 500, 
     ROUTEPLANNER_MIN_DEVIATION: 1.2, 
     TIME_ZONE: 1, // zone offset in hours (-12 through +12) from UTC
-    USE_SUMMERTIME: true // Please define isSummerTime in global.js to suit to your local summertime rules
+    USE_SUMMERTIME: true, // Please define isSummerTime in global.js to suit to your local summertime rules
+    DEFCON: 2  
+    // 1 = Always spawn defenders = Default behavior
+    // 2 = Store enough energy to quickly create defenders,  then create defenders when enemies arrive.  Must have storage. If you do not have storage, then defcon 1 is used.
+    // NOT IMPLEMENTED!! 3 = Always spawn defenders, and store enough energy to quickly create defenders 1 more set of defenders.  .  Must have storage. If you do not have storage, then defcon 1 is used.
+    
 }
 module.exports = mod;

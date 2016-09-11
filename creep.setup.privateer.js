@@ -10,6 +10,7 @@ setup.minEnergyAvailable = function(spawn){
     return 0.8;
 };
 setup.maxWeight = function(spawn){
+    if (spawn.room.situation.invasion) return 0;
     return FlagDir.privateerMaxWeight(spawn);
     //return FlagDir.count(FLAG_COLOR.invade.exploit) * 3000;
 }

@@ -7,11 +7,29 @@ setup.minEnergyAvailable = function(spawn){
     return 0.5;
 };
 setup.maxCount = function(spawn){
-    let chargeables = spawn.room.chargeablesOut;
-    if (spawn.room.storage) chargeables.push(spawn.room.storage);
-    if (chargeables.length > 0)
-        return spawn.room.controller.pos.findInRange(chargeables, 3 ) ? 1 : 0;
-    else return 0;
+
+    if (spawn.room.situation.invasion) return 0;
+
+    let getUpgraders = function () {
+
+        let chargeables = spawn.room.chargeablesOut;
+        if (spawn.room.storage) chargeables.push(spawn.room.storage);
+        
+        if (chargeables.length > 0)
+            return spawn.room.controller.pos.findInRange(chargeables, 3) ? 1 : 0;
+        else return 0;
+    };
+
+
+    if (DEFCON == 2 && setup.EnoughStorageIsAvailableForDefense(spawn)) {
+        return getUpgraders();
+    }
+    else {
+        return 0;
+    }
+
+
+
 };
 setup.maxWeight = function(spawn){
     return null;
