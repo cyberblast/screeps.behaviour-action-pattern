@@ -40,7 +40,7 @@ module.exports = {
 
             if( creep.carry.energy > ( creep.carryCapacity - 
                 ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) ))) {
-                if( HONK ) creep.say("Oops..", SAY_PUBLIC);
+                if( OOPS ) creep.say("Oops..", SAY_PUBLIC);
                 creep.drop(RESOURCE_ENERGY);
             }
         } else { 

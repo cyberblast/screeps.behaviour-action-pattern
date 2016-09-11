@@ -1,6 +1,7 @@
 var mod = {
     CHATTY: false, // creeps like talking 
     HONK: true, // HONK when stored path is blocked by other creeps
+    OOPS: false, // Creeps say Oops when dropping energy during dropmining
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details
     DROPMINING: false,  

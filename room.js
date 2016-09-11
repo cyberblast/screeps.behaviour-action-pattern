@@ -377,8 +377,8 @@ var mod = {
                     let source = cont.pos.findInRange(this.sources, 1);
                     this.memory.container.push({
                         id: cont.id, 
-                        source: (!!source), 
-                        controller: (!!cont.pos.findInRange(this.controller, 3))
+                        source: (source.length > 0), 
+                        controller: ( cont.pos.getRangeTo(this.controller) < 4 )
                     });
                     let assignContainer = s => s.memory.container = cont.id;
                     source.forEach(assignContainer);                    
