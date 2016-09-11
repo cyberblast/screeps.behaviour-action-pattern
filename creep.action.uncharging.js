@@ -5,10 +5,10 @@ action.isValidAction = function(creep){ return _.sum(creep.carry) < creep.carryC
 action.isValidTarget = function(target){
     return ( target && target.store && target.store.energy > 0 );
 };   
-action.newTarget = function(creep){
+action.newTarget = function(creep){ debugger;
     var that = this;
     let isAddable = target => that.isValidTarget(target);    
-    if( ['hauler', 'worker'].includes(creep.data.creepType) && creep.room.containerSource.length > 0 && creep.room.containerOut.length > 0 ) {
+    if( creep.room.containerIn.length > 0 ) {
         // take from fullest IN container having energy
         let target = null;
         let energy = 0;
@@ -21,14 +21,9 @@ action.newTarget = function(creep){
                 target = cont;
             }
         };
-        _.forEach(creep.room.containerSource, fullest);
+        _.forEach(creep.room.containerIn, fullest);
         return target;
-    } else {
-        // take from any container
-        return creep.pos.findClosestByRange(creep.room.container, {
-            filter: isAddable
-        });
-    } 
+    }
 };
 action.work = function(creep){
     return creep.withdraw(creep.target, RESOURCE_ENERGY);

@@ -39,8 +39,8 @@ module.exports = {
                 priority = [
                     Creep.action.picking,
                     Creep.action.repairing, 
-                    Creep.action.building, 
                     Creep.action.feeding, 
+                    Creep.action.building, 
                     Creep.action.fueling, 
                     Creep.action.upgrading, 
                     Creep.action.idle];

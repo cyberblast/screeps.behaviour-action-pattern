@@ -124,10 +124,13 @@ var mod = {
                         if( error ) creep.say(error);
                         else creep.say(code);
                     }
-                    var message = error + '\ncreep: '  + creep.name + '\naction: ' + creep.data.actionName + '\ntarget: ' + creep.data.targetId ;
+                    var message = error + '\nroom: ' + creep.pos.roomName + '\ncreep: '  + creep.name + '\naction: ' + creep.data.actionName + '\ntarget: ' + creep.data.targetId ;
                     console.log( dye(CRAYON.error, message) );
                     Game.notify( message, 120 );
-                } else console.log( dye(CRAYON.error, 'unknown error code!') );
+                } else {
+                    var message = 'unknown error code\nroom: ' + creep.pos.roomName + '\ncreep: '  + creep.name + '\naction: ' + creep.data.actionName + '\ntarget: ' + creep.data.targetId ;
+                    console.log( dye(CRAYON.error, message) );
+                }
             },
             logError: function(message) {
                 console.log( dye(CRAYON.error, message) );

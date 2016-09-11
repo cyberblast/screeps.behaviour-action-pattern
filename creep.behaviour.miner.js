@@ -19,8 +19,8 @@ module.exports = {
         if( source && source.container && _.sum(source.container.store) < source.container.storeCapacity )
         {
             if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
-
-            let contRange = source.container;
+            
+            let contRange = creep.pos.getRangeTo(source.container);
             let sourceRange = creep.pos.getRangeTo(source);
 
             if( contRange < 2 && creep.carry.energy > ( creep.carryCapacity - ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) )))

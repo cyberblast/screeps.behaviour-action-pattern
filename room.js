@@ -3,23 +3,17 @@ var mod = {
         Object.defineProperties(Room.prototype, {
             'sources': {
                 configurable: true,
-                get: function() {
-                    if( _.isUndefined(this.memory.sources) ) {
-                        this.memory.sources = [];
-                        let sources = this.find(FIND_SOURCES);
-                        if( sources.length > 0 ){
-                            let add = source => {
-                                this.memory.sources.push({
-                                    id: source.id
-                                });
-                            };
-                            sources.forEach(add);
-                        };
+                get: function() {debugger;
+                    if( _.isUndefined(this.memory.sources) ) {                        
+                        this._sources = this.find(FIND_SOURCES);
+                        if( this._sources.length > 0 ){
+                            this.memory.sources = this._sources.map(s => s.id);
+                        } else this.memory.sources = [];
                     }
                     if( _.isUndefined(this._sources) ){  
                         this._sources = [];
-                        var addSource = entry => { addById(this._sources, entry.id); };
-                        _.forEach(this.memory.sources, addSource);
+                        var addSource = id => { addById(this._sources, id); };
+                        this.memory.sources.forEach(addSource);
                     }
                     return this._sources;
                 }
@@ -205,10 +199,9 @@ var mod = {
                     if( _.isUndefined(this._containerIn) ){ 
                         let byType = c => c.source === true && c.controller == false;
                         this._containerIn = _.filter(this.container, byType);
-                        // add managed                         
-                        let isFull = c => _.sum(target.store) >= (target.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
-                        this._containerIn.concat(this.containerManaged.filter(isFull));
-                        
+                        // add managed
+                        let isFull = c => _.sum(c.store) >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
+                        this._containerIn = this._containerIn.concat(this.containerManaged.filter(isFull));
                     }
                     return this._containerIn;
                 }
@@ -220,8 +213,8 @@ var mod = {
                         let byType = c => c.source === false;
                         this._containerOut = _.filter(this.container, byType);
                         // add managed                         
-                        let isEmpty = c => _.sum(target.store) <= (target.storeCapacity * MANAGED_CONTAINER_TRIGGER);
-                        this._containerOut.concat(this.containerManaged.filter(isFull));
+                        let isEmpty = c => _.sum(c.store) <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
+                        this._containerOut = this._containerOut.concat(this.containerManaged.filter(isEmpty));
                     }
                     return this._containerOut;
                 }
@@ -387,9 +380,8 @@ var mod = {
                         source: (!!source), 
                         controller: (!!cont.pos.findInRange(this.controller, 3))
                     });
-                    if( source ){
-                        Memory.sources[source.id].container = cont.id;
-                    }
+                    let assignContainer = s => s.memory.container = cont.id;
+                    source.forEach(assignContainer);                    
                 }
             };
             containers.forEach(add);
@@ -414,6 +406,11 @@ var mod = {
             delete this._creeps
             delete this._casualties;
             delete this._container;
+            delete this._containerIn;
+            delete this._containerOut;
+            delete this._containerSource;
+            delete this._containerManaged;
+            delete this._containerController
 
             if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
                 this.saveTowers();

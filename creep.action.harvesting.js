@@ -3,14 +3,14 @@ action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(target){ 
     return (target.targetOf === undefined || target.targetOf.length < (target.accessibleFields));
 };
-action.isValidAction = function(creep){
+action.isValidAction = function(creep){debugger;
     return ( _.sum(creep.carry) < creep.carryCapacity && 
     creep.room.sourceEnergyAvailable > 0 );
 };
 action.isValidTarget = function(target){
     return (target != null && target.energy != null && target.energy > 0);
 };   
-action.newTarget = function(creep){
+action.newTarget = function(creep){debugger;
     let target = null;
     let sourceGuests = 999;
     for( var iSource = 0; iSource < creep.room.sources.length; iSource++ ){
@@ -20,10 +20,10 @@ action.newTarget = function(creep){
                 sourceGuests = 0;
                 target = source;
                 break;
-            } else {
+            } else {debugger;
                 let guests = _.countBy(source.targetOf, 'creepType');
-                // has dedicated miner? go away...
-                if( !guests.miner ) { 
+                // has dedicated miner, running drop or container? go away...
+                if( !guests.miner || !source.container || !creep.room.population || !creep.room.population.typeCount['hauler'] || creep.room.population.typeCount['hauler'] < 1 ) { 
                     let count = guests[creep.data.creepType];
                     if( !count ) {
                         sourceGuests = 0;
