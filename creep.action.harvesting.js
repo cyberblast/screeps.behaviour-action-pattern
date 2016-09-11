@@ -1,16 +1,22 @@
 var action = new Creep.Action('harvesting');
-action.isAddableAction = function(){ return true; };
-action.isAddableTarget = function(target){ 
-    return (target.targetOf === undefined || target.targetOf.length < (target.accessibleFields));
+action.isAddableAction = function(creep){ 
+    return (!creep.room.population || 
+        !creep.room.population.typeCount['hauler'] || 
+        creep.room.population.typeCount['hauler'] < 1); 
 };
-action.isValidAction = function(creep){debugger;
+action.isAddableTarget = function(target){ 
+    return (target.targetOf === undefined || 
+        target.targetOf.length < (target.accessibleFields) || 
+        !target.container );
+};
+action.isValidAction = function(creep){
     return ( _.sum(creep.carry) < creep.carryCapacity && 
     creep.room.sourceEnergyAvailable > 0 );
 };
 action.isValidTarget = function(target){
     return (target != null && target.energy != null && target.energy > 0);
 };   
-action.newTarget = function(creep){debugger;
+action.newTarget = function(creep){
     let target = null;
     let sourceGuests = 999;
     for( var iSource = 0; iSource < creep.room.sources.length; iSource++ ){
@@ -20,10 +26,10 @@ action.newTarget = function(creep){debugger;
                 sourceGuests = 0;
                 target = source;
                 break;
-            } else {debugger;
+            } else {
                 let guests = _.countBy(source.targetOf, 'creepType');
-                // has dedicated miner, running drop or container? go away...
-                if( !guests.miner || !source.container || !creep.room.population || !creep.room.population.typeCount['hauler'] || creep.room.population.typeCount['hauler'] < 1 ) { 
+                // has dedicated miner? go away...
+                if( !guests.miner ) { 
                     let count = guests[creep.data.creepType];
                     if( !count ) {
                         sourceGuests = 0;
