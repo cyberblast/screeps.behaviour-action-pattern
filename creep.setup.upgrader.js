@@ -8,7 +8,7 @@ setup.minEnergyAvailable = function(spawn){
 };
 setup.maxCount = function(spawn){
 
-    if (spawn.room.situation.invasion) return 0;
+    if (spawn.room.situation.invasion) return 0;  // Do not create in the middle of a fight
 
     let getUpgraders = function () {
 

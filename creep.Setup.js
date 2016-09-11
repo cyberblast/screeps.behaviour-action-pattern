@@ -50,7 +50,7 @@ var Setup = function(typeName){
         if (!spawn.room.storage) return false; // No storage so not enough. 
         let defensiveFlags = FlagDir.count(FLAG_COLOR.defense);
         let storeNeeded = (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * defensiveFlags; // what is needed based on the flags.
-        if (spawn.room.storage.store.energy >= storeNeeded) return true;
+        if (spawn.room.storage.store.energy >= storeNeeded) return true; // if we have enough storage then return true.
         else
             return false;
 

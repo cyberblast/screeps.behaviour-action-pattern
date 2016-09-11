@@ -8,7 +8,10 @@ setup.minEnergyAvailable = function(spawn){
     return 0.3;
 };
 setup.maxCount = function(spawn){
-    if (spawn.room.situation.invasion && setup.EnoughStorageIsAvailableForDefense(spawn)) return 0;
+
+    // Do not create in the middle of a fight unless we need to mine to survie.  Not sure about this one.  If we need a miner to build we are probably doomed anyway.
+    if (spawn.room.situation.invasion && setup.EnoughStorageIsAvailableForDefense(spawn)) return 0; 
+    
     return spawn.room.sources.length;
 };
 setup.maxWeight = function(spawn){

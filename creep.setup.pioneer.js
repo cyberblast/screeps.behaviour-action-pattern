@@ -10,7 +10,7 @@ setup.minEnergyAvailable = function(spawn){
     return 0.75;
 };
 setup.maxCount = function(spawn){
-    if (spawn.room.situation.invasion) return 0;
+    if (spawn.room.situation.invasion) return 0;  // Do not create in the middle of a fight
     return ( FlagDir.count(FLAG_COLOR.claim.spawn) * 4 ) + 
     ( FlagDir.count(FLAG_COLOR.claim.pioneer) * 1 );
 };
