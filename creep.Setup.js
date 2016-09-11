@@ -49,7 +49,7 @@ var Setup = function(typeName){
    
         let defensiveFlags = FlagDir.count(FLAG_COLOR.defense);
         
-        if (DEFCON == 2 && defensiveFlags > 0) {
+        if (DEFCON > 1 && defensiveFlags > 0) {
 
             if (!spawn.room.storage) {
                // if (DEBUG) console.log('DEFCON - DEFCON 2 was set while not having long term storage constructed.  You are effectively DEFCON 1.');

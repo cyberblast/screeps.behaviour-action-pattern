@@ -40,7 +40,7 @@ module.exports = {
             priority.unshift(Creep.action.storing);
         }
 
-        if (DEFCON == 2 && creep.carry.energy > 0 && creep.room.storage && !creep.room.situation.invasion) {
+        if (!creep.room.situation.invasion && DEFCON > 1 && creep.carry.energy > 0 && creep.room.storage) {
             let defensiveFlags = FlagDir.count(FLAG_COLOR.defense);
             // if (DEBUG) console.log('DEFCON - HAULER NEXT ACTION - Defensive Flags: ' + defensiveFlags);
             if (defensiveFlags > 0) {
