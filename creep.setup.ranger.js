@@ -9,10 +9,10 @@ setup.minEnergyAvailable = function(spawn){
 }
 setup.maxCount = function(spawn){
 
-    if (!spawn.room.situation.invasion 
-        && DEFCON != 3
-        && setup.EnoughStorageIsAvailableForDefense(spawn) 
-        )
+    if (!spawn.room.situation.invasion
+        && DEFCON == 2
+        && setup.EnoughStorageIsAvailableForDefense(spawn)
+    )
         return 0;
     else
         return FlagDir.count(FLAG_COLOR.defense);

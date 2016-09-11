@@ -10,7 +10,7 @@ setup.minEnergyAvailable = function(spawn){
 setup.maxCount = function(spawn){
     
     if (!spawn.room.situation.invasion 
-        && DEFCON != 3
+        && DEFCON == 2
         && setup.EnoughStorageIsAvailableForDefense(spawn) 
         )
         return 0;

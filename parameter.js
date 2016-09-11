@@ -29,7 +29,7 @@ var mod = {
     DEFCON: 2  
     // 1 = Always spawn defenders = Default behavior
     // 2 = Store enough energy to quickly create defenders,  then create defenders when enemies arrive.  Must have storage. If you do not have storage, then defcon 1 is used.
-    // NOT IMPLEMENTED!! 3 = Always spawn defenders, and store enough energy to quickly create 1 more set of defenders.  Must have storage. If you do not have storage, then defcon 1 is used.
+    // 3 = Always spawn defenders, and store enough energy to quickly create 1 more set of defenders.  Must have storage. If you do not have storage, then defcon 1 is used.
     
 }
 module.exports = mod;

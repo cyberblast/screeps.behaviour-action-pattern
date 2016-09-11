@@ -45,34 +45,16 @@ var Setup = function(typeName){
         var c = this
         return (c.bodyCosts(c.multiBody)*c.maxMulti) + (c.bodyCosts(c.fixedBody));
     };
-    this.EnoughStorageIsAvailableForDefense = function(spawn){
-   
+    this.EnoughStorageIsAvailableForDefense = function (spawn) {
+
+        if (!spawn.room.storage) return false; // No storage so not enough. 
         let defensiveFlags = FlagDir.count(FLAG_COLOR.defense);
-        
-        if (DEFCON > 1 && defensiveFlags > 0) {
-
-            if (!spawn.room.storage) {
-               // if (DEBUG) console.log('DEFCON - DEFCON 2 was set while not having long term storage constructed.  You are effectively DEFCON 1.');
-            } else {
-                let storeNeeded = (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * defensiveFlags;
-               // if (DEBUG) console.log('DEFCON - Stored energy needed to avoid spawning a defense is ' + storeNeeded + '. You have ' + spawn.room.storage.store.energy + ' storage.');
-                if (spawn.room.storage.store.energy > storeNeeded) {
-                  //  if (DEBUG) console.log('DEFCON - We have enough energy in storage.  We are not spawning fighers.');
-                    return true;
-                }
-                else {
-                  //  if (DEBUG) console.log('DEFCON - Fighters will be created. Also we will prioritize storing energy in long term storage to save the cost of maintaining fighters. ');
-                    return false;
-                }
-            }
-        }
-
-        // Must create defense if one flags are set.
-        return true;
+        let storeNeeded = (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * defensiveFlags; // what is needed based on the flags.
+        if (spawn.room.storage.store.energy >= storeNeeded) return true;
+        else
+            return false;
 
     };  
-
-
     this.buildParams = function(spawn){
         var memory = {
             setup: null,
