@@ -31,7 +31,7 @@ module.exports = {
                     flag.remove();
                     // also remove exploit flags
                     let remove = f => Game.flags[f.name].remove();
-                    _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit.filter, flag.pos, true), remove);
+                    _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit, flag.pos, true), remove);
                     Population.registerCreepFlag(creep, null);
                     // TODO: remove registered flags @ other creeps
                 }
