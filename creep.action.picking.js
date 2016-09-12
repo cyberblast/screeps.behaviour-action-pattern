@@ -12,15 +12,15 @@ action.newTarget = function(creep){
     if( creep.room.situation.invasion ) {
         // pickup near sources only
         if( target == null ) target = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY, {
-            filter: (o) => this.isAddableTarget(o) && o.pos.findInRange(creep.room.sources, 1).length > 0
+            filter: (o) => this.isAddableTarget(o, creep) && o.pos.findInRange(creep.room.sources, 1).length > 0
         });
     } else {
         target = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
-            filter: (o) => ( o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o))
+            filter: (o) => ( o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep))
         });
         
         if( target == null ) target = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY, {
-            filter: (o) => this.isAddableTarget(o)
+            filter: (o) => this.isAddableTarget(o, creep)
         });
     }
     return target;

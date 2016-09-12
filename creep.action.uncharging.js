@@ -1,4 +1,5 @@
 var action = new Creep.Action('uncharging'); // get from container
+action.renewTarget = false;
 action.isAddableAction = function(creep){ return true; }
 action.isAddableTarget = function(target){ return true;}
 action.isValidAction = function(creep){ return _.sum(creep.carry) < creep.carryCapacity; }

@@ -1,7 +1,7 @@
 var action = new Creep.Action('robbing');
 action.maxPerTarget = 2;
 action.isAddableAction = function (target) {
-    return true;
+    return !target.my;
 }
 action.isValidAction = function(creep){
     return (_.sum(creep.carry) < creep.carryCapacity &&

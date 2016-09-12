@@ -6,7 +6,7 @@ action.isValidTarget = function(target){
     return ( target != null &&
         target.hits != null && 
         target.hits < target.hitsMax &&
-        target.my === true );
+        target.my );
 }; 
 action.newTarget = function(creep){
     if(creep.room.casualties.length > 0){

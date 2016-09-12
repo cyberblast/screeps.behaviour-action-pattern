@@ -1,4 +1,5 @@
 var action = new Creep.Action('harvesting');
+action.renewTarget = false;
 action.isAddableAction = function(creep){ 
     return (!creep.room.population || 
         !creep.room.population.typeCount['hauler'] || 
@@ -23,7 +24,7 @@ action.newTarget = function(creep){
     let sourceGuests = 999;
     for( var iSource = 0; iSource < creep.room.sources.length; iSource++ ){
         let source = creep.room.sources[iSource];
-        if( this.isValidTarget(source) && this.isAddableTarget(source) ){
+        if( this.isValidTarget(source) && this.isAddableTarget(source, creep) ){
             if( source.targetOf === undefined ) {
                 sourceGuests = 0;
                 target = source;

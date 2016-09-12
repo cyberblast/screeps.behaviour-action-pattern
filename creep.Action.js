@@ -71,7 +71,10 @@ var Action = function(actionName){
                 if( moveResult == OK ) { // OK is no guarantee that it will move to the next pos. 
                     creep.data.moveMode = 'auto'; 
                 } else logErrorCode(creep, moveResult);
-            } else creep.say('NO PATH!');
+            } else {
+                creep.say('NO PATH!');
+                creep.data.targetId = null;
+            }
         } else if( creep.data.moveMode == 'auto' ) {
             // try again to use path.
             if( rangeToTarget > this.targetRange ) {
@@ -83,7 +86,10 @@ var Action = function(actionName){
             if( creep.data.path && creep.data.path.length > 0 ) {
                 let moveResult = creep.move(creep.data.path.charAt(0));
                 if( moveResult != OK ) logErrorCode(creep, moveResult);
-            } else creep.say('NO PATH!');
+            } else {
+                creep.say('NO PATH!');
+                creep.data.targetId = null;
+            }
         } else { // evade
             // get path (don't ignore creeps)
             // try to move. 
@@ -95,7 +101,10 @@ var Action = function(actionName){
                     creep.data.path = creep.data.path.substr(0,4);
                 let moveResult = creep.move(creep.data.path.charAt(0));
                 if( moveResult != OK ) logErrorCode(creep, moveResult);
-            } else creep.say('NO PATH!');
+            } else {
+                creep.say('NO PATH!');
+                creep.data.targetId = null;
+            }
         }
     };
     this.getPath = function(creep, target, ignoreCreeps) {
@@ -117,7 +126,7 @@ var Action = function(actionName){
                 }
             });
             if ( route.length > 0 )
-                target = creep.pos.findClosestByRange(route[0].exit);
+                target = creep.pos.findClosestByRange(route[0].exit);//new RoomPosition(25,25,route[0].room);
         }
 
         let path = creep.room.findPath(creep.pos, target, {

@@ -1,10 +1,23 @@
 var action = new Creep.Action('charging'); // store into container
+action.renewTarget = false;
 action.isValidAction = function(creep){ return creep.carry.energy > 0; }
 action.isAddableAction = function(creep){ return true; }
 action.isValidTarget = function(target){
     return ( target && target.store && (_.sum(target.store) < target.storeCapacity) );
 };   
-action.isAddableTarget = function(target){ return true;}
+action.isAddableTarget = function(target){
+    return (
+        (target instanceof OwnedStructure && target.my) || 
+        ( 
+            (!creep.room.controller || 
+                (
+                    (!creep.room.controller.owner || creep.room.controller.my) && 
+                    (!creep.room.controller.reservation || creep.room.controller.reservation.username == creep.owner.username) 
+                )
+            )
+        )
+    );
+};
 action.newTarget = function(creep){
     var that = this;
     if( creep.room.containerOut.length > 0 ) {

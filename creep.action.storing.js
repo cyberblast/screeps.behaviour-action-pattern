@@ -27,9 +27,13 @@ action.isValidAction = function(creep){
 };
 action.isValidTarget = function(target){
     return ((target != null) && (target.store != null) && target.sum < target.storeCapacity);
-};   
+};
+action.isAddableTarget = function(target){
+    return ( target.my && 
+        (!target.targetOf || target.targetOf.length < this.maxPerTarget));
+};
 action.newTarget = function(creep){
-    if( this.isValidTarget(creep.room.storage) && this.isAddableTarget(creep.room.storage) )
+    if( this.isValidTarget(creep.room.storage) && this.isAddableTarget(creep.room.storage, creep) )
         return creep.room.storage;
     return null;
 };
