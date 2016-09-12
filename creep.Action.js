@@ -116,8 +116,8 @@ var Action = function(actionName){
                     }
                 }
             });
-            if (route.length >0 )
-                target = new RoomPosition(25,25,route[0].room);
+            if ( route.length > 0 )
+                target = creep.pos.findClosestByRange(route[0].exit);
         }
 
         let path = creep.room.findPath(creep.pos, target, {
