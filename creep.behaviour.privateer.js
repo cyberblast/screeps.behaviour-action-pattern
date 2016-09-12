@@ -99,7 +99,7 @@ module.exports = {
             // not at target room
             else {
                 // travelling
-                if( this.exploitNextRoom(creep) ) 
+                if( _.sum(creep.carry) < creep.carryCapacity*0.5 && this.exploitNextRoom(creep) ) 
                     return;
                 else {
                     // no new flag
