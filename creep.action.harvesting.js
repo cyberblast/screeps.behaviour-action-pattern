@@ -5,8 +5,15 @@ action.isAddableAction = function(creep){
         !creep.room.population.typeCount['hauler'] || 
         creep.room.population.typeCount['hauler'] < 1); 
 };
-action.isAddableTarget = function(target){ 
-    return (target.targetOf === undefined || 
+action.isAddableTarget = function(target, creep){ 
+    return (
+        (!creep.room.controller || 
+            (
+                (!creep.room.controller.owner || creep.room.controller.my) && 
+                (!creep.room.controller.reservation || creep.room.controller.reservation.username == creep.owner.username) 
+            )
+        )
+    ) && (target.targetOf === undefined || 
         target.targetOf.length < (target.accessibleFields) || 
         !target.container );
 };
