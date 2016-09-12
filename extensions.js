@@ -68,6 +68,18 @@ var mod = {
                 return this.memory.accessibleFields;
             }
         });
+        Object.defineProperty(Source.prototype, 'container', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._container) ) {
+                    if( this.memory.container ) {
+                        this._container = Game.getObjectById(this.memory.container);
+                        if( !this._container ) delete this.memory.container;
+                    } else this._container = null;
+                }
+                return this._container;
+            }
+        });
         Object.defineProperty(StructureStorage.prototype, 'sum', {
             configurable: true,
             get: function() {

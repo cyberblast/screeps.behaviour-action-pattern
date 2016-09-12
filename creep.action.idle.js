@@ -1,5 +1,5 @@
 var action = new Creep.Action('idle');
-action.targetRange = 0;
+action.targetRange = 3;
 action.isValidAction = function(creep){ return true; };
 action.isAddableAction = function(creep){ return true; };
 action.isAddableTarget = function(target){ return true; }; 
@@ -18,5 +18,6 @@ action.newTarget = function(creep){
 action.work = function(creep){
     creep.data.actionName = null;
     creep.data.targetId = null;
+    return OK;
 };
 module.exports = action;

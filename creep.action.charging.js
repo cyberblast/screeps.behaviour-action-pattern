@@ -7,7 +7,7 @@ action.isValidTarget = function(target){
 action.isAddableTarget = function(target){ return true;}
 action.newTarget = function(creep){
     var that = this;
-    if( ['hauler', 'worker', 'privateer', 'pioneer'].includes(creep.data.creepType) && creep.room.chargeablesOut.length > 0 ) {
+    if( creep.room.containerOut.length > 0 ) {
         let target = null;
         let maxFree = 0; 
         var emptyest = o => {
@@ -17,13 +17,8 @@ action.newTarget = function(creep){
                 target = o;
             }
         };
-        _.forEach(creep.room.chargeablesOut, emptyest);
+        _.forEach(creep.room.containerOut, emptyest);
         return target;
-    } else {
-        let isAddable = target => that.isValidTarget(target); 
-        return creep.pos.findClosestByRange(creep.room.chargeables, {
-            filter: isAddable
-        });
     } 
 };
 action.work = function(creep){

@@ -21,6 +21,7 @@ module.exports = {
         let priority;
         if( creep.carry.energy == 0 ) { 
             priority = [
+                Creep.action.picking,
                 Creep.action.withdrawing, 
                 Creep.action.uncharging, 
                 Creep.action.harvesting, 
@@ -29,15 +30,17 @@ module.exports = {
         else {                
             if( creep.room.situation.invasion ){
                 priority = [
+                    Creep.action.picking,
                     Creep.action.fueling, 
                     Creep.action.feeding, 
                     Creep.action.repairing, 
                     Creep.action.idle];
             } else {
                 priority = [
+                    Creep.action.picking,
                     Creep.action.repairing, 
-                    Creep.action.building, 
                     Creep.action.feeding, 
+                    Creep.action.building, 
                     Creep.action.fueling, 
                     Creep.action.upgrading, 
                     Creep.action.idle];
@@ -45,9 +48,6 @@ module.exports = {
             if( creep.room.controller && creep.room.controller.ticksToDowngrade < 2000 ) { // urgent upgrading 
                 priority.unshift(Creep.action.upgrading);
             }
-        }
-        if( !creep.room.situation.invasion && _.sum(creep.carry) < creep.carryCapacity) {
-            priority.unshift(Creep.action.picking);
         }
         if( _.sum(creep.carry) > creep.carry.energy ) {
             priority.unshift(Creep.action.storing);

@@ -3,20 +3,17 @@ var mod = {
         Object.defineProperties(Room.prototype, {
             'sources': {
                 configurable: true,
-                get: function() {
-                    if( _.isUndefined(this.memory.sourceIds) ) {
-                        this.memory.sourceIds = [];
-                        let sources = this.find(FIND_SOURCES);
-                        if( sources.length > 0 ){
-                            var byAccess = source => source.accessibleFields;
-                            var sourceId = source => source.id;
-                            this.memory.sourceIds = _.map(_.sortBy(sources, byAccess), sourceId);
-                        } else this.memory.sourceIds = [];
+                get: function() {debugger;
+                    if( _.isUndefined(this.memory.sources) ) {                        
+                        this._sources = this.find(FIND_SOURCES);
+                        if( this._sources.length > 0 ){
+                            this.memory.sources = this._sources.map(s => s.id);
+                        } else this.memory.sources = [];
                     }
                     if( _.isUndefined(this._sources) ){  
                         this._sources = [];
                         var addSource = id => { addById(this._sources, id); };
-                        _.forEach(this.memory.sourceIds, addSource);
+                        this.memory.sources.forEach(addSource);
                     }
                     return this._sources;
                 }
@@ -105,9 +102,9 @@ var mod = {
             'constructionSites': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._constructionSites) ){ 
+                    if( _.isUndefined(this._constructionSites) ) { 
                         this._constructionSites = this.find(FIND_MY_CONSTRUCTION_SITES); 
-                        let siteOrder = [STRUCTURE_EXTENSION,STRUCTURE_STORAGE,STRUCTURE_ROAD];
+                        let siteOrder = [STRUCTURE_EXTENSION,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD];
                         let getOrder = site => {let o = siteOrder.indexOf(site); return o < 0 ? 100 : o;};
                         this._constructionSites.sort( (a, b) => {return getOrder(a.structureType) - getOrder(b.structureType);} );
                     }
@@ -131,45 +128,17 @@ var mod = {
                     return this._repairableSites;
                 }
             },
-            'chargeables': {
+            'urgentRepairableSites': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.memory.chargeables)) {
-                        this.saveChargeables();
+                    if( _.isUndefined(this._urgentRepairableSites) ){ 
+                        var isUrgent = site => (site.hits < LIMIT_URGENT_REPAIRING || 
+                            (site.structureType === 'container' && site.hits < LIMIT_URGENT_REPAIRING * 15)); 
+                        this._urgentRepairableSites = _.filter(this.repairableSites, isUrgent);
                     }
-                    if( _.isUndefined(this._chargeables) ){ 
-                        this._chargeables = [];
-                        let add = id => { addById(this._chargeables, id); };
-                        _.forEach(this.memory.chargeables, add);
-                        let categorize = c => {
-                            let s = c.pos.findInRange(this.sources, 3);
-                            c.chargeableType = s.length > 0 ? 'IN' : 'OUT';
-                        };
-                        _.forEach(this._chargeables, categorize);
-                    }
-                    return this._chargeables;
+                    return this._urgentRepairableSites;
                 }
-            },
-            'chargeablesIn': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._chargeablesIn) ){ 
-                        let byType = c => c.chargeableType == 'IN';
-                        this._chargeablesIn = _.filter(this.chargeables, byType);
-                    }
-                    return this._chargeablesIn;
-                }
-            },
-            'chargeablesOut': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._chargeablesOut) ){ 
-                        let byType = c => c.chargeableType == 'OUT';
-                        this._chargeablesOut = _.filter(this.chargeables, byType);
-                    }
-                    return this._chargeablesOut;
-                }
-            },
+            }, 
             'fuelables': {
                 configurable: true,
                 get: function() {
@@ -182,17 +151,94 @@ var mod = {
                     return this._fuelables;
                 }
             },
-            'urgentRepairableSites': {
+            'container': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._urgentRepairableSites) ){ 
-                        var isUrgent = site => (site.hits < LIMIT_URGENT_REPAIRING || 
-                            (site.structureType === 'container' && site.hits < LIMIT_URGENT_REPAIRING * 15)); 
-                        this._urgentRepairableSites = _.filter(this.repairableSites, isUrgent);
+                    if( _.isUndefined(this.memory.container)) {
+                        this.saveContainers();
                     }
-                    return this._urgentRepairableSites;
+                    if( _.isUndefined(this._container) ){ 
+                        this._container = [];
+                        let add = entry => {
+                            let cont = Game.getObjectById(entry.id); 
+                            if( cont ) {
+                                _.assign(cont, entry);
+                                this._container.push(cont);
+                            }
+                        };
+                        _.forEach(this.memory.container, add);
+                    }
+                    return this._container;
                 }
-            }, 
+            },
+            // miners go to
+            'containerSource': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._containerSource) ){ 
+                        let byType = c => c.source === true;
+                        this._containerSource = _.filter(this.container, byType);
+                    }
+                    return this._containerSource;
+                }
+            },
+            // upgraders go to
+            'containerController': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._containerController) ){ 
+                        let byType = c => c.controller == true;
+                        this._containerController = _.filter(this.container, byType);
+                    }
+                    return this._containerController;
+                }
+            },
+            'containerIn': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._containerIn) ){ 
+                        let byType = c => c.source === true && c.controller == false;
+                        this._containerIn = _.filter(this.container, byType);
+                        // add managed
+                        let isFull = c => _.sum(c.store) >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
+                        this._containerIn = this._containerIn.concat(this.containerManaged.filter(isFull));
+                    }
+                    return this._containerIn;
+                }
+            },
+            'containerOut': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._containerOut) ){ 
+                        let byType = c => c.source === false;
+                        this._containerOut = _.filter(this.container, byType);
+                        // add managed                         
+                        let isEmpty = c => _.sum(c.store) <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
+                        this._containerOut = this._containerOut.concat(this.containerManaged.filter(isEmpty));
+                    }
+                    return this._containerOut;
+                }
+            },
+            // Managed - haulers keep it half filled
+            'containerManaged': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._containerManaged) ){ 
+                        let byType = c => c.source === true && c.controller == true;
+                        this._containerManaged = _.filter(this.container, byType);
+                    }
+                    return this._containerManaged;
+                }
+            },
+            'creeps': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._creeps) ){ 
+                        this._creeps = this.find(FIND_MY_CREEPS);
+                    }
+                    return this._creeps;
+                }
+            },
             'hostiles': {
                 configurable: true,
                 get: function() {
@@ -221,15 +267,6 @@ var mod = {
                         }
                     }
                     return this._situation;
-                }
-            },
-            'creeps': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._creeps) ){ 
-                        this._creeps = this.find(FIND_MY_CREEPS);
-                    }
-                    return this._creeps;
                 }
             },
             'casualties': {
@@ -287,6 +324,7 @@ var mod = {
         };
 
         Room.prototype.recordMove = function(creep){
+            if( !ROUTE_PLANNER_ENABLE ) return;
             let x = creep.pos.x;
             let y = creep.pos.y;
             if ( x == 0 || y == 0 || x == 49 || y == 49 || 
@@ -317,17 +355,42 @@ var mod = {
                 this.memory.spawns = _.map(spawns, spawnId);
             } else this.memory.spawns = [];
         };
-        Room.prototype.saveChargeables = function(){
-            let chargeables = this.find(FIND_STRUCTURES, {
+        Room.prototype.saveContainers = function(){
+            if( _.isUndefined(this.memory.container) ){ 
+                this.memory.container = [];
+            } 
+            let containers = this.find(FIND_STRUCTURES, {
                 filter: (structure) => ( structure.structureType == STRUCTURE_CONTAINER )
             });
-            if( chargeables.length > 0 ){
-                var id = obj => obj.id;
-                this.memory.chargeables = _.map(chargeables, id);
-            } else this.memory.chargeables = [];
+            // for each memory entry, keep if existing
+            let kept = [];
+            let keep = (entry) => {
+                if( containers.find( (c) => c.id == entry.id ))
+                    kept.push(entry);                     
+            };
+            this.memory.container.forEach(keep);
+            this.memory.container = kept;
+
+            // for each container add to memory ( if not contained )
+            let add = (cont) => {
+                if( !this.memory.container.find( (i) => i.id == cont.id ) ) {
+                    let source = cont.pos.findInRange(this.sources, 1);
+                    this.memory.container.push({
+                        id: cont.id, 
+                        source: (source.length > 0), 
+                        controller: ( cont.pos.getRangeTo(this.controller) < 4 )
+                    });
+                    let assignContainer = s => s.memory.container = cont.id;
+                    source.forEach(assignContainer);                    
+                }
+            };
+            containers.forEach(add);
         };
 
         Room.prototype.loop = function(){
+            // temporary cleanup
+            if( this.memory.sourceIds ) delete this.memory.sourceIds;
+
             delete this._sourceEnergyAvailable;
             delete this._ticksToNextRegeneration;
             delete this._relativeEnergyAvailable;
@@ -342,12 +405,17 @@ var mod = {
             delete this._maxPerJob;
             delete this._creeps
             delete this._casualties;
-            delete this._chargeables;
+            delete this._container;
+            delete this._containerIn;
+            delete this._containerOut;
+            delete this._containerSource;
+            delete this._containerManaged;
+            delete this._containerController
 
             if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
                 this.saveTowers();
                 this.saveSpawns();
-                this.saveChargeables();
+                this.saveContainers();
             }
 
             var that = this;               
@@ -357,10 +425,10 @@ var mod = {
                 if( this.memory.statistics === undefined)
                     this.memory.statistics = {};
 
-                if( Game.time % ROUTE_PLANNER_INTERVAL == 0 && !this.constructionSites.find(c=> c.structureType == STRUCTURE_ROAD))
-                {
-                    this.roadTick();
-                }
+                if( ROUTE_PLANNER_ENABLE && 
+                    Game.time % ROUTE_PLANNER_INTERVAL == 0 && 
+                    !this.constructionSites.find(c=> c.structureType == STRUCTURE_ROAD))
+                        this.roadTick();
 
                 if( this.controller && this.controller.my ) {
                     var registerHostile = creep => {
