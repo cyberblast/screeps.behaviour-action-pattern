@@ -108,8 +108,8 @@ var Action = function(actionName){
                     let isMyRoom = Game.rooms[roomName] &&
                         Game.rooms[roomName].controller &&
                         Game.rooms[roomName].controller.my;
-                    let isPrivateerRoom = FlagDir.find(FLAG_COLOR.invade.exploit, new RoomPosition(25, 28, roomName), true);
-                    if (isHighway || isMyRoom || isPrivateerRoom) {
+                    let isExploitationRoom = FlagDir.find(FLAG_COLOR.invade.exploit, new RoomPosition(25, 28, roomName), true);
+                    if (isHighway || isMyRoom || isExploitationRoom) {
                         return 1;
                     } else {
                         return 30;

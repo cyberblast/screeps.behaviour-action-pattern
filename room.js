@@ -102,9 +102,9 @@ var mod = {
             'constructionSites': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._constructionSites) ){ 
+                    if( _.isUndefined(this._constructionSites) ) { 
                         this._constructionSites = this.find(FIND_MY_CONSTRUCTION_SITES); 
-                        let siteOrder = [STRUCTURE_EXTENSION,STRUCTURE_STORAGE,STRUCTURE_ROAD];
+                        let siteOrder = [STRUCTURE_EXTENSION,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD];
                         let getOrder = site => {let o = siteOrder.indexOf(site); return o < 0 ? 100 : o;};
                         this._constructionSites.sort( (a, b) => {return getOrder(a.structureType) - getOrder(b.structureType);} );
                     }
