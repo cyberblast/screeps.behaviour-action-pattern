@@ -4,7 +4,7 @@ var mod = {
     OOPS: false, // Creeps say Oops when dropping energy during dropmining
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details
-    DROPMINING: false,  
+    //DROPMINING: false,  
     SPAWN_INTERVAL: 10, // loops between regular spawn probe
     LIMIT_STORAGE_ENERGY: 200000,// stop storing energy when reached
     MAX_REPAIR_LIMIT: { // Limits how high structures get repaired, regarding RCL
