@@ -126,10 +126,9 @@ var mod = {
     exploitMod: function(range, flagItem){
         var flag = Game.flags[flagItem.name];
         let reserved = flag.targetOf ? _.sum( flag.targetOf.map( t => t.carryCapacityLeft)) : 0;
-        let modded = range; 
         if( flag.room ) 
-            modded /= ((flag.room.sourceEnergyAvailable-reserved)/1500) + range;
-        return modded;
+            return (range / ((flag.room.sourceEnergyAvailable-reserved)/1500)) + range;
+        return range;
     },
     hasInvasionFlag: function(){
         if( _.isUndefined(this._hasInvasionFlag) ) {
