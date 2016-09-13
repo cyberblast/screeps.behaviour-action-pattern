@@ -151,7 +151,7 @@ var mod = {
                         (room.controller && (room.controller.my || 
                         (room.controller.reservation && room.controller.reservation.username == spawn.owner.username))) 
                         ? 2 : 1);
-                }
+                } else this._privateerMaxWeight += base;
             };
             _.forEach(flagEntries, flagWeight);
         }
