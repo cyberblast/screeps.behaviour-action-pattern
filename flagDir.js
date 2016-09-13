@@ -126,9 +126,10 @@ var mod = {
     exploitMod: function(range, flagItem){
         var flag = Game.flags[flagItem.name];
         let reserved = flag.targetOf ? _.sum( flag.targetOf.map( t => t.carryCapacityLeft)) : 0;
-        if( range > 100 ) range *= 2; // make it harder to go to rooms far away
-        if( flag.room ) 
-            return (range / ((flag.room.sourceEnergyAvailable-reserved)/1500)) + range;
+        if( flag.room ) {
+            if(flag.room.sourceEnergyAvailable < reserved ) return Infinity;
+            return range*range/(flag.room.sourceEnergyAvailable - reserved);
+        } 
         return range;
     },
     hasInvasionFlag: function(){
