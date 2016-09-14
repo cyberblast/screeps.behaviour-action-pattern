@@ -1,5 +1,4 @@
 var action = new Creep.Action('claiming');
-action.reusePath = 10;
 action.isValidAction = function(creep){ return true; }; 
 action.isValidTarget = function(target){ return true; }; 
 action.isAddableAction = function(){ return true; };
@@ -36,7 +35,7 @@ action.step = function(creep){
     if( creep.target.color ){
         if( creep.flag.pos.roomName == creep.pos.roomName ) 
             creep.data.targetId = null;
-        this.drive(creep, creep.target.pos, Infinity);
+        this.drive(creep, creep.target.pos, Infinity, 0, 1);
         return;
     }
 
@@ -48,8 +47,7 @@ action.step = function(creep){
             creep.data.actionName = null;
         }
     } 
-    if( range > 1 )
-        this.drive(creep, creep.target.pos, range);
+    this.drive(creep, creep.target.pos, range, this.reachedRange, this.targetRange);
 };
 action.work = function(creep){
     var workResult;

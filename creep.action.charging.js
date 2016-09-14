@@ -1,13 +1,26 @@
 var action = new Creep.Action('charging'); // store into container
+action.renewTarget = false;
 action.isValidAction = function(creep){ return creep.carry.energy > 0; }
 action.isAddableAction = function(creep){ return true; }
 action.isValidTarget = function(target){
     return ( target && target.store && (_.sum(target.store) < target.storeCapacity) );
 };   
-action.isAddableTarget = function(target){ return true;}
+action.isAddableTarget = function(target){
+    return (
+        (target instanceof OwnedStructure && target.my) || 
+        ( 
+            (!creep.room.controller || 
+                (
+                    (!creep.room.controller.owner || creep.room.controller.my) && 
+                    (!creep.room.controller.reservation || creep.room.controller.reservation.username == creep.owner.username) 
+                )
+            )
+        )
+    );
+};
 action.newTarget = function(creep){
     var that = this;
-    if( ['hauler', 'worker', 'privateer', 'pioneer'].includes(creep.data.creepType) && creep.room.chargeablesOut.length > 0 ) {
+    if( creep.room.containerOut.length > 0 ) {
         let target = null;
         let maxFree = 0; 
         var emptyest = o => {
@@ -17,13 +30,8 @@ action.newTarget = function(creep){
                 target = o;
             }
         };
-        _.forEach(creep.room.chargeablesOut, emptyest);
+        _.forEach(creep.room.containerOut, emptyest);
         return target;
-    } else {
-        let isAddable = target => that.isValidTarget(target); 
-        return creep.pos.findClosestByRange(creep.room.chargeables, {
-            filter: isAddable
-        });
     } 
 };
 action.work = function(creep){

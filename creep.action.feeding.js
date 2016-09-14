@@ -8,13 +8,17 @@ action.isValidTarget = function(target){
 action.isAddableAction = function(creep){
     return true;
 };
+action.isAddableTarget = function(target){
+    return ( target.my && 
+        (!target.targetOf || target.targetOf.length < this.maxPerTarget));
+};
 action.newTarget = function(creep){
     var that = this;
     return creep.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: (structure) => {
             return ((structure.structureType == STRUCTURE_EXTENSION || 
                 structure.structureType == STRUCTURE_SPAWN ) 
-                && that.isValidTarget(structure) && that.isAddableTarget(structure));
+                && that.isValidTarget(structure) && that.isAddableTarget(structure, creep));
         }
     });
 };

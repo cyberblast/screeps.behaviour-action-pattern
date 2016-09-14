@@ -6,12 +6,12 @@ setup.maxMulti = 4;
 setup.minControllerLevel = 3;
 setup.globalMeasurement = true;
 setup.sortedParts = false;
+setup.measureByHome = true;
 setup.minEnergyAvailable = function(spawn){
     return 0.8;
 };
 setup.maxWeight = function(spawn){
     if (spawn.room.situation.invasion) return 0;  // Do not create in the middle of a fight
     return FlagDir.privateerMaxWeight(spawn);
-    //return FlagDir.count(FLAG_COLOR.invade.exploit) * 3000;
 }
 module.exports = setup;

@@ -1,14 +1,15 @@
 var action = new Creep.Action('uncharging'); // get from container
+action.renewTarget = false;
 action.isAddableAction = function(creep){ return true; }
 action.isAddableTarget = function(target){ return true;}
 action.isValidAction = function(creep){ return _.sum(creep.carry) < creep.carryCapacity; }
 action.isValidTarget = function(target){
     return ( target && target.store && target.store.energy > 0 );
 };   
-action.newTarget = function(creep){
+action.newTarget = function(creep){ debugger;
     var that = this;
     let isAddable = target => that.isValidTarget(target);    
-    if( ['hauler', 'worker'].includes(creep.data.creepType) && creep.room.chargeablesIn.length > 0 && creep.room.chargeablesOut.length > 0 ) {
+    if( creep.room.containerIn.length > 0 ) {
         // take from fullest IN container having energy
         let target = null;
         let energy = 0;
@@ -21,19 +22,9 @@ action.newTarget = function(creep){
                 target = cont;
             }
         };
-        _.forEach(creep.room.chargeablesIn, fullest);
+        _.forEach(creep.room.containerIn, fullest);
         return target;
-    } else if( creep.data.creepType == 'upgrader' && creep.room.chargeablesIn.length > 0 && creep.room.chargeablesOut.length > 0 ) {
-        // take from OUT container
-        return creep.pos.findClosestByRange(creep.room.chargeablesOut, {
-            filter: isAddable
-        });
-    } else {
-        // take from any container
-        return creep.pos.findClosestByRange(creep.room.chargeables, {
-            filter: isAddable
-        });
-    } 
+    }
 };
 action.work = function(creep){
     return creep.withdraw(creep.target, RESOURCE_ENERGY);

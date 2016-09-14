@@ -7,7 +7,7 @@ Creep.extend();
 Room.extend();  
 Spawn.extend();
 FlagDir.extend();
-if( DROPMINING ) require('./dropmining').extend();
+//if( DROPMINING ) require('./dropmining').extend();
 
 module.exports.loop = function () {
     FlagDir.loop();

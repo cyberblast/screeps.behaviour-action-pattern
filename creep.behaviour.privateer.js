@@ -99,7 +99,7 @@ module.exports = {
             // not at target room
             else {
                 // travelling
-                if( this.exploitNextRoom(creep) ) 
+                if( _.sum(creep.carry) < creep.carryCapacity*0.5 && this.exploitNextRoom(creep) ) 
                     return;
                 else {
                     // no new flag
@@ -114,7 +114,8 @@ module.exports = {
         Creep.action.idle.assign(creep);
     },
     exploitNextRoom: function(creep){
-        let flag = FlagDir.find(FLAG_COLOR.invade.exploit, creep.pos, false, FlagDir.exploitMod);
+        // calc by distance to home room
+        let flag = FlagDir.find(FLAG_COLOR.invade.exploit, Game.rooms[creep.data.homeRoom].controller.pos, false, FlagDir.exploitMod);
         // new flag found
         if( flag ) {
             // travelling

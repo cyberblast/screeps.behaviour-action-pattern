@@ -7,6 +7,7 @@ setup.minEnergyAvailable = function(spawn){
     return 0.5;
 };
 setup.maxCount = function(spawn){
+<<<<<<< HEAD
 
     if (spawn.room.situation.invasion) return 0;  // Do not create in the middle of a fight
 
@@ -30,6 +31,9 @@ setup.maxCount = function(spawn){
 
 
 
+=======
+    return spawn.room.containerController.length > 0 ? 1 : 0;
+>>>>>>> refs/remotes/origin/dev
 };
 setup.maxWeight = function(spawn){
     return null;

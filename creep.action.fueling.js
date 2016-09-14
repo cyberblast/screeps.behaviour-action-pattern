@@ -5,6 +5,10 @@ action.isValidAction = function(creep){
 action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };   
+action.isAddableTarget = function(target){
+    return ( target.my && 
+        (!target.targetOf || target.targetOf.length < this.maxPerTarget));
+};
 action.newTarget = function(creep){
     return creep.room.fuelables.length > 0 ? creep.room.fuelables[0] : null;
 };
