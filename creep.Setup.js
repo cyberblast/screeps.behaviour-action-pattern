@@ -47,15 +47,18 @@ var Setup = function(typeName){
         return (c.bodyCosts(c.multiBody)*c.maxMulti) + (c.bodyCosts(c.fixedBody));
     };
     this.EnoughStorageIsAvailableForDefense = function (spawn) {
-
         if (!spawn.room.storage) return false; // No storage so not enough. 
-        let defensiveFlags = FlagDir.count(FLAG_COLOR.defense);
-        let storeNeeded = (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * defensiveFlags; // what is needed based on the flags.
+        let storeNeeded = (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * 1; // one of each
         if (spawn.room.storage.store.energy >= storeNeeded) return true; // if we have enough storage then return true.
         else
             return false;
 
     };  
+    this.ShouldWeConserveForDefense = function (spawn) {
+        if (spawn.room.storage && !this.EnoughStorageIsAvailableForDefense(spawn)) return true;
+        return false;
+
+    };
     this.buildParams = function(spawn){
         var memory = {
             setup: null,

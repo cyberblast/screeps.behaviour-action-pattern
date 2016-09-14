@@ -8,9 +8,11 @@ setup.minEnergyAvailable = function(spawn){
 };
 setup.maxCount = function(spawn){
 
+    let numberToBuild = 1;
     if (spawn.room.situation.invasion) return 0;  // Do not create in the middle of a fight
-
-    return spawn.room.containerController.length > 0 ? 1 : 0;
+    if (setup.ShouldWeConserveForDefense(spawn)) return 0;
+    if (spawn.room.constructionSites.length == 0)  numberToBuild +=1;
+    return spawn.room.containerController.length > 0 ? numberToBuild : 0;
 
 };
 setup.maxWeight = function(spawn){

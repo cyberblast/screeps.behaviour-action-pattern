@@ -12,6 +12,7 @@ setup.minEnergyAvailable = function(spawn){
 };
 setup.maxWeight = function(spawn){
     if (spawn.room.situation.invasion) return 0;  // Do not create in the middle of a fight
+    if (setup.ShouldWeConserveForDefense(spawn)) return 0;
     return FlagDir.privateerMaxWeight(spawn);
 }
 module.exports = setup;
