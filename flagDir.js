@@ -123,11 +123,11 @@ var mod = {
         let crowd = flag.targetOf ? flag.targetOf.length : 0;
         return range + ( crowd * 300 );
     },
-    exploitMod: function(range, flagItem){
+        if( range > 100 ) return Infinity;
         var flag = Game.flags[flagItem.name];
         let reserved = flag.targetOf ? _.sum( flag.targetOf.map( t => t.carryCapacityLeft)) : 0;
         if( flag.room ) {
-            if(flag.room.sourceEnergyAvailable < reserved ) return Infinity;
+            if( flag.room.sourceEnergyAvailable <= reserved ) return Infinity;
             return range*range/(flag.room.sourceEnergyAvailable - reserved);
         } 
         return range;
