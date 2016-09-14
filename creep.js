@@ -106,6 +106,107 @@ var mod = {
                 }
             }
         };
+        Creep.prototype.drive = function( targetPos, intentionRange, enoughRange, range ) {
+            // temporary cleanup
+            if( this.data.route ) delete this.data.route;
+            if( Memory.pathfinder ) delete Memory.pathfinder;
+            
+            if( !targetPos || this.fatigue > 0 || range <= intentionRange ) return;
+            if( !range ) range = this.pos.getRangeTo(targetPos);
+            let lastPos = this.data.lastPos;
+            this.data.lastPos = new RoomPosition(this.pos.x, this.pos.y, this.pos.roomName);
+
+            if( this.data.moveMode == null || 
+                (lastPos && // moved
+                (lastPos.x != this.pos.x || lastPos.y != this.pos.y || lastPos.roomName != this.pos.roomName)) 
+            ) {
+                // at this point its sure, that the this DID move in the last loop. 
+                // from lastPos to this.pos 
+                this.room.recordMove(this);
+
+                if( this.data.moveMode == null) 
+                    this.data.moveMode = 'auto';
+                if( this.data.path && this.data.path.length > 1 )
+                    this.data.path = this.data.path.substr(1);
+                else 
+                    this.data.path = this.getPath( targetPos, true);
+
+                if( this.data.path && this.data.path.length > 0 ) {
+                    let moveResult = this.move(this.data.path.charAt(0));
+                    if( moveResult == OK ) { // OK is no guarantee that it will move to the next pos. 
+                        this.data.moveMode = 'auto'; 
+                    } else logErrorCode(this, moveResult);
+                    if( moveResult == ERR_NOT_FOUND ) delete this.data.path;  
+                } else if( range > enoughRange ) {
+                    this.say('NO PATH!');
+                    this.data.targetId = null;
+                }
+            } else if( this.data.moveMode == 'auto' ) {
+                // try again to use path.
+                if( range > enoughRange ) {
+                    if( HONK ) this.say('HONK', SAY_PUBLIC);
+                    this.data.moveMode = 'evade';
+                }
+                if( !this.data.path || this.data.path.length == 0 )
+                    this.data.path = this.getPath( targetPos, true);
+
+                if( this.data.path && this.data.path.length > 0 ) {
+                    let moveResult = this.move(this.data.path.charAt(0));
+                    if( moveResult != OK ) logErrorCode(this, moveResult);
+                    if( moveResult == ERR_NOT_FOUND ) delete this.data.path;  
+                } else if( range > enoughRange ) {
+                    this.say('NO PATH!');
+                    this.data.targetId = null;
+                }
+            } else { // evade
+                // get path (don't ignore thiss)
+                // try to move. 
+                if( range > enoughRange ){
+                    if( HONK ) this.say('HONK', SAY_PUBLIC);
+                    delete this.data.path;
+                    this.data.path = this.getPath( targetPos, false);
+                }
+                
+                if( this.data.path && this.data.path.length > 0 ) {
+                    if( this.data.path.length > 5 ) 
+                        this.data.path = this.data.path.substr(0,4);
+                    let moveResult = this.move(this.data.path.charAt(0));
+                    if( moveResult != OK ) logErrorCode(this, moveResult);
+                } else if( range > enoughRange ){
+                    this.say('NO PATH!');
+                    this.data.targetId = null;
+                }
+            }
+        };
+        Creep.prototype.getPath = function( targetPos, ignoreCreeps ) {
+            if (ROUTE_PRECALCULATION && this.pos.roomName != targetPos.roomName) {
+                var route = Game.map.findRoute(this.room, targetPos.roomName, {
+                    routeCallback(roomName) {
+                        let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+                        let isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
+                        let isMyRoom = Game.rooms[roomName] &&
+                            Game.rooms[roomName].controller &&
+                            Game.rooms[roomName].controller.my;
+                        let isExploitationRoom = FlagDir.find(FLAG_COLOR.invade.exploit, new RoomPosition(25, 28, roomName), true);
+                        if (isHighway || isMyRoom || isExploitationRoom) {
+                            return 1;
+                        } else {
+                            return 30;
+                        }
+                    }
+                });
+                if ( route.length > 0 )
+                    targetPos = new RoomPosition(25,25,route[0].room);
+            }
+
+            let path = this.room.findPath(this.pos, targetPos, {
+                serialize: true, 
+                ignoreCreeps: ignoreCreeps
+            });
+            if( path && path.length > 4 ) 
+                return path.substr(4);
+            else return null;
+        };
     }
 }
 
