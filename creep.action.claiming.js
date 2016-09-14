@@ -4,7 +4,7 @@ action.isValidTarget = function(target){ return true; };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; }; 
 action.newTarget = function(creep){
-    let flag = FlagDir.find(FLAG_COLOR.claim, creep.pos, false, FlagDir.claimMod);
+    let flag = FlagDir.find(FLAG_COLOR.claim, creep.pos, false, FlagDir.claimMod, creep.name);
     if( flag ) { 
         Population.registerCreepFlag(creep, flag);
     } 

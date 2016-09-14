@@ -82,10 +82,22 @@ var mod = {
     filter: function(flagColor, pos, local){
         if( flagColor == null || this.list.length == 0) 
             return 0;
-
-        let filter = flagColor.filter;
-        if( local && pos && pos.roomName )
-            _.assign(filter, {roomName: pos.roomName});
+        let filter;
+        if( Array.isArray(flagColor) ) {
+            filter = entry => {
+                if( local && pos && pos.roomName && entry.roomName != pos.roomName )
+                    return false;
+                for( let i = 0; i < flagColor.length; i++ ){
+                    if( flagColor[i].color == entry.color && flagColor[i].secondaryColor == entry.secondaryColor )
+                        return true;
+                }
+                return false;
+            };
+        } else {
+            filter = flagColor.filter;
+            if( local && pos && pos.roomName )
+                _.assign(filter, {roomName: pos.roomName});
+        }
         return _.filter(this.list, filter);
     },
     filterCustom: function(filter){
@@ -107,21 +119,34 @@ var mod = {
         } else crowd = 0; // not targetted
         return range + ( crowd * rangeModPerCrowd );
     }, 
-    claimMod: function(range, flagItem){
+    claimMod: function(range, flagItem, creepName){
+        if( range > 200 ) return Infinity;
+        if( range > 100 ) range = range * 3;
         var flag = Game.flags[flagItem.name];
-        // add reservation amount to range (to prefer those with least reservation)
-        range += flag.room && flag.room.controller && flag.room.controller.reservation ? flag.room.controller.reservation.ticksToEnd : 0;
-        // add when already assigned
-        let crowd = flag.targetOf ? flag.targetOf.length : 0;
-        return range + ( crowd * 300 );
+        let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepName == creepName ? 0 : t.weight )) : 0;
+        //console.log('assigned: ' + assigned);
+        if( assigned > 2599 ) return Infinity;
+        return ((range*range) / (2600 - assigned))*500;
     },
-    exploitMod: function(range, flagItem){
+    reserveMod: function(range, flagItem, creepName){
+        //console.log('range: ' + range);
+        let claimRange = FlagDir.claimMod(range, flagItem, creepName);
+        //console.log('claimRange: ' + claimRange);
+        if( claimRange == Infinity ) return Infinity;
+        var flag = Game.flags[flagItem.name];
+        if( flag.room && flag.room.controller && flag.room.controller.reservation ) {
+            //console.log('adding reservation: ' + claimRange + flag.room.controller.reservation.ticksToEnd);
+            return claimRange + flag.room.controller.reservation.ticksToEnd;
+        } 
+        return claimRange;
+    },
+    exploitMod: function(range, flagItem, creepName){
         if( range > 100 ) return Infinity;
         var flag = Game.flags[flagItem.name];
-        let reserved = flag.targetOf ? _.sum( flag.targetOf.map( t => t.carryCapacityLeft)) : 0;
+        let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepName == creepName ? 0 : t.carryCapacityLeft)) : 0;
         if( flag.room ) {
-            if( flag.room.sourceEnergyAvailable <= reserved ) return Infinity;
-            return range*range/(flag.room.sourceEnergyAvailable - reserved);
+            if( flag.room.sourceEnergyAvailable <= assigned ) return Infinity;
+            return (range*range) / (flag.room.sourceEnergyAvailable - assigned);
         } 
         return range;
     },

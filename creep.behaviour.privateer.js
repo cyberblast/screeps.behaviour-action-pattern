@@ -115,7 +115,7 @@ module.exports = {
     },
     exploitNextRoom: function(creep){
         // calc by distance to home room
-        let flag = FlagDir.find(FLAG_COLOR.invade.exploit, Game.rooms[creep.data.homeRoom].controller.pos, false, FlagDir.exploitMod);
+        let flag = FlagDir.find(FLAG_COLOR.invade.exploit, Game.rooms[creep.data.homeRoom].controller.pos, false, FlagDir.exploitMod, creep.name);
         // new flag found
         if( flag ) {
             // travelling
