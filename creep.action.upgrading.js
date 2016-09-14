@@ -27,8 +27,7 @@ action.step = function(creep){
             creep.data.actionName = null;
         }
     } 
-    if( range > 1 )
-        this.drive(creep, creep.target.pos, range);
+    this.drive(creep, creep.target.pos, range, this.reachedRange, this.targetRange);
 };
 
 module.exports = action;

@@ -12,7 +12,7 @@ module.exports = {
             if( controllerRange < 4 ) 
                 creep.upgradeController(creep.room.controller);
             if( contRange > 0 ) 
-                Creep.action.upgrading.drive(creep, creep.room.containerController[0].pos, Infinity);
+                Creep.action.upgrading.drive(creep, creep.room.containerController[0].pos, contRange, 0, 1);
         } else {
             logError(`Upgrader ${creep.name} has no container in reach of the controller in room ${creep.pos.roomName}!`);
         }

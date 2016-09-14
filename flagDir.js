@@ -139,25 +139,40 @@ var mod = {
         }
         return this._hasInvasionFlag;
     }, 
-    privateerMaxWeight: function(spawn){
-        if( _.isUndefined(this._privateerMaxWeight) ) {
-            let flagEntries = FlagDir.filter(FLAG_COLOR.invade.exploit);
-            this._privateerMaxWeight = 0;
-            let base = 2800;
-            let flagWeight = flagEntry => {
-                var flag = Game.flags[flagEntry.name];
-                let room;
-                if( flag && (room = flag.room) ) {
-                    this._privateerMaxWeight += base * room.sources.length * (
-                        (room.controller && (room.controller.my || 
-                        (room.controller.reservation && room.controller.reservation.username == spawn.owner.username))) 
-                        ? 2 : 1);
-                } else this._privateerMaxWeight += base;
-            };
-            _.forEach(flagEntries, flagWeight);
+    adjacentRooms: function(roomName){
+        let parts = roomName.split(/([N,E,S,W])/);
+        let dirs = ['N','E','S','W'];
+        let toggle = q => dirs[ (dirs.indexOf(q)+2) % 4 ];
+        let names = [];
+        for( x = parseInt(parts[2])-1; x < parseInt(parts[2])+2; x++ ){
+            for( y = parseInt(parts[4])-1; y < parseInt(parts[4])+2; y++ ){
+                names.push( ( x < 0 ? toggle(parts[1]) + '0' : parts[1] + x ) + ( y < 0 ? toggle(parts[3]) + '0' : parts[3] + y ) );
+            }
         }
-        return this._privateerMaxWeight;
-        //return FlagDir.count(FLAG_COLOR.invade.exploit) * 3000;
+        return names;
+    },
+    privateerMaxWeight: function(spawn){
+        let base = 2800;
+        let maxCalcRange = 2;
+        let max = 0;
+
+        let flagEntries = FlagDir.filter(FLAG_COLOR.invade.exploit);
+        let flagWeight = flagEntry => {
+            let distance = this.roomDistance(spawn.pos.roomName, flagEntry.roomName);
+            if( distance > maxCalcRange ) return;
+            let adjacent = this.adjacentRooms(flagEntry.roomName);
+            let neighbors = 1;
+            let checkRoom = roomName => {
+                if( roomName == spawn.pos.roomName ) return;
+                let room = Game.rooms[roomName];
+                if( room && room.controller && room.controller.my )
+                    neighbors++;
+            };
+            adjacent.forEach(checkRoom);
+            max += (base / neighbors);
+        };
+        _.forEach(flagEntries, flagWeight);
+        return max;
     }
 }
 module.exports = mod;

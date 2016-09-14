@@ -7,6 +7,7 @@ var Setup = function(typeName){
     this.minRcl = 0;
     this.minControllerLevel = 0;
     this.globalMeasurement = false;
+    this.measureByHome = false;
     this.sortedParts = true;
     this.bodyCosts = function(body){
         let costs = 0;
@@ -67,18 +68,35 @@ var Setup = function(typeName){
     this.isValidSetup = function(spawn){
         if( spawn.room.controller.level < this.minControllerLevel || spawn.room.energyAvailable < this.minAbsEnergyAvailable || spawn.room.relativeEnergyAvailable < this.minEnergyAvailable(spawn) ) 
             return false;
+            
         let maxCount = this.maxCount(spawn);
         let maxWeight = this.maxWeight(spawn);            
         if( maxCount == 0 || maxWeight == 0 ) 
             return false;
-        let population = this.globalMeasurement ? Population : spawn.room.population;
-        if( !population || !population.typeCount[this.type] )
-            return true;
         if( maxCount == null ) 
             maxCount = Infinity;
         if( maxWeight == null ) 
             maxWeight = Infinity;
-        return population.typeCount[this.type] < maxCount && population.typeWeight[this.type] < maxWeight;
+
+        let existingCount = 0;
+        let existingWeight = 0;
+        if( this.measureByHome ){
+            let home = spawn.pos.roomName;
+            let count = entry => {
+                if( entry.creepType == this.type && entry.homeRoom == home ){
+                    existingCount++;
+                    existingWeight += entry.weight;
+                }
+            };
+            _.forEach(Memory.population, count);
+        } else {
+            let population = this.globalMeasurement ? Population : spawn.room.population;
+            if( !population || !population.typeCount[this.type] )
+                return true;
+            existingCount = population.typeCount[this.type] || 0;
+            existingWeight = population.typeWeight[this.type] || 0;
+        }
+        return existingCount < maxCount && existingWeight < maxWeight;
     };
 }
 module.exports = Setup;

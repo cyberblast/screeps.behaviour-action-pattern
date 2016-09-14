@@ -28,7 +28,7 @@ module.exports = {
             if( sourceRange < 2 ) 
                 creep.harvest(source);
             if( contRange > 0 ) 
-                Creep.action.upgrading.drive(creep, source.container.pos, Infinity);
+                Creep.action.upgrading.drive(creep, source.container.pos, contRange, 0, 0);
         } else if( source && creep.room.population && creep.room.population.typeCount['hauler'] && creep.room.population.typeCount['hauler'] > 0 ) {
             if(CHATTY) creep.say('dropmining', SAY_PUBLIC);
             
@@ -36,7 +36,7 @@ module.exports = {
             if( sourceRange < 2 ) 
                 creep.harvest(source);
             else
-                Creep.action.upgrading.drive(creep, source.pos, Infinity);
+                Creep.action.upgrading.drive(creep, source.pos, sourceRange, 1, 1);
 
             if( creep.carry.energy > ( creep.carryCapacity - 
                 ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) ))) {
