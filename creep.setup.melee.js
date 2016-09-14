@@ -9,13 +9,13 @@ setup.minEnergyAvailable = function(spawn){
 };
 setup.maxCount = function(spawn){
     
-    if (!spawn.room.situation.invasion 
-        && DEFCON == 2
-        && setup.EnoughStorageIsAvailableForDefense(spawn) 
-        )
-        return 0;
-    else
-        return FlagDir.count(FLAG_COLOR.defense);
+    let currentDefense = FlagDir.count(FLAG_COLOR.defense);
+
+    if (SPAWN_DEFENSE_ON_ATTACK && spawn.room.situation.invasion) {
+        currentDefense += 1;
+    }
+
+    return currentDefense;
    
 
 };

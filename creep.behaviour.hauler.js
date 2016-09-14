@@ -42,18 +42,19 @@ module.exports = {
             priority.unshift(Creep.action.storing);
         }
 
-        if (!creep.room.situation.invasion && DEFCON > 1 && creep.carry.energy > 0 && creep.room.storage) {
-            let defensiveFlags = FlagDir.count(FLAG_COLOR.defense);
-            // if (DEBUG) console.log('DEFCON - HAULER NEXT ACTION - Defensive Flags: ' + defensiveFlags);
-            if (defensiveFlags > 0) {
-                let storeNeeded = (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * defensiveFlags;
-                storeNeeded +=  storeNeeded * 0.10; // Add buffer
-                // if (DEBUG) console.log('DEFCON - HAULER NEXT ACTION - Stored energry needed to avoid creating defensive units: ' + storeNeeded);
-                if (creep.room.storage.store.energy < storeNeeded) {
-                    // if (DEBUG) console.log('DEFCON - HAULER NEXT ACTION - We need more stored energy. We are prioritizing the storing of energy. ');
-                    priority.unshift(Creep.action.storing);
-                }
+        if (!creep.room.situation.invasion
+            && SPAWN_DEFENSE_ON_ATTACK
+            && creep.carry.energy > 0
+            && creep.room.storage) {
+
+            let storeNeeded = (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * defensiveFlags;
+            storeNeeded += storeNeeded * 0.10; // Add buffer
+            if (DEBUG) console.log('DEFCON - HAULER NEXT ACTION - Stored energry needed to avoid creating defensive units: ' + storeNeeded);
+            if (creep.room.storage.store.energy < storeNeeded) {
+                if (DEBUG) console.log('DEFCON - HAULER NEXT ACTION - We need more stored energy. We are prioritizing the storing of energy. ');
+                priority.unshift(Creep.action.storing);
             }
+
         }
 
         if (creep.room.urgentRepairableSites.length > 0 && creep.carry.energy > 0) {
