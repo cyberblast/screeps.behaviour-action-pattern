@@ -280,32 +280,94 @@ var mod = {
                     return this._casualties;
                 }
             },
-            'routePlaner': {
+            'roadConstructionTrace': {
                 configurable: true,
                 get: function () {
-                    if (_.isUndefined(this.memory.routePlaner) ) {
-                        this.memory.routePlaner = {
-                            'data':{},
-                        }
+                    if (_.isUndefined(this.memory.roadConstructionTrace) ) {
+                        this.memory.roadConstructionTrace = {};
                     }
-                    return this.memory.routePlaner;
+                    return this.memory.roadConstructionTrace;
+                }
+            }, 
+            'adjacentRooms': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this.memory.adjacentRooms) ) {
+                        this.memory.adjacentRooms = Room.adjacentRooms(this.name);
+                    }
+                    return this.memory.adjacentRooms;
                 }
             },
+            'privateerMaxWeight': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._privateerMaxWeight) ) {
+                        this._privateerMaxWeight = 0;
+                        let base = 2800;
+                        let maxCalcRange = 1;
+                        let that = this;
+                        let distance, adjacent, ownNeighbor, room;
 
+                        let flagEntries = FlagDir.filter(FLAG_COLOR.invade.exploit);
+                        let countOwn = roomName => {
+                            if( roomName == that.name ) return;
+                            room = Game.rooms[roomName];
+                            if( room && room.controller && room.controller.my )
+                                ownNeighbor++;
+                        };
+                        let calcWeight = flagEntry => {
+                            distance = Room.roomDistance(that.name, flagEntry.roomName, true);
+                            if( distance > maxCalcRange ) return;
+                            adjacent = Room.adjacentRooms(flagEntry.roomName);
+                            ownNeighbor = 1;
+                            adjacent.forEach(countOwn);
+                            that._privateerMaxWeight += (base / ownNeighbor);
+                        };
+                        flagEntries.forEach(calcWeight);
+                    };
+                    return this._privateerMaxWeight;
+                }
+            }
         });
 
-        Room.prototype.roadTick = function( minDeviation = ROUTEPLANNER_MIN_DEVIATION) {
-            let data = Object.keys(this.routePlaner.data)
+        Room.adjacentRooms = function(roomName){
+            let parts = roomName.split(/([N,E,S,W])/);
+            let dirs = ['N','E','S','W'];
+            let toggle = q => dirs[ (dirs.indexOf(q)+2) % 4 ];
+            let names = [];
+            for( x = parseInt(parts[2])-1; x < parseInt(parts[2])+2; x++ ){
+                for( y = parseInt(parts[4])-1; y < parseInt(parts[4])+2; y++ ){
+                    names.push( ( x < 0 ? toggle(parts[1]) + '0' : parts[1] + x ) + ( y < 0 ? toggle(parts[3]) + '0' : parts[3] + y ) );
+                }
+            }
+            return names;
+        };
+
+        Room.roomDistance = function(roomName1, roomName2, diagonal){
+            if( roomName1 == roomName2 ) return 0;
+            let posA = roomName1.split(/([N,E,S,W])/);
+            let posB = roomName2.split(/([N,E,S,W])/);
+            let xDif = posA[1] == posB[1] ? Math.abs(posA[2]-posB[2]) : posA[2]+posB[2]+1;
+            let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
+            if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1 
+            return xDif + yDif; // count diagonal as 2        
+        };
+
+        Room.prototype.roadConstruction = function( minDeviation = ROAD_CONSTRUCTION_MIN_DEVIATION ) {
+
+            if( !ROAD_CONSTRUCTION_ENABLE || Game.time % ROAD_CONSTRUCTION_INTERVAL != 0 ) return;
+
+            let data = Object.keys(this.roadConstructionTrace)
                 .map( k => { 
                     return { // convert to [{key,n,x,y}]
-                        'n': this.routePlaner.data[k], // count of steps on x,y cordinates
+                        'n': this.roadConstructionTrace[k], // count of steps on x,y cordinates
                         'x': k.charCodeAt(0)-32, // extract x from key
                         'y': k.charCodeAt(1)-32 // extraxt y from key
                     };
                 });
                 
-            let min = (data.reduce( (_sum, b) => _sum + b.n, 0 ) / data.length) * minDeviation;
-                            
+            let min = Math.max(ROAD_CONSTRUCTION_ABS_MIN, (data.reduce( (_sum, b) => _sum + b.n, 0 ) / data.length) * minDeviation);
+
             data = data.filter( e => {
                 return e.n > min && 
                     this.lookForAt(LOOK_STRUCTURES,e.x,e.y).length == 0 &&
@@ -320,23 +382,21 @@ var mod = {
             _.forEach(data, setSite);
 
             // clear old data
-            this.routePlaner.data = {};
+            this.roadConstructionTrace = {};
         };
 
         Room.prototype.recordMove = function(creep){
-            if( !ROUTE_PLANNER_ENABLE ) return;
+            if( !ROAD_CONSTRUCTION_ENABLE ) return;
             let x = creep.pos.x;
             let y = creep.pos.y;
             if ( x == 0 || y == 0 || x == 49 || y == 49 || 
                 creep.carry.energy == 0 || creep.data.actionName == 'building' ) 
                 return;
 
-            const cord = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
-
-            if( !this.routePlaner.data[cord] )
-                this.routePlaner.data[cord]=0;
-
-            this.routePlaner.data[cord] = this.routePlaner.data[cord] + 1;
+            let key = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
+            if( !this.roadConstructionTrace[key] )
+                this.roadConstructionTrace[key] = 1;
+            else this.roadConstructionTrace[key]++;
         };
 
         Room.prototype.saveTowers = function(){
@@ -388,8 +448,8 @@ var mod = {
         };
 
         Room.prototype.loop = function(){
-            // temporary cleanup
-            if( this.memory.sourceIds ) delete this.memory.sourceIds;
+            // Temprorary Cleanup
+            if( this.memory.routePlaner ) delete this.memory.routePlaner;
 
             delete this._sourceEnergyAvailable;
             delete this._ticksToNextRegeneration;
@@ -411,6 +471,7 @@ var mod = {
             delete this._containerSource;
             delete this._containerManaged;
             delete this._containerController
+            delete this._privateerMaxWeight;
 
             if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
                 this.saveTowers();
@@ -425,10 +486,7 @@ var mod = {
                 if( this.memory.statistics === undefined)
                     this.memory.statistics = {};
 
-                if( ROUTE_PLANNER_ENABLE && 
-                    Game.time % ROUTE_PLANNER_INTERVAL == 0 && 
-                    !this.constructionSites.find(c=> c.structureType == STRUCTURE_ROAD))
-                        this.roadTick();
+                this.roadConstruction();
 
                 if( this.controller && this.controller.my ) {
                     var registerHostile = creep => {

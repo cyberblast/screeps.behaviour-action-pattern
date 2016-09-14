@@ -19,6 +19,8 @@ module.exports = {
         if( source && source.container && _.sum(source.container.store) < source.container.storeCapacity )
         {
             if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
+
+            // TODO: Dont move to container but calc optimal position (once)
             
             let contRange = creep.pos.getRangeTo(source.container);
             let sourceRange = creep.pos.getRangeTo(source);
@@ -28,7 +30,7 @@ module.exports = {
             if( sourceRange < 2 ) 
                 creep.harvest(source);
             if( contRange > 0 ) 
-                Creep.action.upgrading.drive(creep, source.container.pos, contRange, 0, 0);
+                creep.drive( source.container.pos, 0, 1, contRange );
         } else if( source && creep.room.population && creep.room.population.typeCount['hauler'] && creep.room.population.typeCount['hauler'] > 0 ) {
             if(CHATTY) creep.say('dropmining', SAY_PUBLIC);
             
@@ -36,7 +38,7 @@ module.exports = {
             if( sourceRange < 2 ) 
                 creep.harvest(source);
             else
-                Creep.action.upgrading.drive(creep, source.pos, sourceRange, 1, 1);
+                creep.drive( source.pos, 1, 1, sourceRange );
 
             if( creep.carry.energy > ( creep.carryCapacity - 
                 ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) ))) {
