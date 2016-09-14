@@ -1,4 +1,4 @@
-/* https://github.com/cyberblast/screeps.behaviour-action-pattern */ 
+/* https://github.com/ScreepsGamers/screeps.behaviour-action-pattern */ 
 var params = require('./parameter');
 var glob = require('./global');
 glob.init(params);
@@ -7,7 +7,6 @@ Creep.extend();
 Room.extend();  
 Spawn.extend();
 FlagDir.extend();
-//if( DROPMINING ) require('./dropmining').extend();
 
 module.exports.loop = function () {
     FlagDir.loop();

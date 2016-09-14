@@ -4,7 +4,6 @@ var mod = {
     OOPS: false, // Creeps say Oops when dropping energy during dropmining
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details
-    //DROPMINING: false,  
     SPAWN_INTERVAL: 10, // loops between regular spawn probe
     LIMIT_STORAGE_ENERGY: 200000,// stop storing energy when reached
     MAX_REPAIR_LIMIT: { // Limits how high structures get repaired, regarding RCL
@@ -23,9 +22,10 @@ var mod = {
     TIME_REPORT: 12500, // ticks between room reports
     REPORT_MAX_LENGTH: 500,
     REPORTS_PER_LOOP: 18, 
-    ROUTE_PLANNER_ENABLE: true, 
-    ROUTE_PLANNER_INTERVAL: 500, 
-    ROUTEPLANNER_MIN_DEVIATION: 1.2, 
+    ROAD_CONSTRUCTION_ENABLE: true, 
+    ROAD_CONSTRUCTION_INTERVAL: 500, 
+    ROAD_CONSTRUCTION_MIN_DEVIATION: 1.2, 
+    ROAD_CONSTRUCTION_ABS_MIN: 3, 
     TIME_ZONE: 1, // zone offset in hours (-12 through +12) from UTC
     USE_SUMMERTIME: true, // Please define isSummerTime in global.js to suit to your local summertime rules
     MANAGED_CONTAINER_TRIGGER: 0.2, // managed containers get filled below this relative energy amount and emptied when above 1-this value

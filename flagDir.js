@@ -11,7 +11,7 @@ var mod = {
         });
     },
     list:[], 
-    findName: function(flagColor, pos, local, mod, arg3, arg4){
+    findName: function(flagColor, pos, local, mod, modArgs){
         let that = this;
         if( flagColor == null || this.list.length == 0) 
             return null;
@@ -32,20 +32,20 @@ var mod = {
         if( pos && pos.roomName ){
             var range = flag => {
                 var r = 0;
-                let roomDist = that.roomDistance(flag.roomName, pos.roomName);
+                let roomDist = Room.roomDistance(flag.roomName, pos.roomName);
                 if( roomDist == 0 )
                     r = _.max([Math.abs(flag.x-pos.x), Math.abs(flag.y-pos.y)]);
                 else r = roomDist * 50;
                 if( mod ){
-                    r = mod(r, flag, arg3, arg4);
+                    r = mod(r, flag, modArgs);
                 }
                 return r;
             };
             return _.sortBy(flags, range)[0].name;
         } else return flags[0];
     }, 
-    find: function(flagColor, pos, local, mod, arg3, arg4){
-        let id = this.findName(flagColor, pos, local, mod, arg3, arg4);
+    find: function(flagColor, pos, local, mod, modArgs){
+        let id = this.findName(flagColor, pos, local, mod, modArgs);
         if( id === null ) 
             return null;
         return Game.flags[id];
@@ -53,7 +53,6 @@ var mod = {
     loop: function(){
         this.list = [];
         delete this._hasInvasionFlag;
-        delete this._privateerMaxWeight;
         var register = flag => {
             flag.creeps = {};
             delete flag.targetOf;
@@ -94,16 +93,9 @@ var mod = {
             return 0;
         return _.filter(this.list, filter);
     },
-    roomDistance: function(roomName1, roomName2, diagonal){
-        if( roomName1 == roomName2 ) return 0;
-        let posA = roomName1.split(/([N,E,S,W])/);
-        let posB = roomName2.split(/([N,E,S,W])/);
-        let xDif = posA[1] == posB[1] ? Math.abs(posA[2]-posB[2]) : posA[2]+posB[2]+1;
-        let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
-        if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1 
-        return xDif + yDif; // count diagonal as 2        
-    }, 
-    rangeMod: function(range, flagItem, rangeModPerCrowd, rangeModByType){
+    rangeMod: function(range, flagItem, args){
+        let rangeModPerCrowd = args.rangeModPerCrowd || 20;
+        let rangeModByType = args.rangeModByType;
         var flag = Game.flags[flagItem.name];
         let crowd;
         if( flag.targetOf ){ // flag is targetted
@@ -113,7 +105,7 @@ var mod = {
             } else // count all creeps
                 crowd = flag.targetOf.length;
         } else crowd = 0; // not targetted
-        return range + ( crowd * (rangeModPerCrowd || 20) );
+        return range + ( crowd * rangeModPerCrowd );
     }, 
     claimMod: function(range, flagItem){
         var flag = Game.flags[flagItem.name];
@@ -138,41 +130,6 @@ var mod = {
             this._hasInvasionFlag = (this.findName(FLAG_COLOR.invade) != null) || (this.findName(FLAG_COLOR.destroy) != null);
         }
         return this._hasInvasionFlag;
-    }, 
-    adjacentRooms: function(roomName){
-        let parts = roomName.split(/([N,E,S,W])/);
-        let dirs = ['N','E','S','W'];
-        let toggle = q => dirs[ (dirs.indexOf(q)+2) % 4 ];
-        let names = [];
-        for( x = parseInt(parts[2])-1; x < parseInt(parts[2])+2; x++ ){
-            for( y = parseInt(parts[4])-1; y < parseInt(parts[4])+2; y++ ){
-                names.push( ( x < 0 ? toggle(parts[1]) + '0' : parts[1] + x ) + ( y < 0 ? toggle(parts[3]) + '0' : parts[3] + y ) );
-            }
-        }
-        return names;
-    },
-    privateerMaxWeight: function(spawn){
-        let base = 2800;
-        let maxCalcRange = 2;
-        let max = 0;
-
-        let flagEntries = FlagDir.filter(FLAG_COLOR.invade.exploit);
-        let flagWeight = flagEntry => {
-            let distance = this.roomDistance(spawn.pos.roomName, flagEntry.roomName);
-            if( distance > maxCalcRange ) return;
-            let adjacent = this.adjacentRooms(flagEntry.roomName);
-            let neighbors = 1;
-            let checkRoom = roomName => {
-                if( roomName == spawn.pos.roomName ) return;
-                let room = Game.rooms[roomName];
-                if( room && room.controller && room.controller.my )
-                    neighbors++;
-            };
-            adjacent.forEach(checkRoom);
-            max += (base / neighbors);
-        };
-        _.forEach(flagEntries, flagWeight);
-        return max;
     }
 }
 module.exports = mod;

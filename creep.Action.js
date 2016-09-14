@@ -95,10 +95,12 @@ var Action = function(actionName){
         } else { // evade
             // get path (don't ignore creeps)
             // try to move. 
-            if( HONK ) creep.say('HONK', SAY_PUBLIC);
-            delete creep.data.path;
-            creep.data.path = this.getPath(creep, targetPos, false);
-
+            if( range > enoughRange ){
+                if( HONK ) creep.say('HONK', SAY_PUBLIC);
+                delete creep.data.path;
+                creep.data.path = this.getPath(creep, targetPos, false);
+            }
+            
             if( creep.data.path && creep.data.path.length > 0 ) {
                 if( creep.data.path.length > 5 ) 
                     creep.data.path = creep.data.path.substr(0,4);

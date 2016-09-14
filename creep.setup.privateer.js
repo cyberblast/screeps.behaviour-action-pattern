@@ -11,6 +11,6 @@ setup.minEnergyAvailable = function(spawn){
     return 0.8;
 };
 setup.maxWeight = function(spawn){
-    return FlagDir.privateerMaxWeight(spawn);
+    return spawn.room.privateerMaxWeight;
 }
 module.exports = setup;

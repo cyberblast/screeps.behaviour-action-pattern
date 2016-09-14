@@ -28,7 +28,7 @@ module.exports = {
             if( sourceRange < 2 ) 
                 creep.harvest(source);
             if( contRange > 0 ) 
-                Creep.action.upgrading.drive(creep, source.container.pos, contRange, 0, 0);
+                Creep.action.upgrading.drive(creep, source.container.pos, contRange, 0, 1);
         } else if( source && creep.room.population && creep.room.population.typeCount['hauler'] && creep.room.population.typeCount['hauler'] > 0 ) {
             if(CHATTY) creep.say('dropmining', SAY_PUBLIC);
             
