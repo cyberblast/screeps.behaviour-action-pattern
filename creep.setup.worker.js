@@ -7,6 +7,8 @@ setup.minEnergyAvailable = function(spawn){
     return 0.3;
 };
 setup.maxCount = function(spawn){
+    if (spawn.room.situation.invasion) return 0;  
+    if (setup.ShouldWeConserveForDefense(spawn)) return 0;
     return 5;
 };
 setup.maxWeight = function(spawn){

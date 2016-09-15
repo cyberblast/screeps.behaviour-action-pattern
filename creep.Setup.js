@@ -42,6 +42,28 @@ var Setup = function(typeName){
         let indexOfB = partsOrder.indexOf(b);
         return indexOfA - indexOfB;
     };
+    this.maxCost = function(){
+        var c = this
+        return (c.bodyCosts(c.multiBody)*c.maxMulti) + (c.bodyCosts(c.fixedBody));
+    };
+    this.EnoughStorageIsAvailableForDefense = function (spawn) {
+        if (!spawn.room.storage) return false; // No storage so not enough. 
+        let storeNeeded = (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * 1; // one of each
+        if (spawn.room.storage.store.energy >= storeNeeded) return true; // if we have enough storage then return true.
+        else
+            return false;
+    };
+
+    this.storageCapacityPercentage = function (spawn) {
+        if (!spawn.room.storage) return 0; // No storage so not enough. 
+        return spawn.room.storage.store.energy / spawn.room.storage.store.storeCapacity;
+    };
+
+    this.ShouldWeConserveForDefense = function (spawn) {
+        if (spawn.room.storage && !this.EnoughStorageIsAvailableForDefense(spawn)) return true;
+        return false;
+
+    };
     this.buildParams = function(spawn){
         var memory = {
             setup: null,

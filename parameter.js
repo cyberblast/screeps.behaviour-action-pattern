@@ -28,7 +28,9 @@ var mod = {
     ROAD_CONSTRUCTION_ABS_MIN: 3, 
     TIME_ZONE: 1, // zone offset in hours (-12 through +12) from UTC
     USE_SUMMERTIME: true, // Please define isSummerTime in global.js to suit to your local summertime rules
+    SPAWN_DEFENSE_ON_ATTACK: true, // This will attempt to store enough to have a defense and spawn troops when invaded.  
     MANAGED_CONTAINER_TRIGGER: 0.2, // managed containers get filled below this relative energy amount and emptied when above 1-this value
     ROUTE_PRECALCULATION: false
+
 }
 module.exports = mod;

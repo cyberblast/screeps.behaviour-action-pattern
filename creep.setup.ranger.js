@@ -8,7 +8,11 @@ setup.minEnergyAvailable = function(spawn){
     return 0.8;
 }
 setup.maxCount = function(spawn){
-    return FlagDir.count(FLAG_COLOR.defense);
+    let currentDefense = FlagDir.count(FLAG_COLOR.defense);
+    if (SPAWN_DEFENSE_ON_ATTACK && spawn.room.situation.invasion) {
+        currentDefense += 1;
+    }
+    return currentDefense;
 }
 setup.maxWeight = function(spawn){
     return null; 
