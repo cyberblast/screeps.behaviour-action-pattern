@@ -4,7 +4,7 @@ action.isAddableAction = function(creep){ return true; }
 action.isAddableTarget = function(target){ return true;}
 action.isValidAction = function(creep){ return _.sum(creep.carry) < creep.carryCapacity; }
 action.isValidTarget = function(target){
-    return ( target && target.store && target.store.energy > 0 );
+    return ( target && target.store && target.store.energy > 300 );
 };   
 action.newTarget = function(creep){ debugger;
     var that = this;

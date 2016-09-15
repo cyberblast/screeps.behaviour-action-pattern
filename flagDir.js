@@ -39,10 +39,12 @@ var mod = {
                 if( mod ){
                     r = mod(r, flag, modArgs);
                 }
+                flag.valid = r < Infinity;
                 return r;
             };
-            return _.sortBy(flags, range)[0].name;
-        } else return flags[0];
+            let flag = _.sortBy(flags, range)[0];
+            return flag.valid ? flag.name : null;
+        } else return flags[0].name;
     }, 
     find: function(flagColor, pos, local, mod, modArgs){
         let id = this.findName(flagColor, pos, local, mod, modArgs);

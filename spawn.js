@@ -26,10 +26,10 @@ var mod = {
             if( params.name == newName || translateErrorCode(newName) === undefined ){
                 Population.registerCreep(newName, params.setup, params.cost, spawn.room, spawn.name, params.parts);
                 if(DEBUG) console.log( dye(CRAYON.system, spawn.pos.roomName  + ' &gt; ') + dye(CRAYON.birth, 'Good morning ' + newName + '!') );
-                return true;
-            }                     
+                return params;
+            }
             console.log( dye(CRAYON.system, spawn.pos.roomName + ' &gt; ') + dye(CRAYON.error, 'Offspring failed: ' + translateErrorCode(newName)) );
-            return false;
+            return null;
         };
         Spawn.loop = function(){      
             var loop = spawn => { 

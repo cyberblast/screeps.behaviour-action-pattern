@@ -257,6 +257,15 @@ var mod = {
                     return this._hostileIds;
                 }
             },
+            'combatCreeps': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._combatCreeps) ){ 
+                        this._combatCreeps = this.creeps.filter( c => ['melee','ranger','healer'].includes(c.data.creepType) );
+                    }
+                    return this._combatCreeps;
+                }
+            },
             'situation': {
                 configurable: true,
                 get: function() {
@@ -358,7 +367,10 @@ var mod = {
             'minStorageLevel': {
                 configurable: true,
                 get: function () {
-                    return (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * 1; // one of each
+                    let defConMin = SPAWN_DEFENSE_ON_ATTACK ? 
+                        (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * 1.5 : // one of each + buffer
+                        0; 
+                    return Math.max(MIN_STORAGE_ENERGY, defConMin);
                 }
             },
             'conserveForDefense': {
@@ -367,9 +379,67 @@ var mod = {
                     if (!this.storage) return false; // No storage 
                     return (this.storage.store.energy < this.minStorageLevel); 
                 }
+            },
+            'hostileThreatLevel': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._hostileThreatLevel) ) {
+                        // TODO: add towers when in foreign room
+                        this._hostileThreatLevel = 0;
+                        evaluateBody = creep => {
+                            this._hostileThreatLevel += Creep.bodyThreat(creep.body);
+                        };
+                        this.hostiles.forEach(evaluateBody);
+                    }
+                    return this._hostileThreatLevel;
+                }
+            },
+            'defenseLevel': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._defenseLevel) ) {
+                        this._defenseLevel = {
+                            melee: 0, 
+                            ranger: 0,
+                            healer: 0,
+                            towers: 0,
+                            threat: 0, 
+                            sum: 0
+                        }
+                        evaluate = creep => {
+                            this._defenseLevel.threat += Creep.bodyThreat(creep.body);
+                            this._defenseLevel[creep.data.creepType] += creep.data.weight;
+                        };
+                        this.combatCreeps.forEach(evaluate);
+                        this._defenseLevel.towers = this.towers.length;
+                        this._defenseLevel.sum = this._defenseLevel.threat + (this._defenseLevel.towers * 10);
+                    }
+                    return this._defenseLevel;
+                }
             }
         });
 
+        Room.prototype.springGun = function(){
+            if( this.situation.invasion ){
+                let idleSpawns = this.spawns.filter( s => !s.spawning );
+                for( let iSpawn = 0; iSpawn < idleSpawns.length && this.defenseLevel.sum < this.hostileThreatLevel; iSpawn++ ) {
+                    // need more Defense!
+                    let setup;
+                    if( this.defenseLevel.melee > this.defenseLevel.ranger ) { 
+                        setup = Creep.setup.ranger; 
+                    } else {
+                        setup = Creep.setup.melee; 
+                    }
+                    if( DEBUG ) console.log( dye(CRAYON.system, spawn.pos.roomName + ' &gt; ') + 'Spring Gun System activated! Trying to spawn an additional ' + setup.type + '.');
+                    let creepParams = idleSpawns[iSpawn].createCreepBySetup(setup);
+                    if( creepParams ){
+                        // add to defenseLevel
+                        this._defenseLevel.threat += Creep.bodyThreat(creepParams.body);
+                        this._defenseLevel[creepParams.setup] += creepParams.cost;
+                    }
+                }
+            }
+        };
 
         Room.adjacentRooms = function(roomName){
             let parts = roomName.split(/([N,E,S,W])/);
@@ -383,7 +453,6 @@ var mod = {
             }
             return names;
         };
-
         Room.roomDistance = function(roomName1, roomName2, diagonal){
             if( roomName1 == roomName2 ) return 0;
             let posA = roomName1.split(/([N,E,S,W])/);
@@ -425,7 +494,6 @@ var mod = {
             // clear old data
             this.roadConstructionTrace = {};
         };
-
         Room.prototype.recordMove = function(creep){
             if( !ROAD_CONSTRUCTION_ENABLE ) return;
             let x = creep.pos.x;
@@ -487,7 +555,7 @@ var mod = {
             };
             containers.forEach(add);
         };
-
+        
         Room.prototype.loop = function(){
             // Temprorary Cleanup
             if( this.memory.routePlaner ) delete this.memory.routePlaner;
@@ -514,27 +582,30 @@ var mod = {
             delete this._containerController
             delete this._privateerMaxWeight;
             delete this._claimerMaxWeight;
-
-            if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
-                this.saveTowers();
-                this.saveSpawns();
-                this.saveContainers();
-            }
-
-            var that = this;               
-            try {
+            delete this._combatCreeps;
+            delete this._defenseLevel;
+            delete this._hostileThreatLevel;
+              
+            try {                
+                var that = this; 
+                if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
+                    this.saveTowers();
+                    this.saveSpawns();
+                    this.saveContainers();
+                }
                 if( this.memory.hostileIds === undefined )
                     this.memory.hostileIds = [];
                 if( this.memory.statistics === undefined)
                     this.memory.statistics = {};
 
                 this.roadConstruction();
+                this.springGun();
 
                 if( this.controller && this.controller.my ) {
                     var registerHostile = creep => {
-                        if( !that.memory.hostileIds.includes(creep.id) ){
+                        if( !that.memory.hostileIds.includes(creep.id) ){ 
                             var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-                            if( creep.owner.username != 'Invader' ){
+                            if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
                                 var message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + that.name + ' at ' + toDateTimeString(toLocalDate(new Date()));
                                 Game.notify(message);
                                 console.log(message);
