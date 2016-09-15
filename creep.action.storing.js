@@ -19,7 +19,7 @@ action.isValidAction = function(creep){
                         )
                     ) &&
                     creep.room.sourceEnergyAvailable > 0 && 
-                    creep.room.storage.store.energy <= LIMIT_STORAGE_ENERGY
+                    creep.room.storage.store.energy <= MAX_STORAGE_ENERGY
                 )
             )
         )

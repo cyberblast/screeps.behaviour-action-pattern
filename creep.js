@@ -52,6 +52,26 @@ var mod = {
             var run = creep => creep.run();
             _.forEach(Game.creeps, run);
         };
+
+        Creep.partThreat = {
+            'move': { common: 0, boosted: 0 },
+            'work': { common: 1, boosted: 3 },
+            'carry': { common: 0, boosted: 0 },
+            'attack': { common: 2, boosted: 5 },
+            'ranged_attack': { common: 2, boosted: 5 },
+            'heal': { common: 2, boosted: 5 },
+            'claim': { common: 1, boosted: 3 },
+            'tough': { common: 1, boosted: 3 }
+        }
+        Creep.bodyThreat = function(body) {
+            let threat = 0;
+            let evaluatePart = part => {
+                threat += Creep.partThreat[part.type][part.boost ? 'boosted' : 'common'];
+            };
+            body.forEach(evaluatePart);
+            return threat;
+        }
+
         Creep.prototype.run = function(behaviour){
             if( !this.spawning ){
                 if(!behaviour && this.data && this.data.creepType) {

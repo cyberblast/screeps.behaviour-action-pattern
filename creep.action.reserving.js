@@ -1,5 +1,5 @@
 var action = new Creep.Action('reserving');
-action.isValidAction = function(creep){ return true; }; 
+action.isValidAction = function(creep){ return true; }; // TODO: check if it is a flag or a controller and reservation < 4999 
 action.isValidTarget = function(target){ return true; }; 
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; }; 

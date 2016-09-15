@@ -26,4 +26,7 @@ module.exports.loop = function () {
     if( Memory.statistics && Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time )
         require('./statistics').loop();
     processReports();
+
+    // uncomment for 1 loop to flush road construction traces
+    //_.forEach(Memory.rooms, r => delete r.roadConstructionTrace);
 };
