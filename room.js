@@ -312,7 +312,7 @@ var mod = {
                 get: function () {
                     if (_.isUndefined(this._privateerMaxWeight) ) {
                         this._privateerMaxWeight = 0;
-                        let base = 2800;
+                        let base = 2500;
                         let maxCalcRange = 1;
                         let that = this;
                         let distance, adjacent, ownNeighbor, room;
@@ -386,7 +386,7 @@ var mod = {
                     if (_.isUndefined(this._hostileThreatLevel) ) {
                         // TODO: add towers when in foreign room
                         this._hostileThreatLevel = 0;
-                        evaluateBody = creep => {
+                        let evaluateBody = creep => {
                             this._hostileThreatLevel += Creep.bodyThreat(creep.body);
                         };
                         this.hostiles.forEach(evaluateBody);
@@ -406,7 +406,7 @@ var mod = {
                             threat: 0, 
                             sum: 0
                         }
-                        evaluate = creep => {
+                        let evaluate = creep => {
                             this._defenseLevel.threat += Creep.bodyThreat(creep.body);
                             this._defenseLevel[creep.data.creepType] += creep.data.weight;
                         };
@@ -430,7 +430,7 @@ var mod = {
                     } else {
                         setup = Creep.setup.melee; 
                     }
-                    if( DEBUG ) console.log( dye(CRAYON.system, spawn.pos.roomName + ' &gt; ') + 'Spring Gun System activated! Trying to spawn an additional ' + setup.type + '.');
+                    if( DEBUG ) console.log( dye(CRAYON.system, this.name + ' &gt; ') + 'Spring Gun System activated! Trying to spawn an additional ' + setup.type + '.');
                     let creepParams = idleSpawns[iSpawn].createCreepBySetup(setup);
                     if( creepParams ){
                         // add to defenseLevel

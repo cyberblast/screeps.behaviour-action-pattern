@@ -65,10 +65,11 @@ var mod = {
         }
         Creep.bodyThreat = function(body) {
             let threat = 0;
-            evaluatePart = part => {
+            let evaluatePart = part => {
                 threat += Creep.partThreat[part.type][part.boost ? 'boosted' : 'common'];
             };
             body.forEach(evaluatePart);
+            return threat;
         }
 
         Creep.prototype.run = function(behaviour){

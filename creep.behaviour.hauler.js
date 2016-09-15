@@ -49,7 +49,6 @@ module.exports = {
             }
         }
 
-
         for(var iAction = 0; iAction < priority.length; iAction++) {
             var action = priority[iAction];
             if(action.isValidAction(creep) && 

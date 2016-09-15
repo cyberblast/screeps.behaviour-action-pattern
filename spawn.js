@@ -28,7 +28,7 @@ var mod = {
                 if(DEBUG) console.log( dye(CRAYON.system, spawn.pos.roomName  + ' &gt; ') + dye(CRAYON.birth, 'Good morning ' + newName + '!') );
                 return params;
             }
-            console.log( dye(CRAYON.system, spawn.pos.roomName + ' &gt; ') + dye(CRAYON.error, 'Offspring failed: ' + translateErrorCode(newName)) );
+            if( DEBUG ) console.log( dye(CRAYON.system, spawn.pos.roomName + ' &gt; ') + dye(CRAYON.error, 'Offspring failed: ' + translateErrorCode(newName) + ', spawn params: ' + JSON.stringify(params) ) );
             return null;
         };
         Spawn.loop = function(){      

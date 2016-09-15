@@ -16,7 +16,7 @@ var mod = {
         if( flagColor == null || this.list.length == 0) 
             return null;
 
-        let filter = flagColor.filter;
+        let filter = _.clone(flagColor.filter);
         if( local && pos && pos.roomName )
             _.assign(filter, {roomName: pos.roomName, cloaking: "0"});
         else
@@ -76,7 +76,7 @@ var mod = {
         if( flagColor == null || this.list.length == 0) 
             return 0;
 
-        let filter = flagColor.filter;
+        let filter = _.clone(flagColor.filter);
         if( local && pos && pos.roomName )
             _.assign(filter, {roomName: pos.roomName});
         return _.countBy(this.list, filter).true || 0;
@@ -96,7 +96,7 @@ var mod = {
                 return false;
             };
         } else {
-            filter = flagColor.filter;
+        let filter = _.clone(flagColor.filter);
             if( local && pos && pos.roomName )
                 _.assign(filter, {roomName: pos.roomName});
         }
