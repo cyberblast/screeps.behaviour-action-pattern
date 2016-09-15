@@ -327,6 +327,33 @@ var mod = {
                     };
                     return this._privateerMaxWeight;
                 }
+            },
+            'claimerMaxWeight': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._claimerMaxWeight) ) {
+                        this._claimerMaxWeight = 0;
+                        let base = 1300;
+                        let maxCalcRange = 2;
+                        let that = this;
+                        let distance, reserved, flag;
+
+                        let flagEntries = FlagDir.filter([FLAG_COLOR.claim, FLAG_COLOR.claim.reserve]);
+                        let calcWeight = flagEntry => {
+                            distance = Room.roomDistance(that.name, flagEntry.roomName);
+                            if( distance > maxCalcRange ) 
+                                return;
+                            flag = Game.flags[flagEntry.name];
+                            if( flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 3500)
+                                return;
+
+                            reserved = flag.targetOf ? _.sum( flag.targetOf.map( t => t.weight )) : 0;
+                            that._claimerMaxWeight += (base - reserved);
+                        };
+                        flagEntries.forEach(calcWeight);
+                    };
+                    return this._claimerMaxWeight;
+                }
             }
         });
 
@@ -472,6 +499,7 @@ var mod = {
             delete this._containerManaged;
             delete this._containerController
             delete this._privateerMaxWeight;
+            delete this._claimerMaxWeight;
 
             if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
                 this.saveTowers();
