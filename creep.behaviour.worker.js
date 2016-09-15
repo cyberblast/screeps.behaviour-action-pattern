@@ -70,7 +70,7 @@ module.exports = {
         if (SPAWN_DEFENSE_ON_ATTACK) {
             let storeNeeded = (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * 1;
             storeNeeded += storeNeeded * 0.50; // Add buffer
-            if (creep.room.storage.store.energy < storeNeeded) {
+            if (!creep.room.storage || creep.room.storage.store.energy < storeNeeded) {
                 return false;
             }
             else
