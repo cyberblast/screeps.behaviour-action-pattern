@@ -52,8 +52,13 @@ var Setup = function(typeName){
         if (spawn.room.storage.store.energy >= storeNeeded) return true; // if we have enough storage then return true.
         else
             return false;
+    };
 
-    };  
+    this.storageCapacityPercentage = function (spawn) {
+        if (!spawn.room.storage) return 0; // No storage so not enough. 
+        return spawn.room.storage.store.energy / spawn.room.storage.store.storeCapacity;
+    };
+
     this.ShouldWeConserveForDefense = function (spawn) {
         if (spawn.room.storage && !this.EnoughStorageIsAvailableForDefense(spawn)) return true;
         return false;
