@@ -8,7 +8,7 @@ setup.minEnergyAvailable = function(spawn){
     return 0.8;
 }
 setup.maxCount = function(spawn){
-    return FlagDir.count(FLAG_COLOR.defense);
+    return 0;//FlagDir.count(FLAG_COLOR.defense);
 }
 setup.maxWeight = function(spawn){
     return 0;

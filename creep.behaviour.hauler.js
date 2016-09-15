@@ -34,30 +34,22 @@ module.exports = {
                 Creep.action.fueling, 
                 Creep.action.storing, 
                 Creep.action.idle];
+
+            if ( _.sum(creep.carry) > creep.carry.energy || 
+                ( !creep.room.situation.invasion
+                && SPAWN_DEFENSE_ON_ATTACK
+                && creep.room.conserveForDefense )) {
+                    priority.unshift(Creep.action.storing);
+            }
+            if (creep.room.urgentRepairableSites.length > 0 ) {
+                priority.unshift(Creep.action.fueling);
+            }
             if( creep.room.controller && creep.room.controller.ticksToDowngrade < 2000 ) { // urgent upgrading 
                 priority.unshift(Creep.action.upgrading);
             }
         }
-        if( _.sum(creep.carry) > creep.carry.energy ) {
-            priority.unshift(Creep.action.storing);
-        }
 
-        if (!creep.room.situation.invasion
-            && SPAWN_DEFENSE_ON_ATTACK
-            && creep.carry.energy > 0
-            && creep.room.storage) {
 
-            let storeNeeded = (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * 1;
-            storeNeeded += storeNeeded * 0.50; // Add buffer
-            if (creep.room.storage.store.energy < storeNeeded) {
-                //if (DEBUG) console.log('We need more stored energy for defenses. We are prioritizing the storing of energy. ' + storeNeeded + ' storage needed, current storage is: ' + creep.room.storage.store.energy );
-                priority.unshift(Creep.action.storing);
-            }
-        }
-
-        if (creep.room.urgentRepairableSites.length > 0 && creep.carry.energy > 0) {
-            priority.unshift(Creep.action.fueling);
-        }
         for(var iAction = 0; iAction < priority.length; iAction++) {
             var action = priority[iAction];
             if(action.isValidAction(creep) && 

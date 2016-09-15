@@ -354,8 +354,22 @@ var mod = {
                     };
                     return this._claimerMaxWeight;
                 }
+            },
+            'minStorageLevel': {
+                configurable: true,
+                get: function () {
+                    return (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * 1; // one of each
+                }
+            },
+            'conserveForDefense': {
+                configurable: true,
+                get: function () {
+                    if (!this.storage) return false; // No storage 
+                    return (this.storage.store.energy < this.minStorageLevel); 
+                }
             }
         });
+
 
         Room.adjacentRooms = function(roomName){
             let parts = roomName.split(/([N,E,S,W])/);
@@ -434,7 +448,7 @@ var mod = {
                 var id = obj => obj.id;
                 this.memory.towers = _.map(towers, id);
             } else this.memory.towers = [];
-        };            
+        };
         Room.prototype.saveSpawns = function(){
             let spawns = this.find(FIND_MY_SPAWNS);
             if( spawns.length > 0 ){
