@@ -312,7 +312,7 @@ var mod = {
                 get: function () {
                     if (_.isUndefined(this._privateerMaxWeight) ) {
                         this._privateerMaxWeight = 0;
-                        let base = 2500;
+                        let base = 3000;
                         let maxCalcRange = 1;
                         let that = this;
                         let distance, adjacent, ownNeighbor, room;
