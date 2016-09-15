@@ -6,7 +6,7 @@ action.isValidAction = function(creep){ return _.sum(creep.carry) < creep.carryC
 action.isValidTarget = function(target){
     return ( target && target.store && target.store.energy > 300 );
 };   
-action.newTarget = function(creep){ debugger;
+action.newTarget = function(creep){ 
     var that = this;
     let isAddable = target => that.isValidTarget(target);    
     if( creep.room.containerIn.length > 0 ) {

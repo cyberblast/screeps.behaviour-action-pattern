@@ -83,7 +83,7 @@ var mod = {
     },
     filter: function(flagColor, pos, local){
         if( flagColor == null || this.list.length == 0) 
-            return 0;
+            return [];
         let filter;
         if( Array.isArray(flagColor) ) {
             filter = entry => {
@@ -104,7 +104,7 @@ var mod = {
     },
     filterCustom: function(filter){
         if( filter == null || this.list.length == 0) 
-            return 0;
+            return [];
         return _.filter(this.list, filter);
     },
     rangeMod: function(range, flagItem, args){

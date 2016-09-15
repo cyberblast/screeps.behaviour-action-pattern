@@ -3,7 +3,7 @@ var mod = {
         Object.defineProperties(Room.prototype, {
             'sources': {
                 configurable: true,
-                get: function() {debugger;
+                get: function() {
                     if( _.isUndefined(this.memory.sources) ) {                        
                         this._sources = this.find(FIND_SOURCES);
                         if( this._sources.length > 0 ){
@@ -434,7 +434,7 @@ var mod = {
                     let creepParams = idleSpawns[iSpawn].createCreepBySetup(setup);
                     if( creepParams ){
                         // add to defenseLevel
-                        this._defenseLevel.threat += Creep.bodyThreat(creepParams.body);
+                        this._defenseLevel.threat += Creep.bodyThreat(creepParams.parts);
                         this._defenseLevel[creepParams.setup] += creepParams.cost;
                     }
                 }
