@@ -32,7 +32,8 @@ var mod = {
     SPAWN_DEFENSE_ON_ATTACK: true, // This will attempt to store enough to have a defense and spawn troops when invaded.  
     MANAGED_CONTAINER_TRIGGER: 0.2, // managed containers get filled below this relative energy amount and emptied when above 1-this value
     ROUTE_PRECALCULATION: true, 
-    NOTIFICATE_INVADER: false // Also log common 'Invader' hostiles
+    NOTIFICATE_INVADER: false, // Also log common 'Invader' hostiles
+    COMBAT_CREEPS_RESPECT_RAMPARTS: false // causes own creeps not to leave through ramparts
 
 }
 module.exports = mod;
