@@ -66,7 +66,7 @@ var mod = {
         Creep.bodyThreat = function(body) {
             let threat = 0;
             let evaluatePart = part => {
-                threat += Creep.partThreat[part.type][part.boost ? 'boosted' : 'common'];
+                threat += Creep.partThreat[part.type ? part.type : part][part.boost ? 'boosted' : 'common'];
             };
             body.forEach(evaluatePart);
             return threat;

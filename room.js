@@ -430,7 +430,7 @@ var mod = {
                     } else {
                         setup = Creep.setup.melee; 
                     }
-                    if( DEBUG ) console.log( dye(CRAYON.system, this.name + ' &gt; ') + 'Spring Gun System activated! Trying to spawn an additional ' + setup.type + '.');
+                    if( DEBUG ) console.log( dye(CRAYON.system, this.name + ' &gt; ') + 'Spring Gun System activated in room ' + this.name + '! Trying to spawn an additional ' + setup.type + '.');
                     let creepParams = idleSpawns[iSpawn].createCreepBySetup(setup);
                     if( creepParams ){
                         // add to defenseLevel
