@@ -2,6 +2,8 @@
 
 ## Roadmap
 
+[General Discussion thread](https://github.com/ScreepsGamers/screeps.behaviour-action-pattern/issues/172)
+
 Just a vague idea...
 
 * 2016 September  
