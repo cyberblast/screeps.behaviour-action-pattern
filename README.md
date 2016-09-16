@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-I'm quite unsure about the corresponding timeline, but the order should fit. 
+Just a vague idea...
 
 * 2016 September  
   * Pathfinding  
