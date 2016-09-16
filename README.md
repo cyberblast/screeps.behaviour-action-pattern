@@ -6,15 +6,35 @@ I'm quite unsure about the corresponding timeline, but the order should fit.
 
 * 2016 September  
   * Pathfinding  
-  * Redesign/improvement of the worker concept.  
-    Utilizing containers & specialized 'workers'
+  * Redesign/improvement of the worker concept.
+  * Dropmining
+  * Containers
+  * Links
 
 * 2016 October  
-  Build automation
+  * Build automation
 
 * 2016 November  
-  Colony behaviour
+  * Extractor
+  * Labs
+  * Dismantling
+  * Pathfinding  
 
 * 2016 December  
-  Extending functionality  
-  Utilize new structures & actions
+  * Colony behaviour & strategy  
+  * Terminal
+  * Tower Tuning
+  
+* 2017 January
+  * Harvesting Power
+  * Performance Analysis
+
+* 2017 February  
+  TBD  
+  Possible Points
+  * Boosting
+  * Market
+  * Better offensive strategies
+  * Power creeps
+  * Performance optimization
+  * Memory redesign
