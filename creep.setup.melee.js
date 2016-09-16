@@ -1,7 +1,7 @@
 var setup = new Creep.Setup('melee');
 setup.multiBody = [ATTACK, MOVE]; 
 setup.minAbsEnergyAvailable = 260;
-setup.maxMulti = 10;
+setup.maxMulti = function(room){ return 10; };
 setup.globalMeasurement = true;
 setup.minControllerLevel = 2;
 setup.minEnergyAvailable = function(spawn){

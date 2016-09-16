@@ -368,7 +368,7 @@ var mod = {
                 configurable: true,
                 get: function () {
                     let defConMin = SPAWN_DEFENSE_ON_ATTACK ? 
-                        (Creep.setup.melee.maxCost() + Creep.setup.ranger.maxCost()) * 1.5 : // one of each + buffer
+                        (Creep.setup.melee.maxCost(this) + Creep.setup.ranger.maxCost(this)) * 1.5 : // one of each + buffer
                         0; 
                     return Math.max(MIN_STORAGE_ENERGY, defConMin);
                 }

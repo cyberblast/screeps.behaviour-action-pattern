@@ -3,7 +3,6 @@ var Setup = function(typeName){
     this.fixedBody = []; 
     this.multiBody = []; 
     this.minAbsEnergyAvailable = 0; 
-    this.maxMulti = 6;
     this.minRcl = 0;
     this.minControllerLevel = 0;
     this.globalMeasurement = false;
@@ -21,7 +20,8 @@ var Setup = function(typeName){
     this.multi = function(spawn){ 
         let fixedCosts = this.bodyCosts(this.fixedBody);
         let multiCosts = this.bodyCosts(this.multiBody);
-        return _.min([Math.floor( (spawn.room.energyAvailable-fixedCosts) / multiCosts), this.maxMulti]);
+        let max = this.maxMulti(spawn.room);
+        return _.min([Math.floor( (spawn.room.energyAvailable-fixedCosts) / multiCosts), max]);
     }; 
     this.setParamParts = function(spawn){
         var parts = [];
@@ -42,9 +42,9 @@ var Setup = function(typeName){
         let indexOfB = partsOrder.indexOf(b);
         return indexOfA - indexOfB;
     };
-    this.maxCost = function(){
+    this.maxCost = function(room){
         var c = this
-        return (c.bodyCosts(c.multiBody)*c.maxMulti) + (c.bodyCosts(c.fixedBody));
+        return (c.bodyCosts(c.multiBody)*c.maxMulti(room)) + (c.bodyCosts(c.fixedBody));
     };
 
     this.buildParams = function(spawn){

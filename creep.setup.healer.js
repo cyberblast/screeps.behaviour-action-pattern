@@ -1,7 +1,7 @@
 var setup = new Creep.Setup('healer');
 setup.multiBody = [MOVE, HEAL];
 setup.minAbsEnergyAvailable = 300;
-setup.maxMulti = 4;
+setup.maxMulti = function(room){ return 4; };
 setup.globalMeasurement = true;
 setup.minControllerLevel = 7;
 setup.minEnergyAvailable = function(spawn){

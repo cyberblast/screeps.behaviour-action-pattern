@@ -2,7 +2,7 @@ var setup = new Creep.Setup('hauler');
 setup.multiBody = [CARRY, CARRY, MOVE];
 setup.minControllerLevel = 2;
 setup.minAbsEnergyAvailable = 150;
-setup.maxMulti = 7;
+setup.maxMulti = function(room){ return 7; };
 setup.sortedParts = false;
 setup.minEnergyAvailable = function(spawn){
     return 0.4;

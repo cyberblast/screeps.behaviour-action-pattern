@@ -2,7 +2,7 @@ var setup = new Creep.Setup('miner');
 setup.multiBody = [WORK];
 setup.fixedBody = [WORK, CARRY, MOVE];
 setup.minAbsEnergyAvailable = 200;
-setup.maxMulti = 4;
+setup.maxMulti = function(room){ return 4; };
 setup.sortedParts = false;
 setup.minEnergyAvailable = function(spawn){
     return 0.3;
