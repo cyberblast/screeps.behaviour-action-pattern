@@ -96,7 +96,7 @@ var mod = {
                 return false;
             };
         } else {
-        let filter = _.clone(flagColor.filter);
+            filter = _.clone(flagColor.filter);
             if( local && pos && pos.roomName )
                 _.assign(filter, {roomName: pos.roomName});
         }
