@@ -412,7 +412,7 @@ var mod = {
                         };
                         this.combatCreeps.forEach(evaluate);
                         this._defenseLevel.towers = this.towers.length;
-                        this._defenseLevel.sum = this._defenseLevel.threat + (this._defenseLevel.towers * 10);
+                        this._defenseLevel.sum = this._defenseLevel.threat + (this._defenseLevel.towers * 18);
                     }
                     return this._defenseLevel;
                 }
