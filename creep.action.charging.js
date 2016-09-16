@@ -5,7 +5,7 @@ action.isAddableAction = function(creep){ return true; }
 action.isValidTarget = function(target){
     return ( target && target.store && (_.sum(target.store) < target.storeCapacity) );
 };   
-action.isAddableTarget = function(target){
+action.isAddableTarget = function(target, creep){
     return (
         (target instanceof OwnedStructure && target.my) || 
         ( 
@@ -16,7 +16,7 @@ action.isAddableTarget = function(target){
                 )
             )
         )
-    );
+    ) && (target.storeCapacity - _.sum(target.store)) > Math.min(creep.carry.energy, 500);
 };
 action.newTarget = function(creep){
     var that = this;
@@ -24,6 +24,7 @@ action.newTarget = function(creep){
         let target = null;
         let maxFree = 0; 
         var emptyest = o => {
+            if( !that.isAddableTarget(o, creep) ) return;
             let free = o.storeCapacity - _.sum(o.store);
             if( free > maxFree ){
                 maxFree = free;

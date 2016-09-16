@@ -4,7 +4,7 @@ action.isAddableAction = function(creep){ return true; }
 action.isAddableTarget = function(target){ return true;}
 action.isValidAction = function(creep){ return _.sum(creep.carry) < creep.carryCapacity; }
 action.isValidTarget = function(target){
-    return ( target && target.store && target.store.energy > 300 );
+    return ( target && target.store && target.store.energy > 400 );
 };   
 action.newTarget = function(creep){ 
     var that = this;
@@ -14,6 +14,7 @@ action.newTarget = function(creep){
         let target = null;
         let energy = 0;
         let fullest = cont => {
+            if( cont.store.energy < Math.min(creep.carryCapacity - _.sum(creep.carry), 500) ) return;
             let e = cont.targetOf ? 
                 cont.store.energy - _.sum( cont.targetOf.map( t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 ))) : 
                 cont.store.energy;
