@@ -126,6 +126,19 @@ var mod = {
                 }
             }
         };
+        Creep.prototype.leaveBorder = function() {
+            // if on border move away 
+            // for emergency case, Path not found
+            if( this.pos.y == 0 ){
+                this.move(BOTTOM);
+            } else if( this.pos.x == 0  ){
+                this.move(RIGHT);
+            } else if( this.pos.y == 49  ){
+                this.move(TOP);
+            } else if( this.pos.x == 49  ){
+                this.move(LEFT);
+            }
+        };
         Creep.prototype.drive = function( targetPos, intentionRange, enoughRange, range ) {
             // temporary cleanup
             if( this.data.route ) delete this.data.route;
@@ -160,6 +173,7 @@ var mod = {
                 } else if( range > enoughRange ) {
                     this.say('NO PATH!');
                     this.data.targetId = null;
+                    this.leaveBorder();
                 }
             } else if( this.data.moveMode == 'auto' ) {
                 // try again to use path.
@@ -177,6 +191,7 @@ var mod = {
                 } else if( range > enoughRange ) {
                     this.say('NO PATH!');
                     this.data.targetId = null;
+                    this.leaveBorder();
                 }
             } else { // evade
                 // get path (don't ignore thiss)
@@ -195,6 +210,7 @@ var mod = {
                 } else if( range > enoughRange ){
                     this.say('NO PATH!');
                     this.data.targetId = null;
+                    this.leaveBorder();
                 }
             }
         };
