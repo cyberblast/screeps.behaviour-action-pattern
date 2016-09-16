@@ -138,6 +138,7 @@ var mod = {
             } else if( this.pos.x == 49  ){
                 this.move(LEFT);
             }
+            // TODO: CORNER cases
         };
         Creep.prototype.drive = function( targetPos, intentionRange, enoughRange, range ) {
             // temporary cleanup

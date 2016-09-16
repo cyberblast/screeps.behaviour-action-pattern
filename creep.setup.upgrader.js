@@ -6,7 +6,7 @@ setup.maxMulti = function(room){
     let multi = 3;
     if( room.storage && room.storage.store.energy >= MAX_STORAGE_ENERGY )
     {
-        let surplus = MAX_STORAGE_ENERGY - room.storage.store.energy;
+        let surplus = room.storage.store.energy - MAX_STORAGE_ENERGY;
         multi += Math.ceil( surplus / 20000 ); // one more multi for each 20k surplus (+1)
     }
     return multi; 
