@@ -353,7 +353,7 @@ var mod = {
                             if( distance > maxCalcRange ) 
                                 return;
                             flag = Game.flags[flagEntry.name];
-                            if( flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 3500)
+                            if( flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)
                                 return;
 
                             reserved = flag.targetOf ? _.sum( flag.targetOf.map( t => t.weight )) : 0;
