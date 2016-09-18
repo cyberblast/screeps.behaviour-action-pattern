@@ -419,6 +419,21 @@ var mod = {
             }
         });
 
+        Room.prototype.saveMineral = function() {
+            if (_.isUndefined(this.memory.mineral)) {
+              this.memory.mineral = null;
+            }
+            let nullOrFirst = e=> e.length>0 ? e[0] : null;
+            let mineral = nullOrFirst(this.find(FIND_MINERALS));
+            if (mineral != null) {
+                let extractor = nullOrFirst(this.find(FIND_STRUCTURES, {filter:{structureType:STRUCTURE_EXTRACTOR}}));
+                if (extractor != null && extractor.pos.x == mineral.pos.x &&
+                    extractor.pos.y == mineral.pos.y && extractor.pos.roomName == mineral.pos.roomName) {
+                        this.memory.mineral = mineral.id;
+                }
+            }
+        };
+
         Room.prototype.springGun = function(){
             if( this.situation.invasion ){
                 let idleSpawns = this.spawns.filter( s => !s.spawning );
