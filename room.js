@@ -417,11 +417,24 @@ var mod = {
                     return this._defenseLevel;
                 }
             }
-        });
+        },
+        'minerals': {
+                configurable:true,
+                get: function () {
+                    if( _.isUndefined(this.memory.minerals)) {
+                        this.saveMinerals();
+                    }
+                    if( _.isUndefined(this._mineral) ){
+                        this._mineral= Game.getObjectById(this.memory.minerals);
+                    }
+                    return this._mineral;
+                }
+            },
+        );
 
-        Room.prototype.saveMineral = function() {
-            if (_.isUndefined(this.memory.mineral)) {
-              this.memory.mineral = null;
+        Room.prototype.saveMinerals = function() {
+            if (_.isUndefined(this.memory.minerals)) {
+              this.memory.minerals = null;
             }
             let nullOrFirst = e=> e.length>0 ? e[0] : null;
             let mineral = nullOrFirst(this.find(FIND_MINERALS));
@@ -429,7 +442,7 @@ var mod = {
                 let extractor = nullOrFirst(this.find(FIND_STRUCTURES, {filter:{structureType:STRUCTURE_EXTRACTOR}}));
                 if (extractor != null && extractor.pos.x == mineral.pos.x &&
                     extractor.pos.y == mineral.pos.y && extractor.pos.roomName == mineral.pos.roomName) {
-                        this.memory.mineral = mineral.id;
+                        this.memory.minerals = mineral.id;
                 }
             }
         };
