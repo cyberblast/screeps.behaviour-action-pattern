@@ -197,7 +197,7 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerIn) ){ 
-                        let byType = c => c.source === true && c.controller == false;
+                        let byType = c => (c.source === true || c.minerals == true ) && c.controller == false;
                         this._containerIn = _.filter(this.container, byType);
                         // add managed
                         let isFull = c => _.sum(c.store) >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
@@ -210,7 +210,8 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerOut) ){ 
-                        let byType = c => c.source === false;
+                        let falseOnUndefined = e => { return _.isUndefined(e)? false: e };
+                        let byType = falseOnUndefined(c.source) === false && falseOnUndefined(c.minerals) === false;
                         this._containerOut = _.filter(this.container, byType);
                         // add managed                         
                         let isEmpty = c => _.sum(c.store) <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
@@ -575,7 +576,8 @@ var mod = {
                     this.memory.container.push({
                         id: cont.id, 
                         source: (source.length > 0), 
-                        controller: ( cont.pos.getRangeTo(this.controller) < 4 )
+                        controller: ( cont.pos.getRangeTo(this.controller) < 4 ),
+                        minerals: this.minerals.container.id == cont.id,
                     });
                     let assignContainer = s => s.memory.container = cont.id;
                     source.forEach(assignContainer);                    
