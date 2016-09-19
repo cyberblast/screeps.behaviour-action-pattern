@@ -11,6 +11,9 @@ module.exports = {
             source = _.find(creep.room.sources, notDeterminated);
             if( source ) {
                 creep.data.determinatedTarget = source.id;
+            } else if ( creep.room.minerals != null ) {
+                // assign to minerals
+                creep.data.determinatedTarget = creep.room.minerals.id;
             }
         } else { // get dedicated source
             source = Game.getObjectById(creep.data.determinatedTarget);
