@@ -9,9 +9,13 @@ setup.minEnergyAvailable = function(spawn){
 };
 setup.maxCount = function(spawn){
     let miners = spawn.room.sources.length;
-    if (spawn.room.minerals != null)
-        miners = miners +1;
-    
+    let minerals = spawn.room.minerals;
+    if ( minerals != null ) {
+        let storege = spawn.room.storage;
+        if ( storege != null && storege.store[minerals.mineralType] <= MINERALS_MAX_IN_STORE ) {
+            miners = miners + 1;
+        }
+    }
     return miners;
 };
 setup.maxWeight = function(spawn){
