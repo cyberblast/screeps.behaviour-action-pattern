@@ -16,12 +16,46 @@ module.exports = {
             source = Game.getObjectById(creep.data.determinatedTarget);
         }
 
-        if( source && source.container && _.sum(source.container.store) < source.container.storeCapacity )
+        if( source && source.link && source.link.energy < source.link.energyCapacity )
+        {
+            if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
+            
+            let linkRange = creep.pos.getRangeTo(source.link);
+            let sourceRange = creep.pos.getRangeTo(source);
+
+            if( linkRange < 2 && creep.carry.energy > ( creep.carryCapacity - ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) )))
+                creep.transfer(source.link, RESOURCE_ENERGY);
+            if( sourceRange < 2 ) 
+                creep.harvest(source);
+
+            if( !creep.data.determinatedSpot ) { 
+                let spots;
+                if( source.container )
+                    spots = Room.fieldsInRangeOfThree(source.pos, 1, source.link.pos, 1, source.container.pos, 1, true);
+                else spots = Room.fieldsInRangeOfTwo(source.pos, 1, source.link.pos, 1, true);
+                if( spots.length > 0 ){
+                    creep.data.determinatedSpot = {
+                        x: spots[0].x, 
+                        y: spots[0].y
+                    }
+                }
+            }
+
+            if( creep.data.determinatedSpot ) { 
+                let pos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, source.pos.roomName);
+                let range = creep.pos.getRangeTo(pos);
+                if( range > 0 ) 
+                    creep.drive( pos, 0, 0, range );
+            } else {
+                let contRange = creep.pos.getRangeTo(source.container);
+                if(  source.container &&contRange  > 0 ) 
+                    creep.drive( source.container.pos, 0, 0, contRange );
+            }                 
+        }
+        else if( source && source.container && _.sum(source.container.store) < source.container.storeCapacity )
         {
             if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
 
-            // TODO: Dont move to container but calc optimal position (once)
-            
             let contRange = creep.pos.getRangeTo(source.container);
             let sourceRange = creep.pos.getRangeTo(source);
 

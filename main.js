@@ -29,4 +29,7 @@ module.exports.loop = function () {
 
     // uncomment for 1 loop to flush road construction traces
     //_.forEach(Memory.rooms, r => delete r.roadConstructionTrace);
+
+    // uncomment for 1 loop toremove all construction Sites
+    //_.forEach(Game.constructionSites, s => s.remove());
 };

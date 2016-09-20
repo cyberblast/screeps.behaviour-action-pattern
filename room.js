@@ -171,6 +171,7 @@ var mod = {
                     return this._container;
                 }
             },
+            /*
             // miners go to
             'containerSource': {
                 configurable: true,
@@ -182,7 +183,7 @@ var mod = {
                     return this._containerSource;
                 }
             },
-            // upgraders go to
+            */
             'containerController': {
                 configurable: true,
                 get: function() {
@@ -228,6 +229,56 @@ var mod = {
                         this._containerManaged = _.filter(this.container, byType);
                     }
                     return this._containerManaged;
+                }
+            },
+            'links': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.memory.links)) {
+                        this.saveLinks();
+                    }
+                    if( _.isUndefined(this._links) ){ 
+                        this._links = [];
+                        let add = entry => {
+                            let o = Game.getObjectById(entry.id); 
+                            if( o ) {
+                                _.assign(o, entry);
+                                this._links.push(o);
+                            }
+                        };
+                        _.forEach(this.memory.links, add);
+                    }
+                    return this._links;
+                }
+            },
+            'linksController': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._linksController) ){ 
+                        let byType = c => c.controller === true;
+                        this._linksController = this.links.filter(byType);
+                    }
+                    return this._linksController;
+                }
+            },
+            'linksStorage': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._linksStorage) ) { 
+                        let byType = l => l.storage == true;
+                        this._linksStorage = this.links.filter(byType);
+                    }
+                    return this._linksStorage;
+                }
+            },
+            'linksIn': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._linksIn) ) { 
+                        let byType = l => l.storage == false && l.controller == false;
+                        this._linksIn = _.filter(this.links, byType);
+                    }
+                    return this._linksIn;
                 }
             },
             'creeps': {
@@ -462,6 +513,60 @@ var mod = {
             if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1 
             return xDif + yDif; // count diagonal as 2        
         };
+        /*
+        Room.adjacentFields = function(pos, where = null){
+            let fields = [];
+            for(x = pos.x-1; x < pos.x+2; x++){
+                for(y = pos.y-1; y < pos.y+2; y++){
+                    if( x > 1 && x < 48 && y > 1 && y < 48 ){
+                        let p = new RoomPosition(x, y, pos.roomName);
+                        if( !where || where(p) )
+                            fields.push(p);
+                    }
+                }
+            }
+            return fields;
+        };*/
+
+        Room.fieldsInRangeOfTwo = function(posA, maxRangeA, posB, maxRangeB, checkWalkable = false, where = null) {
+            let minX = Math.max(posA.x-maxRangeA, posB.x-maxRangeB);
+            let maxX = Math.min(posA.x+maxRangeA, posB.x+maxRangeB);
+            let minY = Math.max(posA.y-maxRangeA, posB.y-maxRangeB);
+            let maxY = Math.min(posA.y+maxRangeA, posB.y+maxRangeB);
+            return Room.validFields(posA.roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null);
+        };
+        Room.fieldsInRangeOfThree = function(posA, maxRangeA, posB, maxRangeB, posC, maxRangeC, checkWalkable = false, where = null) {
+            let minX = Math.max(posA.x-maxRangeA, posB.x-maxRangeB, posC.x-maxRangeC);
+            let maxX = Math.min(posA.x+maxRangeA, posB.x+maxRangeB, posC.x+maxRangeC);
+            let minY = Math.max(posA.y-maxRangeA, posB.y-maxRangeB, posC.y-maxRangeC);
+            let maxY = Math.min(posA.y+maxRangeA, posB.y+maxRangeB, posC.y+maxRangeC);
+            return Room.validFields(posA.roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null);
+        };
+        Room.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
+            let look;
+            if( checkWalkable ) {
+                look = Game.rooms[roomName].lookAtArea(minY,minX,maxY,maxX);
+            }
+            let invalidObject = o => {
+                return ((o.type == 'terrain' && o.terrain == 'wall') || 
+                    (o.type == 'structure' && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType)));
+            };
+            let isWalkable = (posX, posY) => look[posY][posX].filter(invalidObject).length == 0;
+
+            let fields = [];
+            for(x = minX; x <= maxX; x++) {
+                for(y = minY; y <= maxY; y++){
+                    if( x > 1 && x < 48 && y > 1 && y < 48 ){
+                        if( !checkWalkable || isWalkable(x,y) ){
+                            let p = new RoomPosition(x, y, roomName);
+                            if( !where || where(p) )
+                                fields.push(p);
+                        }
+                    }
+                }
+            }
+            return fields;
+        };
 
         Room.prototype.roadConstruction = function( minDeviation = ROAD_CONSTRUCTION_MIN_DEVIATION ) {
 
@@ -555,11 +660,80 @@ var mod = {
             };
             containers.forEach(add);
         };
+        Room.prototype.saveLinks = function(){
+            if( _.isUndefined(this.memory.links) ){ 
+                this.memory.links = [];
+            } 
+            let links = this.find(FIND_MY_STRUCTURES, {
+                filter: (structure) => ( structure.structureType == STRUCTURE_LINK )
+            });
+            let storageLinks = this.storage ? this.storage.pos.findInRange(links, 2).map(l => l.id) : [];
+
+            // for each memory entry, keep if existing
+            let kept = [];
+            let keep = (entry) => {
+                if( links.find( (c) => c.id == entry.id )){
+                    entry.storage = storageLinks.includes(entry.id);
+                    kept.push(entry); 
+                }                    
+            };
+            this.memory.links.forEach(keep);
+            //this.memory.links = kept;
+            this.memory.links = [];
+
+            // for each link add to memory ( if not contained )
+            let add = (link) => {
+                if( !this.memory.links.find( (l) => l.id == link.id ) ) {
+                    let isControllerLink = ( link.pos.getRangeTo(this.controller) < 4 );
+                    this.memory.links.push({
+                        id: link.id, 
+                        storage: storageLinks.includes(link.id),
+                        controller: isControllerLink
+                    });
+                    if( !isControllerLink ) {
+                        let source = link.pos.findInRange(this.sources, 2);
+                        let assign = s => s.memory.link = link.id;
+                        source.forEach(assign);  
+                    }                  
+                }
+            };
+            links.forEach(add);
+        };
+
+        Room.prototype.linksManager = function () {
+            let filled = l => l.cooldown == 0 && l.energy > l.energyCapacity * 0.85;
+            let empty = l =>  l.energy < l.energyCapacity * 0.85
+            let filledIn = this.linksIn.filter(filled); 
+            let emptyController = this.linksController.filter(empty); 
+
+            if( filledIn.length > 0  ){
+                let emptyStorage = this.linksStorage.filter(empty); 
+                
+                let handleFilledIn = f => { // first fill controller, then storage
+                    if( emptyController.length > 0 ){
+                        f.transferEnergy(emptyController[0]);
+                        emptyController.shift();
+                    } else if( emptyStorage.length > 0 ){
+                        f.transferEnergy(emptyStorage[0]);
+                        emptyStorage.shift();
+                    }
+                }
+                filledIn.forEach(handleFilledIn);
+            }
+
+            if( emptyController.length > 0 ){ // controller still empty, send from storage
+                let filledStorage = this.linksStorage.filter(filled); 
+                let handleFilledStorage = f => {
+                    if( emptyController.length > 0 ){
+                        f.transferEnergy(emptyController[0]);
+                        emptyController.shift();
+                    }
+                }
+                filledStorage.forEach(handleFilledStorage);
+            }
+        };
         
         Room.prototype.loop = function(){
-            // Temprorary Cleanup
-            if( this.memory.routePlaner ) delete this.memory.routePlaner;
-
             delete this._sourceEnergyAvailable;
             delete this._ticksToNextRegeneration;
             delete this._relativeEnergyAvailable;
@@ -577,9 +751,13 @@ var mod = {
             delete this._container;
             delete this._containerIn;
             delete this._containerOut;
-            delete this._containerSource;
+            //delete this._containerSource;
             delete this._containerManaged;
-            delete this._containerController
+            delete this._containerController;
+            delete this._links;
+            delete this._linksController;
+            delete this._linksStorage;
+            delete this._linksIn;
             delete this._privateerMaxWeight;
             delete this._claimerMaxWeight;
             delete this._combatCreeps;
@@ -589,9 +767,11 @@ var mod = {
             try {                
                 var that = this; 
                 if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
+                    //if( DEBUG ) console.log('MEMORY_RESYNC_INTERVAL reached');
                     this.saveTowers();
                     this.saveSpawns();
                     this.saveContainers();
+                    this.saveLinks()
                 }
                 if( this.memory.hostileIds === undefined )
                     this.memory.hostileIds = [];
@@ -600,6 +780,7 @@ var mod = {
 
                 this.roadConstruction();
                 this.springGun();
+                this.linksManager();
 
                 if( this.controller && this.controller.my ) {
                     var registerHostile = creep => {
