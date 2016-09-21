@@ -1,7 +1,6 @@
 module.exports = {
     name: 'miner',
     approach: function(creep){
-        if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
         let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.pos.roomName);
         let range = creep.pos.getRangeTo(targetPos);
         if( range > 0 ) 
