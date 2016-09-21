@@ -533,14 +533,14 @@ var mod = {
             let maxX = Math.min(posA.x+maxRangeA, posB.x+maxRangeB);
             let minY = Math.max(posA.y-maxRangeA, posB.y-maxRangeB);
             let maxY = Math.min(posA.y+maxRangeA, posB.y+maxRangeB);
-            return Room.validFields(posA.roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null);
+            return Room.validFields(posA.roomName, minX, maxX, minY, maxY, checkWalkable, where);
         };
         Room.fieldsInRangeOfThree = function(posA, maxRangeA, posB, maxRangeB, posC, maxRangeC, checkWalkable = false, where = null) {
             let minX = Math.max(posA.x-maxRangeA, posB.x-maxRangeB, posC.x-maxRangeC);
             let maxX = Math.min(posA.x+maxRangeA, posB.x+maxRangeB, posC.x+maxRangeC);
             let minY = Math.max(posA.y-maxRangeA, posB.y-maxRangeB, posC.y-maxRangeC);
             let maxY = Math.min(posA.y+maxRangeA, posB.y+maxRangeB, posC.y+maxRangeC);
-            return Room.validFields(posA.roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null);
+            return Room.validFields(posA.roomName, minX, maxX, minY, maxY, checkWalkable, where);
         };
         Room.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
             let look;
