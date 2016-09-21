@@ -171,19 +171,6 @@ var mod = {
                     return this._container;
                 }
             },
-            /*
-            // miners go to
-            'containerSource': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._containerSource) ){ 
-                        let byType = c => c.source === true;
-                        this._containerSource = _.filter(this.container, byType);
-                    }
-                    return this._containerSource;
-                }
-            },
-            */
             'containerController': {
                 configurable: true,
                 get: function() {
@@ -220,7 +207,6 @@ var mod = {
                     return this._containerOut;
                 }
             },
-            // Managed - haulers keep it half filled
             'containerManaged': {
                 configurable: true,
                 get: function() {
@@ -528,20 +514,6 @@ var mod = {
             return fields;
         };*/
 
-        Room.fieldsInRangeOfTwo = function(posA, maxRangeA, posB, maxRangeB, checkWalkable = false, where = null) {
-            let minX = Math.max(posA.x-maxRangeA, posB.x-maxRangeB);
-            let maxX = Math.min(posA.x+maxRangeA, posB.x+maxRangeB);
-            let minY = Math.max(posA.y-maxRangeA, posB.y-maxRangeB);
-            let maxY = Math.min(posA.y+maxRangeA, posB.y+maxRangeB);
-            return Room.validFields(posA.roomName, minX, maxX, minY, maxY, checkWalkable, where);
-        };
-        Room.fieldsInRangeOfThree = function(posA, maxRangeA, posB, maxRangeB, posC, maxRangeC, checkWalkable = false, where = null) {
-            let minX = Math.max(posA.x-maxRangeA, posB.x-maxRangeB, posC.x-maxRangeC);
-            let maxX = Math.min(posA.x+maxRangeA, posB.x+maxRangeB, posC.x+maxRangeC);
-            let minY = Math.max(posA.y-maxRangeA, posB.y-maxRangeB, posC.y-maxRangeC);
-            let maxY = Math.min(posA.y+maxRangeA, posB.y+maxRangeB, posC.y+maxRangeC);
-            return Room.validFields(posA.roomName, minX, maxX, minY, maxY, checkWalkable, where);
-        };
         Room.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
             let look;
             if( checkWalkable ) {
@@ -566,6 +538,18 @@ var mod = {
                 }
             }
             return fields;
+        };
+        // args = { spots: [{pos: RoomPosition, range:1}], checkWalkable: false, where: ()=>{}, roomName: abc ) }
+        Room.fieldsInRange = function(args) {
+            let plusRangeX = args.spots.map(spot => spot.pos.x + spot.range);
+            let plusRangeY = args.spots.map(spot => spot.pos.y + spot.range);
+            let minusRangeX = args.spots.map(spot => spot.pos.x - spot.range);
+            let minusRangeY = args.spots.map(spot => spot.pos.y - spot.range);
+            let minX = Math.max(...minusRangeX);
+            let maxX = Math.min(...plusRangeX);
+            let minY = Math.max(...minusRangeY);
+            let maxY = Math.min(...plusRangeY);
+            return Room.validFields(args.roomName, minX, maxX, minY, maxY, args.checkWalkable, args.where);
         };
 
         Room.prototype.roadConstruction = function( minDeviation = ROAD_CONSTRUCTION_MIN_DEVIATION ) {
