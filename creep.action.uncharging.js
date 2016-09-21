@@ -14,7 +14,7 @@ action.newTarget = function(creep){
         let linkStorage = creep.room.linksStorage.find(l => l.energy > 0);
         if( linkStorage ){
             let emptyControllerLink = creep.room.linksController.find(l => l.energy < l.energyCapacity * 0.15);
-            if( !emptyControllerLink )
+            if( !emptyControllerLink || linkStorage.energy <= l.energyCapacity * 0.85 ) // also clear half filled
                 return linkStorage;
         }
     }
