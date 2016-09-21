@@ -702,7 +702,7 @@ var mod = {
 
         Room.prototype.linksManager = function () {
             let filled = l => l.cooldown == 0 && l.energy > l.energyCapacity * 0.85;
-            let empty = l =>  l.energy < l.energyCapacity * 0.85
+            let empty = l =>  l.energy < l.energyCapacity * 0.15;
             let filledIn = this.linksIn.filter(filled); 
             let emptyController = this.linksController.filter(empty); 
 
