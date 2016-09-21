@@ -28,9 +28,17 @@ module.exports = {
             if( creep.room.linksController ){
                 creep.room.linksController.forEach(addSpot);
             }
+            // TODO: remove spot of existing upgrader (with ttl > time to approach)
+            // TODO: remove spot of miner
+            let invalid = [];
+            let findInvalid = entry => { 
+                if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot) 
+                    invalid.push(entry.determinatedSpot)
+            };
+            _.forEach(Memory.population, findInvalid);
+            args.where = pos => { return !_.some(invalid,{x:pos.x,y:pos.y}); };
             
             let spots = Room.fieldsInRange(args);
-            // TODO: remove spot of existing upgrader (with ttl > time to approach)
             if( spots.length > 0 ){
                 let spot = creep.pos.findClosestByPath(spots);
                 creep.data.determinatedSpot = {
@@ -48,7 +56,7 @@ module.exports = {
                     let store = creep.room.linksController.find(l => l.energy > 0);
                     if( !store ) store = creep.room.containerController.find(l => l.store.energy > 0);
                     if( store ) creep.withdraw(store, RESOURCE_ENERGY);
-                    else logError(`Upgrader ${creep.name} has no container or link in reach of the controller in room ${creep.pos.roomName}!`);
+                    // else logError(`Upgrader ${creep.name} has no energy in room ${creep.pos.roomName}!`);
                 }
                 creep.upgradeController(creep.room.controller);
             }

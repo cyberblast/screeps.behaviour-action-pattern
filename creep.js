@@ -201,8 +201,7 @@ var mod = {
                     if( HONK ) this.say('HONK', SAY_PUBLIC);
                     delete this.data.path;
                     this.data.path = this.getPath( targetPos, false);
-                }
-                
+                }                
                 if( this.data.path && this.data.path.length > 0 ) {
                     if( this.data.path.length > 5 ) 
                         this.data.path = this.data.path.substr(0,4);

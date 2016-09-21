@@ -9,11 +9,11 @@ action.isValidTarget = function(target){
         ( target.structureType == 'link' && target.energy > 0 )));
 };   
 action.newTarget = function(creep){ 
-    // if storage link is not empty & no controller link < 50% => uncharge
+    // if storage link is not empty & no controller link < 15% => uncharge
     if( creep.room.linksStorage.length > 0 ){
         let linkStorage = creep.room.linksStorage.find(l => l.energy > 0);
         if( linkStorage ){
-            let emptyControllerLink = creep.room.linksController.find(l => l.energy < l.energyCapacity * 0.5);
+            let emptyControllerLink = creep.room.linksController.find(l => l.energy < l.energyCapacity * 0.15);
             if( !emptyControllerLink )
                 return linkStorage;
         }
