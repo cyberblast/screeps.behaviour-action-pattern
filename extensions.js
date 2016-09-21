@@ -80,6 +80,18 @@ var mod = {
                 return this._container;
             }
         });
+        Object.defineProperty(Source.prototype, 'link', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._link) ) {
+                    if( this.memory.link ) {
+                        this._link = Game.getObjectById(this.memory.link);
+                        if( !this._link ) delete this.memory.link;
+                    } else this._link = null;
+                }
+                return this._link;
+            }
+        });
         Object.defineProperty(StructureStorage.prototype, 'sum', {
             configurable: true,
             get: function() {

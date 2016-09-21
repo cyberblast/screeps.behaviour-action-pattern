@@ -3,7 +3,9 @@ action.renewTarget = false;
 action.isValidAction = function(creep){ return creep.carry.energy > 0; }
 action.isAddableAction = function(creep){ return true; }
 action.isValidTarget = function(target){
-    return ( target && target.store && (_.sum(target.store) < target.storeCapacity) );
+    return ( target && 
+        (( target.structureType == 'container' && (_.sum(target.store) < target.storeCapacity) ) ||
+        ( target.structureType == 'link' && target.energy < target.storeCapacity * 0.85 )));
 };   
 action.isAddableTarget = function(target, creep){
     return (
@@ -16,9 +18,23 @@ action.isAddableTarget = function(target, creep){
                 )
             )
         )
-    ) && (target.storeCapacity - _.sum(target.store)) > Math.min(creep.carry.energy, 500);
+    ) && (
+        (target.structureType == 'container' && (target.storeCapacity - _.sum(target.store)) > Math.min(creep.carry.energy, 500)) ||
+        ( target.structureType == 'link' )
+    );
 };
 action.newTarget = function(creep){
+    // if storage link is not full & controller link < 15% => charge
+    if( creep.room.linksStorage.length > 0 ){
+        
+        let linkStorage = creep.room.linksStorage.find(l => l.energy < l.energyCapacity * 0.85);
+        if( linkStorage ){
+            let emptyControllerLink = creep.room.linksController.find(l => l.energy <= l.energyCapacity * 0.15);
+            if( emptyControllerLink )
+                return linkStorage;
+        }
+    }
+
     var that = this;
     if( creep.room.containerOut.length > 0 ) {
         let target = null;
@@ -37,11 +53,15 @@ action.newTarget = function(creep){
 };
 action.work = function(creep){
     var workResult;
-    for(var resourceType in creep.carry) {
-        if( creep.carry[resourceType] > 0 ){
-            workResult = creep.transfer(creep.target, resourceType);
-            if( workResult != OK ) break;
+    if( creep.target.structureType == 'container' ) {
+        for(var resourceType in creep.carry) {
+            if( creep.carry[resourceType] > 0 ){
+                workResult = creep.transfer(creep.target, resourceType);
+                if( workResult != OK ) break;
+            }
         }
+    } else if( creep.target.structureType == 'link' ) {
+        workResult = creep.transfer(creep.target, RESOURCE_ENERGY);;
     }
     return workResult;
 };

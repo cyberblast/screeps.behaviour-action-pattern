@@ -15,7 +15,7 @@ setup.minEnergyAvailable = function(spawn){
     return 0.5;
 };
 setup.maxCount = function(spawn){
-    if (spawn.room.situation.invasion || spawn.room.conserveForDefense || spawn.room.containerController.length == 0 ) 
+    if (spawn.room.situation.invasion || spawn.room.conserveForDefense || (spawn.room.containerController.length + spawn.room.linksController.length) == 0 ) 
         return 0;
     return spawn.room.storage ? Math.max(1, Math.floor(spawn.room.storage.store.energy / MAX_STORAGE_ENERGY)) : 1;
     // no storage => 1
