@@ -1,14 +1,15 @@
 /* https://github.com/ScreepsGamers/screeps.behaviour-action-pattern */ 
-var params = require('./parameter');
-var glob = require('./global');
-glob.init(params);
-Extensions.extend();  
-Creep.extend();  
-Room.extend();  
-Spawn.extend();
-FlagDir.extend();
 
 module.exports.loop = function () {
+    var params = require('./parameter');
+    var glob = require('./global');
+    glob.init(params);
+    Extensions.extend();  
+    Creep.extend();  
+    Room.extend();  
+    Spawn.extend();
+    FlagDir.extend();
+
     FlagDir.loop();
     Population.loop();
 
