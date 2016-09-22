@@ -1,8 +1,6 @@
 var action = new Creep.Action('robbing');
 action.maxPerTarget = 2;
-/*action.isAddableTarget = function (target) {
-    return true;//!target.my;
-}*/
+action.maxPerAction = 4;
 action.isValidAction = function(creep){
     return ( _.sum(creep.carry) < creep.carryCapacity && (FlagDir.find(FLAG_COLOR.invade.robbing, creep.pos, true) != null) );
 };
@@ -13,7 +11,7 @@ action.newTarget = function(creep){
     let that = this;
     let target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: function(structure){
-            return that.isValidTarget(structure);// && that.isAddableTarget(structure); 
+            return that.isValidTarget(structure);
         }
     });
     return target;
