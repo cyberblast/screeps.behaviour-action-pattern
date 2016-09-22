@@ -24,6 +24,7 @@ module.exports = {
                 Creep.action.picking,
                 Creep.action.withdrawing, 
                 Creep.action.uncharging, 
+                Creep.action.dismantling,
                 Creep.action.harvesting, 
                 Creep.action.idle];
         }    

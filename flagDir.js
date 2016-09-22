@@ -50,7 +50,10 @@ var mod = {
         let id = this.findName(flagColor, pos, local, mod, modArgs);
         if( id === null ) 
             return null;
-        return Game.flags[id];
+        let flag = Game.flags[id];
+        if( flag ) return flag 
+        else _.pullAllBy(this.list, [{ 'name': id }], 'name');
+        return this.find(flagColor, pos, local, mod, modArgs);
     },
     loop: function(){
         this.list = [];
