@@ -9,6 +9,8 @@ module.exports = {
     },
     run: function(creep) {
         if( !creep.data.determinatedSpot ) { 
+            if( !creep.action ) Population.registerAction(creep, Creep.action.upgrading, creep.room.controller);
+            
             let args = {
                 spots: [{
                     pos: creep.room.controller.pos, 
