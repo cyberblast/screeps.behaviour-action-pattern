@@ -1,4 +1,5 @@
 var setup = new Creep.Setup('miner');
+setup.minControllerLevel = 3;
 setup.multiBody = [WORK];
 setup.fixedBody = [WORK, CARRY, MOVE];
 setup.minAbsEnergyAvailable = 200;

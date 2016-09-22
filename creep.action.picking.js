@@ -1,5 +1,5 @@
 var action = new Creep.Action('picking');
-action.maxPerAction = 2;
+action.maxPerAction = 4;
 action.maxPerTarget = 2;
 action.isValidAction = function(creep){
     return ( _.sum(creep.carry) < creep.carryCapacity );
