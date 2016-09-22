@@ -18,6 +18,7 @@ module.exports = {
             source = _.find(creep.room.sources, notDeterminated);
             if( source ) {
                 creep.data.determinatedTarget = source.id;
+                Population.registerAction(creep, Creep.action.harvesting, source);
             }
         } else { // get dedicated source
             source = Game.getObjectById(creep.data.determinatedTarget);
