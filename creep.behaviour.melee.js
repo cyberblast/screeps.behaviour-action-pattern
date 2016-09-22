@@ -3,7 +3,8 @@ module.exports = {
     run: function(creep) {
         // Assign next Action
         let oldTargetId = creep.data.targetId;
-        if( creep.action == null || ['guarding','idle'].includes(creep.action.name)) {
+        //if( creep.action == null || ['guarding','idle'].includes(creep.action.name)) {
+        if( creep.action == null || creep.action.name == 'idle' || ( creep.action.name == 'guarding' && (!creep.flag || creep.flag.pos.roomName == creep.pos.roomName ) ) ) {
             this.nextAction(creep);
         }
         if( creep.data.targetId != oldTargetId ) {
