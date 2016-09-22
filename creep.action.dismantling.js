@@ -16,6 +16,7 @@ action.newTarget = function(creep){
             if( targets && targets.length > 0)
                 return targets[0]; 
             else { // remove flag. try next flag
+                FlagDir.removeFromDir(flag.name);
                 flag.remove();
                 return this.newTarget(creep);
             }
