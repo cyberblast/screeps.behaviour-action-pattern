@@ -20,7 +20,6 @@ Just a vague idea...
 * 2016 November  
   * Extractor
   * Labs
-  * Dismantling
   * Pathfinding  
 
 * 2016 December  

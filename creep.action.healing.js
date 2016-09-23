@@ -1,5 +1,4 @@
 var action = new Creep.Action('healing');
-action.reusePath = 0;
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.isValidTarget = function(target){
