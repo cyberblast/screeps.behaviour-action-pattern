@@ -185,7 +185,7 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerIn) ){ 
-                        let byType = c => (c.source === true || c.extractor == true ) && c.controller == false;
+                        let byType = c => (c.source === true || c.extractor === true ) && c.controller == false;
                         this._containerIn = _.filter(this.container, byType);
                         // add managed
                         let isFull = c => _.sum(c.store) >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
@@ -198,7 +198,7 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerOut) ){ 
-                        let byType = c => (c.source === false && c.extractor === false);
+                        let byType = c => (c.source === false && !c.extractor);
                         this._containerOut = _.filter(this.container, byType);
                         // add managed                         
                         let isEmpty = c => _.sum(c.store) <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
@@ -690,7 +690,8 @@ var mod = {
             // for each memory entry, keep if existing
             let kept = [];
             let keep = (entry) => {
-                if( containers.find( (c) => c.id == entry.id ))
+                // TODO: temporary migration fix (entry.extractor check)
+                if( containers.find( (c) => c.id == entry.id && entry.extractor !== undefined))
                     kept.push(entry);                     
             };
             this.memory.container.forEach(keep);
@@ -857,11 +858,11 @@ var mod = {
                 let that = this; 
                 if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
                     //if( DEBUG ) console.log('MEMORY_RESYNC_INTERVAL reached');
+                    this.saveExtractors();
                     this.saveTowers();
                     this.saveSpawns();
                     this.saveContainers();
                     this.saveLinks();
-                    this.saveExtractors();
                 }
                 if( this.memory.hostileIds === undefined )
                     this.memory.hostileIds = [];
