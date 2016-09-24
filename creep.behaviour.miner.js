@@ -19,19 +19,13 @@ module.exports = {
             if( source ) {
                 creep.data.determinatedTarget = source.id;
                 Population.registerAction(creep, Creep.action.harvesting, source);
-            } else if ( creep.room.extractors != null ) {
-                extractor = _.find(creep.room.extractors, notDeterminated);
-                creep.data.determinatedTarget = extractor.id;
-                Population.registerAction(creep, Creep.action.harvesting, extractor);
+            } else if ( creep.room.minerals != null ) {
+                mineral = _.find(creep.room.minerals, notDeterminated);
+                creep.data.determinatedTarget = mineral.id;
+                Population.registerAction(creep, Creep.action.harvesting, mineral);
             }
         } else { // get dedicated source
             source = Game.getObjectById(creep.data.determinatedTarget);
-            
-            // do we mine a mineral deposit ?
-             if ( !_.isUndefined(source.mineralType) ) {
-                if (source.room.storage != null && source.room.storage.store[source.mineralType] > MAX_STORAGE_MINERAL )
-                    return;
-            }
         }
 
         if( source ) {

@@ -9,7 +9,16 @@ setup.minEnergyAvailable = function(spawn){
     return 0.3;
 };
 setup.maxCount = function(spawn){
-    return spawn.room.sources.length;
+    let max = spawn.room.sources.length;
+    if( spawn.room.storage ) {
+        let add = mineral => {
+            if(mineral.mineralAmount > 0 && 
+                (!spawn.room.storage.store[mineral.mineralType] || spawn.room.storage.store[mineral.mineralType] < MAX_STORAGE_MINERAL ))
+                 max++;
+        };
+        spawn.room.minerals.forEach(add);
+    }
+    return max;
 };
 setup.maxWeight = function(spawn){
     return null;

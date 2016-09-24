@@ -185,7 +185,7 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerIn) ){ 
-                        let byType = c => (c.source === true || c.extractor === true ) && c.controller == false;
+                        let byType = c => (c.source === true || c.mineral === true ) && c.controller == false;
                         this._containerIn = _.filter(this.container, byType);
                         // add managed
                         let isFull = c => _.sum(c.store) >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
@@ -198,7 +198,7 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerOut) ){ 
-                        let byType = c => (c.source === false && !c.extractor);
+                        let byType = c => (c.source === false && !c.mineral);
                         this._containerOut = _.filter(this.container, byType);
                         // add managed                         
                         let isEmpty = c => _.sum(c.store) <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
@@ -464,18 +464,18 @@ var mod = {
                     return this._defenseLevel;
                 }
             },
-            'extractors': {
+            'minerals': {
                 configurable:true,
                 get: function () {
-                    if( _.isUndefined(this.memory.extractors)) {
-                        this.saveExtractors();
+                    if( _.isUndefined(this.memory.minerals)) {
+                        this.saveMinerals();
                     }
-                    if( _.isUndefined(this._extractors) ){
-                        this._extractors = [];
-                        let add = id => { addById(this._extractors, id); };
-                        this.memory.extractors.forEach(add);
+                    if( _.isUndefined(this._minerals) ){
+                        this._minerals = [];
+                        let add = id => { addById(this._minerals, id); };
+                        this.memory.minerals.forEach(add);
                     }
-                    return this._extractors;
+                    return this._minerals;
                 }
             }
         });
@@ -676,41 +676,26 @@ var mod = {
         Room.prototype.saveSpawns = function(){
             let spawns = this.find(FIND_MY_SPAWNS);
             if( spawns.length > 0 ){
-                var spawnId = spawn => spawn.id;
-                this.memory.spawns = _.map(spawns, spawnId);
+                let id = o => o.id;
+                this.memory.spawns = _.map(spawns, id);
             } else this.memory.spawns = [];
         };
         Room.prototype.saveContainers = function(){
-            if( _.isUndefined(this.memory.container) ){ 
-                this.memory.container = [];
-            } 
+            this.memory.container = [];
             let containers = this.find(FIND_STRUCTURES, {
                 filter: (structure) => ( structure.structureType == STRUCTURE_CONTAINER )
             });
-            // for each memory entry, keep if existing
-            let kept = [];
-            let keep = (entry) => {
-                // TODO: temporary migration fix (entry.extractor check)
-                if( containers.find( (c) => c.id == entry.id && entry.extractor !== undefined))
-                    kept.push(entry);                     
-            };
-            this.memory.container.forEach(keep);
-            this.memory.container = kept;
-
-            // for each container add to memory ( if not contained )
             let add = (cont) => {
-                if( !this.memory.container.find( (i) => i.id == cont.id ) ) {
-                    let source = cont.pos.findInRange(this.sources, 1);
-                    let extractor = cont.pos.findInRange(this.extractors, 1);
-                    this.memory.container.push({
-                        id: cont.id, 
-                        source: (source.length > 0), 
-                        controller: ( cont.pos.getRangeTo(this.controller) < 4 ),
-                        extractor: (extractor.length > 0),
-                    });
-                    let assignContainer = s => s.memory.container = cont.id;
-                    source.forEach(assignContainer);                    
-                }
+                let source = cont.pos.findInRange(this.sources, 1);
+                let mineral = cont.pos.findInRange(this.minerals, 1);
+                this.memory.container.push({
+                    id: cont.id, 
+                    source: (source.length > 0), 
+                    controller: ( cont.pos.getRangeTo(this.controller) < 4 ),
+                    mineral: (mineral.length > 0),
+                });
+                let assignContainer = s => s.memory.container = cont.id;
+                source.forEach(assignContainer);  
             };
             containers.forEach(add);
         };
@@ -753,19 +738,22 @@ var mod = {
             };
             links.forEach(add);
         };
-        Room.prototype.saveExtractors = function() {
-            if( _.isUndefined(this.memory.extractors) ) {                        
-                this._extractors = this.find(FIND_STRUCTURES, {filter:{structureType:STRUCTURE_EXTRACTOR}});
-                if( this._extractors.length > 0 ){
-                    this.memory.extractors = this._extractors.map(s => s.id);
-                } else this.memory.extractors = [];
-            }
-            if( _.isUndefined(this._extractors) ){  
-                this._extractors = [];
-                let addExtractor = id => { addById(this._extractors, id); };
-                this.memory.extractors.forEach(addExtractor);
-            }
-            return this._extractors;
+        Room.prototype.saveMinerals = function() {
+            let that = this;
+            let toPos = o => { return {
+                x: o.pos.x,
+                y: o.pos.y
+            };};
+            let extractorPos = this.find(FIND_STRUCTURES, {filter:{structureType:STRUCTURE_EXTRACTOR}}).map(toPos);
+            let hasExtractor = m => _.some(extractorPos, {
+                x: m.pos.x, 
+                y: m.pos.y
+            });
+            this._minerals = this.find(FIND_MINERALS).filter(hasExtractor);
+            if( this._minerals.length > 0 ){
+                let id = o => o.id;
+                this.memory.minerals = _.map(that._minerals, id);
+            } else this.memory.minerals = [];
         };
         
         Room.prototype.linksManager = function () {
@@ -852,13 +840,13 @@ var mod = {
             delete this._combatCreeps;
             delete this._defenseLevel;
             delete this._hostileThreatLevel;
-            delete this._extractors;
+            delete this._minerals;
               
             try {                
                 let that = this; 
                 if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
                     //if( DEBUG ) console.log('MEMORY_RESYNC_INTERVAL reached');
-                    this.saveExtractors();
+                    this.saveMinerals();
                     this.saveTowers();
                     this.saveSpawns();
                     this.saveContainers();
