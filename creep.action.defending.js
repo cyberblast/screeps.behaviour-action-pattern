@@ -1,5 +1,4 @@
 var action = new Creep.Action('defending');
-action.reusePath = 0;
 action.isValidAction = function(creep){ return creep.room.situation.invasion; };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
@@ -20,7 +19,7 @@ action.newTarget = function(creep){
     return closestHostile;
 };
 action.step = function(creep){
-    if(CHATTY) creep.say(this.name);
+    if(CHATTY) creep.say(String.fromCharCode(9760), SAY_PUBLIC);
     this.run[creep.data.creepType](creep);
 };
 action.run = {

@@ -6,7 +6,7 @@ var mod = {
     DEBUG: true, // gimme some more details
     SPAWN_INTERVAL: 10, // loops between regular spawn probe
     MAX_STORAGE_ENERGY: 200000,// stop storing energy when reached
-    MIN_STORAGE_ENERGY: 10000,// prefer storing energy until reached
+    MIN_STORAGE_ENERGY: 40000,// prefer storing energy until reached
     MAX_REPAIR_LIMIT: { // Limits how high structures get repaired, regarding RCL
         1: 10000,
         2: 10000,

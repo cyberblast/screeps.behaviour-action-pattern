@@ -4,9 +4,21 @@ action.isAddableAction = function(creep){ return true; }
 action.isAddableTarget = function(target){ return true;}
 action.isValidAction = function(creep){ return _.sum(creep.carry) < creep.carryCapacity; }
 action.isValidTarget = function(target){
-    return ( target && target.store && target.store.energy > 400 );
+    return ( target && 
+        (( target.structureType == 'container' && target.store.energy > 400 ) ||
+        ( target.structureType == 'link' && target.energy > 0 )));
 };   
 action.newTarget = function(creep){ 
+    // if storage link is not empty & no controller link < 15% => uncharge
+    if( creep.room.linksStorage.length > 0 ){
+        let linkStorage = creep.room.linksStorage.find(l => l.energy > 0);
+        if( linkStorage ){
+            let emptyControllerLink = creep.room.linksController.find(l => l.energy < l.energyCapacity * 0.15);
+            if( !emptyControllerLink || linkStorage.energy <= linkStorage.energyCapacity * 0.85 ) // also clear half filled
+                return linkStorage;
+        }
+    }
+
     var that = this;
     let isAddable = target => that.isValidTarget(target);    
     if( creep.room.containerIn.length > 0 ) {

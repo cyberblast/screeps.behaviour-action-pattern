@@ -7,7 +7,6 @@ module.exports = {
             this.nextAction(creep);
         }
         if( creep.data.targetId != oldTargetId ) {
-            creep.data.moveMode = null;
             delete creep.data.path;
         }
         // Do some work
@@ -24,6 +23,7 @@ module.exports = {
                 Creep.action.picking,
                 Creep.action.withdrawing, 
                 Creep.action.uncharging, 
+                Creep.action.dismantling,
                 Creep.action.harvesting, 
                 Creep.action.idle];
         }    

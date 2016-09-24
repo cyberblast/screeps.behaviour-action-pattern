@@ -9,9 +9,29 @@ setup.minEnergyAvailable = function(spawn){
 setup.maxCount = function(spawn){
     if ( spawn.room.situation.invasion || spawn.room.conserveForDefense ) 
         return 0;
-    return 5;
+    let limits = {
+        1: 4,
+        2: 6,
+        3: 1,
+        4: 1,
+        5: 1,
+        6: 1,
+        7: 1, 
+        8: 1
+    }
+    return limits[spawn.room.controller.level];
 };
 setup.maxWeight = function(spawn){
-    return 1200;
+    let limits = {
+        1: 1000,
+        2: 2400,
+        3: 1200,
+        4: 1200,
+        5: 1200,
+        6: 1200,
+        7: 1200, 
+        8: 1200
+    }
+    return limits[spawn.room.controller.level];
 };
 module.exports = setup;

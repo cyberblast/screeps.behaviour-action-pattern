@@ -52,6 +52,11 @@ var mod = {
             return null;
         return Game.flags[id];
     },
+    removeFromDir: function(name){
+        let index = this.list.indexOf(f => f.name === name );
+        if( index > -1 )
+            this.list = this.list.splice(index, 1);
+    },
     loop: function(){
         this.list = [];
         delete this._hasInvasionFlag;
@@ -108,8 +113,8 @@ var mod = {
         return _.filter(this.list, filter);
     },
     rangeMod: function(range, flagItem, args){
-        let rangeModPerCrowd = args.rangeModPerCrowd || 20;
-        let rangeModByType = args.rangeModByType;
+        let rangeModPerCrowd = args && args.rangeModPerCrowd ? args.rangeModPerCrowd : 20;
+        let rangeModByType = args ? args.rangeModByType : null;
         var flag = Game.flags[flagItem.name];
         let crowd;
         if( flag.targetOf ){ // flag is targetted

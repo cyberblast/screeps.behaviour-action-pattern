@@ -7,7 +7,6 @@ module.exports = {
             this.nextAction(creep);
         }
         if( creep.data.targetId != oldTargetId ) {
-            creep.data.moveMode = null;
             delete creep.data.path;
         }
         // Do some work
@@ -63,8 +62,9 @@ module.exports = {
                     else {
                         // harvesting or picking
                         var actions = [
-                            Creep.action.robbing,
                             Creep.action.picking,
+                            Creep.action.robbing,
+                            Creep.action.dismantling,
                             Creep.action.harvesting
                         ];
                         // TODO: Add extracting (if extractor present)

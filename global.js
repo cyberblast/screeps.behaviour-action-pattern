@@ -42,7 +42,12 @@ var mod = {
                 destroy: { // destroy whats standing here
                     color: COLOR_ORANGE, 
                     secondaryColor: COLOR_ORANGE,
-                    filter: {'color': COLOR_ORANGE, 'secondaryColor': COLOR_ORANGE }
+                    filter: {'color': COLOR_ORANGE, 'secondaryColor': COLOR_ORANGE },
+                    dismantle: { 
+                        color: COLOR_ORANGE, 
+                        secondaryColor: COLOR_YELLOW,
+                        filter: {'color': COLOR_ORANGE, 'secondaryColor': COLOR_YELLOW }
+                    },  
                 },
                 // COLOR_BROWN,
                 // COLOR_GREY

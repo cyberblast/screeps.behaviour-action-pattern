@@ -8,6 +8,7 @@ var mod = {
             claiming: require('./creep.action.claiming'),
             reserving: require('./creep.action.reserving'),
             defending: require('./creep.action.defending'),
+            dismantling: require('./creep.action.dismantling'),
             feeding: require('./creep.action.feeding'), 
             fueling: require('./creep.action.fueling'), 
             guarding: require('./creep.action.guarding'), 
@@ -140,6 +141,9 @@ var mod = {
             }
             // TODO: CORNER cases
         };
+        Creep.prototype.honk = function(){
+            if( HONK ) this.say(String.fromCharCode(9886) + ' HONK ' + String.fromCharCode(9887), SAY_PUBLIC);
+        },
         Creep.prototype.drive = function( targetPos, intentionRange, enoughRange, range ) {
             // temporary cleanup
             if( this.data.route ) delete this.data.route;
@@ -149,7 +153,6 @@ var mod = {
             if( !range ) range = this.pos.getRangeTo(targetPos);
             let lastPos = this.data.lastPos;
             this.data.lastPos = new RoomPosition(this.pos.x, this.pos.y, this.pos.roomName);
-
             if( this.data.moveMode == null || 
                 (lastPos && // moved
                 (lastPos.x != this.pos.x || lastPos.y != this.pos.y || lastPos.roomName != this.pos.roomName)) 
@@ -179,7 +182,7 @@ var mod = {
             } else if( this.data.moveMode == 'auto' ) {
                 // try again to use path.
                 if( range > enoughRange ) {
-                    if( HONK ) this.say('HONK', SAY_PUBLIC);
+                    this.honk();
                     this.data.moveMode = 'evade';
                 }
                 if( !this.data.path || this.data.path.length == 0 )
@@ -198,11 +201,10 @@ var mod = {
                 // get path (don't ignore thiss)
                 // try to move. 
                 if( range > enoughRange ){
-                    if( HONK ) this.say('HONK', SAY_PUBLIC);
+                    this.honk();
                     delete this.data.path;
                     this.data.path = this.getPath( targetPos, false);
-                }
-                
+                }                
                 if( this.data.path && this.data.path.length > 0 ) {
                     if( this.data.path.length > 5 ) 
                         this.data.path = this.data.path.substr(0,4);
