@@ -492,6 +492,8 @@ var mod = {
                         this.memory.minerals = mineral.id;
                 }
             }
+        };
+        
         Room.isMine = function(roomName) {
             let room = Game.rooms[roomName];
             return( room && room.controller && room.controller.my );
