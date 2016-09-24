@@ -19,7 +19,7 @@ action.newTarget = function(creep){
     return closestHostile;
 };
 action.step = function(creep){
-    if(CHATTY) creep.say(String.fromCharCode(9760), SAY_PUBLIC);
+    if(CHATTY) creep.say(String.fromCharCode(9876), SAY_PUBLIC);
     this.run[creep.data.creepType](creep);
 };
 action.run = {

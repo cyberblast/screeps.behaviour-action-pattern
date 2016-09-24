@@ -345,15 +345,23 @@ var mod = {
                     return this.memory.adjacentRooms;
                 }
             },
+            'adjacentAccessibleRooms': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this.memory.adjacentAccessibleRooms) ) {
+                        this.memory.adjacentAccessibleRooms = Room.adjacentAccessibleRooms(this.name);
+                    }
+                    return this.memory.adjacentAccessibleRooms;
+                }
+            },
             'privateerMaxWeight': {
                 configurable: true,
                 get: function () {
                     if (_.isUndefined(this._privateerMaxWeight) ) {
                         this._privateerMaxWeight = 0;
                         let base = 5000;
-                        let maxCalcRange = 1;
                         let that = this;
-                        let distance, adjacent, ownNeighbor, room;
+                        let adjacent, ownNeighbor, room;
 
                         let flagEntries = FlagDir.filter(FLAG_COLOR.invade.exploit);
                         let countOwn = roomName => {
@@ -363,9 +371,11 @@ var mod = {
                                 ownNeighbor++;
                         };
                         let calcWeight = flagEntry => {
-                            distance = Room.roomDistance(that.name, flagEntry.roomName, true);
-                            if( distance > maxCalcRange ) return;
-                            adjacent = Room.adjacentRooms(flagEntry.roomName);
+                            if( !this.adjacentAccessibleRooms.includes(flagEntry.roomName) ) return;
+                            room = Game.rooms[flagEntry.roomName];
+                            if( room )
+                                adjacent = room.adjacentAccessibleRooms;
+                            else adjacent = Room.adjacentAccessibleRooms(flagEntry.roomName);
                             ownNeighbor = 1;
                             adjacent.forEach(countOwn);
                             that._privateerMaxWeight += (base / ownNeighbor);
@@ -381,14 +391,14 @@ var mod = {
                     if (_.isUndefined(this._claimerMaxWeight) ) {
                         this._claimerMaxWeight = 0;
                         let base = 1300;
-                        let maxCalcRange = 2;
+                        let maxRange = 2;
                         let that = this;
                         let distance, reserved, flag;
 
                         let flagEntries = FlagDir.filter([FLAG_COLOR.claim, FLAG_COLOR.claim.reserve]);
                         let calcWeight = flagEntry => {
                             distance = Room.roomDistance(that.name, flagEntry.roomName);
-                            if( distance > maxCalcRange ) 
+                            if( distance > maxRange ) 
                                 return;
                             flag = Game.flags[flagEntry.name];
                             if( flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)
@@ -483,29 +493,72 @@ var mod = {
                 }
             }
         };
-
-        Room.prototype.springGun = function(){
-            if( this.situation.invasion ){
-                let idleSpawns = this.spawns.filter( s => !s.spawning );
-                for( let iSpawn = 0; iSpawn < idleSpawns.length && this.defenseLevel.sum < this.hostileThreatLevel; iSpawn++ ) {
-                    // need more Defense!
-                    let setup;
-                    if( this.defenseLevel.melee > this.defenseLevel.ranger ) { 
-                        setup = Creep.setup.ranger; 
-                    } else {
-                        setup = Creep.setup.melee; 
-                    }
-                    if( DEBUG ) console.log( dye(CRAYON.system, this.name + ' &gt; ') + 'Spring Gun System activated in room ' + this.name + '! Trying to spawn an additional ' + setup.type + '.');
-                    let creepParams = idleSpawns[iSpawn].createCreepBySetup(setup);
-                    if( creepParams ){
-                        // add to defenseLevel
-                        this._defenseLevel.threat += Creep.bodyThreat(creepParams.parts);
-                        this._defenseLevel[creepParams.setup] += creepParams.cost;
-                    }
-                }
-            }
+        
+        Room.isMine = function(roomName) {
+            let room = Game.rooms[roomName];
+            return( room && room.controller && room.controller.my );
         };
 
+        Room.prototype.defenseMaxWeight = function(base, type) {
+            let defenseMaxWeight = 0;
+            //let base = 2000;
+            let maxRange = 2;
+            let that = this;
+            let distance, reserved, flag;
+
+            let flagEntries = FlagDir.filter(FLAG_COLOR.defense);
+            let calcWeight = flagEntry => {
+                distance = Room.roomDistance(that.name, flagEntry.roomName);
+                if( distance > maxRange ) 
+                    return;
+                flag = Game.flags[flagEntry.name];
+
+                let ownNeighbor = 0;
+                let validRooms = [];
+                let exits = Game.map.describeExits(flag.pos.roomName);
+                let addValidRooms = (roomName) => {
+                    if( !validRooms.includes(roomName) ){
+                        validRooms.push(roomName);
+                        if( Room.isMine(roomName) ) ownNeighbor++;
+                    }
+                    let roomExits = Game.map.describeExits(roomName);
+                    let add = roomName2 => {
+                        if( !validRooms.includes(roomName2) ){
+                            validRooms.push(roomName2);
+                                if( Room.isMine(roomName2) ) ownNeighbor++;
+                        }                                         
+                    }
+                    _.forEach(roomExits, add);
+                }
+                _.forEach(exits, addValidRooms);
+                if( flag.targetOf ){
+                    let ofType = flag.targetOf.filter(t => t.creepType == type);
+                    reserved = _.sum(ofType,'weight');
+                } else reserved = 0;
+                defenseMaxWeight += ( (base - reserved) / ownNeighbor );
+            };
+            flagEntries.forEach(calcWeight);
+            return defenseMaxWeight;
+        }
+
+        Room.adjacentAccessibleRooms = function(roomName, diagonal = true) {
+            let validRooms = [];
+            let exits = Game.map.describeExits(roomName);
+            let addValidRooms = (roomName, direction) => {
+                if( diagonal ) {
+                    let roomExits = Game.map.describeExits(roomName);
+                    let dirA = (direction + 2) % 8;
+                    let dirB = (direction + 6) % 8; 
+                    if( roomExits[dirA] && !validRooms.includes(roomExits[dirA]) )
+                        validRooms.push(roomExits[dirA]);
+                    if( roomExits[dirB] && !validRooms.includes(roomExits[dirB]) )
+                        validRooms.push(roomExits[dirB]);
+                }
+                validRooms.push(roomName);
+            }
+            _.forEach(exits, addValidRooms);
+            return validRooms;
+        },
         Room.adjacentRooms = function(roomName){
             let parts = roomName.split(/([N,E,S,W])/);
             let dirs = ['N','E','S','W'];
@@ -743,6 +796,27 @@ var mod = {
                     }
                 }
                 filledStorage.forEach(handleFilledStorage);
+            }
+        };
+        Room.prototype.springGun = function(){
+            if( this.situation.invasion ){
+                let idleSpawns = this.spawns.filter( s => !s.spawning );
+                for( let iSpawn = 0; iSpawn < idleSpawns.length && this.defenseLevel.sum < this.hostileThreatLevel; iSpawn++ ) {
+                    // need more Defense!
+                    let setup;
+                    if( this.defenseLevel.melee > this.defenseLevel.ranger ) { 
+                        setup = Creep.setup.ranger; 
+                    } else {
+                        setup = Creep.setup.melee; 
+                    }
+                    if( DEBUG ) console.log( dye(CRAYON.system, this.name + ' &gt; ') + 'Spring Gun System activated in room ' + this.name + '! Trying to spawn an additional ' + setup.type + '.');
+                    let creepParams = idleSpawns[iSpawn].createCreepBySetup(setup);
+                    if( creepParams ){
+                        // add to defenseLevel
+                        this._defenseLevel.threat += Creep.bodyThreat(creepParams.parts);
+                        this._defenseLevel[creepParams.setup] += creepParams.cost;
+                    }
+                }
             }
         };
         
