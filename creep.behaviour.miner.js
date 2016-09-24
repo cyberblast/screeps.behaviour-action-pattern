@@ -61,11 +61,12 @@ module.exports = {
             }
 
             if( creep.data.determinatedSpot ) {
+                let carrying = _.sum(creep.carry);
                 if( source.link && source.link.energy < source.link.energyCapacity ) {
                     if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
                     let range = this.approach(creep);
                     if( range == 0 ){
-                        if(creep.carry.energy > ( creep.carryCapacity - ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) )))
+                        if(carrying > ( creep.carryCapacity - ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) )))
                             creep.transfer(source.link, RESOURCE_ENERGY);
                         creep.harvest(source);
                     }
@@ -73,18 +74,21 @@ module.exports = {
                     if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
                     let range = this.approach(creep);
                     if( range == 0 ){
-                        if( creep.carry.energy > ( creep.carryCapacity - ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) )))
-                            creep.transfer(source.container, RESOURCE_ENERGY);
+                        if( carrying > ( creep.carryCapacity - ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) ))){
+                            let transfer = r => { if(creep.carry[r] > 0 ) creep.transfer(source.container, r); };
+                            _.forEach(Object.keys(creep.carry), transfer);
+                        }                            
                         creep.harvest(source);
                     }
                 } else if( creep.room.population && creep.room.population.typeCount['hauler'] && creep.room.population.typeCount['hauler'] > 0 ) {
-                    if(CHATTY) creep.say('dropmining', SAY_PUBLIC);     
+                    if(CHATTY) creep.say('dropmining', SAY_PUBLIC);    
                     let range = this.approach(creep);      
                     if( range == 0 ){             
-                        if( creep.carry.energy > ( creep.carryCapacity - 
+                        if( carrying > ( creep.carryCapacity - 
                             ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) ))) {
-                            if( OOPS ) creep.say("Oops..", SAY_PUBLIC);
-                            creep.drop(RESOURCE_ENERGY);
+                            if( OOPS ) creep.say(String.fromCharCode(8681), SAY_PUBLIC);
+                            let drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
+                            _.forEach(Object.keys(creep.carry), drop);
                         }
                         creep.harvest(source);
                     }

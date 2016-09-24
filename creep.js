@@ -142,7 +142,13 @@ var mod = {
             // TODO: CORNER cases
         };
         Creep.prototype.honk = function(){
-            if( HONK ) this.say(String.fromCharCode(8655) + ' ' + String.fromCharCode(10071), SAY_PUBLIC);
+            if( HONK ) this.say(String.fromCharCode(8655), SAY_PUBLIC);
+        },
+        Creep.prototype.honkEvade = function(){
+            if( HONK ) this.say(String.fromCharCode(9936), SAY_PUBLIC);
+        },
+        Creep.prototype.honkIdle = function(){
+            if( HONK ) this.say(String.fromCharCode(9835), SAY_PUBLIC);
         },
         Creep.prototype.drive = function( targetPos, intentionRange, enoughRange, range ) {
             // temporary cleanup
@@ -201,7 +207,7 @@ var mod = {
                 // get path (don't ignore thiss)
                 // try to move. 
                 if( range > enoughRange ){
-                    this.honk();
+                    this.honkEvade();
                     delete this.data.path;
                     this.data.path = this.getPath( targetPos, false);
                 }                

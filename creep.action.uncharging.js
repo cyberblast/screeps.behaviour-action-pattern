@@ -24,14 +24,15 @@ action.newTarget = function(creep){
     if( creep.room.containerIn.length > 0 ) {
         // take from fullest IN container having energy
         let target = null;
-        let energy = 0;
+        let filling = 0;
         let fullest = cont => {
-            if( cont.store.energy < Math.min(creep.carryCapacity - _.sum(creep.carry), 500) ) return;
+            contFilling = _.sum(cont.store);
+            if( contFilling < Math.min(creep.carryCapacity - _.sum(creep.carry), 500) ) return;
             let e = cont.targetOf ? 
-                cont.store.energy - _.sum( cont.targetOf.map( t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 ))) : 
-                cont.store.energy;
-            if( e  > energy ){
-                energy = e ;
+                contFilling - _.sum( cont.targetOf.map( t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 ))) : 
+                contFilling;
+            if( contFilling  > filling ){
+                filling = contFilling ;
                 target = cont;
             }
         };
@@ -42,7 +43,11 @@ action.newTarget = function(creep){
 action.work = function(creep){
     let ret = OK;
     if (creep.target.store != null ) {
-        Object.keys(creep.target.store).forEach(r => {ret = creep.withdraw(creep.target, r);});
+        let withdraw = r => {
+            if( creep.target.store[r] > 0 )
+                ret = creep.withdraw(creep.target, r);
+        };
+        _.forEach(Object.keys(creep.target.store), withdraw);
     } else {
         ret = creep.withdraw(creep.target, RESOURCE_ENERGY);
     }

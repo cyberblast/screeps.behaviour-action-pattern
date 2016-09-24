@@ -14,6 +14,7 @@ action.newTarget = function(creep){
     return creep.room.controller;
 };
 action.work = function(creep){
+    creep.honkIdle();
     creep.data.actionName = null;
     creep.data.targetId = null;
     return OK;
