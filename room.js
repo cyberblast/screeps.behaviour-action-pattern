@@ -198,8 +198,7 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerOut) ){ 
-                        let falseOnUndefined = e => { return _.isUndefined(e)? false: e };
-                        let byType = falseOnUndefined(c.source) === false && falseOnUndefined(c.minerals) === false;
+                        let byType = c => (c.source === false && c.minerals === false);
                         this._containerOut = _.filter(this.container, byType);
                         // add managed                         
                         let isEmpty = c => _.sum(c.store) <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
