@@ -417,9 +417,8 @@ var mod = {
                     }
                     return this._defenseLevel;
                 }
-            }
-        },
-        'minerals': {
+            },
+            'minerals': {
                 configurable:true,
                 get: function () {
                     if( _.isUndefined(this.memory.minerals)) {
@@ -430,8 +429,8 @@ var mod = {
                     }
                     return this._mineral;
                 }
-            },
-        );
+            }
+        });
 
         Room.prototype.saveMinerals = function() {
             if (_.isUndefined(this.memory.minerals)) {
