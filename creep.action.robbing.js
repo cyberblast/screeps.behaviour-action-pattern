@@ -17,6 +17,7 @@ action.newTarget = function(creep){
     return target;
 };
 action.work = function(creep){
+    if(CHATTY) creep.say(String.fromCharCode(9760), SAY_PUBLIC);
     let ret = OK;
     if( creep.target.store ) {
         for( var type in creep.target.store ){

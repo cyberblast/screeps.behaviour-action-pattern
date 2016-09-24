@@ -12,8 +12,8 @@ setup.maxCount = function(spawn){
     let limits = {
         1: 4,
         2: 6,
-        3: 1,
-        4: 1,
+        3: 3,
+        4: 2,
         5: 1,
         6: 1,
         7: 1, 
@@ -25,8 +25,8 @@ setup.maxWeight = function(spawn){
     let limits = {
         1: 1000,
         2: 2400,
-        3: 1200,
-        4: 1200,
+        3: 1600,
+        4: 1600,
         5: 1200,
         6: 1200,
         7: 1200, 

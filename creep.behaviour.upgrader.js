@@ -41,13 +41,14 @@ module.exports = {
             args.where = pos => { return !_.some(invalid,{x:pos.x,y:pos.y}); };
             
             let spots = Room.fieldsInRange(args);
-            if( spots.length > 0 ){
-                let spot = creep.pos.findClosestByPath(spots);
-                creep.data.determinatedSpot = {
-                    x: spot.x, 
-                    y: spot.y
-                }
-            } else logError('Unable to determine working location for upgrader in room ' + creep.pos.roomName);
+                if( spots.length > 0 ){
+                    let spot = creep.pos.findClosestByPath(spots) || spots[0];
+                    if( spot ) creep.data.determinatedSpot = {
+                        x: spot.x, 
+                        y: spot.y
+                    }
+                } 
+            if( !creep.data.determinatedSpot ) logError('Unable to determine working location for upgrader in room ' + creep.pos.roomName);
         }
         if( creep.data.determinatedSpot ) {
             if(CHATTY) creep.say('upgrading', SAY_PUBLIC);
