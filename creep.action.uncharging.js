@@ -40,6 +40,11 @@ action.newTarget = function(creep){
     }
 };
 action.work = function(creep){
-    return creep.withdraw(creep.target, RESOURCE_ENERGY);
+    if (creep.target.store != null ) {
+        //console.log(JSON.stringify(creep.target.store));
+        Object.keys(creep.target.store).forEach(r => creep.withdraw(creep.target, r));
+    } else {
+        return creep.withdraw(creep.target, RESOURCE_ENERGY);
+    }
 };
 module.exports = action;

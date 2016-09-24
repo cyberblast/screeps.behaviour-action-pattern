@@ -18,7 +18,7 @@ module.exports = {
     },
     nextAction: function(creep){
         let priority;
-        if( creep.carry.energy < creep.carryCapacity/2 ) { 
+        if( _.sum(creep.carry) < creep.carryCapacity/2 ) { 
             priority = [
                 Creep.action.picking,
                 Creep.action.uncharging, 

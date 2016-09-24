@@ -185,7 +185,7 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerIn) ){ 
-                        let byType = c => c.source === true && c.controller == false;
+                        let byType = c => (c.source === true || c.minerals == true ) && c.controller == false;
                         this._containerIn = _.filter(this.container, byType);
                         // add managed
                         let isFull = c => _.sum(c.store) >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
@@ -198,7 +198,8 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerOut) ){ 
-                        let byType = c => c.source === false;
+                        let falseOnUndefined = e => { return _.isUndefined(e)? false: e };
+                        let byType = falseOnUndefined(c.source) === false && falseOnUndefined(c.minerals) === false;
                         this._containerOut = _.filter(this.container, byType);
                         // add managed                         
                         let isEmpty = c => _.sum(c.store) <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
@@ -453,8 +454,35 @@ var mod = {
                     }
                     return this._defenseLevel;
                 }
+            },
+            'minerals': {
+                configurable:true,
+                get: function () {
+                    if( _.isUndefined(this.memory.minerals)) {
+                        this.saveMinerals();
+                    }
+                    if( _.isUndefined(this._mineral) ){
+                        this._mineral= Game.getObjectById(this.memory.minerals);
+                    }
+                    return this._mineral;
+                }
             }
         });
+
+        Room.prototype.saveMinerals = function() {
+            if (_.isUndefined(this.memory.minerals)) {
+              this.memory.minerals = null;
+            }
+            let nullOrFirst = e=> e.length>0 ? e[0] : null;
+            let mineral = nullOrFirst(this.find(FIND_MINERALS));
+            if (mineral != null) {
+                let extractor = nullOrFirst(this.find(FIND_STRUCTURES, {filter:{structureType:STRUCTURE_EXTRACTOR}}));
+                if (extractor != null && extractor.pos.x == mineral.pos.x &&
+                    extractor.pos.y == mineral.pos.y && extractor.pos.roomName == mineral.pos.roomName) {
+                        this.memory.minerals = mineral.id;
+                }
+            }
+        };
 
         Room.prototype.springGun = function(){
             if( this.situation.invasion ){
@@ -636,7 +664,8 @@ var mod = {
                     this.memory.container.push({
                         id: cont.id, 
                         source: (source.length > 0), 
-                        controller: ( cont.pos.getRangeTo(this.controller) < 4 )
+                        controller: ( cont.pos.getRangeTo(this.controller) < 4 ),
+                        minerals: this.minerals.container.id == cont.id,
                     });
                     let assignContainer = s => s.memory.container = cont.id;
                     source.forEach(assignContainer);                    

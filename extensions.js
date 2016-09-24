@@ -79,6 +79,58 @@ var mod = {
                 }
                 return this._container;
             }
+        });        
+         Object.defineProperty(Mineral.prototype,'memory', {
+            configurable: true,
+            get: function() {
+                if(_.isUndefined(Memory.minerals)) {
+                    Memory.minerals = {};
+                }
+                if(!_.isObject(Memory.minerals)) {
+                    return undefined;
+                }
+                return Memory.minerals[this.id] = Memory.minerals[this.id] || {};
+            },
+            set: function(value) {
+                if(_.isUndefined(Memory.minerals)) {
+                    Memory.minerals = {};
+                }
+                if(!_.isObject(Memory.minerals)) {
+                    throw new Error('Could not set memory extension for minerals');
+                }
+                Memory.minerals[this.id] = value;
+            }
+        });
+
+        Object.defineProperty(Mineral.prototype, 'accessibleFields', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this.memory.accessibleFields) ) {
+                    var fields = this.room.lookForAtArea(LOOK_TERRAIN, this.pos.y-1, this.pos.x-1, this.pos.y+1, this.pos.x+1, true);
+                    let walls = _.countBy( fields , "terrain" ).wall;
+                    this.memory.accessibleFields = walls === undefined ? 9 : 9-walls;
+                }
+                return this.memory.accessibleFields;
+            }
+        });
+        Object.defineProperty(Mineral.prototype, 'container', {
+            configurable: true,
+            get: function() {
+                let that = this;
+                if( _.isUndefined(this.memory.container)) {
+                    let c = this.room.find(FIND_STRUCTURES, {filter:{structureType:STRUCTURE_CONTAINER}})
+                        .filter(c => c.pos.getRangeTo(that.pos) <= 2);
+                    if (c.length > 0) this.memory.container = c[0].id;
+                };
+
+                if( _.isUndefined(this._container) ) {
+                    if( this.memory.container ) {
+                        this._container = Game.getObjectById(this.memory.container);
+                        if( !this._container ) delete this.memory.container;
+                    } else this._container = null;
+                }
+                return this._container;
+            }
         });
         Object.defineProperty(Source.prototype, 'link', {
             configurable: true,
