@@ -185,7 +185,7 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerIn) ){ 
-                        let byType = c => (c.source === true || c.minerals == true ) && c.controller == false;
+                        let byType = c => (c.source === true || c.extractor == true ) && c.controller == false;
                         this._containerIn = _.filter(this.container, byType);
                         // add managed
                         let isFull = c => _.sum(c.store) >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
@@ -198,7 +198,7 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._containerOut) ){ 
-                        let byType = c => (c.source === false && c.minerals === false);
+                        let byType = c => (c.source === false && c.extractor === false);
                         this._containerOut = _.filter(this.container, byType);
                         // add managed                         
                         let isEmpty = c => _.sum(c.store) <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
@@ -464,35 +464,22 @@ var mod = {
                     return this._defenseLevel;
                 }
             },
-            'minerals': {
+            'extractors': {
                 configurable:true,
                 get: function () {
-                    if( _.isUndefined(this.memory.minerals)) {
-                        this.saveMinerals();
+                    if( _.isUndefined(this.memory.extractors)) {
+                        this.saveExtractors();
                     }
-                    if( _.isUndefined(this._mineral) ){
-                        this._mineral= Game.getObjectById(this.memory.minerals);
+                    if( _.isUndefined(this._extractors) ){
+                        this._extractors = [];
+                        let add = id => { addById(this._extractors, id); };
+                        this.memory.extractors.forEach(add);
                     }
-                    return this._mineral;
+                    return this._extractors;
                 }
             }
         });
 
-        Room.prototype.saveMinerals = function() {
-            if (_.isUndefined(this.memory.minerals)) {
-              this.memory.minerals = null;
-            }
-            let nullOrFirst = e=> e.length>0 ? e[0] : null;
-            let mineral = nullOrFirst(this.find(FIND_MINERALS));
-            if (mineral != null) {
-                let extractor = nullOrFirst(this.find(FIND_STRUCTURES, {filter:{structureType:STRUCTURE_EXTRACTOR}}));
-                if (extractor != null && extractor.pos.x == mineral.pos.x &&
-                    extractor.pos.y == mineral.pos.y && extractor.pos.roomName == mineral.pos.roomName) {
-                        this.memory.minerals = mineral.id;
-                }
-            }
-        };
-        
         Room.isMine = function(roomName) {
             let room = Game.rooms[roomName];
             return( room && room.controller && room.controller.my );
@@ -713,11 +700,12 @@ var mod = {
             let add = (cont) => {
                 if( !this.memory.container.find( (i) => i.id == cont.id ) ) {
                     let source = cont.pos.findInRange(this.sources, 1);
+                    let extractor = cont.pos.findInRange(this.extractors, 1);
                     this.memory.container.push({
                         id: cont.id, 
                         source: (source.length > 0), 
                         controller: ( cont.pos.getRangeTo(this.controller) < 4 ),
-                        minerals: this.minerals.container.id == cont.id,
+                        extractor: (extractor.length > 0),
                     });
                     let assignContainer = s => s.memory.container = cont.id;
                     source.forEach(assignContainer);                    
@@ -764,7 +752,21 @@ var mod = {
             };
             links.forEach(add);
         };
-
+        Room.prototype.saveExtractors = function() {
+            if( _.isUndefined(this.memory.extractors) ) {                        
+                this._extractors = this.find(FIND_STRUCTURES, {filter:{structureType:STRUCTURE_EXTRACTOR}});
+                if( this._extractors.length > 0 ){
+                    this.memory.extractors = this._extractors.map(s => s.id);
+                } else this.memory.extractors = [];
+            }
+            if( _.isUndefined(this._extractors) ){  
+                this._extractors = [];
+                let addExtractor = id => { addById(this._extractors, id); };
+                this.memory.extractors.forEach(addExtractor);
+            }
+            return this._extractors;
+        };
+        
         Room.prototype.linksManager = function () {
             let filled = l => l.cooldown == 0 && l.energy > l.energyCapacity * 0.85;
             let empty = l =>  l.energy < l.energyCapacity * 0.15;
@@ -849,15 +851,17 @@ var mod = {
             delete this._combatCreeps;
             delete this._defenseLevel;
             delete this._hostileThreatLevel;
+            delete this._extractors;
               
             try {                
-                var that = this; 
+                let that = this; 
                 if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
                     //if( DEBUG ) console.log('MEMORY_RESYNC_INTERVAL reached');
                     this.saveTowers();
                     this.saveSpawns();
                     this.saveContainers();
-                    this.saveLinks()
+                    this.saveLinks();
+                    this.saveExtractors();
                 }
                 if( this.memory.hostileIds === undefined )
                     this.memory.hostileIds = [];

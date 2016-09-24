@@ -18,10 +18,11 @@ module.exports = {
             source = _.find(creep.room.sources, notDeterminated);
             if( source ) {
                 creep.data.determinatedTarget = source.id;
-            } else if ( creep.room.minerals != null ) {
-                // assign to minerals
-                creep.data.determinatedTarget = creep.room.minerals.id;
                 Population.registerAction(creep, Creep.action.harvesting, source);
+            } else if ( creep.room.extractors != null ) {
+                extractor = _.find(creep.room.extractors, notDeterminated);
+                creep.data.determinatedTarget = extractor.id;
+                Population.registerAction(creep, Creep.action.harvesting, extractor);
             }
         } else { // get dedicated source
             source = Game.getObjectById(creep.data.determinatedTarget);
