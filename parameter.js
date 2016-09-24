@@ -7,6 +7,7 @@ var mod = {
     SPAWN_INTERVAL: 10, // loops between regular spawn probe
     MAX_STORAGE_ENERGY: 200000,// stop storing energy when reached
     MIN_STORAGE_ENERGY: 40000,// prefer storing energy until reached
+    MAX_STORAGE_MINERAL:300000, // keep a max of each type of minerals in store, stop mining if above this limit
     MAX_REPAIR_LIMIT: { // Limits how high structures get repaired, regarding RCL
         1: 10000,
         2: 10000,
@@ -33,7 +34,6 @@ var mod = {
     MANAGED_CONTAINER_TRIGGER: 0.2, // managed containers get filled below this relative energy amount and emptied when above 1-this value
     ROUTE_PRECALCULATION: true, 
     NOTIFICATE_INVADER: false, // Also log common 'Invader' hostiles
-    COMBAT_CREEPS_RESPECT_RAMPARTS: false, // causes own creeps not to leave through ramparts
-    MINERALS_MAX_IN_STORE:100000, // keep a max of each type of minerals in store, stop mining if above this limit
+    COMBAT_CREEPS_RESPECT_RAMPARTS: false // causes own creeps not to leave through ramparts
 }
 module.exports = mod;

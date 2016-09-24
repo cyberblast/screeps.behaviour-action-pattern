@@ -29,7 +29,7 @@ module.exports = {
             
             // do we mine a mineral deposit ?
              if ( !_.isUndefined(source.mineralType) ) {
-                if (source.room.storage != null && source.room.storage.store[source.mineralType] > MINERALS_MAX_IN_STORE )
+                if (source.room.storage != null && source.room.storage.store[source.mineralType] > MAX_STORAGE_MINERAL )
                     return;
             }
         }
