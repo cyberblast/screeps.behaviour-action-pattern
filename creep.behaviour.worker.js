@@ -42,6 +42,7 @@ module.exports = {
                     Creep.action.feeding, 
                     Creep.action.fueling, 
                     Creep.action.upgrading, 
+                    Creep.action.storing, 
                     Creep.action.idle];
             }
             if( creep.room.relativeEnergyAvailable < 1 && (!creep.room.population || !creep.room.population.typeCount['hauler'] || creep.room.population.typeCount['hauler'] < 1) ) { 
