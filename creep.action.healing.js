@@ -24,4 +24,7 @@ action.work = function(creep){
         return OK;
     }
 };
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9960), SAY_PUBLIC); 
+};
 module.exports = action;

@@ -17,7 +17,6 @@ action.newTarget = function(creep){
     return target;
 };
 action.work = function(creep){
-    if(CHATTY) creep.say(String.fromCharCode(9760), SAY_PUBLIC);
     let ret = OK;
     if( creep.target.store ) {
         for( var type in creep.target.store ){
@@ -28,5 +27,8 @@ action.work = function(creep){
         ret = creep.withdraw(creep.target, 'energy');
     }
     return ret;
+};
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9760), SAY_PUBLIC); 
 };
 module.exports = action;

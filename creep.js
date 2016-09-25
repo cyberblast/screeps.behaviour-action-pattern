@@ -142,13 +142,10 @@ var mod = {
             // TODO: CORNER cases
         };
         Creep.prototype.honk = function(){
-            if( HONK ) this.say(String.fromCharCode(8655), SAY_PUBLIC);
+            if( HONK ) this.say(String.fromCharCode(9940), SAY_PUBLIC);//8655
         },
         Creep.prototype.honkEvade = function(){
             if( HONK ) this.say(String.fromCharCode(9936), SAY_PUBLIC);
-        },
-        Creep.prototype.honkIdle = function(){
-            if( HONK ) this.say(String.fromCharCode(9835), SAY_PUBLIC);
         },
         Creep.prototype.drive = function( targetPos, intentionRange, enoughRange, range ) {
             // temporary cleanup

@@ -55,10 +55,15 @@ var Action = function(actionName){
     this.assign = function(creep, target){
         if( target === undefined ) target = this.newTarget(creep);
         if( target != null ) {
-            Population.registerAction(creep, this, target);
+            if( creep.action == null || creep.action.name != this.name || creep.target == null || creep.target.id != target.id ) {
+                Population.registerAction(creep, this, target);
+                this.onAssignment(creep, target);
+            }
             return true;
         }
         return false;
-    }
+    };
+    this.onAssignment = function(creep, target) {
+    };
 }
 module.exports = Action;

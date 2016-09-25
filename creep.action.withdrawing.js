@@ -17,4 +17,7 @@ action.newTarget = function(creep){
 action.work = function(creep){
     return creep.withdraw(creep.target, RESOURCE_ENERGY);
 };
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9738), SAY_PUBLIC); 
+};
 module.exports = action;

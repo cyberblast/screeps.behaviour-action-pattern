@@ -24,6 +24,7 @@ module.exports = {
                 creep.data.determinatedTarget = mineral.id;
                 Population.registerAction(creep, Creep.action.harvesting, mineral);
             }
+            if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9935), SAY_PUBLIC); 
         } else { // get dedicated source
             source = Game.getObjectById(creep.data.determinatedTarget);
         }

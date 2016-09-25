@@ -18,4 +18,7 @@ action.work = function(creep){
         creep.data.targetId = null;
     return response;
 };
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9981), SAY_PUBLIC); 
+};
 module.exports = action;

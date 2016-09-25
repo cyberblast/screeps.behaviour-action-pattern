@@ -29,5 +29,8 @@ action.step = function(creep){
     } 
     creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
 };
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9962), SAY_PUBLIC); 
+};
 
 module.exports = action;

@@ -14,4 +14,7 @@ action.step = function(creep){
         creep.data.targetId = null;
     }
 }
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9784), SAY_PUBLIC); 
+};
 module.exports = action;

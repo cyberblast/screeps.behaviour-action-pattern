@@ -25,4 +25,7 @@ action.newTarget = function(creep){
 action.work = function(creep){
     return creep.transfer(creep.target, RESOURCE_ENERGY);
 };
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC); 
+};
 module.exports = action;

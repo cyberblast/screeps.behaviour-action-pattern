@@ -1,7 +1,8 @@
 var mod = {
-    CHATTY: false, // creeps like talking 
+    CHATTY: false, // creeps say their current action 
     HONK: true, // HONK when stored path is blocked by other creeps
     OOPS: true, // Creeps say Oops when dropping energy during dropmining
+    SAY_ASSIGNMENT: true,
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details
     SPAWN_INTERVAL: 10, // loops between regular spawn probe

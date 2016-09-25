@@ -130,4 +130,7 @@ action.run = {
         }
     }
 };
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9876), SAY_PUBLIC); 
+};
 module.exports = action;

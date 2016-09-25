@@ -14,9 +14,11 @@ action.newTarget = function(creep){
     return creep.room.controller;
 };
 action.work = function(creep){
-    creep.honkIdle();
     creep.data.actionName = null;
     creep.data.targetId = null;
     return OK;
+};
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9835), SAY_PUBLIC); 
 };
 module.exports = action;

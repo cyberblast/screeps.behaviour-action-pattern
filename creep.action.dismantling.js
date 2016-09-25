@@ -43,4 +43,7 @@ action.newTarget = function(creep){
 action.work = function(creep){
     return creep.dismantle(creep.target);
 };
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9850), SAY_PUBLIC); 
+};
 module.exports = action;
