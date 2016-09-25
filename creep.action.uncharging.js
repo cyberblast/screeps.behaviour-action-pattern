@@ -5,7 +5,7 @@ action.isAddableTarget = function(target){ return true;}
 action.isValidAction = function(creep){ return _.sum(creep.carry) < creep.carryCapacity; }
 action.isValidTarget = function(target){
     return ( target && 
-        (( target.structureType == 'container' && target.store.energy > 400 ) ||
+        (( target.structureType == 'container' && _.sum(target.store) > 400 ) ||
         ( target.structureType == 'link' && target.energy > 0 )));
 };   
 action.newTarget = function(creep){ 
