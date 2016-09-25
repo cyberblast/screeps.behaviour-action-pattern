@@ -7,6 +7,11 @@ action.isValidAction = function(creep){
 action.isValidTarget = function(target){
     return (target != null && target.amount != null && target.amount > 0);
 };   
+action.isAddableTarget = function(target){
+    return (!target.targetOf || ( 
+        target.targetOf.length < this.maxPerTarget) && 
+        target.amount > _.sum( target.targetOf.map( t => ( t.actionName == 'picking' ? t.carryCapacityLeft : 0 ))));
+};
 action.newTarget = function(creep){
     let target;
     if( creep.room.situation.invasion ) {
