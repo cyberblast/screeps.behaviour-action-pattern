@@ -2,7 +2,14 @@ var setup = new Creep.Setup('hauler');
 setup.multiBody = [CARRY, CARRY, MOVE];
 setup.minControllerLevel = 2;
 setup.minAbsEnergyAvailable = 150;
-setup.maxMulti = function(room){ return room.minerals.length > 0 ? 10 : 7; };
+setup.maxMulti = function(room){
+    let max = 7; 
+    if( room.minerals.length > 0 ) 
+        max += 3; 
+    let contSum = _.sum(room.containerIn.map(e => _.sum(e.store)));
+    max += Math.floor(contSum / 1000);
+    return max;
+};
 setup.sortedParts = false;
 setup.minEnergyAvailable = function(spawn){
     return 0.4;
