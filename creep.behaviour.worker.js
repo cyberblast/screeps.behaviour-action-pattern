@@ -37,15 +37,14 @@ module.exports = {
                     Creep.action.idle];
             } else {
                 priority = [
-                    Creep.action.picking,
                     Creep.action.repairing, 
-                    Creep.action.feeding, 
                     Creep.action.building, 
+                    Creep.action.feeding, 
                     Creep.action.fueling, 
                     Creep.action.upgrading, 
                     Creep.action.idle];
             }
-            if( creep.room.relativeEnergyAvailable < 0.3 ) { 
+            if( creep.room.relativeEnergyAvailable < 1 && (!creep.room.population || !creep.room.population.typeCount['hauler'] || creep.room.population.typeCount['hauler'] < 1) ) { 
                 priority.unshift(Creep.action.feeding);
             }
             if( creep.room.controller && creep.room.controller.ticksToDowngrade < 2000 ) { // urgent upgrading 
