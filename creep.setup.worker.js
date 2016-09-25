@@ -8,7 +8,7 @@ setup.minEnergyAvailable = function(spawn){
 };
 setup.maxCount = function(spawn){
     if ( spawn.room.situation.invasion || spawn.room.conserveForDefense ) 
-        return 0;
+        return 1;
     let limits = {
         1: 4,
         2: 6,
