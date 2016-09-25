@@ -21,6 +21,8 @@ action.isAddableTarget = function(target, creep){
     ) && (
         (target.structureType == 'container' && (target.storeCapacity - _.sum(target.store)) > Math.min(creep.carry.energy, 500)) ||
         ( target.structureType == 'link' )
+    ) && (
+        target.structureType != 'container' || !target.controller || creep.carry.energy == _.sum(creep.carry) // don't put minerals in upgrader container
     );
 };
 action.newTarget = function(creep){
