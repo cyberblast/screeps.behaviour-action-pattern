@@ -45,6 +45,9 @@ module.exports = {
                     Creep.action.upgrading, 
                     Creep.action.idle];
             }
+            if( creep.room.relativeEnergyAvailable < 0.3 ) { 
+                priority.unshift(Creep.action.feeding);
+            }
             if( creep.room.controller && creep.room.controller.ticksToDowngrade < 2000 ) { // urgent upgrading 
                 priority.unshift(Creep.action.upgrading);
             }
