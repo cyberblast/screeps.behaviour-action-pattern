@@ -27,11 +27,10 @@ action.newTarget = function(creep){
         let filling = 0;
         let fullest = cont => {
             contFilling = _.sum(cont.store);
-            if( contFilling < Math.min(creep.carryCapacity - _.sum(creep.carry), 500) ) return;
-            let e = cont.targetOf ? 
-                contFilling - _.sum( cont.targetOf.map( t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 ))) : 
-                contFilling;
-            if( contFilling  > filling ){
+            if( cont.targetOf )
+                contFilling -= _.sum( cont.targetOf.map( t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 )));
+            if( contFilling < Math.min(creep.carryCapacity - _.sum(creep.carry), 400) ) return;
+            if( contFilling > filling ){
                 filling = contFilling ;
                 target = cont;
             }
