@@ -18,11 +18,9 @@ module.exports = {
             source = _.find(creep.room.sources, notDeterminated);
             if( source ) {
                 creep.data.determinatedTarget = source.id;
-                Population.registerAction(creep, Creep.action.harvesting, source);
             } else if ( creep.room.minerals != null ) {
-                mineral = _.find(creep.room.minerals, notDeterminated);
-                creep.data.determinatedTarget = mineral.id;
-                Population.registerAction(creep, Creep.action.harvesting, mineral);
+                source = _.find(creep.room.minerals, notDeterminated);
+                creep.data.determinatedTarget = source.id;
             }
             if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9935), SAY_PUBLIC); 
         } else { // get dedicated source
@@ -30,6 +28,7 @@ module.exports = {
         }
 
         if( source ) {
+            if( !creep.action ) Population.registerAction(creep, Creep.action.harvesting, source);
             if( !creep.data.determinatedSpot ) { 
                 let args = {
                     spots: [{

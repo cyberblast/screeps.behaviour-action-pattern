@@ -8,9 +8,8 @@ module.exports = {
         return range;
     },
     run: function(creep) {
-        if( !creep.data.determinatedSpot ) { 
-            if( !creep.action ) Population.registerAction(creep, Creep.action.upgrading, creep.room.controller);
-            
+        if( !creep.action ) Population.registerAction(creep, Creep.action.upgrading, creep.room.controller);
+        if( !creep.data.determinatedSpot ) {             
             let args = {
                 spots: [{
                     pos: creep.room.controller.pos, 
