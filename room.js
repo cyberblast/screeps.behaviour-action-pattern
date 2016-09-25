@@ -550,8 +550,8 @@ var mod = {
             let dirs = ['N','E','S','W'];
             let toggle = q => dirs[ (dirs.indexOf(q)+2) % 4 ];
             let names = [];
-            for( x = parseInt(parts[2])-1; x < parseInt(parts[2])+2; x++ ){
-                for( y = parseInt(parts[4])-1; y < parseInt(parts[4])+2; y++ ){
+            for( let x = parseInt(parts[2])-1; x < parseInt(parts[2])+2; x++ ){
+                for( let y = parseInt(parts[4])-1; y < parseInt(parts[4])+2; y++ ){
                     names.push( ( x < 0 ? toggle(parts[1]) + '0' : parts[1] + x ) + ( y < 0 ? toggle(parts[3]) + '0' : parts[3] + y ) );
                 }
             }
@@ -593,8 +593,8 @@ var mod = {
             let isWalkable = (posX, posY) => look[posY][posX].filter(invalidObject).length == 0;
 
             let fields = [];
-            for(x = minX; x <= maxX; x++) {
-                for(y = minY; y <= maxY; y++){
+            for( let x = minX; x <= maxX; x++) {
+                for( let y = minY; y <= maxY; y++){
                     if( x > 1 && x < 48 && y > 1 && y < 48 ){
                         if( !checkWalkable || isWalkable(x,y) ){
                             let p = new RoomPosition(x, y, roomName);
