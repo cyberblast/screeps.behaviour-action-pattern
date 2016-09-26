@@ -24,13 +24,13 @@ module.exports = {
                 Creep.action.uncharging, 
                 Creep.action.withdrawing, 
                 Creep.action.idle];
-        }    
+        }
         else {	  
             priority = [
                 Creep.action.picking,
                 Creep.action.feeding, 
-                Creep.action.charging, 
                 Creep.action.fueling, 
+                Creep.action.charging, 
                 Creep.action.storing, 
                 Creep.action.idle];
 
