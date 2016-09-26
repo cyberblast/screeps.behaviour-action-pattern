@@ -3,7 +3,11 @@ setup.multiBody = [WORK, WORK, WORK, MOVE];
 setup.fixedBody = [WORK, WORK, CARRY, MOVE];
 setup.minAbsEnergyAvailable = 400;
 setup.maxMulti = function(room){ 
-    let multi = 2;
+    let multi = 0;
+    if( !room.storage || room.storage.store.energy > MIN_STORAGE_ENERGY)
+        multi++;
+    if( !room.storage || room.storage.store.energy > ((MAX_STORAGE_ENERGY-MIN_STORAGE_ENERGY)/2)+MIN_STORAGE_ENERGY)
+        multi++;
     if( room.storage && room.storage.store.energy >= MAX_STORAGE_ENERGY )
     {
         let surplus = room.storage.store.energy - MAX_STORAGE_ENERGY;
