@@ -2,30 +2,20 @@
 
 ## Roadmap
 
-[General Discussion thread](https://github.com/ScreepsGamers/screeps.behaviour-action-pattern/issues/172)
-
 Just a vague idea...
-
-* 2016 September  
-  * Pathfinding  
-  * Redesign/improvement of the worker concept.
-  * Dropmining
-  * Containers
-  * Links
 
 * 2016 October  
   * Build automation
   * Operator creep
 
 * 2016 November  
-  * Extractor
   * Labs
+  * Terminal
   * Pathfinding  
 
 * 2016 December  
-  * Invasion strategy  
-  * Terminal
   * Tower Tuning
+  * Lots of change requests
   
 * 2017 January
   * Harvesting Power
