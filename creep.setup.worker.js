@@ -12,7 +12,7 @@ setup.maxCount = function(spawn){
     let limits = {
         1: 4,
         2: 6,
-        3: 3,
+        3: 4,
         4: 2,
         5: 1,
         6: 1,
