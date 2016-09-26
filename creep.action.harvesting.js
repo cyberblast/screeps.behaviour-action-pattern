@@ -14,17 +14,14 @@ action.isAddableTarget = function(target, creep){
             )
         )
     ) && (target.targetOf === undefined || 
-        target.targetOf.length < (target.accessibleFields) || 
-        !target.container );
+        target.targetOf.length < target.accessibleFields );
 };
 action.isValidAction = function(creep){
     return ( _.sum(creep.carry) < creep.carryCapacity && 
     creep.room.sourceEnergyAvailable > 0 );
 };
 action.isValidTarget = function(target){
-    return (target != null && target.energy != null && target.energy > 0) && (target.targetOf === undefined || 
-        target.targetOf.length < (target.accessibleFields) || 
-        !target.container );
+    return (target != null && target.energy != null && target.energy > 0);
 };   
 action.newTarget = function(creep){
     let target = null;
