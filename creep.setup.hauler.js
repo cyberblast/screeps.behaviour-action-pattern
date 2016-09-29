@@ -16,8 +16,7 @@ setup.minEnergyAvailable = function(spawn){
 };
 setup.maxCount = function(spawn){
     let count = 0;
-    if(spawn.room.containerOut.length > 0 || spawn.room.storage || 
-        (spawn.room.population && spawn.room.population.typeCount['miner'] && spawn.room.population.typeCount['miner'] > 0)) {
+    if(spawn.room.population && spawn.room.population.typeCount['miner'] && spawn.room.population.typeCount['miner'] > 0) {
         if( spawn.room.links.length > 2) count = 1;
         else count = 2;
     }

@@ -63,7 +63,6 @@ var Action = function(actionName){
         }
         return false;
     };
-    this.onAssignment = function(creep, target) {
-    };
+    this.onAssignment = (creep, target) => {};
 }
 module.exports = Action;

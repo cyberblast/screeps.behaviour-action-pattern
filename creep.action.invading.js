@@ -22,7 +22,7 @@ action.getFlaggedStructure = function(flagColor){
 action.newTarget = function(creep){
     var destroyFlag = this.getFlaggedStructure(FLAG_COLOR.destroy);
     if( destroyFlag ) {
-        Population.registerCreepFlag(creep, destroyFlag);
+        if( destroyFlag.color ) Population.registerCreepFlag(creep, destroyFlag);
         return destroyFlag;
     }        
     // move to invasion room
