@@ -1,16 +1,24 @@
 var setup = new Creep.Setup('healer');
-setup.multiBody = [MOVE, HEAL];
-setup.minAbsEnergyAvailable = 300;
-setup.maxMulti = function(room){ return 4; };
-setup.globalMeasurement = true;
 setup.minControllerLevel = 7;
-setup.minEnergyAvailable = function(spawn){
-    return 0.8;
-}
-setup.maxCount = function(spawn){
-    return 0;//FlagDir.count(FLAG_COLOR.defense);
-}
-setup.maxWeight = function(spawn){
-    return 0;
-}
+setup.globalMeasurement = true;
+setup.RCL = {
+    7: {
+        fixedBody: [], 
+        multiBody: [MOVE, HEAL], 
+        minAbsEnergyAvailable: 300, 
+        minEnergyAvailable: 0.8,
+        maxMulti: 4,
+        maxCount: 0, 
+        maxWeight: 0
+    },
+    8: {
+        fixedBody: [], 
+        multiBody: [MOVE, HEAL], 
+        minAbsEnergyAvailable: 300, 
+        minEnergyAvailable: 0.8,
+        maxMulti: 4,
+        maxCount: 0, 
+        maxWeight: 0
+    }
+};
 module.exports = setup;

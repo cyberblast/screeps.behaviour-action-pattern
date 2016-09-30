@@ -14,8 +14,9 @@ var mod = {
         Spawn.prototype.loop = function(){
             if( this.spawning ) return;
             let that = this;
+            let room = this.room;
             let probe = setup => {
-                return setup.isValidSetup(that) && that.createCreepBySetup(setup, that);
+                return setup.isValidSetup(room) && that.createCreepBySetup(setup);
             }
             _.find(this.priority, probe);
         };

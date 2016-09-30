@@ -1,26 +1,33 @@
 var setup = new Creep.Setup('miner');
 setup.minControllerLevel = 3;
-setup.multiBody = [WORK,MOVE];
-setup.fixedBody = [WORK, WORK, WORK, WORK, CARRY, MOVE];
-setup.minAbsEnergyAvailable = 500;
-setup.maxMulti = function(room){ return 1; };
 setup.sortedParts = true;
-setup.minEnergyAvailable = function(spawn){
-    return 0.3;
-};
-setup.maxCount = function(spawn){
-    let max = spawn.room.sources.length;
-    if( spawn.room.storage ) {
+
+setup.maxCount = function(room){
+    let max = room.sources.length;
+    if( room.storage ) {
         let add = mineral => {
             if(mineral.mineralAmount > 0 && 
-                (!spawn.room.storage.store[mineral.mineralType] || spawn.room.storage.store[mineral.mineralType] < MAX_STORAGE_MINERAL ))
+                (!room.storage.store[mineral.mineralType] || room.storage.store[mineral.mineralType] < MAX_STORAGE_MINERAL ))
                  max++;
         };
-        spawn.room.minerals.forEach(add);
+        room.minerals.forEach(add);
     }
     return max;
 };
-setup.maxWeight = function(spawn){
-    return null;
+setup.default = {
+    fixedBody: [WORK, WORK, WORK, WORK, CARRY, MOVE], 
+    multiBody: [WORK, MOVE], 
+    minAbsEnergyAvailable: 500, 
+    minEnergyAvailable: 0.3,
+    maxMulti: 1,
+    maxCount: setup.maxCount
+};
+setup.RCL = {
+    3: setup.default,
+    4: setup.default,
+    5: setup.default,
+    6: setup.default,
+    7: setup.default,
+    8: setup.default
 };
 module.exports = setup;

@@ -11,7 +11,12 @@ action.newTarget = function(creep){
         return exit;
     }
     if( creep.room.storage ) return creep.room.storage;
-    return creep.room.controller;
+    return creep.room.controller;    
+    //if( creep.data.idleSpot ) 
+    //    return new RoomPosition(creep.data.idleSpot.x, creep.data.idleSpot.y, creep.data.idleSpot.roomName );
+    //else {
+    // TODO: find nearest pos of "void" location (no road, no structure)
+    //}
 };
 action.work = function(creep){
     creep.data.actionName = null;

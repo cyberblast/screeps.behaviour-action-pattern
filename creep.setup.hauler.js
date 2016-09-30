@@ -1,8 +1,8 @@
 var setup = new Creep.Setup('hauler');
-setup.multiBody = [CARRY, CARRY, MOVE];
-setup.minControllerLevel = 2;
-setup.minAbsEnergyAvailable = 150;
-setup.maxMulti = function(room){
+setup.minControllerLevel = 3;
+setup.sortedParts = false;
+
+setup.maxMulti = function(room) {
     let max = 7; 
     if( room.minerals.length > 0 ) 
         max += 3; 
@@ -10,19 +10,29 @@ setup.maxMulti = function(room){
     max += Math.floor(contSum / 1000);
     return max;
 };
-setup.sortedParts = false;
-setup.minEnergyAvailable = function(spawn){
-    return 0.4;
-};
-setup.maxCount = function(spawn){
-    let count = 0;
-    if(spawn.room.population && spawn.room.population.typeCount['miner'] && spawn.room.population.typeCount['miner'] > 0) {
-        if( spawn.room.links.length > 2) count = 1;
-        else count = 2;
+setup.maxCount = function(room){
+    if(room.population && room.population.typeCount['miner'] > 0) {
+        if( room.links.length > 2) return 1;
+        else return 2;
     }
-    return count; 
+    return 0; 
 };
-setup.maxWeight = function(spawn){
-    return 2000;
+setup.default = {
+    fixedBody: [], 
+    multiBody: [CARRY, CARRY, MOVE], 
+    minAbsEnergyAvailable: 150, 
+    minEnergyAvailable: 0.4,
+    maxMulti: setup.maxMulti,
+    maxCount: setup.maxCount, 
+    maxWeight: 2000
+};
+setup.RCL = {
+    2: setup.default,
+    3: setup.default,
+    4: setup.default,
+    5: setup.default,
+    6: setup.default,
+    7: setup.default,
+    8: setup.default
 };
 module.exports = setup;
