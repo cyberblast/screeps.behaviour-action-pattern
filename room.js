@@ -360,7 +360,7 @@ var mod = {
                         this._privateerMaxWeight = 0;
                         let base = 2500;
                         let that = this;
-                        let adjacent, ownNeighbor, room;
+                        let adjacent, ownNeighbor, room, mult;
 
                         let flagEntries = FlagDir.filter(FLAG_COLOR.invade.exploit);
                         let countOwn = roomName => {
@@ -372,12 +372,16 @@ var mod = {
                         let calcWeight = flagEntry => {
                             if( !this.adjacentAccessibleRooms.includes(flagEntry.roomName) ) return;
                             room = Game.rooms[flagEntry.roomName];
-                            if( room )
+                            if( room ) {
                                 adjacent = room.adjacentAccessibleRooms;
-                            else adjacent = Room.adjacentAccessibleRooms(flagEntry.roomName);
+                                mult = room.sources.length;
+                            } else {
+                                adjacent = Room.adjacentAccessibleRooms(flagEntry.roomName);
+                                mult = 1;
+                            }
                             ownNeighbor = 1;
                             adjacent.forEach(countOwn);
-                            that._privateerMaxWeight += (base / ownNeighbor);
+                            that._privateerMaxWeight += (mult * base / ownNeighbor);
                         };
                         flagEntries.forEach(calcWeight);
                     };
@@ -756,7 +760,7 @@ var mod = {
             } else this.memory.minerals = [];
         };
         
-        Room.prototype.linksManager = function () {
+        Room.prototype.linkDispatcher = function () {
             let filled = l => l.cooldown == 0 && l.energy > l.energyCapacity * 0.85;
             let empty = l =>  l.energy < l.energyCapacity * 0.15;
             let filledIn = this.linksIn.filter(filled); 
@@ -859,7 +863,7 @@ var mod = {
 
                 this.roadConstruction();
                 this.springGun();
-                this.linksManager();
+                this.linkDispatcher();
 
                 if( this.controller && this.controller.my ) {
                     var registerHostile = creep => {
