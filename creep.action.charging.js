@@ -27,8 +27,7 @@ action.isAddableTarget = function(target, creep){
 };
 action.newTarget = function(creep){
     // if storage link is not full & controller link < 15% => charge
-    if( creep.room.linksStorage.length > 0 ){
-        
+    if( creep.room.linksStorage.length > 0 ){        
         let linkStorage = creep.room.linksStorage.find(l => l.energy < l.energyCapacity * 0.85);
         if( linkStorage ){
             let emptyControllerLink = creep.room.linksController.find(l => l.energy <= l.energyCapacity * 0.15);

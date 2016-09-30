@@ -13,7 +13,7 @@ setup.maxCount = function(spawn){
         1: 4,
         2: 6,
         3: 4,
-        4: 2,
+        4: spawn.room.storage ? 1 : 2,
         5: 1,
         6: 1,
         7: 1, 
