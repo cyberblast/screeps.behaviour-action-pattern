@@ -1,32 +1,5 @@
 ### __Please have a look at the [Wiki](https://github.com/cyberblast/screeps.behaviour-action-pattern/wiki)!__
 
-## Roadmap
+There are several parallel topics evolving. You can find them at [Projects](https://github.com/ScreepsGamers/screeps.behaviour-action-pattern/projects). 
 
-Just a vague idea...
-
-* 2016 October  
-  * Build automation
-  * Operator creep
-
-* 2016 November  
-  * Labs
-  * Terminal
-  * Pathfinding  
-
-* 2016 December  
-  * Tower Tuning
-  * Lots of change requests
-  
-* 2017 January
-  * Harvesting Power
-  * Performance Analysis
-  * Boosting
-
-* 2017 February  
-  TBD  
-  Possible Points
-  * Market
-  * Better offensive strategies
-  * Power creeps
-  * Performance optimization
-  * Memory redesign
+Please feel free to participate in any topic you like to. 
