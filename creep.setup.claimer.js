@@ -6,6 +6,7 @@ setup.sortedParts = true;
 
 setup.maxCount = (room) => ( room.situation.invasion || room.conserveForDefense ) ? 0 : 2; 
 setup.maxWeight = (room) => room.claimerMaxWeight;
+
 setup.small = {
     fixedBody: [CLAIM, MOVE, CLAIM, MOVE], 
     multiBody: [], 
@@ -24,6 +25,7 @@ setup.large = {
     maxCount: setup.maxCount, 
     maxWeight: setup.maxWeight
 };
+
 setup.RCL = {
     3: setup.small,
     4: setup.small,

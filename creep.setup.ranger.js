@@ -8,7 +8,7 @@ setup.default = {
     minAbsEnergyAvailable: 200, 
     minEnergyAvailable: 0.8,
     maxMulti: 10,
-    maxCount: FlagDir.count(FLAG_COLOR.defense), 
+    maxCount: () => FlagDir.count(FLAG_COLOR.defense), 
     maxWeight: (room) => room.defenseMaxWeight(2000, 'ranger')
 };
 setup.RCL = {

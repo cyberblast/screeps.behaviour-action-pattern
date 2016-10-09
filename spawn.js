@@ -8,9 +8,9 @@ var mod = {
                 Creep.setup.melee,
                 Creep.setup.ranger,
                 Creep.setup.healer,
-                Creep.setup.claimer, 
                 Creep.setup.pioneer, 
-                Creep.setup.privateer];
+                Creep.setup.privateer,
+                Creep.setup.claimer];
         Spawn.prototype.loop = function(){
             if( this.spawning ) return;
             let that = this;
