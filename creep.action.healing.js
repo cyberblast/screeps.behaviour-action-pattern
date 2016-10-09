@@ -1,26 +1,18 @@
 var action = new Creep.Action('healing');
-
-action.reusePath = 0;
-
+action.isAddableAction = function(){ return true; };
+action.isAddableTarget = function(){ return true; };
 action.isValidTarget = function(target){
     return ( target != null &&
         target.hits != null && 
         target.hits < target.hitsMax &&
-        target.my == true );
+        target.my );
 }; 
-action.isAddableAction = function(){ return true; };
-action.isAddableTarget = function(){ return true; };
-
 action.newTarget = function(creep){
-    var injured = creep.room.find(FIND_MY_CREEPS, {
-        filter: function(c){ return c.hits < c.hitsMax } 
-    });
-    if(injured && injured.length > 0){
-        return _.sortBy(injured, function(i){ return i.hits - i.hitsMax; })[0];
+    if(creep.room.casualties.length > 0){
+        return creep.room.casualties[0];
     }
     return null;
 };
-
 action.work = function(creep){
     if( creep.target.hits < creep.target.hitsMax ){
         if( creep.pos.isNearTo(creep.target) ){
@@ -32,5 +24,7 @@ action.work = function(creep){
         return OK;
     }
 };
-
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9960), SAY_PUBLIC); 
+};
 module.exports = action;

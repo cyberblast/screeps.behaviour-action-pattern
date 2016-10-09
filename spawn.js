@@ -1,37 +1,43 @@
 var mod = {
     extend: function(){
-        Spawn.prototype.loop = function(){
-            if( this.spawning ) return;
-            var self = this;
-            [Creep.setup.worker, 
+        Spawn.prototype.priority = [
+                Creep.setup.worker, 
+                Creep.setup.miner, 
+                Creep.setup.hauler,
+                Creep.setup.upgrader,
                 Creep.setup.melee,
                 Creep.setup.ranger,
                 Creep.setup.healer,
-                Creep.setup.claimer, 
                 Creep.setup.pioneer, 
-                Creep.setup.privateer
-            ].forEach(function(set) {
-                if( set.isValidSetup(self) ){
-                    var params =  set.buildParams(self);
-                    var newName = self.createCreep(params.parts, params.id, params);
-                    if( params.id == newName || ERROR_CODE(newName) === undefined ){ // other name assigned?
-                        Population.registerCreepSetup(self.room, params.setup, params.cost);
-                        if(DEBUG) console.log( DYE(CRAYON.system, self.name + ' &gt; ') + DYE(CRAYON.birth, 'Good morning ' + newName + '!') );
-                        return;
-                    } 
-                    
-                    console.log( DYE(CRAYON.system, self.name + ' &gt; ') + DYE(CRAYON.error, 'Offspring failed: ' + ERROR_CODE(newName)) );
-                }
-            });
-        };
-        Spawn.loop = function(){
-            if( Game.time % SPAWN_INTERVAL == 0 ) {        
-                var loop = spawn => { 
-                    if( !spawn.spawning ) 
-                    spawn.loop(); 
-                };
-                _.forEach(Game.spawns, loop);
+                Creep.setup.privateer,
+                Creep.setup.claimer];
+        Spawn.prototype.loop = function(){
+            if( this.spawning ) return;
+            let that = this;
+            let room = this.room;
+            let probe = setup => {
+                return setup.isValidSetup(room) && that.createCreepBySetup(setup);
             }
+            _.find(this.priority, probe);
+        };
+        Spawn.prototype.createCreepBySetup = function(setup, spawn){
+            spawn = spawn || this;
+            var params = setup.buildParams(spawn);
+            var newName = spawn.createCreep(params.parts, params.name, null);
+            if( params.name == newName || translateErrorCode(newName) === undefined ){
+                Population.registerCreep(newName, params.setup, params.cost, spawn.room, spawn.name, params.parts);
+                if(DEBUG) console.log( dye(CRAYON.system, spawn.pos.roomName  + ' &gt; ') + dye(CRAYON.birth, 'Good morning ' + newName + '!') );
+                return params;
+            }
+            if( DEBUG ) console.log( dye(CRAYON.system, spawn.pos.roomName + ' &gt; ') + dye(CRAYON.error, 'Offspring failed: ' + translateErrorCode(newName) + ', spawn params: ' + JSON.stringify(params) ) );
+            return null;
+        };
+        Spawn.loop = function(){      
+            var loop = spawn => { 
+                if( !spawn.spawning ) 
+                    spawn.loop(); 
+            };
+            _.forEach(Game.spawns, loop);
         }
     }
 };

@@ -1,32 +1,34 @@
-var behaviour = new Creep.Behaviour('claimer');
-
-behaviour.run = function(creep) {
-    var flag;    
-    if( creep.flag ) // TODO: validate flag colors
-        flag = creep.flag;
-    else {
-        var flags = _.sortBy(_.filter(Game.flags, FLAG_COLOR.claim.filter), 
-            function(f) { 
-                var occupation = ( f.creeps ? f.creeps.sum : 0 );
-                var distance = creep.pos.getRangeTo(f);
-                return (occupation + (distance == Infinity ? 0.9 : distance/100));
-            }
-        );
-        if( flags && flags.length > 0 ) { 
-            flag = flags[0];
-            creep.flag = flags[0];
-            creep.memory.flag = flags[0].name;
+module.exports = {
+    name: 'claimer',
+    run: function(creep) {
+        // Assign next Action
+        let oldTargetId = creep.data.targetId;
+        if( creep.action == null || creep.action.name == 'idle') {
+            this.nextAction(creep);
         }
+        if( creep.data.targetId != oldTargetId ) {
+            delete creep.data.path;
+        }
+        // Do some work
+        if( creep.action && creep.target ) {
+            creep.action.step(creep);
+        } else {
+            logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
+        }
+    },
+    nextAction: function(creep){ 
+        let priority = [
+            Creep.action.claiming,
+            Creep.action.reserving,
+            Creep.action.idle
+        ];
+        for(var iAction = 0; iAction < priority.length; iAction++) {
+            var action = priority[iAction];
+            if(action.isValidAction(creep) && 
+                action.isAddableAction(creep) && 
+                action.assign(creep)) {
+                    return;
+            }
+        }    
     }
-
-    // TODO: Add Settling
-     
-    if( !flag || !creep.assignAction(Creep.action.claiming) )
-        creep.assignAction(Creep.action.idle);
-
-    if( creep.action ) creep.action.step(creep);
-    return;
-};
-
-
-module.exports = behaviour;
+}

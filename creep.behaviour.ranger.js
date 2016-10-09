@@ -1,26 +1,36 @@
-var behaviour = new Creep.Behaviour('ranger');
-
-behaviour.run = function(creep) {
-    var assignment;
-    if( creep.room.controller.my && creep.room.situation.invasion )
-        assignment = creep.assignAction( Creep.action.defending);
-    else {
-        var flag = _.find(Game.flags, FLAG_COLOR.destroy.filter) || _.find(Game.flags, FLAG_COLOR.invade.filter);
-        if( flag ) assignment = creep.assignAction(Creep.action.invading);
-        else {
-            if( creep.memory.action ){
-                if( !creep.validateMemoryAction() ){
-                    creep.unregisterAction();
-                    assignment = false;
-                } else assignment = true;
+module.exports = {
+    name: 'ranger',
+    run: function(creep) {
+        // Assign next Action
+        let oldTargetId = creep.data.targetId;
+        //if( creep.action == null || ['guarding','idle'].includes(creep.action.name)) {   
+        if( creep.action == null || creep.action.name == 'idle' || ( creep.action.name == 'guarding' && (!creep.flag || creep.flag.pos.roomName == creep.pos.roomName ) ) ) {
+            this.nextAction(creep);
+        }
+        if( creep.data.targetId != oldTargetId ) {
+            delete creep.data.path;
+        }
+        // Do some work
+        if( creep.action && creep.target ) {
+            creep.action.step(creep);
+        } else {
+            logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
+        }
+    },
+    nextAction: function(creep){ 
+        let priority = [
+            Creep.action.defending,
+            Creep.action.invading, 
+            Creep.action.guarding, 
+            Creep.action.idle
+        ];
+        for(var iAction = 0; iAction < priority.length; iAction++) {
+            var action = priority[iAction];
+            if(action.isValidAction(creep) && 
+                action.isAddableAction(creep) && 
+                action.assign(creep)) {
+                    return;
             }
-            if(!assignment)
-                assignment = creep.assignAction(Creep.action.guarding);
         }
     }
-    if( !assignment ) creep.assignAction(Creep.action.idle);
-    
-    if( creep.action ) creep.action.step(creep);
-};
-
-module.exports = behaviour;
+}

@@ -1,20 +1,5 @@
 ### __Please have a look at the [Wiki](https://github.com/cyberblast/screeps.behaviour-action-pattern/wiki)!__
 
-## Roadmap
+There are several parallel topics evolving. You can find them at [Projects](https://github.com/ScreepsGamers/screeps.behaviour-action-pattern/projects). 
 
-I'm quite unsure about the corresponding timeline, but the order should fit. 
-
-* 2016 August  
-  Refactoring & cleanup
-
-* 2016 September  
-  Pathfinding
-
-* 2016 October  
-  Redesign/improvement of the worker concept. Utilizing containers & specialized 'workers'
-
-* 2016 November  
-  Build automation
-
-* 2016 December  
-  Going macro and focussing on colony behaviour
+Please feel free to participate in any topic you like to. 

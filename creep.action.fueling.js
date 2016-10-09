@@ -1,25 +1,24 @@
 var action = new Creep.Action('fueling');
-
 action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 && creep.room.towerFreeCapacity > 0 );
 };
 action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };   
-action.isAddableTarget = function(target){ 
-    return (this.maxPerTarget > 0 && (!target.creeps || !target.creeps[this.maxPerTargetType] || target.creeps[this.maxPerTargetType].length < this.maxPerTarget)) && 
-    ((target.energy < target.energyCapacity * (1-(0.18/target.room.towers.length))) || target.room.situation.invasion);
+action.isAddableTarget = function(target){
+    return ( target.my && 
+        (!target.targetOf || target.targetOf.length < this.maxPerTarget));
 };
-
 action.newTarget = function(creep){
-    var self = this;
-    var t = creep.room.towers.find(function(tower) { // TODO: include Nuker
-        return tower.energy < tower.energyCapacity && self.isAddableTarget(tower);
-    });
-    return t;
+    return creep.room.fuelables.length > 0 ? creep.room.fuelables[0] : null;
 };
 action.work = function(creep){
-    return creep.transfer(creep.target, RESOURCE_ENERGY);
+    let response = creep.transfer(creep.target, RESOURCE_ENERGY);
+    if( creep.target.energyCapacity - creep.target.energy < 20 ) 
+        creep.data.targetId = null;
+    return response;
 };
-
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9981), SAY_PUBLIC); 
+};
 module.exports = action;

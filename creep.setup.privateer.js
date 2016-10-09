@@ -1,20 +1,24 @@
 var setup = new Creep.Setup('privateer');
-
-setup.multiBody = [CARRY, WORK, MOVE];
-setup.fixedBody = [CARRY, WORK, MOVE, CARRY, WORK, MOVE];
-setup.minAbsEnergyAvailable = 400;
-setup.maxMulti = 4;
-setup.minControllerLevel = 2;
+setup.minControllerLevel = 3;
 setup.globalMeasurement = true;
-setup.multiplicationPartwise = false;
-setup.minEnergyAvailable = function(){
-    return 0.8;
+setup.sortedParts = false;
+setup.measureByHome = true;
+setup.default = {
+    fixedBody: [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 
+    multiBody: [WORK, CARRY, MOVE], 
+    minAbsEnergyAvailable: 400, 
+    minEnergyAvailable: 0.8,
+    maxMulti: 8,
+    maxWeight: (room) => room.privateerMaxWeight
 };
-setup.maxCount = function(spawn){
-    return _.filter(Game.flags, FLAG_COLOR.invade.exploit.filter).length * 4;
-}
-setup.maxWeight = function(spawn){
-    return _.filter(Game.flags, FLAG_COLOR.invade.exploit.filter).length * 4000; 
-}
-
+setup.RCL = {
+    1: setup.none,
+    2: setup.none,
+    3: setup.default,
+    4: setup.default,
+    5: setup.default,
+    6: setup.default,
+    7: setup.default,
+    8: setup.default
+};
 module.exports = setup;

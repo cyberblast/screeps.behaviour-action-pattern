@@ -1,11 +1,7 @@
 var action = new Creep.Action('invading');
-
-action.reusePath = 0;
-
-action.isValidAction = function(){ return true; };
+action.isValidAction = function(creep){ return FlagDir.hasInvasionFlag(); };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
-
 action.getFlaggedStructure = function(flagColor){
     var flags = _.filter(Game.flags, flagColor.filter); // TODO: find nearest (in room or count rooms?)
     var target = null;
@@ -15,8 +11,7 @@ action.getFlaggedStructure = function(flagColor){
             var targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
             if( targets && targets.length > 0)
                 return targets[0]; // prefer target in same room so return
-            else {
-                // remove flag. try next flag
+            else { // remove flag. try next flag
                 flag.remove();
             }
         }
@@ -24,41 +19,36 @@ action.getFlaggedStructure = function(flagColor){
     }
     return target;
 }
-
 action.newTarget = function(creep){
     var destroyFlag = this.getFlaggedStructure(FLAG_COLOR.destroy);
-    if( destroyFlag ) return destroyFlag;
-        
+    if( destroyFlag ) {
+        if( destroyFlag.color ) Population.registerCreepFlag(creep, destroyFlag);
+        return destroyFlag;
+    }        
     // move to invasion room
-    var flag = _.find(Game.flags, FLAG_COLOR.invade.filter);
-    if( flag && (!flag.room || flag.room.name != creep.room.name))
-        return flag; // other room
-    
+    var flag = FlagDir.find(FLAG_COLOR.invade, creep.pos);
+    if( flag && (!flag.room || flag.pos.roomName != creep.pos.roomName)){
+        Population.registerCreepFlag(creep, flag);
+        return flag; // other room    
+    }
     if( !flag ){
-        // unregister & clear memory
-        creep.unregisterTarget();
-        creep.room.activities[creep.memory.action]--;
-        creep.memory.action = null;
+        // unregister 
         creep.action = null;
         return;
     }
-    
-    if( !flag.room.controller.my ) {
-        
+    if( !flag.room.controller || !flag.room.controller.my ) {        
         //attack healer
         var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
             filter: function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
         });
         if( target ) 
             return target;
-
         //attack attacker
         target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
             filter: function(hostile){ return _.some(hostile.body, function(part){return part.type == ATTACK || part.type == RANGED_ATTACK}); } 
         });
         if( target ) 
             return target;
-
         // attack tower
         target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
             filter: (structure) => {
@@ -67,12 +57,10 @@ action.newTarget = function(creep){
         });
         if( target ) 
             return target;
-
         // attack remaining creeps
         target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         if( target ) 
-            return target;
-        
+            return target;        
         // attack spawn
         target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
             filter: (structure) => {
@@ -80,8 +68,7 @@ action.newTarget = function(creep){
             }
         });
         if( target ) 
-            return target;
-        
+            return target;        
         // attack structures
         target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
             filter: (structure) => {
@@ -89,49 +76,44 @@ action.newTarget = function(creep){
             }
         });
         if( target ) 
-            return target;
-        
+            return target;        
         // attack construction sites
         target = creep.pos.findClosestByPath(FIND_HOSTILE_CONSTRUCTION_SITES);
         if( target ) 
             return target;
     }
     // no target found
-    flag.remove();
-    
+    flag.remove();    
     return null;
 };
-
 action.step = function(creep){
     if(CHATTY) creep.say(this.name);
-    this.setup[creep.memory.setup](creep);
+    if( creep.target.color && (creep.target.pos.roomName == creep.pos.roomName))
+        this.newTarget(creep);
+    this.run[creep.data.creepType](creep);
 }
-
-action.setup = {
+action.run = {
     melee: function(creep){        
         if( creep.target.color ){
-            creep.moveTo(creep.target, {reusePath: 15});
+            creep.drive( creep.target.pos, 0, 1, Infinity);
             return;
-        }
-        
-        var moveResult = creep.moveTo(creep.target, {reusePath: this.reusePath});
+        }        
+        var moveResult = creep.moveTo(creep.target, {reusePath: 0});
         if( !creep.target.my )
             var workResult = creep.attack(creep.target);
     }, 
     ranger: function(creep){     
         if( creep.target.color ){
-            creep.moveTo(creep.target, {reusePath: 15});
+            creep.drive( creep.target.pos, 0, 1, Infinity);
             return;
         }
-
         var range = creep.pos.getRangeTo(creep.target);
         if( range > 3 ){
-            creep.moveTo(creep.target, {reusePath: this.reusePath});
+            creep.moveTo(creep.target, {reusePath: 0});
         }
         if( range < 3 ){
             creep.move(creep.target.pos.getDirectionTo(creep));
-        }
-        
+        }        
         // attack
         var targets = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
         if(targets.length > 2) { // TODO: calc damage dealt
@@ -148,5 +130,7 @@ action.setup = {
         }
     }
 };
-
+action.onAssignment = function(creep, target) {
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9876), SAY_PUBLIC); 
+};
 module.exports = action;

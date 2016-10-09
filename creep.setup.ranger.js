@@ -1,19 +1,24 @@
 var setup = new Creep.Setup('ranger');
-
-setup.multiBody = [RANGED_ATTACK, MOVE]; 
-setup.minAbsEnergyAvailable = 200;
-setup.maxMulti = 2;
+setup.minControllerLevel = 5;
 setup.globalMeasurement = true;
-setup.minControllerLevel = 3;
-setup.multiplicationPartwise = false;
-setup.minEnergyAvailable = function(){
-    return 0.8;
-}
-setup.maxCount = function(spawn){
-    return _.filter(Game.flags, FLAG_COLOR.defense.filter).length;
-}
-setup.maxWeight = function(spawn){
-    return 0; 
-}
-
+setup.measureByHome = true;
+setup.default = {
+    fixedBody: [], 
+    multiBody: [RANGED_ATTACK, MOVE], 
+    minAbsEnergyAvailable: 200, 
+    minEnergyAvailable: 0.8,
+    maxMulti: 10,
+    maxCount: () => FlagDir.count(FLAG_COLOR.defense), 
+    maxWeight: (room) => room.defenseMaxWeight(2000, 'ranger')
+};
+setup.RCL = {
+    1: setup.none,
+    2: setup.none,
+    3: setup.none,
+    4: setup.none,
+    5: setup.default,
+    6: setup.default,
+    7: setup.default,
+    8: setup.default
+};
 module.exports = setup;

@@ -1,10 +1,10 @@
-var action = new Creep.Action('claiming');
-action.isValidAction = function(creep){ return true; }; 
+var action = new Creep.Action('reserving');
+action.isValidAction = function(creep){ return true; }; // TODO: check if it is a flag or a controller and reservation < 4999 
 action.isValidTarget = function(target){ return true; }; 
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; }; 
 action.newTarget = function(creep){
-    let flag = FlagDir.find(FLAG_COLOR.claim, creep.pos, false, FlagDir.claimMod, creep.name);
+    let flag = FlagDir.find(FLAG_COLOR.claim.reserve, creep.pos, false, FlagDir.reserveMod, creep.name);
     if( flag ) { 
         Population.registerCreepFlag(creep, flag);
     } 
@@ -14,7 +14,7 @@ action.newTarget = function(creep){
     if( !creep.flag.room || creep.flag.pos.roomName != creep.pos.roomName){
         return creep.flag;    
     }
-    if( creep.flag.room.controller.my ) { // TODO: AND is claim flag 
+    if( creep.flag.room.controller.my ) { // TODO: AND is reserve flag
         // already claimed, change flag
         // TODO: only if no spawn or spawn-constructionSite present
         creep.flag.setColor(FLAG_COLOR.claim.spawn.color, FLAG_COLOR.claim.spawn.secondaryColor);
@@ -55,14 +55,11 @@ action.work = function(creep){
         workResult = creep.attackController(creep.target);
     }
     else {
-        workResult = creep.claimController(creep.target);
-        if( workResult != OK ){
-            workResult = creep.reserveController(creep.target);
-        }
+        workResult = creep.reserveController(creep.target);
     }
     return workResult;
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9983), SAY_PUBLIC); 
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9971), SAY_PUBLIC); 
 };
 module.exports = action;

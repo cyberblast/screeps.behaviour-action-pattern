@@ -1,20 +1,29 @@
 var setup = new Creep.Setup('pioneer');
-
-setup.multiBody = [CARRY, WORK, MOVE];
-setup.fixedBody = [CARRY, WORK, MOVE, CARRY, WORK, MOVE];
-setup.minAbsEnergyAvailable = 400;
-setup.maxMulti = 4;
 setup.minControllerLevel = 3;
 setup.globalMeasurement = true;
-setup.multiplicationPartwise = false;
-setup.minEnergyAvailable = function(){
-    return 0.75;
-};
-setup.maxCount = function(spawn){
-    return _.filter(Game.flags, FLAG_COLOR.claim.spawn.filter).length * 4;
-}
-setup.maxWeight = function(spawn){
-    return null; // no evaluation
-}
+setup.sortedParts = false;
 
+setup.maxCount = function(room){
+    if ( room.situation.invasion || room.conserveForDefense ) 
+        return 0;
+    return ( FlagDir.count(FLAG_COLOR.claim.spawn) * 4 ) + FlagDir.count(FLAG_COLOR.claim.pioneer);
+};
+setup.default = {
+    fixedBody: [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 
+    multiBody: [WORK, CARRY, MOVE], 
+    minAbsEnergyAvailable: 400, 
+    minEnergyAvailable: 0.75,
+    maxMulti: 4,
+    maxCount: setup.maxCount
+};
+setup.RCL = {
+    1: setup.none,
+    2: setup.none,
+    3: setup.default,
+    4: setup.default,
+    5: setup.default,
+    6: setup.default,
+    7: setup.default,
+    8: setup.default
+};
 module.exports = setup;
