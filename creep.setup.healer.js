@@ -2,6 +2,12 @@ var setup = new Creep.Setup('healer');
 setup.minControllerLevel = 7;
 setup.globalMeasurement = true;
 setup.RCL = {
+    1: setup.none,
+    2: setup.none,
+    3: setup.none,
+    4: setup.none,
+    5: setup.none,
+    6: setup.none,
     7: {
         fixedBody: [], 
         multiBody: [MOVE, HEAL], 

@@ -27,6 +27,8 @@ setup.large = {
 };
 
 setup.RCL = {
+    1: setup.none,
+    2: setup.none,
     3: setup.small,
     4: setup.small,
     5: setup.small,

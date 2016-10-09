@@ -27,6 +27,7 @@ setup.default = {
     maxWeight: 2000
 };
 setup.RCL = {
+    1: setup.none,
     2: setup.default,
     3: setup.default,
     4: setup.default,

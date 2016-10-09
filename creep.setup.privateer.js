@@ -12,6 +12,8 @@ setup.default = {
     maxWeight: (room) => room.privateerMaxWeight
 };
 setup.RCL = {
+    1: setup.none,
+    2: setup.none,
     3: setup.default,
     4: setup.default,
     5: setup.default,

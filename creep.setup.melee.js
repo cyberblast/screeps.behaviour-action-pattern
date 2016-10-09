@@ -12,6 +12,7 @@ setup.default = {
     maxWeight: (room) => room.defenseMaxWeight(1300, 'melee')
 };
 setup.RCL = {
+    1: setup.none,
     2: setup.default,
     3: setup.default,
     4: setup.default,
