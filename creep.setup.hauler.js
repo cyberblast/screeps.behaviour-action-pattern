@@ -5,7 +5,7 @@ setup.sortedParts = false;
 setup.maxMulti = function(room) {
     let max = 7; 
     if( room.minerals.length > 0 ) 
-        max += 3; 
+        max += 2; 
     let contSum = _.sum(room.containerIn.map(e => _.sum(e.store)));
     max += Math.floor(contSum / 1000);
     return max;

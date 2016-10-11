@@ -30,7 +30,6 @@ module.exports = {
         else {                
             if( creep.room.situation.invasion ){
                 priority = [
-                    Creep.action.picking,
                     Creep.action.fueling, 
                     Creep.action.feeding, 
                     Creep.action.repairing, 
