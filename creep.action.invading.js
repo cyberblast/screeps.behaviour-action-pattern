@@ -88,14 +88,14 @@ action.newTarget = function(creep){
 };
 action.step = function(creep){
     if(CHATTY) creep.say(this.name);
-    if( creep.target.color && (creep.target.pos.roomName == creep.pos.roomName))
-        this.newTarget(creep);
+    if( (creep.target instanceof Flag) && (creep.target.pos.roomName == creep.pos.roomName))
+        this.assign(creep);
     this.run[creep.data.creepType](creep);
 }
 action.run = {
     melee: function(creep){        
-        if( creep.target.color ){
-            creep.drive( creep.target.pos, 0, 1, Infinity);
+        if( creep.target instanceof Flag ){
+            creep.drive( creep.target.pos, 1, 1, Infinity);
             return;
         }        
         var moveResult = creep.moveTo(creep.target, {reusePath: 0});
@@ -103,8 +103,8 @@ action.run = {
             var workResult = creep.attack(creep.target);
     }, 
     ranger: function(creep){     
-        if( creep.target.color ){
-            creep.drive( creep.target.pos, 0, 1, Infinity);
+        if( creep.target instanceof Flag){
+            creep.drive( creep.target.pos, 1, 1, Infinity);
             return;
         }
         var range = creep.pos.getRangeTo(creep.target);
