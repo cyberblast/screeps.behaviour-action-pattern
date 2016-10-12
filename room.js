@@ -279,7 +279,6 @@ var mod = {
             'hostiles': {
                 configurable: true,
                 get: function() {
-                    var PLAYER_WHITELIST = ['Proximo', 'Source Keeper'];
                     if( _.isUndefined(this._hostiles) ){ 
                         this._hostiles = this.find(FIND_HOSTILE_CREEPS, { filter : c => _.indexOf(PLAYER_WHITELIST, c.owner.username) == -1 });
                     }

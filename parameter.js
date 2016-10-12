@@ -35,6 +35,7 @@ var mod = {
     MANAGED_CONTAINER_TRIGGER: 0.25, // managed containers get filled below this relative energy amount and emptied when above 1-this value
     ROUTE_PRECALCULATION: false, 
     NOTIFICATE_INVADER: false, // Also log common 'Invader' hostiles
-    COMBAT_CREEPS_RESPECT_RAMPARTS: false // causes own creeps not to leave through ramparts
+    COMBAT_CREEPS_RESPECT_RAMPARTS: false, // causes own creeps not to leave through ramparts
+    PLAYER_WHITELIST: ['cyberblast', 'Asku']
 }
 module.exports = mod;
