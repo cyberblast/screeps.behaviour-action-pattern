@@ -3,8 +3,9 @@ action.targetRange = 3;
 action.isAddableAction = function(creep){ 
     if( creep.room.storage ) 
         return creep.room.storage.energy > MAX_STORAGE_ENERGY;
-    return true; },
-action.isAddableTarget = function(target){ return true; }, 
+    return true; 
+};
+action.isAddableTarget = function(target){ return true; }; 
 action.isValidAction = function(creep){
     return creep.carry.energy > 0;
 };
