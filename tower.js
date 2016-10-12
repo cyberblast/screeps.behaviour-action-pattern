@@ -27,7 +27,7 @@ var mod = {
                 return;
             } 
 
-            var PLAYERWHITELIST = ['Proximo', 'Source Keeper'];
+            var PLAYER_WHITELIST = ['Proximo', 'Source Keeper'];
             // var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
             var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS, { filter : c => _.indexOf(PLAYER_WHITELIST, c.owner.username) == -1 });
             if(closestHostile) {
