@@ -103,10 +103,11 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._constructionSites) ) { 
-                        this._constructionSites = this.find(FIND_MY_CONSTRUCTION_SITES); 
+                        let sites = this.find(FIND_MY_CONSTRUCTION_SITES); 
                         let siteOrder = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_WALL,STRUCTURE_RAMPART];
                         let getOrder = site => {let o = siteOrder.indexOf(site); return o < 0 ? 100 : o;};
-                        this._constructionSites.sort( (a, b) => {return getOrder(a.structureType) - getOrder(b.structureType);} );
+                        //this._constructionSites.sort( (a, b) => {return getOrder(a.structureType) - getOrder(b.structureType);} );
+                        this._constructionSites = _.sortBy(sites, getOrder);
                     }
                     return this._constructionSites;
                 }
@@ -395,7 +396,7 @@ var mod = {
                 get: function () {
                     if (_.isUndefined(this._claimerMaxWeight) ) {
                         this._claimerMaxWeight = 0;
-                        let base = 1300;
+                        let base = 1000;
                         let maxRange = 2;
                         let that = this;
                         let distance, reserved, flag;
@@ -692,8 +693,8 @@ var mod = {
                 filter: (structure) => ( structure.structureType == STRUCTURE_CONTAINER )
             });
             let add = (cont) => {
-                let source = cont.pos.findInRange(this.sources, 1);
-                let mineral = cont.pos.findInRange(this.minerals, 1);
+                let source = cont.pos.findInRange(this.sources, 2);
+                let mineral = cont.pos.findInRange(this.minerals, 2);
                 this.memory.container.push({
                     id: cont.id, 
                     source: (source.length > 0), 
