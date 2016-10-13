@@ -151,7 +151,7 @@ var mod = {
         let register = entry => {
             let creep = Game.creeps[entry.creepName];
             if ( !creep ) {
-                if(DEBUG) console.log(dye(CRAYON.system, entry.homeRoom + ' &gt; ') + dye(CRAYON.death, 'Good night ' + entry.creepName + '!') );
+                if(CENSUS_ANNOUNCEMENTS) console.log(dye(CRAYON.system, entry.homeRoom + ' &gt; ') + dye(CRAYON.death, 'Good night ' + entry.creepName + '!') );
                 this.unregisterCreep(entry.creepName);
             } 
             else {                
@@ -166,7 +166,7 @@ var mod = {
                     spawnsToProbe.push(entry.motherSpawn);
                 }
                 else if(creep.ticksToLive == entry.spawningTime) { // will die in ticks equal to spawning time
-                    if(DEBUG) console.log(dye(CRAYON.system, entry.creepName + ' &gt; ') + dye(CRAYON.death, 'Good night!') );
+                    if(CENSUS_ANNOUNCEMENTS) console.log(dye(CRAYON.system, entry.creepName + ' &gt; ') + dye(CRAYON.death, 'Farewell!') );
                     if( Game.time % SPAWN_INTERVAL != 0 && !spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' ) { 
                         spawnsToProbe.push(entry.motherSpawn);
                     }

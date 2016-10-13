@@ -5,6 +5,7 @@ var mod = {
     SAY_ASSIGNMENT: true,
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details
+    CENSUS_ANNOUNCEMENTS: false, // log birth and death
     SPAWN_INTERVAL: 10, // loops between regular spawn probe
     MAX_STORAGE_ENERGY: 200000,// stop storing energy when reached
     MIN_STORAGE_ENERGY: 40000,// prefer storing energy until reached
@@ -36,6 +37,6 @@ var mod = {
     ROUTE_PRECALCULATION: false, 
     NOTIFICATE_INVADER: false, // Also log common 'Invader' hostiles
     COMBAT_CREEPS_RESPECT_RAMPARTS: false, // causes own creeps not to leave through ramparts
-    PLAYER_WHITELIST: ['cyberblast', 'Asku', 'SirLovi']
+    PLAYER_WHITELIST: ['cyberblast', 'Asku', 'SirLovi'] // Don't attack
 }
 module.exports = mod;
