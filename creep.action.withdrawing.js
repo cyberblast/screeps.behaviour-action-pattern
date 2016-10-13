@@ -1,5 +1,6 @@
 var action = new Creep.Action('withdrawing');
 action.maxPerTarget = 2;
+action.maxPerAction = 2;
 action.isValidAction = function(creep){
     return ( 
         creep.room.storage && 
