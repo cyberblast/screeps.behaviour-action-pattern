@@ -8,14 +8,16 @@ setup.maxMulti = function(room) {
         max += 2; 
     let contSum = _.sum(room.containerIn.map(e => _.sum(e.store)));
     max += Math.floor(contSum / 1000);
+    max += Creep.setup.upgrader.maxMulti(room);
     return max;
 };
 setup.maxCount = function(room){
+    let count = 0;
     if(room.population && room.population.typeCount['miner'] > 0) {
-        if( room.links.length > 2) return 1;
-        else return 2;
+        count += Creep.setup.upgrader.maxCount(room);
+        if( room.links.length < 3) count++;
     }
-    return 0; 
+    return count; 
 };
 setup.default = {
     fixedBody: [], 
