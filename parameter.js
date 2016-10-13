@@ -36,6 +36,6 @@ var mod = {
     ROUTE_PRECALCULATION: false, 
     NOTIFICATE_INVADER: false, // Also log common 'Invader' hostiles
     COMBAT_CREEPS_RESPECT_RAMPARTS: false, // causes own creeps not to leave through ramparts
-    PLAYER_WHITELIST: ['cyberblast', 'Asku']
+    PLAYER_WHITELIST: ['cyberblast', 'Asku', 'SirLovi']
 }
 module.exports = mod;

@@ -359,7 +359,7 @@ var mod = {
                     if (_.isUndefined(this._privateerMaxWeight) ) {
                         this._privateerMaxWeight = 0;
                         if ( !this.situation.invasion && !this.conserveForDefense ) {
-                            let base = 5000;
+                            let base = 6000;
                             let that = this;
                             let adjacent, ownNeighbor, room, mult;
 
