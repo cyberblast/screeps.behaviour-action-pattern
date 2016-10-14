@@ -268,6 +268,16 @@ var mod = {
                     return this._linksIn;
                 }
             },
+            'linksPrivateers': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._linksPrivateers) ) { 
+                        let byType = l => l.storage == false && l.controller == false && l.source == false && l.energy < l.energyCapacity * 0.85;
+                        this._linksPrivateers = _.filter(this.links, byType);
+                    }
+                    return this._linksPrivateers;
+                }
+            },
             'creeps': {
                 configurable: true,
                 get: function() {
@@ -716,6 +726,7 @@ var mod = {
             let storageLinks = this.storage ? this.storage.pos.findInRange(links, 2).map(l => l.id) : [];
 
             // for each memory entry, keep if existing
+            /*
             let kept = [];
             let keep = (entry) => {
                 if( links.find( (c) => c.id == entry.id )){
@@ -724,23 +735,27 @@ var mod = {
                 }                    
             };
             this.memory.links.forEach(keep);
-            //this.memory.links = kept;
+            this.memory.links = kept;
+            */
             this.memory.links = [];
 
             // for each link add to memory ( if not contained )
             let add = (link) => {
                 if( !this.memory.links.find( (l) => l.id == link.id ) ) {
                     let isControllerLink = ( link.pos.getRangeTo(this.controller) < 4 );
-                    this.memory.links.push({
-                        id: link.id, 
-                        storage: storageLinks.includes(link.id),
-                        controller: isControllerLink
-                    });
+                    let isSource = false;
                     if( !isControllerLink ) {
                         let source = link.pos.findInRange(this.sources, 2);
                         let assign = s => s.memory.link = link.id;
                         source.forEach(assign);  
-                    }                  
+                        isSource = source.length > 0;
+                    }
+                    this.memory.links.push({
+                        id: link.id, 
+                        storage: storageLinks.includes(link.id),
+                        controller: isControllerLink, 
+                        source: isSource
+                    });
                 }
             };
             links.forEach(add);

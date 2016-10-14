@@ -21,7 +21,14 @@ module.exports = {
         if( creep.pos.roomName == creep.data.homeRoom ){ 
             // carrier filled
             if( _.sum(creep.carry) > 0 ){
-                if( Creep.action.storing.assign(creep) ) return;
+                let deposit = creep.room.linksPrivateers;
+                if( creep.room.storage ) deposit.push(creep.room.storage);
+                if( deposit.length > 0 ){
+                    let target = creep.pos.findClosestByRange(deposit);
+                    if( target.structureType == STRUCTURE_STORAGE && Creep.action.storing.assign(creep, target) ) return;
+                    else if(Creep.action.charging.assign(creep, target) ) return;
+                }
+                //if( Creep.action.storing.assign(creep) ) return;
                 if( Creep.action.charging.assign(creep) ) return;
                 Creep.behaviour.worker.nextAction(creep);
                 return;
