@@ -779,7 +779,7 @@ var mod = {
         };
         
         Room.prototype.linkDispatcher = function () {
-            let filled = l => l.cooldown == 0 && l.energy > l.energyCapacity * 0.85;
+            let filled = l => l.cooldown == 0 && l.energy > (l.energyCapacity * (l.source ? 0.85 : 0.5));
             let empty = l =>  l.energy < l.energyCapacity * 0.15;
             let filledIn = this.linksIn.filter(filled); 
             let emptyController = this.linksController.filter(empty); 
@@ -857,6 +857,7 @@ var mod = {
             delete this._linksController;
             delete this._linksStorage;
             delete this._linksIn;
+            delete this._linksPrivateers;
             delete this._privateerMaxWeight;
             delete this._claimerMaxWeight;
             delete this._combatCreeps;
