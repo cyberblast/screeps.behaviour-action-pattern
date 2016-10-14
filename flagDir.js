@@ -150,8 +150,8 @@ var mod = {
     exploitMod: function(range, flagItem, creepName){
         if( range > 100 ) return Infinity;
         var flag = Game.flags[flagItem.name];
-        let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepName == creepName ? 0 : t.carryCapacityLeft)) : 0;
         if( flag.room ) {
+            let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepName == creepName ? 0 : t.carryCapacityLeft)) : 0;
             if( flag.room.sourceEnergyAvailable <= assigned ) return Infinity;
             return (range*range) / (flag.room.sourceEnergyAvailable - assigned);
         } 
