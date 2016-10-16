@@ -21,8 +21,8 @@ module.exports = {
         if( creep.carry.energy == 0 ) { 
             priority = [
                 Creep.action.picking,
-                Creep.action.withdrawing, 
                 Creep.action.uncharging, 
+                Creep.action.withdrawing, 
                 Creep.action.dismantling,
                 Creep.action.harvesting, 
                 Creep.action.idle];
