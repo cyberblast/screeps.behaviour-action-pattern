@@ -583,6 +583,39 @@ var mod = {
             if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1 
             return xDif + yDif; // count diagonal as 2        
         };
+        Room.prototype.findRoute = function(targetRoomName, checkOwner = true, preferHighway = true){
+            if (this.name == targetRoomName)  return [];
+
+            return Game.map.findRoute(this, targetRoomName, {
+                routeCallback(roomName) {
+                    let isHighway = false;
+                    if( preferHighway ){
+                        let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+                        isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
+                    }
+                    let isMyOrNeutralRoom = false;
+                    if( !checkOwner ){
+                        let room = Game.rooms[roomName];
+                        isMyOrNeutralRoom = room &&
+                            room.controller &&
+                            (room.controller.my || 
+                            (room.controller.owner === undefined));
+                    }
+
+                    if (isMyOrNeutralRoom) {
+                        return 1;
+                    } 
+                    else if (isHighway)
+                        return 3;
+                    else {
+                        if( Game.map.isRoomAvailable(roomName))
+                            return (checkOwner || preferHighway) ? 30 : 1;
+                        return Infinity;
+                    }
+                }
+            });
+            
+        }
         /*
         Room.adjacentFields = function(pos, where = null){
             let fields = [];

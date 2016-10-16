@@ -28,11 +28,11 @@ var mod = {
         if( flags.length == 1 ) 
             return flags[0].name;
         
-        // some flags found - find nearest by roughly estimated range
+        // some flags found - find nearest
         if( pos && pos.roomName ){
             var range = flag => {
                 var r = 0;
-                let roomDist = Room.roomDistance(flag.roomName, pos.roomName);
+                let roomDist = routeRange(pos.roomName, flag.roomName);
                 if( roomDist == 0 )
                     r = _.max([Math.abs(flag.x-pos.x), Math.abs(flag.y-pos.y)]);
                 else r = roomDist * 50;
