@@ -9,7 +9,7 @@ setup.maxMulti = function(room) {
     let contSum = _.sum(room.containerIn.map(e => _.sum(e.store)));
     max += Math.floor(contSum / 1000);
     max += Creep.setup.upgrader.maxMulti(room);
-    return max;
+    return Math.max(max, 16);
 };
 setup.maxCount = function(room){
     let count = 0;
