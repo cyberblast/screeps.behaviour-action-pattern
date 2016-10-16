@@ -602,16 +602,13 @@ var mod = {
                             (room.controller.owner === undefined));
                     }
 
-                    if (isMyOrNeutralRoom) {
+                    if (isMyOrNeutralRoom) 
                         return 1;
-                    } 
                     else if (isHighway)
                         return 3;
-                    else {
-                        if( Game.map.isRoomAvailable(roomName))
-                            return (checkOwner || preferHighway) ? 30 : 1;
-                        return Infinity;
-                    }
+                    else if( Game.map.isRoomAvailable(roomName))
+                        return (checkOwner || preferHighway) ? 30 : 1;
+                    return Infinity;
                 }
             });
             

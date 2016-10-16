@@ -194,19 +194,19 @@ var mod = {
             },
             routeRange: function(fromRoom, toRoom){
                 if( _.isUndefined(Memory.routeRange) ){
-                    Memory.routeRange = [];
+                    Memory.routeRange = {};
                 }
                 if( _.isUndefined(Memory.routeRange[fromRoom]) ){
-                    Memory.routeRange[fromRoom] = [];
+                    Memory.routeRange[fromRoom] = {};
                 }
                 if( _.isUndefined(Memory.routeRange[fromRoom][toRoom]) ){
                     let room = null;
                     if( fromRoom instanceof Room ) room = fromRoom;
                     else room = Game.rooms[fromRoom];
-                    if( !room ) return Room.roomDistance(fromRoom, toRoom, false);
+                    if( _.isUndefined(room) ) return Room.roomDistance(fromRoom, toRoom, false);
                     let route = room.findRoute(toRoom, false, false);
-                    if( !route ) return Room.roomDistance(fromRoom, toRoom, false);
-                    Memory.routeRange[fromRoom][toRoom] = route.length;
+                    if( _.isUndefined(route) ) return Room.roomDistance(fromRoom, toRoom, false);
+                    Memory.routeRange[fromRoom][toRoom] = route == ERR_NO_PATH ? Infinity : route.length;
                 }
                 return Memory.routeRange[fromRoom][toRoom];
             }
