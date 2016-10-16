@@ -37,6 +37,6 @@ var mod = {
     ROUTE_PRECALCULATION: false, 
     NOTIFICATE_INVADER: false, // Also log common 'Invader' hostiles
     COMBAT_CREEPS_RESPECT_RAMPARTS: false, // causes own creeps not to leave through ramparts
-    PLAYER_WHITELIST: ['cyberblast', 'SirLovi'] // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested :)
+    PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku'] // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested :)
 }
 module.exports = mod;
