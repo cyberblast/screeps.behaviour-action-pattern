@@ -11,7 +11,7 @@ setup.maxMulti = function(room){
         let surplus = room.storage.store.energy - MAX_STORAGE_ENERGY;
         multi += Math.ceil( surplus / 20000 ); // one more multi for each 20k surplus (+1)
     }
-    return multi; 
+    return Math.min(11, multi); 
 };
 setup.maxCount = function(room){
     if (room.situation.invasion || 
