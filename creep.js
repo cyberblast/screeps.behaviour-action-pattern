@@ -226,14 +226,20 @@ var mod = {
                     routeCallback(roomName) {
                         let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
                         let isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
-                        let isMyRoom = Game.rooms[roomName] &&
+                        let isMyOrNeutralRoom = Game.rooms[roomName] &&
                             Game.rooms[roomName].controller &&
-                            Game.rooms[roomName].controller.my;
+                            (Game.rooms[roomName].controller.my || 
+                            (Game.rooms[roomName].controller.owner === undefined));
                         let isExploitationRoom = FlagDir.find(FLAG_COLOR.invade.exploit, new RoomPosition(25, 28, roomName), true);
-                        if (isHighway || isMyRoom || isExploitationRoom) {
+                        if (isMyOrNeutralRoom || isExploitationRoom) {
                             return 1;
-                        } else {
-                            return 30;
+                        } 
+                        else if (isHighway)
+                            return 3;
+                        else {
+                            if( Game.map.isRoomAvailable(roomName))
+                                return 30;
+                            return Infinity;
                         }
                     }
                 });
