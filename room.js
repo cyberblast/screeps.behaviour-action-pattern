@@ -594,7 +594,7 @@ var mod = {
                         isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
                     }
                     let isMyOrNeutralRoom = false;
-                    if( !checkOwner ){
+                    if( checkOwner ){
                         let room = Game.rooms[roomName];
                         isMyOrNeutralRoom = room &&
                             room.controller &&
@@ -602,12 +602,12 @@ var mod = {
                             (room.controller.owner === undefined));
                     }
 
-                    if (isMyOrNeutralRoom) 
+                    if (isMyOrNeutralRoom || roomName == targetRoomName) 
                         return 1;
                     else if (isHighway)
                         return 3;
                     else if( Game.map.isRoomAvailable(roomName))
-                        return (checkOwner || preferHighway) ? 30 : 1;
+                        return (checkOwner || preferHighway) ? 11 : 1;
                     return Infinity;
                 }
             });
