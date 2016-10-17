@@ -26,7 +26,7 @@ action.run = {
     ranger: function(creep) {
         var range = creep.pos.getRangeTo(creep.target);
         if( range > 3 ){
-            var path = creep.room.findPath(creep.pos, creep.target.pos, {ignoreCreeps: true});
+            var path = creep.room.findPath(creep.pos, creep.target.pos, {ignoreCreeps: false});
             if( path && path.length > 0 ) {
                 var isRampart = COMBAT_CREEPS_RESPECT_RAMPARTS && _.some( creep.room.lookForAt(LOOK_STRUCTURES, path[0].x, path[0].y), {'structureType': STRUCTURE_RAMPART });
                 if(!isRampart){

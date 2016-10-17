@@ -16,6 +16,10 @@ module.exports = {
         } else {
             logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
         }
+
+        if( creep.data.body.heal !== undefined && creep.hits < creep.hitsMax ){
+            creep.heal(creep);
+        }
     },
     nextAction: function(creep){ 
         let priority = [

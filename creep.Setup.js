@@ -96,8 +96,29 @@ var Setup = function(typeName){
             existingCount = population.typeCount[this.type] || 0;
             existingWeight = population.typeWeight[this.type] || 0;
         }
-        return existingCount < maxCount && existingWeight < maxWeight;
+        this._existingWeight = existingWeight;
+        return existingCount < maxCount && this._existingWeight < maxWeight;
     };
+    this._existingWeight = null;
+    this.existingWeight = function(room){
+        let existingWeight = 0;
+        if( this.measureByHome ){
+            let home = room.name;
+            let count = entry => {
+                if( entry.creepType == this.type && entry.homeRoom == home ){
+                    existingWeight += entry.weight;
+                }
+            };
+            _.forEach(Memory.population, count);
+        } else {
+            let population = this.globalMeasurement ? Population : room.population;
+            if( !population || !population.typeCount[this.type] )
+                return true;
+            existingWeight = population.typeWeight[this.type] || 0;
+        }
+        return existingWeight;
+    };
+
     this.bodyCosts = function(body){
         let costs = 0;
         if( body ){
@@ -112,7 +133,12 @@ var Setup = function(typeName){
         let fixedCosts = this.bodyCosts(this.SelfOrCall(rcl.fixedBody, room));
         let multiCosts = this.bodyCosts(this.SelfOrCall(rcl.multiBody, room));
         let max = this.SelfOrCall(rcl.maxMulti, room);
-        return _.min([Math.floor( (room.energyAvailable-fixedCosts) / multiCosts), max]);
+        let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
+        if( maxWeight == null)
+            return _.min([Math.floor( (room.energyAvailable-fixedCosts) / multiCosts), max]);
+        if( this._existingWeight == null ) 
+            this._existingWeight = this.existingWeight(room);
+        return _.min([Math.floor( (room.energyAvailable-fixedCosts) / multiCosts), max,((maxWeight - this._existingWeight - fixedCosts) / multiCosts)]);
     }; 
     this.setParamParts = function(room){
         let rcl = this.RCL[room.controller.level];
@@ -131,7 +157,7 @@ var Setup = function(typeName){
         return parts;
     };
     this.partsComparator = function (a, b) {
-        let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, HEAL, MOVE];
+        let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, MOVE, RANGED_ATTACK, HEAL];
         let indexOfA = partsOrder.indexOf(a);
         let indexOfB = partsOrder.indexOf(b);
         return indexOfA - indexOfB;

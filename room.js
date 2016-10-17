@@ -4,7 +4,7 @@ var mod = {
             'sources': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.memory.sources) ) {                        
+                    if( _.isUndefined(this.memory.sources) || this.name == 'sim') {                        
                         this._sources = this.find(FIND_SOURCES);
                         if( this._sources.length > 0 ){
                             this.memory.sources = this._sources.map(s => s.id);
@@ -534,11 +534,12 @@ var mod = {
                     _.forEach(roomExits, add);
                 }
                 _.forEach(exits, addValidRooms);
+                /*
                 if( flag.targetOf ){
                     let ofType = flag.targetOf.filter(t => t.creepType == type);
                     reserved = _.sum(ofType,'weight');
-                } else reserved = 0;
-                defenseMaxWeight += ( (base - reserved) / ownNeighbor );
+                } else reserved = 0;*/
+                defenseMaxWeight += ( base  / ownNeighbor );
             };
             flagEntries.forEach(calcWeight);
             return defenseMaxWeight;
@@ -845,12 +846,15 @@ var mod = {
                 let idleSpawns = this.spawns.filter( s => !s.spawning );
                 for( let iSpawn = 0; iSpawn < idleSpawns.length && this.defenseLevel.sum < this.hostileThreatLevel; iSpawn++ ) {
                     // need more Defense!
+                    /*
                     let setup;
                     if( this.defenseLevel.melee > this.defenseLevel.ranger ) { 
                         setup = Creep.setup.ranger; 
                     } else {
                         setup = Creep.setup.melee; 
                     }
+                    */
+                    let setup = Creep.setup.ranger;
                     if( DEBUG ) console.log( dye(CRAYON.system, this.name + ' &gt; ') + 'Spring Gun System activated in room ' + this.name + '! Trying to spawn an additional ' + setup.type + '.');
                     let creepParams = idleSpawns[iSpawn].createCreepBySetup(setup);
                     if( creepParams ){
@@ -897,7 +901,7 @@ var mod = {
               
             try {                
                 let that = this; 
-                if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
+                if( Game.time % MEMORY_RESYNC_INTERVAL == 0 || this.name == 'sim' ) {
                     //if( DEBUG ) console.log('MEMORY_RESYNC_INTERVAL reached');
                     this.saveMinerals();
                     this.saveTowers();
