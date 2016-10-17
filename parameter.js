@@ -7,7 +7,7 @@ var mod = {
     DEBUG: true, // gimme some more details
     CENSUS_ANNOUNCEMENTS: false, // log birth and death
     SPAWN_INTERVAL: 10, // loops between regular spawn probe
-    MAX_STORAGE_ENERGY: 200000,// stop storing energy when reached
+    MAX_STORAGE_ENERGY: 300000,// stop storing energy when reached
     MIN_STORAGE_ENERGY: 40000,// prefer storing energy until reached
     MAX_STORAGE_MINERAL:300000, // keep a max of each type of minerals in store, stop mining if above this limit
     MAX_REPAIR_LIMIT: { // Limits how high structures get repaired, regarding RCL
