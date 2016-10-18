@@ -2,11 +2,13 @@ module.exports = {
     name: 'ranger',
     run: function(creep) {
         // Assign next Action
+        //creep.attacking = false;
+        creep.attackingRanged = false;
         let oldTargetId = creep.data.targetId;
-        //if( creep.action == null || ['guarding','idle'].includes(creep.action.name)) {   
         if( creep.action == null || creep.action.name == 'idle' || ( creep.action.name == 'guarding' && (!creep.flag || creep.flag.pos.roomName == creep.pos.roomName ) ) ) {
             this.nextAction(creep);
         }
+        // TODO: if hits < 15% or < 400 flee
         if( creep.data.targetId != oldTargetId ) {
             delete creep.data.path;
         }
@@ -17,8 +19,21 @@ module.exports = {
             logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
         }
 
+        // Heal self
         if( creep.data.body.heal !== undefined && creep.hits < creep.hitsMax ){
             creep.heal(creep);
+        }
+        // Heal other
+        else if( !creep.attackingRanged && creep.room.casualties.length > 0 ){
+            let injured = creep.pos.findInRange(creep.room.casualties, 3);
+            if( injured.length > 0 ){
+                if(creep.pos.isNearTo(injured[0])) {
+                    creep.heal(injured[0]);
+                }
+                else {
+                    creep.rangedHeal(injured[0]);
+                }
+            }
         }
     },
     nextAction: function(creep){ 

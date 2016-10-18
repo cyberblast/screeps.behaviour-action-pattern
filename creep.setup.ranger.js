@@ -2,30 +2,30 @@ var setup = new Creep.Setup('ranger');
 setup.minControllerLevel = 4;
 setup.globalMeasurement = true;
 setup.measureByHome = true;
-setup.sortedParts = true;
+setup.sortedParts = false;
 setup.small = {
-    fixedBody: [MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,HEAL], 
+    fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE], 
     multiBody: [RANGED_ATTACK, MOVE], 
-    minAbsEnergyAvailable: 700, 
-    minEnergyAvailable: 0.8,
+    minAbsEnergyAvailable: 1200, 
+    minEnergyAvailable: 0.5,
     maxMulti: 6,
     maxCount: () => FlagDir.count(FLAG_COLOR.defense), 
     maxWeight: (room) => room.defenseMaxWeight(1750, 'ranger')
 };
 setup.mid = {
-    fixedBody: [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL,HEAL], 
+    fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE], 
     multiBody: [RANGED_ATTACK, MOVE], 
-    minAbsEnergyAvailable: 1500, 
-    minEnergyAvailable: 0.8,
+    minAbsEnergyAvailable: 2000, 
+    minEnergyAvailable: 0.5,
     maxMulti: 10,
     maxCount: () => FlagDir.count(FLAG_COLOR.defense), 
     maxWeight: (room) => room.defenseMaxWeight(2000, 'ranger')
 };
 setup.big = {
-    fixedBody: [MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL,HEAL,HEAL,HEAL], 
+    fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE], 
     multiBody: [RANGED_ATTACK, MOVE], 
     minAbsEnergyAvailable: 2500,  
-    minEnergyAvailable: 0.8,
+    minEnergyAvailable: 0.5,
     maxMulti: 15,
     maxCount: () => FlagDir.count(FLAG_COLOR.defense), 
     maxWeight: (room) => room.defenseMaxWeight(2500, 'ranger')

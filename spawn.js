@@ -23,6 +23,7 @@ var mod = {
         Spawn.prototype.createCreepBySetup = function(setup, spawn){
             spawn = spawn || this;
             var params = setup.buildParams(spawn);
+            if( params.parts.length == 0 ) return null;
             var newName = spawn.createCreep(params.parts, params.name, null);
             if( params.name == newName || translateErrorCode(newName) === undefined ){
                 Population.registerCreep(newName, params.setup, params.cost, spawn.room, spawn.name, params.parts);

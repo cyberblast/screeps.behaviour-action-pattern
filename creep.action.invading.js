@@ -91,42 +91,50 @@ action.step = function(creep){
     if( (creep.target instanceof Flag) && (creep.target.pos.roomName == creep.pos.roomName))
         this.assign(creep);
     this.run[creep.data.creepType](creep);
+    if( creep.flee ) {
+        let home = Game.spawns[creep.data.motherSpawn];
+        creep.drive( home.pos, 1, 1, Infinity);
+    }
 }
 action.run = {
-    melee: function(creep){        
-        if( creep.target instanceof Flag ){
-            creep.drive( creep.target.pos, 1, 1, Infinity);
-            return;
-        }        
-        var moveResult = creep.moveTo(creep.target, {reusePath: 0});
-        if( !creep.target.my )
-            var workResult = creep.attack(creep.target);
-    }, 
-    ranger: function(creep){     
-        if( creep.target instanceof Flag){
-            creep.drive( creep.target.pos, 1, 1, Infinity);
-            return;
-        }
-        var range = creep.pos.getRangeTo(creep.target);
-        if( range > 3 ){
+    melee: function(creep){
+        if( !creep.flee ){
+            if( creep.target instanceof Flag ){
+                creep.drive( creep.target.pos, 1, 1, Infinity);
+                return;
+            }        
             creep.moveTo(creep.target, {reusePath: 0});
         }
-        if( range < 3 ){
-            creep.move(creep.target.pos.getDirectionTo(creep));
-        }        
+        if( !creep.target.my )
+            creep.attacking = creep.attack(creep.target) == OK;
+    }, 
+    ranger: function(creep){ 
+        if( !creep.flee ){    
+            if( creep.target instanceof Flag){
+                creep.drive( creep.target.pos, 1, 1, Infinity);
+                return;
+            }
+            var range = creep.pos.getRangeTo(creep.target);
+            if( range > 3 ){
+                creep.moveTo(creep.target, {reusePath: 0});
+            }
+            if( range < 3 ){
+                creep.move(creep.target.pos.getDirectionTo(creep));
+            }
+        }
         // attack
         var targets = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
         if(targets.length > 2) { // TODO: calc damage dealt
             if(CHATTY) creep.say('MassAttack');
-            creep.rangedMassAttack();
+            creep.attackingRanged = creep.rangedMassAttack() == OK;
             return;
         }
         if( range < 4 ) {
-            creep.rangedAttack(creep.target);
+            creep.attackingRanged = creep.rangedAttack(creep.target) == OK;
             return;
         }
         if(targets.length > 0){
-            creep.rangedAttack(targets[0]);
+            creep.attackingRanged = creep.rangedAttack(targets[0]) == OK;
         }
     }
 };

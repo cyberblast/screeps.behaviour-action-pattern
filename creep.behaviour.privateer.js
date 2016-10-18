@@ -15,6 +15,12 @@ module.exports = {
         } else {
             logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
         }
+        if( creep.flee ) {
+            let drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
+            _.forEach(Object.keys(creep.carry), drop);
+            let home = Game.spawns[creep.data.motherSpawn];
+            creep.drive( home.pos, 1, 1, Infinity);
+        }
     },
     nextAction: function(creep){
         // at home
