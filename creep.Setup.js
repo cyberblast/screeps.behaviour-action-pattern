@@ -49,7 +49,7 @@ var Setup = function(typeName){
             breeding: 1
         };        
         memory.setup = this.type;
-        memory.parts = this.setParamParts(spawn.room);
+        memory.parts = this.parts(spawn.room);
         memory.cost = this.bodyCosts(memory.parts);  
         memory.mother = spawn.name; 
         memory.home = spawn.pos.roomName;
@@ -96,10 +96,8 @@ var Setup = function(typeName){
             existingCount = population.typeCount[this.type] || 0;
             existingWeight = population.typeWeight[this.type] || 0;
         }
-        this._existingWeight = existingWeight;
-        return existingCount < maxCount && this._existingWeight < maxWeight;
+        return existingCount < maxCount && existingWeight < maxWeight;
     };
-    this._existingWeight = null;
     this.existingWeight = function(room){
         let existingWeight = 0;
         if( this.measureByHome ){
@@ -113,7 +111,7 @@ var Setup = function(typeName){
         } else {
             let population = this.globalMeasurement ? Population : room.population;
             if( !population || !population.typeCount[this.type] )
-                return true;
+                return 0;
             existingWeight = population.typeWeight[this.type] || 0;
         }
         return existingWeight;
@@ -136,11 +134,11 @@ var Setup = function(typeName){
         let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
         if( maxWeight == null)
             return _.min([Math.floor( (room.energyAvailable-fixedCosts) / multiCosts), max]);
-        if( this._existingWeight == null ) 
-            this._existingWeight = this.existingWeight(room);
-        return _.min([Math.floor( (room.energyAvailable-fixedCosts) / multiCosts), max,((maxWeight - this._existingWeight - fixedCosts) / multiCosts)]);
+        let existingWeight = this.existingWeight(room);
+        
+        return Math.floor(_.min([((room.energyAvailable-fixedCosts) / multiCosts), max,((maxWeight - existingWeight - fixedCosts) / multiCosts)]));
     }; 
-    this.setParamParts = function(room){
+    this.parts = function(room){
         let rcl = this.RCL[room.controller.level];
         let fixedBody = this.SelfOrCall(rcl.fixedBody, room);
         let multiBody = this.SelfOrCall(rcl.multiBody, room);

@@ -377,9 +377,7 @@ var mod = {
                             let flagEntries = FlagDir.filter(FLAG_COLOR.invade.exploit);
                             let countOwn = roomName => {
                                 if( roomName == that.name ) return;
-                                room = Game.rooms[roomName];
-                                if( room && room.controller && room.controller.my )
-                                    ownNeighbor++;
+                                if( Room.isMine(roomName) ) ownNeighbor++;
                             };
                             let calcWeight = flagEntry => {
                                 if( !this.adjacentAccessibleRooms.includes(flagEntry.roomName) ) return;
@@ -562,7 +560,7 @@ var mod = {
             }
             _.forEach(exits, addValidRooms);
             return validRooms;
-        },
+        };
         Room.adjacentRooms = function(roomName){
             let parts = roomName.split(/([N,E,S,W])/);
             let dirs = ['N','E','S','W'];
@@ -613,7 +611,7 @@ var mod = {
                 }
             });
             
-        }
+        };
         /*
         Room.adjacentFields = function(pos, where = null){
             let fields = [];
