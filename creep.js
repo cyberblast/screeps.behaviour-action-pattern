@@ -75,7 +75,7 @@ var mod = {
 
         Creep.prototype.run = function(behaviour){
             if( !this.spawning ){
-                this.flee = ( (this.hits/this.hitsMax) < 0.25 || (this.hitsMax > 799 && this.hits < 400) );
+                this.flee = ( (this.hits/this.hitsMax) < 0.3 || (this.hitsMax > 799 && this.hits < 400) );
                 if(!behaviour && this.data && this.data.creepType) {
                     behaviour = Creep.behaviour[this.data.creepType];
                 }

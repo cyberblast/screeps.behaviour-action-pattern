@@ -16,6 +16,7 @@ module.exports = {
             logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
         }
         if( creep.flee ) {
+            if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9855), SAY_PUBLIC); 
             let drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
             _.forEach(Object.keys(creep.carry), drop);
             let home = Game.spawns[creep.data.motherSpawn];
