@@ -134,8 +134,7 @@ var Setup = function(typeName){
         let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
         if( maxWeight == null)
             return _.min([Math.floor( (room.energyAvailable-fixedCosts) / multiCosts), max]);
-        let existingWeight = this.existingWeight(room);
-        
+        let existingWeight = this.existingWeight(room);  
         return Math.floor(_.min([((room.energyAvailable-fixedCosts) / multiCosts), max,((maxWeight - existingWeight - fixedCosts) / multiCosts)]));
     }; 
     this.parts = function(room){
@@ -144,6 +143,7 @@ var Setup = function(typeName){
         let multiBody = this.SelfOrCall(rcl.multiBody, room);
         var parts = [];
         let multi = this.multi(room);
+        if( multi < 0 ) return parts;
         for (let iMulti = 0; iMulti < multi; iMulti++) {
             parts = parts.concat(multiBody);
         }
