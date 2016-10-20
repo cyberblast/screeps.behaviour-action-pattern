@@ -111,8 +111,6 @@ var Setup = function(typeName){
             _.forEach(Memory.population, count);
         } else {
             let population = this.globalMeasurement ? Population : room.population;
-            if( !population || !population.typeCount[this.type] )
-                return 0;
             existingWeight = population.typeWeight[this.type] || 0;
         }
         return existingWeight;
@@ -157,7 +155,7 @@ var Setup = function(typeName){
         return parts;
     };
     this.partsComparator = function (a, b) {
-        let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, MOVE, RANGED_ATTACK, HEAL];
+        let partsOrder = [TOUGH, CLAIM, WORK, CARRY, MOVE, ATTACK, RANGED_ATTACK, HEAL];
         let indexOfA = partsOrder.indexOf(a);
         let indexOfB = partsOrder.indexOf(b);
         return indexOfA - indexOfB;

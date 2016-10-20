@@ -1,6 +1,5 @@
 var setup = new Creep.Setup('hauler');
 setup.minControllerLevel = 3;
-setup.sortedParts = false;
 
 setup.maxMulti = function(room) {
     let max = 7; 

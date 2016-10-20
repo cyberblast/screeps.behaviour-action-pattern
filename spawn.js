@@ -5,6 +5,7 @@ var mod = {
                 Creep.setup.worker, 
                 Creep.setup.hauler,
                 Creep.setup.upgrader,
+                Creep.setup.warrior,
                 Creep.setup.melee,
                 Creep.setup.ranger,
                 Creep.setup.healer,

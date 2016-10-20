@@ -49,7 +49,7 @@ action.run = {
             }
         }
         
-        // attack
+        // attack ranged
         var targets = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
         if(targets.length > 2) { // TODO: precalc damage dealt
             if(CHATTY) creep.say('MassAttack');
@@ -61,7 +61,7 @@ action.run = {
             return;
         }
         if(targets.length > 0){
-            creep.attackingRanged = creep.rangedAttack(targets[0]);
+            creep.attackingRanged = creep.rangedAttack(targets[0]) == OK;
         }
     }, 
     melee: function(creep) {
@@ -77,10 +77,45 @@ action.run = {
             }      
         }   
         // attack
-        if( creep.attack(creep.target) == ERR_NOT_IN_RANGE ) {
-            var targets = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 1);
+        let attacking = creep.attack(creep.target);        
+        if( attacking == ERR_NOT_IN_RANGE ) {
+            let targets = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 1);
             if( targets.length > 0)
                 creep.attacking = creep.attack(targets[0]) == OK;
+        } else creep.attacking = attacking == OK;
+    },
+    warrior: function(creep) {
+        if( !creep.flee ){
+            let path = creep.room.findPath(creep.pos, creep.target.pos);
+            // not standing in rampart or next step is rampart as well
+            if( path.length > 0 && (
+                !COMBAT_CREEPS_RESPECT_RAMPARTS ||
+                !_.some( creep.room.lookForAt(LOOK_STRUCTURES, creep.pos.x, creep.pos.y), {'structureType': STRUCTURE_RAMPART } )  || 
+                _.some( creep.room.lookForAt(LOOK_STRUCTURES, path[0].x, path[0].y), {'structureType': STRUCTURE_RAMPART }))
+            ){
+                creep.move(path[0].direction);
+            }      
+        }   
+        // attack
+        let attacking = creep.attack(creep.target);        
+        if( attacking == ERR_NOT_IN_RANGE ) {
+            let targets = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 1);
+            if( targets.length > 0)
+                creep.attacking = creep.attack(targets[0]) == OK;
+        } else creep.attacking = attacking == OK;
+        // attack ranged
+        let targets = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
+        if(targets.length > 2) { // TODO: precalc damage dealt
+            if(CHATTY) creep.say('MassAttack');
+            creep.attackingRanged = creep.rangedMassAttack() == OK;
+            return;
+        }
+        if( range < 4 ) {
+            creep.attackingRanged = creep.rangedAttack(creep.target) == OK;
+            return;
+        }
+        if(targets.length > 0){
+            creep.attackingRanged = creep.rangedAttack(targets[0]) == OK;
         }
     }
 };
