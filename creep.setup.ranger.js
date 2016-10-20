@@ -2,7 +2,6 @@ var setup = new Creep.Setup('ranger');
 setup.minControllerLevel = 4;
 setup.globalMeasurement = true;
 setup.measureByHome = true;
-setup.sortedParts = false;
 setup.maxCount = function(){
     let max = FlagDir.count(FLAG_COLOR.defense);
     if( Population == null ) return max;

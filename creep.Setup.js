@@ -23,7 +23,8 @@ var Setup = function(typeName){
     this.minControllerLevel = 0;
     this.globalMeasurement = false;
     this.measureByHome = false;
-    this.sortedParts = false;
+    this.sortedParts = true;
+    this.mixMoveParts = true;
     
     this.SelfOrCall = function(obj, param) {
         if( obj == null ) return null;
@@ -150,12 +151,31 @@ var Setup = function(typeName){
         for( let iPart = 0; iPart < fixedBody.length; iPart ++ ){
             parts[parts.length] = fixedBody[iPart];
         }
-        if( this.sortedParts ) 
+        if( this.sortedParts ) {
             parts.sort(this.partsComparator);
+            if( this.mixMoveParts ) 
+                parts = this.mixParts(parts);
+        }
         return parts;
     };
+    this.mixParts = function(parts){
+        let sum = _.countBy(parts);
+        let nonMove = parts.filter( part => part != MOVE );
+        let mix = [];
+        for( let iNonMove = nonMove.length-1; iNonMove >= 0; iNonMove-- ){
+            if( sum[MOVE]-- > 0 ){
+                mix.unshift(MOVE);
+            }
+            mix.unshift(nonMove[iNonMove]);
+        }
+        while(sum[MOVE] > 0){
+            mix.unshift(MOVE);
+            sum[MOVE]--;
+        }
+        return mix;
+    };
     this.partsComparator = function (a, b) {
-        let partsOrder = [TOUGH, CLAIM, WORK, CARRY, MOVE, ATTACK, RANGED_ATTACK, HEAL];
+        let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, MOVE, HEAL];
         let indexOfA = partsOrder.indexOf(a);
         let indexOfB = partsOrder.indexOf(b);
         return indexOfA - indexOfB;

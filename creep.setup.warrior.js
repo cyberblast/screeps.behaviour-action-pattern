@@ -2,7 +2,6 @@ var setup = new Creep.Setup('warrior');
 setup.minControllerLevel = 4;
 setup.globalMeasurement = true;
 setup.measureByHome = true;
-setup.sortedParts = true;
 setup.maxCount = function(){
     let max = FlagDir.count(FLAG_COLOR.defense);
     if( Population == null ) return max;

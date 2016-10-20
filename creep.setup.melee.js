@@ -2,7 +2,6 @@ var setup = new Creep.Setup('melee');
 setup.minControllerLevel = 2;
 setup.globalMeasurement = true;
 setup.measureByHome = true;
-setup.sortedParts = true;
 setup.maxCount = function(){
     let max = FlagDir.count(FLAG_COLOR.defense);
     if( Population == null ) return max;

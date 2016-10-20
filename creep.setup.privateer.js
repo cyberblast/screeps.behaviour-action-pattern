@@ -1,7 +1,6 @@
 var setup = new Creep.Setup('privateer');
 setup.minControllerLevel = 3;
 setup.globalMeasurement = true;
-setup.sortedParts = false;
 setup.measureByHome = true;
 setup.default = {
     fixedBody: [WORK, CARRY, MOVE], 

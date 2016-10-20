@@ -1,7 +1,5 @@
 var setup = new Creep.Setup('miner');
 setup.minControllerLevel = 3;
-setup.sortedParts = true;
-
 setup.maxCount = function(room){
     let max = room.sources.length;
     if( room.storage ) {
