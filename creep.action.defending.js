@@ -110,6 +110,7 @@ action.run = {
             creep.attackingRanged = creep.rangedMassAttack() == OK;
             return;
         }
+        let range = creep.pos.getRangeTo(creep.target);
         if( range < 4 ) {
             creep.attackingRanged = creep.rangedAttack(creep.target) == OK;
             return;
