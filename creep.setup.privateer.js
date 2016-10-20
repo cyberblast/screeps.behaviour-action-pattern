@@ -4,11 +4,12 @@ setup.globalMeasurement = true;
 setup.sortedParts = false;
 setup.measureByHome = true;
 setup.default = {
-    fixedBody: [WORK, WORK, CARRY, CARRY, MOVE, MOVE], 
+    fixedBody: [WORK, CARRY, MOVE], 
     multiBody: [WORK, CARRY, MOVE], 
     minAbsEnergyAvailable: 400, 
     minEnergyAvailable: 0.8,
-    maxMulti: 8,
+    maxMulti: 10,
+    minMulti: (room) => (room.controller.level),
     maxWeight: (room) => room.privateerMaxWeight
 };
 setup.RCL = {

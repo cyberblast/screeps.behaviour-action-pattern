@@ -26,6 +26,7 @@ var Setup = function(typeName){
     this.sortedParts = false;
     
     this.SelfOrCall = function(obj, param) {
+        if( obj == null ) return null;
         if (typeof obj === 'function' ) 
             return obj(param);
         else return obj; 
@@ -142,8 +143,9 @@ var Setup = function(typeName){
         let fixedBody = this.SelfOrCall(rcl.fixedBody, room);
         let multiBody = this.SelfOrCall(rcl.multiBody, room);
         var parts = [];
+        let min = this.SelfOrCall(rcl.minMulti, room);
         let multi = this.multi(room);
-        if( multi < 0 ) return parts;
+        if( multi < (min ? min : 0) ) return parts;
         for (let iMulti = 0; iMulti < multi; iMulti++) {
             parts = parts.concat(multiBody);
         }
