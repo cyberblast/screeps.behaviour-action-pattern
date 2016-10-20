@@ -25,15 +25,10 @@ var mod = {
                         filter: {'color': COLOR_RED, 'secondaryColor': COLOR_YELLOW }
                     },
                 },
-
                 //COLOR_PURPLE,
                 //COLOR_BLUE,
                 //COLOR_CYAN,
-                idle: { // creeps go here to have a nice time (getting out of the way)
-                    color: COLOR_GREEN, 
-                    secondaryColor: COLOR_GREEN,
-                    filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_GREEN }
-                },
+                // COLOR_GREEN
                 defense: { // point to gather troops
                     color: COLOR_YELLOW, 
                     secondaryColor: COLOR_YELLOW,
