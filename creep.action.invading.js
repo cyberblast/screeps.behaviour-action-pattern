@@ -2,31 +2,30 @@ var action = new Creep.Action('invading');
 action.isValidAction = function(creep){ return FlagDir.hasInvasionFlag(); };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
-action.getFlaggedStructure = function(flagColor, roomName){
-    let filter = flagColor.filter;
-    filter.roomName = roomName;
-    var flags = _.filter(Game.flags, filter); 
-    var target = null;
-    for( var iFlag = 0; iFlag < flags.length; iFlag++ ){
-        var flag = flags[iFlag];
-        if( flag.room !== undefined ){ // room is visible
+action.getFlaggedStructure = function(flagColor, pos){
+    let flagsEntries = FlagDir.filter(flagColor, pos, true);
+    let target = [];
+    let checkFlag = flagEntry => {
+        var flag = Game.flags[flagEntry.name];
+        if( flag && flag.room !== undefined ){ // room is visible
             var targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
             if( targets && targets.length > 0)
-                return targets[0]; // prefer target in same room so return
+                target = target.concat(targets);
             else { // remove flag. try next flag
                 flag.remove();
             }
         }
-        else target = flag; // target in other room
     }
-    return target;
+    flagsEntries.forEach(checkFlag);
+    if( target && target.length > 0 ) return pos.findClosestByRange(target);
+    return null;
 }
 action.newTarget = function(creep){
-    var destroyFlag = this.getFlaggedStructure(FLAG_COLOR.destroy, creep.pos.roomName);
+    var destroyFlag = this.getFlaggedStructure(FLAG_COLOR.destroy, creep.pos);
     if( destroyFlag ) {
         if( destroyFlag.color ) Population.registerCreepFlag(creep, destroyFlag);
         return destroyFlag;
-    }        
+    }
     // move to invasion room
     var flag = FlagDir.find(FLAG_COLOR.invade, creep.pos);
     if( flag && (!flag.room || flag.pos.roomName != creep.pos.roomName)){
@@ -36,6 +35,7 @@ action.newTarget = function(creep){
     if( !flag ){
         // unregister 
         creep.action = null;
+        creep.data.actionName = null;
         return;
     }
     if( !flag.room.controller || !flag.room.controller.my ) {        
@@ -146,7 +146,7 @@ action.run = {
                 return;
             }
             let path = creep.room.findPath(creep.pos, creep.target.pos);
-            creep.move(path[0].direction);
+            if( path && path.length > 0 ) creep.move(path[0].direction);
         }
         // attack
         let attacking = creep.attack(creep.target);        
