@@ -2,12 +2,21 @@ var setup = new Creep.Setup('ranger');
 setup.minControllerLevel = 4;
 setup.globalMeasurement = true;
 setup.measureByHome = true;
-setup.maxCount = function(){
-    let max = FlagDir.count(FLAG_COLOR.defense);
-    if( Population == null ) return max;
-    let warrior = Population.typeCount['warrior'] || 0;
-    let melee = Population.typeCount['melee'] || 0;
-    return max - melee - warrior;
+setup.maxCount = function(room){
+    let maxRange = 2;
+    let max = 0;
+    let distance, flag;
+    let calcMax = flagEntry => {
+        distance = routeRange(room.name, flagEntry.roomName);
+        if( distance > maxRange ) 
+            return;
+        flag = Game.flags[flagEntry.name];
+        if( !flag.targetOf || flag.targetOf.length == 0 )
+            max++;
+    }
+    let flagEntries = FlagDir.filter(FLAG_COLOR.defense);
+    flagEntries.forEach(calcMax);
+    return max;
 };
 setup.small = {
     fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE], 
@@ -16,7 +25,7 @@ setup.small = {
     minEnergyAvailable: 0.5,
     maxMulti: 6,
     maxCount: setup.maxCount,
-    maxWeight: (room) => room.defenseMaxWeight(1750, 'ranger')
+    maxWeight: null//(room) => room.defenseMaxWeight(1750, 'ranger')
 };
 setup.mid = {
     fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE], 
@@ -25,7 +34,7 @@ setup.mid = {
     minEnergyAvailable: 0.5,
     maxMulti: 10,
     maxCount: setup.maxCount,
-    maxWeight: (room) => room.defenseMaxWeight(2000, 'ranger')
+    maxWeight: null//(room) => room.defenseMaxWeight(2000, 'ranger')
 };
 setup.big = {
     fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE], 
@@ -34,7 +43,7 @@ setup.big = {
     minEnergyAvailable: 0.5,
     maxMulti: 15,
     maxCount: setup.maxCount,
-    maxWeight: (room) => room.defenseMaxWeight(2500, 'ranger')
+    maxWeight: null//(room) => room.defenseMaxWeight(2500, 'ranger')
 };
 setup.RCL = {
     1: setup.none,

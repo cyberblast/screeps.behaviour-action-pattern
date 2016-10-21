@@ -561,6 +561,10 @@ var mod = {
             _.forEach(exits, addValidRooms);
             return validRooms;
         };
+        Room.isCenterRoom = function(roomName){
+            let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+            return (parsed[1] % 10 === 5) && (parsed[2] % 10 === 5);
+        };
         Room.adjacentRooms = function(roomName){
             let parts = roomName.split(/([N,E,S,W])/);
             let dirs = ['N','E','S','W'];
