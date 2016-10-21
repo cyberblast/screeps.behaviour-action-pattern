@@ -1,6 +1,7 @@
 var action = new Creep.Action('dismantling');
-action.maxPerAction = 4;
-action.maxPerTarget = 2;
+action.maxPerAction = 3;
+action.maxPerTarget = 3;
+action.renewTarget = false;
 action.isValidAction = function(creep){
     return ( _.sum(creep.carry) < creep.carryCapacity );
 };

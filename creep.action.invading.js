@@ -2,8 +2,10 @@ var action = new Creep.Action('invading');
 action.isValidAction = function(creep){ return FlagDir.hasInvasionFlag(); };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
-action.getFlaggedStructure = function(flagColor){
-    var flags = _.filter(Game.flags, flagColor.filter); // TODO: find nearest (in room or count rooms?)
+action.getFlaggedStructure = function(flagColor, roomName){
+    let filter = flagColor.filter;
+    filter.roomName = roomName;
+    var flags = _.filter(Game.flags, filter); 
     var target = null;
     for( var iFlag = 0; iFlag < flags.length; iFlag++ ){
         var flag = flags[iFlag];
@@ -20,7 +22,7 @@ action.getFlaggedStructure = function(flagColor){
     return target;
 }
 action.newTarget = function(creep){
-    var destroyFlag = this.getFlaggedStructure(FLAG_COLOR.destroy);
+    var destroyFlag = this.getFlaggedStructure(FLAG_COLOR.destroy, creep.pos.roomName);
     if( destroyFlag ) {
         if( destroyFlag.color ) Population.registerCreepFlag(creep, destroyFlag);
         return destroyFlag;

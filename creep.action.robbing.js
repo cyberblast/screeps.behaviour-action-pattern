@@ -1,24 +1,26 @@
 var action = new Creep.Action('robbing');
 action.maxPerTarget = 2;
-action.maxPerAction = 4;
+action.maxPerAction = 10;
 action.isValidAction = function(creep){
     return ( _.sum(creep.carry) < creep.carryCapacity && (FlagDir.find(FLAG_COLOR.invade.robbing, creep.pos, true) != null) );
 };
 action.isValidTarget = function(target){
-    return ( target.store && _.sum(target.store) > 0 ) || ( target.energy && target.energy > 0 );
+    return ( target.store && _.sum(target.store) > 20 ) || ( target.energy && target.energy > 20 );
 };  
 action.newTarget = function(creep){
     let that = this;
-    let target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-        filter: function(structure){
-            return that.isValidTarget(structure);
-        }
+    let target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+        filter: (structure) => that.isValidTarget(structure)
     });
     return target;
 };
 action.work = function(creep){
     let ret = OK;
-    if( creep.target.store ) {
+    // has rampart? dismantle
+    let ramparts = _.filter(creep.room.lookForAt(LOOK_STRUCTURES, creep.target.pos), {'structureType': STRUCTURE_RAMPART });
+    if( ramparts.length > 0 ){
+        ret = creep.dismantle(ramparts[0]);
+    } else if( creep.target.store ) {
         for( var type in creep.target.store ){
             if( creep.target.store[type] > 0  )
                 ret = creep.withdraw(creep.target, type);

@@ -34,6 +34,10 @@ var Action = function(actionName){
             if( workResult != OK ) {
                 if( DEBUG ) logErrorCode(creep, workResult);
                 creep.data.actionName = null;
+                creep.data.targetId = null;
+                creep.action = null;
+                creep.target = null;
+                return;
             }
         } 
         creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
