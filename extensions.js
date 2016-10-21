@@ -154,6 +154,16 @@ var mod = {
                 return this._sum;
             }
         });
+        Object.defineProperty(StructureTerminal.prototype, 'sum', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._sum) || this._sumSet != Game.time ) {
+                    this._sumSet = Game.time;
+                    this._sum = _.sum(this.store);
+                }
+                return this._sum;
+            }
+        });
     }
 }
 module.exports = mod;

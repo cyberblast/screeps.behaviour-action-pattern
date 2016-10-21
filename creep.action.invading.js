@@ -9,8 +9,13 @@ action.getFlaggedStructure = function(flagColor, pos){
         var flag = Game.flags[flagEntry.name];
         if( flag && flag.room !== undefined ){ // room is visible
             var targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
-            if( targets && targets.length > 0)
-                target = target.concat(targets);
+            if( targets && targets.length > 0){
+                addTarget = structure => {
+                    structure.destroyFlag = flag;
+                    target.push(structure)
+                } 
+                targets.forEach(addTarget);
+            }
             else { // remove flag. try next flag
                 flag.remove();
             }
@@ -21,10 +26,10 @@ action.getFlaggedStructure = function(flagColor, pos){
     return null;
 }
 action.newTarget = function(creep){
-    var destroyFlag = this.getFlaggedStructure(FLAG_COLOR.destroy, creep.pos);
-    if( destroyFlag ) {
-        if( destroyFlag.color ) Population.registerCreepFlag(creep, destroyFlag);
-        return destroyFlag;
+    var destroy = this.getFlaggedStructure(FLAG_COLOR.destroy, creep.pos);
+    if( destroy ) {
+        if( destroy.destroyFlag ) Population.registerCreepFlag(creep, destroy.destroyFlag);
+        return destroy;
     }
     // move to invasion room
     var flag = FlagDir.find(FLAG_COLOR.invade, creep.pos);

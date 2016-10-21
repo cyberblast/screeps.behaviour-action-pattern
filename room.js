@@ -492,6 +492,18 @@ var mod = {
                     }
                     return this._minerals;
                 }
+            },
+            'mineralType': {
+                configurable:true,
+                get: function () {
+                    if( _.isUndefined(this.memory.mineralType)) {
+                        let minerals = this.find(FIND_MINERALS);
+                        if( minerals && minerals.length > 0 )
+                            this.memory.mineralType = minerals[0].mineralType;
+                        else this.memory.mineralType = '';
+                    }
+                    return this.memory.mineralType;
+                }
             }
         });
 
@@ -843,6 +855,36 @@ var mod = {
                 filledStorage.forEach(handleFilledStorage);
             }
         };
+        Room.prototype.terminalBroker = function () {
+            let that = this;
+            if( !this.terminal ) return;
+            let mineral = this.mineralType;
+            if( this.terminal[mineral] >= MIN_MINERAL_SELL_AMOUNT ) {
+                if( DEBUG) console.log('Executing terminalBroker in ' + this.name);
+                let orders = Game.market.getAllOrders( o => (
+                    o.resourceType == mineral &&  
+                    o.type == 'buy' &&  
+                    o.amount >= MIN_MINERAL_SELL_AMOUNT && 
+                    Room.roomDistance(o.roomName, that.name, true) <= MAX_SELL_RANGE) && 
+                    Game.market.calcTransactionCost(
+                        Math.min(o.amount, that.terminal[mineral]), 
+                        that.name, 
+                        o.roomName) <= that.terminal.energy);
+                orders = _.sortBy(orders, 'price');
+
+                let json = JSON.stringify(orders);
+                if( DEBUG) console.log(json);
+                Game.notify( json );
+                
+                if( false || orders.length > 0 ){
+                    let order = orders.pop();
+                    let result = deal(order.id, Math.min(order.amount, that.terminal[mineral]), that.name);
+                    let message = '<h2>Room "' + that.name + '" executed an order!</h2><br/>Result: ' + translateErrorCode(result) + '<br/>Details:<br/>' + JSON.stringify(order);
+                    if( DEBUG) console.log(message);
+                    Game.notify( message );
+                }
+            }
+        };
         Room.prototype.springGun = function(){
             if( this.situation.invasion ){
                 let idleSpawns = this.spawns.filter( s => !s.spawning );
@@ -867,8 +909,47 @@ var mod = {
                 }
             }
         };
-        
-        Room.prototype.loop = function(){
+        Room.prototype.statistics = function(){
+            if( this.memory.hostileIds === undefined )
+                this.memory.hostileIds = [];
+            if( this.memory.statistics === undefined)
+                this.memory.statistics = {};
+
+            if( this.controller && this.controller.my ) {
+                var registerHostile = creep => {
+                    if( !that.memory.hostileIds.includes(creep.id) ){ 
+                        var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
+                        if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
+                            var message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + that.name + ' at ' + toDateTimeString(toLocalDate(new Date()));
+                            Game.notify(message);
+                            console.log(message);
+                        }
+                        if(that.memory.statistics.invaders === undefined)
+                            that.memory.statistics.invaders = [];
+                        that.memory.statistics.invaders.push({
+                            owner: creep.owner.username, 
+                            id: creep.id,
+                            body: bodyCount, 
+                            enter: Game.time, 
+                            time: Date.now()
+                        });
+                    }
+                }
+                _.forEach(this.hostiles, registerHostile);
+                
+                var registerHostileLeave = id => {
+                    if( !that.hostileIds.includes(id) && that.memory.statistics && that.memory.statistics.invaders !== undefined && that.memory.statistics.invaders.length > 0){
+                        var select = invader => invader.id == id && invader.leave === undefined;
+                        var entry = _.find(that.memory.statistics.invaders, select);
+                        if( entry != undefined ) entry.leave = Game.time;
+                    }
+                }
+                _.forEach(this.memory.hostileIds, registerHostileLeave);
+            }
+
+            this.memory.hostileIds = this.hostileIds;  
+        }
+        Room.prototype.init = function(){
             delete this._sourceEnergyAvailable;
             delete this._ticksToNextRegeneration;
             delete this._relativeEnergyAvailable;
@@ -899,8 +980,11 @@ var mod = {
             delete this._combatCreeps;
             delete this._defenseLevel;
             delete this._hostileThreatLevel;
-            delete this._minerals;
-              
+            delete this._minerals;              
+        }
+        
+        Room.prototype.loop = function(){
+            this.init();
             try {                
                 let that = this; 
                 if( Game.time % MEMORY_RESYNC_INTERVAL == 0 || this.name == 'sim' ) {
@@ -910,53 +994,17 @@ var mod = {
                     this.saveSpawns();
                     this.saveContainers();
                     this.saveLinks();
+                    this.terminalBroker();
                 }
-                if( this.memory.hostileIds === undefined )
-                    this.memory.hostileIds = [];
-                if( this.memory.statistics === undefined)
-                    this.memory.statistics = {};
-
                 this.roadConstruction();
                 this.springGun();
                 this.linkDispatcher();
-
-                if( this.controller && this.controller.my ) {
-                    var registerHostile = creep => {
-                        if( !that.memory.hostileIds.includes(creep.id) ){ 
-                            var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-                            if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
-                                var message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + that.name + ' at ' + toDateTimeString(toLocalDate(new Date()));
-                                Game.notify(message);
-                                console.log(message);
-                            }
-                            if(that.memory.statistics.invaders === undefined)
-                                that.memory.statistics.invaders = [];
-                            that.memory.statistics.invaders.push({
-                                owner: creep.owner.username, 
-                                id: creep.id,
-                                body: bodyCount, 
-                                enter: Game.time, 
-                                time: Date.now()
-                            });
-                        }
-                    }
-                    _.forEach(this.hostiles, registerHostile);
-                    
-                    var registerHostileLeave = id => {
-                        if( !that.hostileIds.includes(id) && that.memory.statistics && that.memory.statistics.invaders !== undefined && that.memory.statistics.invaders.length > 0){
-                            var select = invader => invader.id == id && invader.leave === undefined;
-                            var entry = _.find(that.memory.statistics.invaders, select);
-                            if( entry != undefined ) entry.leave = Game.time;
-                        }
-                    }
-                    _.forEach(this.memory.hostileIds, registerHostileLeave);
-                }
+                this.statistics();
             }
             catch(err) {
                 Game.notify('Error in room.js (Room.prototype.loop): ' + err);
                 console.log('Error in room.js (Room.prototype.loop): ' + err);
-            }
-            this.memory.hostileIds = this.hostileIds;            
+            }          
         };
     }
 }

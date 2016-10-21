@@ -4,9 +4,8 @@ setup.maxCount = function(room){
     let max = room.sources.length;
     if( room.storage ) {
         let add = mineral => {
-            if(mineral.mineralAmount > 0 && 
-                (!room.storage.store[mineral.mineralType] || room.storage.store[mineral.mineralType] < MAX_STORAGE_MINERAL ))
-                 max++;
+            if(mineral.mineralAmount > 0) max++;
+                // && (!room.storage.store[mineral.mineralType] || room.storage.store[mineral.mineralType] < MAX_STORAGE_MINERAL ))
         };
         room.minerals.forEach(add);
     }
