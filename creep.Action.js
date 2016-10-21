@@ -40,7 +40,8 @@ var Action = function(actionName){
                 return;
             }
         } 
-        creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
+        if( creep.target )
+            creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
     };
     this.work = function(creep){
         return ERR_INVALID_ARGS;

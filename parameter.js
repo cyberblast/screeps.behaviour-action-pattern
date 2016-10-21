@@ -9,10 +9,10 @@ var mod = {
     SPAWN_INTERVAL: 10, // loops between regular spawn probe
     MAX_STORAGE_ENERGY: 300000,// stop storing energy when reached
     MIN_STORAGE_ENERGY: 40000,// prefer storing energy until reached
-    MAX_STORAGE_MINERAL:300000, // keep a max of each type of minerals in store
+    MAX_STORAGE_MINERAL:280000, // keep a max of each type of minerals in store
     MIN_MINERAL_SELL_AMOUNT: 80000, 
     MAX_SELL_RANGE: 10, 
-    TERMINAL_ENERGY: 50000, 
+    TERMINAL_ENERGY: 100000, 
     MAX_REPAIR_LIMIT: { // Limits how high structures get repaired, regarding RCL
         1: 10000,
         2: 10000,
@@ -40,6 +40,6 @@ var mod = {
     ROUTE_PRECALCULATION: false, 
     NOTIFICATE_INVADER: false, // Also log common 'Invader' hostiles
     COMBAT_CREEPS_RESPECT_RAMPARTS: false, // causes own creeps not to leave through ramparts
-    PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume'] // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
+    PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth'] // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
 }
 module.exports = mod;

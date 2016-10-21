@@ -25,6 +25,7 @@ module.exports = {
                 Creep.action.withdrawing, 
                 Creep.action.dismantling,
                 Creep.action.harvesting, 
+                Creep.action.reallocating, 
                 Creep.action.idle];
         }    
         else {                

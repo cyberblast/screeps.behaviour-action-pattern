@@ -22,6 +22,7 @@ module.exports = {
             priority = [
                 Creep.action.uncharging,
                 Creep.action.picking,
+                Creep.action.reallocating, 
                 Creep.action.withdrawing, 
                 Creep.action.idle];
         }
