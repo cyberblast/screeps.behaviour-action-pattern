@@ -9,9 +9,9 @@ var mod = {
     SPAWN_INTERVAL: 10, // loops between regular spawn probe
     MAX_STORAGE_ENERGY: 300000,// stop storing energy when reached
     MIN_STORAGE_ENERGY: 40000,// prefer storing energy until reached
-    MAX_STORAGE_MINERAL:280000, // keep a max of each type of minerals in store
-    MIN_MINERAL_SELL_AMOUNT: 80000, 
-    MAX_SELL_RANGE: 10, 
+    MAX_STORAGE_MINERAL:240000, // keep a max of each type of minerals in store
+    MIN_MINERAL_SELL_AMOUNT:50000, 
+    MAX_SELL_RANGE: 40, 
     TERMINAL_ENERGY: 100000, 
     MAX_REPAIR_LIMIT: { // Limits how high structures get repaired, regarding RCL
         1: 10000,

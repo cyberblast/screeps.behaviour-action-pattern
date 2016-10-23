@@ -859,30 +859,34 @@ var mod = {
             let that = this;
             if( !this.terminal ) return;
             let mineral = this.mineralType;
-            if( this.terminal[mineral] >= MIN_MINERAL_SELL_AMOUNT ) {
+            if( this.terminal.store[mineral] >= MIN_MINERAL_SELL_AMOUNT ) {
                 if( DEBUG) console.log('Executing terminalBroker in ' + this.name);
-                let orders = Game.market.getAllOrders( o => (
+                let orders = Game.market.getAllOrders( o => {
+                    //console.log( Room.roomDistance(o.roomName, that.name, true));
+                    return ( 
                     o.resourceType == mineral &&  
                     o.type == 'buy' &&  
                     o.amount >= MIN_MINERAL_SELL_AMOUNT && 
-                    Room.roomDistance(o.roomName, that.name, true) <= MAX_SELL_RANGE) && 
+                    Room.roomDistance(o.roomName, that.name, true) <= MAX_SELL_RANGE && 
                     Game.market.calcTransactionCost(
-                        Math.min(o.amount, that.terminal[mineral]), 
+                        Math.min(o.amount, that.terminal.store[mineral]), 
                         that.name, 
-                        o.roomName) <= that.terminal.energy);
+                        o.roomName) <= that.terminal.store.energy)});
                 orders = _.sortBy(orders, 'price');
 
-                let json = JSON.stringify(orders);
-                if( DEBUG) console.log(json);
-                Game.notify( json );
+                //let json = JSON.stringify(orders);
+                // if( DEBUG) console.log(json);
+                //Game.notify( json );
                 
-                if( false || orders.length > 0 ){
+                if( orders.length > 0 ){
                     let order = orders.pop();
-                    let result = deal(order.id, Math.min(order.amount, that.terminal[mineral]), that.name);
+                    //if( DEBUG) console.log(JSON.stringify(order));
+                    let result = Game.market.deal(order.id, Math.min(order.amount, that.terminal.store[mineral]), that.name);
                     let message = '<h2>Room "' + that.name + '" executed an order!</h2><br/>Result: ' + translateErrorCode(result) + '<br/>Details:<br/>' + JSON.stringify(order);
                     if( DEBUG) console.log(message);
                     Game.notify( message );
                 }
+                
             }
         };
         Room.prototype.springGun = function(){
