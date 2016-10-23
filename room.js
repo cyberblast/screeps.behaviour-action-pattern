@@ -910,6 +910,7 @@ var mod = {
             }
         };
         Room.prototype.statistics = function(){
+            let that = this; 
             if( this.memory.hostileIds === undefined )
                 this.memory.hostileIds = [];
             if( this.memory.statistics === undefined)
