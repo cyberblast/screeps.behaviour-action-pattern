@@ -16,7 +16,7 @@ setup.default = {
     multiBody: [WORK, MOVE], 
     minAbsEnergyAvailable: 500, 
     minEnergyAvailable: 0.3,
-    maxMulti: 20,
+    maxMulti: 22,
     maxCount: setup.maxCount
 };
 setup.RCL = {
