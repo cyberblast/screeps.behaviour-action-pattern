@@ -2,13 +2,6 @@ var setup = new Creep.Setup('miner');
 setup.minControllerLevel = 3;
 setup.maxCount = function(room){
     let max = room.sources.length;
-    if( room.storage ) {
-        let add = mineral => {
-            if(mineral.mineralAmount > 0) max++;
-                // && (!room.storage.store[mineral.mineralType] || room.storage.store[mineral.mineralType] < MAX_STORAGE_MINERAL ))
-        };
-        room.minerals.forEach(add);
-    }
     return max;
 };
 setup.default = {
