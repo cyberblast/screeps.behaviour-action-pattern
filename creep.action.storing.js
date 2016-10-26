@@ -39,11 +39,12 @@ action.newTarget = function(creep){
         creep.carry[roomMineralType] > 0 &&     
         creep.room.storage.store[roomMineralType] && 
         creep.room.storage.store[roomMineralType] > MAX_STORAGE_MINERAL && 
-        (creep.room.terminal.storeCapacity - creep.room.terminal.sum) >= creep.carry[roomMineralType]);
+        (creep.room.terminal.storeCapacity - creep.room.terminal.sum - Math.max(creep.room.terminal.energy, TERMINAL_ENERGY) + creep.room.terminal.energy) >= creep.carry[roomMineralType]);
     let sendEnergyToTerminal = creep => (
         creep.carry.energy > 0 &&        
         creep.room.storage.store.energy > ((MAX_STORAGE_ENERGY-MIN_STORAGE_ENERGY)/2)+MIN_STORAGE_ENERGY &&
-        creep.room.terminal.store.energy < TERMINAL_ENERGY-(TERMINAL_ENERGY*0.05));
+        creep.room.terminal.store.energy < TERMINAL_ENERGY*0.95 && 
+        (creep.room.terminal.storeCapacity - creep.room.terminal.sum) >= creep.carry[roomMineralType]);
 
     if( creep.room.terminal &&  
         ( sendMineralToTerminal(creep) || sendEnergyToTerminal(creep) ) &&
