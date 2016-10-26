@@ -131,19 +131,15 @@ var mod = {
         if( range > 100 ) range = range * 3;
         var flag = Game.flags[flagItem.name];
         let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepName == creepName ? 0 : t.weight )) : 0;
-        //console.log('assigned: ' + assigned);
         if( assigned > 2599 ) return Infinity;
         return ((range*range) / (2600 - assigned))*500;
     },
     reserveMod: function(range, flagItem, creepName){
-        //console.log('range: ' + range);
         let claimRange = FlagDir.claimMod(range, flagItem, creepName);
-        //console.log('claimRange: ' + claimRange);
         if( claimRange == Infinity ) return Infinity;
         var flag = Game.flags[flagItem.name];
         if( flag.room && flag.room.controller && flag.room.controller.reservation ) {
-            //console.log('adding reservation: ' + claimRange + flag.room.controller.reservation.ticksToEnd);
-            return claimRange + flag.room.controller.reservation.ticksToEnd;
+            return claimRange + (flag.room.controller.reservation.ticksToEnd*2);
         } 
         return claimRange;
     },

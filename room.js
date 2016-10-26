@@ -876,34 +876,34 @@ var mod = {
                         o.type == 'buy' &&  
                         o.amount >= MIN_MINERAL_SELL_AMOUNT &&
                         o.range <= MAX_SELL_RANGE && 
-                        o.transactionCost <= that.terminal.store.energy)});
+                        o.transactionCost <= that.terminal.store.energy);
+                }); // TODO: replace max range with min ratio ?
 
                 if( orders.length > 0 ){
                     orders = _.sortBy(orders, 'ratio');
                     let order = orders.pop();
-                    //if( DEBUG) console.log(JSON.stringify(order));
                     let result = Game.market.deal(order.id, Math.min(order.amount, that.terminal.store[mineral]), that.name);
-                    let message = '<h2>Room "' + that.name + '" executed an order!</h2><br/>Result: ' + translateErrorCode(result) + '<br/>Details:<br/>' + JSON.stringify(order);
+                    let message = '<h2>Room ' + that.name + ' executed an order!</h2><br/>Result: ' + translateErrorCode(result) + '<br/>Details: ' + JSON.stringify(order);
                     if( DEBUG) console.log(message);
                     Game.notify( message );
-                }
-                
+                }                
             }
         };
         Room.prototype.springGun = function(){
             if( this.situation.invasion ){
+                let RCL = {
+                    1: Creep.setup.melee,
+                    2: Creep.setup.melee,
+                    3: Creep.setup.melee,
+                    4: Creep.setup.ranger,
+                    5: Creep.setup.ranger,
+                    6: Creep.setup.warrior,
+                    7: Creep.setup.warrior,
+                    8: Creep.setup.warrior
+                };
                 let idleSpawns = this.spawns.filter( s => !s.spawning );
                 for( let iSpawn = 0; iSpawn < idleSpawns.length && this.defenseLevel.sum < this.hostileThreatLevel; iSpawn++ ) {
-                    // need more Defense!
-                    /*
-                    let setup;
-                    if( this.defenseLevel.melee > this.defenseLevel.ranger ) { 
-                        setup = Creep.setup.ranger; 
-                    } else {
-                        setup = Creep.setup.melee; 
-                    }
-                    */
-                    let setup = Creep.setup.ranger;
+                    let setup = RCL[this.controller.level];
                     if( DEBUG ) console.log( dye(CRAYON.system, this.name + ' &gt; ') + 'Spring Gun System activated in room ' + this.name + '! Trying to spawn an additional ' + setup.type + '.');
                     let creepParams = idleSpawns[iSpawn].createCreepBySetup(setup);
                     if( creepParams ){
