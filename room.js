@@ -589,13 +589,14 @@ var mod = {
             }
             return names;
         };
-        Room.roomDistance = function(roomName1, roomName2, diagonal){
+        Room.roomDistance = function(roomName1, roomName2, diagonal, continuous){
+            if( diagonal ) return Game.map.getRoomLinearDistance(roomName1, roomName2, continuous);
             if( roomName1 == roomName2 ) return 0;
             let posA = roomName1.split(/([N,E,S,W])/);
             let posB = roomName2.split(/([N,E,S,W])/);
             let xDif = posA[1] == posB[1] ? Math.abs(posA[2]-posB[2]) : posA[2]+posB[2]+1;
             let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
-            if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1 
+            //if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1 
             return xDif + yDif; // count diagonal as 2        
         };
         Room.prototype.findRoute = function(targetRoomName, checkOwner = true, preferHighway = true){
@@ -862,23 +863,23 @@ var mod = {
             if( this.terminal.store[mineral] >= MIN_MINERAL_SELL_AMOUNT ) {
                 if( DEBUG) console.log('Executing terminalBroker in ' + this.name);
                 let orders = Game.market.getAllOrders( o => {
-                    //console.log( Room.roomDistance(o.roomName, that.name, true));
-                    return ( 
-                    o.resourceType == mineral &&  
-                    o.type == 'buy' &&  
-                    o.amount >= MIN_MINERAL_SELL_AMOUNT && 
-                    Room.roomDistance(o.roomName, that.name, true) <= MAX_SELL_RANGE && 
-                    Game.market.calcTransactionCost(
+                    if( !o.roomName ) return false;
+                    o.range = Game.map.getRoomLinearDistance(o.roomName, that.name, true);
+                    o.transactionCost = Game.market.calcTransactionCost(
                         Math.min(o.amount, that.terminal.store[mineral]), 
                         that.name, 
-                        o.roomName) <= that.terminal.store.energy)});
-                orders = _.sortBy(orders, 'price');
+                        o.roomName);
+                    o.credits = o.amount*o.price;
+                    o.ratio = o.credits/o.transactionCost;  
+                    return ( 
+                        o.resourceType == mineral &&  
+                        o.type == 'buy' &&  
+                        o.amount >= MIN_MINERAL_SELL_AMOUNT &&
+                        o.range <= MAX_SELL_RANGE && 
+                        o.transactionCost <= that.terminal.store.energy)});
 
-                //let json = JSON.stringify(orders);
-                // if( DEBUG) console.log(json);
-                //Game.notify( json );
-                
                 if( orders.length > 0 ){
+                    orders = _.sortBy(orders, 'ratio');
                     let order = orders.pop();
                     //if( DEBUG) console.log(JSON.stringify(order));
                     let result = Game.market.deal(order.id, Math.min(order.amount, that.terminal.store[mineral]), that.name);
