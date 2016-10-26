@@ -5,18 +5,18 @@ setup.maxCount = function(room){
     if( room.storage ) {
         let add = mineral => {
             if(mineral.mineralAmount > 0) max++;
-                // && (!room.storage.store[mineral.mineralType] || room.storage.store[mineral.mineralType] < MAX_STORAGE_MINERAL ))
         };
         room.minerals.forEach(add);
     }
     return max;
 };
 setup.default = {
-    fixedBody: [WORK, WORK, WORK, WORK, CARRY, MOVE], 
-    multiBody: [WORK, MOVE], 
-    minAbsEnergyAvailable: 500, 
+    fixedBody: [WORK, WORK, WORK, CARRY, MOVE], 
+    multiBody: [WORK, WORK, WORK, MOVE], 
+    minAbsEnergyAvailable: 750, 
     minEnergyAvailable: 0.3,
-    maxMulti: 22,
+    maxMulti: 11, 
+    minMulti: 1,
     maxCount: setup.maxCount
 };
 setup.RCL = {

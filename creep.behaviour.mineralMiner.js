@@ -18,10 +18,7 @@ module.exports = {
             source = _.find(creep.room.minerals, notDeterminated);
             if( source ) {
                 creep.data.determinatedTarget = source.id;
-            } else if ( creep.room.minerals != null ) {
-                source = _.find(creep.room.minerals, notDeterminated);
-                if( source ) creep.data.determinatedTarget = source.id;
-            }
+            } 
             if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9935), SAY_PUBLIC); 
         } else { // get dedicated source
             source = Game.getObjectById(creep.data.determinatedTarget);
