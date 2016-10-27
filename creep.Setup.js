@@ -131,6 +131,7 @@ var Setup = function(typeName){
         let fixedCosts = this.bodyCosts(this.SelfOrCall(rcl.fixedBody, room));
         let multiCosts = this.bodyCosts(this.SelfOrCall(rcl.multiBody, room));
         let max = this.SelfOrCall(rcl.maxMulti, room);
+        if( max == 0 || multiCosts == 0 ) return 0;
         let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
         if( maxWeight == null)
             return _.min([Math.floor( (room.energyAvailable-fixedCosts) / multiCosts), max]);
