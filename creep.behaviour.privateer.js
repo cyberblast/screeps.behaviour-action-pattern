@@ -24,11 +24,13 @@ module.exports = {
         }
     },
     nextAction: function(creep){
+        let carrySum = _.sum(creep.carry);
         // at home
         if( creep.pos.roomName == creep.data.homeRoom ){ 
             // carrier filled
-            if( _.sum(creep.carry) > 0 ){
-                let deposit = creep.room.linksPrivateers;
+            if( carrySum > 0 ){
+                let deposit = [];
+                if( creep.carry.energy == carrySum ) deposit.push(creep.room.linksPrivateers);
                 if( creep.room.storage ) deposit.push(creep.room.storage);
                 if( deposit.length > 0 ){
                     let target = creep.pos.findClosestByRange(deposit);
