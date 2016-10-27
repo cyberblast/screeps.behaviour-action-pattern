@@ -426,20 +426,10 @@ var mod = {
                     return this._claimerMaxWeight;
                 }
             },
-            'minStorageLevel': {
-                configurable: true,
-                get: function () {
-                    let defConMin = SPAWN_DEFENSE_ON_ATTACK ? 
-                        (Creep.setup.melee.maxCost(this) + Creep.setup.ranger.maxCost(this)) * 1.5 : // one of each + buffer
-                        0; 
-                    return Math.max(MIN_STORAGE_ENERGY, defConMin);
-                }
-            },
             'conserveForDefense': {
                 configurable: true,
                 get: function () {
-                    if (!this.storage) return false; // No storage 
-                    return (this.storage.store.energy < this.minStorageLevel); 
+                    return (this.storage && this.storage.store.energy < MIN_STORAGE_ENERGY); 
                 }
             },
             'hostileThreatLevel': {
