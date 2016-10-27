@@ -81,10 +81,16 @@ var mod = {
         Creep.prototype.hasActiveOffensivePart = function(){
             return (this.body.find((part) => ( [ATTACK, RANGED_ATTACK].includes(part.type) && part.hits > 0 )) != null);
         }
+        Creep.prototype.hasActiveAttackPart = function(){
+            return (this.body.find((part) => ( ATTACK == part.type && part.hits > 0 )) != null);
+        }
+        Creep.prototype.hasActiveRangedAttackPart = function(){
+            return (this.body.find((part) => ( RANGED_ATTACK == part.type && part.hits > 0 )) != null);
+        }
 
         Creep.prototype.run = function(behaviour){
             if( !this.spawning ){
-                this.flee = ( (this.hits/this.hitsMax) < 0.3 || (this.hitsMax > 799 && this.hits < 400) );
+                this.flee = ( (this.hits/this.hitsMax) < 0.35 );
                 if(!behaviour && this.data && this.data.creepType) {
                     behaviour = Creep.behaviour[this.data.creepType];
                 }
@@ -231,6 +237,7 @@ var mod = {
             }
         };
         Creep.prototype.getPath = function( targetPos, ignoreCreeps ) {
+            let tempTarget = targetPos;
             if (ROUTE_PRECALCULATION && this.pos.roomName != targetPos.roomName) {
                 var route = this.room.findRoute(targetPos.roomName);
                 if ( route.length > 0 )

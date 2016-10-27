@@ -1,5 +1,4 @@
 var action = new Creep.Action('guarding');
-action.targetRange = 0;
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){     
