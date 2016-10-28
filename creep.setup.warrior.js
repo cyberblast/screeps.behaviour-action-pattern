@@ -36,11 +36,11 @@ setup.small = {
     maxWeight: null//(room) => room.defenseMaxWeight(1750, 'warrior')
 };
 setup.mid = {
-    fixedBody: [HEAL,HEAL,HEAL,MOVE,MOVE,MOVE], 
-    multiBody: [ATTACK, RANGED_ATTACK, MOVE, MOVE], 
+    fixedBody: [], 
+    multiBody: [ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE, MOVE], 
     minAbsEnergyAvailable: 1500, 
     minEnergyAvailable: 0.5,
-    maxMulti: 5, // 7
+    maxMulti: 5, // 8
     minMulti: 3,
     maxCount: setup.maxCount,
     maxWeight: null//(room) => room.defenseMaxWeight(2000, 'warrior')

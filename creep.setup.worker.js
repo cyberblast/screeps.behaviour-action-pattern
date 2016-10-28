@@ -59,7 +59,7 @@ setup.RCL = {
         multiBody: [CARRY, WORK, MOVE], 
         minAbsEnergyAvailable: 800, 
         minEnergyAvailable: 0.2,
-        maxMulti: 8,
+        maxMulti: 10,
         maxCount: 1, 
         maxWeight: 2000
     },
@@ -68,9 +68,9 @@ setup.RCL = {
         multiBody: [CARRY, WORK, MOVE], 
         minAbsEnergyAvailable: 800, 
         minEnergyAvailable: 0.1,
-        maxMulti: 10,
+        maxMulti: 16,
         maxCount: 1, 
-        maxWeight: 2000
+        maxWeight: 3200
     },
 };
 module.exports = setup;
