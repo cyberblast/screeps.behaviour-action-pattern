@@ -159,7 +159,9 @@ var mod = {
             // TODO: CORNER cases
         };
         Creep.prototype.honk = function(){
-            if( HONK ) this.say(String.fromCharCode(9940), SAY_PUBLIC);//8655
+            //if( HONK ) this.say(String.fromCharCode(9940), SAY_PUBLIC);//8655
+            if( HONK ) this.say('\u{26D4}\u{FE0E}', SAY_PUBLIC);//8655
+            
         },
         Creep.prototype.honkEvade = function(){
             if( HONK ) this.say(String.fromCharCode(9936), SAY_PUBLIC);
