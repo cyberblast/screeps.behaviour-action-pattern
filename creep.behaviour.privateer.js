@@ -30,7 +30,7 @@ module.exports = {
             // carrier filled
             if( carrySum > 0 ){
                 let deposit = [];
-                if( creep.carry.energy == carrySum ) deposit.push(creep.room.linksPrivateers);
+                if( creep.carry.energy == carrySum ) deposit = creep.room.linksPrivateers;
                 if( creep.room.storage ) deposit.push(creep.room.storage);
                 if( deposit.length > 0 ){
                     let target = creep.pos.findClosestByRange(deposit);
