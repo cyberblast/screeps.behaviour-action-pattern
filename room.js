@@ -140,6 +140,23 @@ var mod = {
                     return this._urgentRepairableSites;
                 }
             }, 
+            'fortifyableSites': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._fortifyableSites) ){ 
+                        let that = this;
+                        this._fortifyableSites = _.sortBy(that.find(FIND_STRUCTURES, {
+                            filter: (structure) => (
+                                structure.hits < structure.hitsMax && 
+                                (!that.controller || !that.controller.my || structure.hits < MAX_FORTIFY_LIMIT[that.controller.level] ) && 
+                                ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
+                                (structure.towers === undefined || structure.towers.length == 0)) }) , 
+                            'hits'
+                        );
+                    }
+                    return this._fortifyableSites;
+                }
+            },
             'fuelables': {
                 configurable: true,
                 get: function() {
@@ -952,6 +969,7 @@ var mod = {
             delete this._towerFreeCapacity;
             delete this._constructionSites;
             delete this._repairableSites;
+            delete this._fortifyableSites;
             delete this._fuelables;
             delete this._urgentRepairableSites;
             delete this._hostiles;

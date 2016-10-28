@@ -10,6 +10,7 @@ var mod = {
             defending: require('./creep.action.defending'),
             dismantling: require('./creep.action.dismantling'),
             feeding: require('./creep.action.feeding'), 
+            fortifying: require('./creep.action.fortifying'), 
             fueling: require('./creep.action.fueling'), 
             guarding: require('./creep.action.guarding'), 
             harvesting: require('./creep.action.harvesting'),

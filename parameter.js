@@ -13,16 +13,26 @@ var mod = {
     MIN_MINERAL_SELL_AMOUNT:50000, 
     MAX_SELL_RANGE: 40, 
     TERMINAL_ENERGY: 100000, 
-    MAX_REPAIR_LIMIT: { // Limits how high structures get repaired, regarding RCL
+    MAX_REPAIR_LIMIT: { // Limits how high structures get repaired by towers, regarding RCL
         1: 10000,
         2: 10000,
         3: 10000,
         4: 20000,
-        5: 50000,
-        6: 80000,
-        7: 120000,
-        8: 3000000
+        5: 40000,
+        6: 60000,
+        7: 80000,
+        8: 100000
     }, 
+    MAX_FORTIFY_LIMIT: { // Limits how high structures get repaired by creeps, regarding RCL
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 50000,
+        5: 100000,
+        6: 300000,
+        7: 500000,
+        8: Infinity
+    },
     LIMIT_URGENT_REPAIRING: 1000, // urgent repair when hits below
     GAP_REPAIR_DECAYABLE: 800, // decayables (e.g. roads) only get repaired when that much hits are missing
     MEMORY_RESYNC_INTERVAL: 100, // interval to reload spawns & towers present in a room
