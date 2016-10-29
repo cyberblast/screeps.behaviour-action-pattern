@@ -35,7 +35,7 @@ action.work = function(creep){
     if( result == OK ){
         // is there another in range?
         let loot = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {
-            filter: (o) => this.isAddableTarget(o, creep)
+            filter: (o) => o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep)
         });
         if( !loot || loot.length < 1 ) loot = creep.pos.findInRange(FIND_DROPPED_ENERGY, 1, {
             filter: (o) => this.isAddableTarget(o, creep)
