@@ -112,7 +112,7 @@ var Setup = function(typeName){
             _.forEach(Memory.population, count);
         } else {
             let population = this.globalMeasurement ? Population : room.population;
-            existingWeight = population ? population.typeWeight[this.type] || 0 : 0;
+            existingWeight = population ? (population.typeWeight[this.type] || 0) : 0;
         }
         return existingWeight;
     };
