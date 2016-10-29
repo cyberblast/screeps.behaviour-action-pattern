@@ -105,7 +105,7 @@ var mod = {
                     if( _.isUndefined(this._constructionSites) ) { 
                         let sites = this.find(FIND_MY_CONSTRUCTION_SITES); 
                         let siteOrder = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_WALL,STRUCTURE_RAMPART];
-                        let getOrder = site => {let o = siteOrder.indexOf(site); return o < 0 ? 100 : o;};
+                        let getOrder = site => {let o = siteOrder.indexOf(site.structureType); return o < 0 ? 100 : o;};
                         //this._constructionSites.sort( (a, b) => {return getOrder(a.structureType) - getOrder(b.structureType);} );
                         this._constructionSites = _.sortBy(sites, getOrder);
                     }
@@ -387,7 +387,7 @@ var mod = {
                     if (_.isUndefined(this._privateerMaxWeight) ) {
                         this._privateerMaxWeight = 0;
                         if ( !this.situation.invasion && !this.conserveForDefense ) {
-                            let base = 7000;
+                            let base = this.controller.level * 1000;
                             let that = this;
                             let adjacent, ownNeighbor, room, mult;
 
@@ -887,8 +887,9 @@ var mod = {
                 }); // TODO: replace max range with min ratio ?
 
                 if( orders.length > 0 ){
-                    orders = _.sortBy(orders, 'ratio');
-                    let order = orders.pop();
+                    //orders = _.sortBy(orders, 'ratio');
+                    //let order = orders.pop();
+                    let order = _.max(orders, 'ratio');
                     let result = Game.market.deal(order.id, Math.min(order.amount, that.terminal.store[mineral]), that.name);
                     let message = '<h2>Room ' + that.name + ' executed an order!</h2><br/>Result: ' + translateErrorCode(result) + '<br/>Details: ' + JSON.stringify(order);
                     if( DEBUG) console.log(message);

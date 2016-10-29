@@ -37,21 +37,21 @@ setup.small = {
 };
 setup.mid = {
     fixedBody: [], 
-    multiBody: [ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE, MOVE], 
+    multiBody: [TOUGH, ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE], 
     minAbsEnergyAvailable: 1500, 
     minEnergyAvailable: 0.5,
-    maxMulti: 5, // 8
+    maxMulti: 5, // 7
     minMulti: 3,
     maxCount: setup.maxCount,
     maxWeight: null//(room) => room.defenseMaxWeight(2000, 'warrior')
 };
 setup.big = {
     fixedBody: [], 
-    multiBody: [ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL, HEAL, MOVE, MOVE, MOVE, MOVE, MOVE], 
+    multiBody: [TOUGH, ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE], 
     minAbsEnergyAvailable: 2000,  
     minEnergyAvailable: 0.5,
-    maxMulti: 3, // 5
-    minMulti: 2, // 3
+    maxMulti:  7,
+    minMulti: 5,
     maxCount: setup.maxCount,
     maxWeight: null//(room) => room.defenseMaxWeight(2500, 'warrior')
 };

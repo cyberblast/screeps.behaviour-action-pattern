@@ -24,7 +24,7 @@ var Setup = function(typeName){
     this.globalMeasurement = false;
     this.measureByHome = false;
     this.sortedParts = true;
-    this.mixMoveParts = true;
+    this.mixMoveParts = false;
     
     this.SelfOrCall = function(obj, param) {
         if( obj == null ) return null;
@@ -112,7 +112,7 @@ var Setup = function(typeName){
             _.forEach(Memory.population, count);
         } else {
             let population = this.globalMeasurement ? Population : room.population;
-            existingWeight = population.typeWeight[this.type] || 0;
+            existingWeight = population ? population.typeWeight[this.type] || 0 : 0;
         }
         return existingWeight;
     };
@@ -156,6 +156,11 @@ var Setup = function(typeName){
             parts.sort(this.partsComparator);
             if( this.mixMoveParts ) 
                 parts = this.mixParts(parts);
+            else if( parts.includes(HEAL) ) {
+                let index = parts.indexOf(HEAL);
+                parts.splice(index, 1);
+                parts.splice(parts.length-1, 0, HEAL);
+            }
         }
         return parts;
     };
@@ -176,7 +181,7 @@ var Setup = function(typeName){
         return mix;
     };
     this.partsComparator = function (a, b) {
-        let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, MOVE, HEAL];
+        let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, HEAL, MOVE];
         let indexOfA = partsOrder.indexOf(a);
         let indexOfB = partsOrder.indexOf(b);
         return indexOfA - indexOfB;

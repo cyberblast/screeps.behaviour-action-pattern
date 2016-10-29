@@ -121,9 +121,9 @@ var mod = {
                     } else {
                         console.log( dye(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ));
                         // trying to import creep
-                        if( this.body.includes(WORK) && this.body.includes(CARRY))
+                        let counts = _.countBy(this.body, 'type');
+                        if( counts[WORK] && counts[CARRY])
                         {
-                            let counts = _.countBy(this.body, 'type');
                             let weight = (counts[WORK]*PART_COSTS[WORK]) + (counts[CARRY]*PART_COSTS[CARRY]) + (counts[MOVE]*PART_COSTS[MOVE]); 
                             var entry = Population.setCreep({
                                 creepName: this.name, 
@@ -167,10 +167,6 @@ var mod = {
             if( HONK ) this.say(String.fromCharCode(9936), SAY_PUBLIC);
         },
         Creep.prototype.drive = function( targetPos, intentionRange, enoughRange, range ) {
-            // temporary cleanup
-            if( this.data.route ) delete this.data.route;
-            if( Memory.pathfinder ) delete Memory.pathfinder;
-            
             if( !targetPos || this.fatigue > 0 || range <= intentionRange ) return;
             if( !range ) range = this.pos.getRangeTo(targetPos);
             let lastPos = this.data.lastPos;
@@ -255,6 +251,80 @@ var mod = {
                 return path.substr(4);
             else return null;
         };
+        Creep.prototype.fleeMove = function( ) {
+            if( this.fatigue > 0 ) return;
+            let path;
+            if( !this.data.fleePath || this.data.fleePath.length < 2 || this.data.fleePath[0].x != this.pos.x || this.data.fleePath[0].y != this.pos.y || this.data.fleePath[0].roomName != this.pos.roomName ) {
+                let GetCostMatrix = function(roomName) {
+                    var room = Game.rooms[roomName];
+                    if(!room) {
+                        return;
+                    }
+                
+                    Memory.pathfinder = Memory.pathfinder || {};
+                    Memory.pathfinder[roomName] = Memory.pathfinder[roomName] || {};
+                
+                    if(Memory.pathfinder[roomName].costMatrix && (Game.time - Memory.pathfinder[roomName].updated) < 500) {
+                        return PathFinder.CostMatrix.deserialize(Memory.pathfinder[roomName].costMatrix);
+                    }
+                
+                    var costMatrix = new PathFinder.CostMatrix;
+                
+                    var structures = room.find(FIND_STRUCTURES);
+                    for(var i = 0; i < structures.length; i++) {
+                        var structure = structures[i];
+                
+                        if(structure.structureType == STRUCTURE_ROAD) {
+                            costMatrix.set(structure.pos.x, structure.pos.y, 1);
+                        } else if(structure.structureType !== STRUCTURE_RAMPART || !structure.my ) {
+                            costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                        }
+                    }
+                
+                    Memory.pathfinder[roomName].costMatrix = costMatrix.serialize();
+                    Memory.pathfinder[roomName].updated = Game.time;
+                    if( DEBUG ) console.log("Recalculated costMatrix for " + roomName);
+                    return costMatrix;
+                };
+                let goals = _.map(this.room.hostiles, function(o) {  
+                    return { pos: o.pos, range: 5 };
+                });
+                
+                let ret = PathFinder.search(
+                    this.pos, goals, {
+                        flee: true,
+                        plainCost: 2,
+                        swampCost: 10, 
+                        maxOps: 500, 
+                        maxRooms: 2, 
+                        
+                        roomCallback: function(roomName) {
+                            let room = Game.rooms[roomName];
+                            if (!room) return;
+                            let costs = GetCostMatrix(roomName);
+                            // Avoid creeps in the room
+                            room.find(FIND_CREEPS).forEach(function(creep) {
+                                costs.set(creep.pos.x, creep.pos.y, 0xff);
+                            });
+                            return costs;
+                        }
+                    }
+                );
+                path = ret.path
+
+                this.data.fleePath = path;
+            } else {
+                this.data.fleePath.shift();
+                path = this.data.fleePath;
+            }
+            if( path && path.length > 0 )
+                this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
+            else {
+                // TBD
+            }
+        };
+
+        
     }
 }
 

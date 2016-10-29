@@ -68,9 +68,9 @@ setup.RCL = {
         multiBody: [CARRY, WORK, MOVE], 
         minAbsEnergyAvailable: 800, 
         minEnergyAvailable: 0.1,
-        maxMulti: 16,
+        maxMulti: room => (( !room.storage || room.storage.energy > MAX_STORAGE_ENERGY ) ? 16 : 10),
         maxCount: 1, 
         maxWeight: 3200
-    },
+    }
 };
 module.exports = setup;

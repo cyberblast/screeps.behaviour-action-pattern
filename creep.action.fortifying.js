@@ -1,7 +1,7 @@
-var action = new Creep.Action('repairing');
+var action = new Creep.Action('fortifying');
 action.targetRange = 3;
 action.isValidAction = function(creep){
-    return (creep.carry.energy > 0 );
+    return (creep.carry.energy > 0 && ( !creep.room.storage || creep.room.storage.energy > MAX_STORAGE_ENERGY ));
 };
 action.isValidTarget = function(target){
     return ( target != null && target.hits && 

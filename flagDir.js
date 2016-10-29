@@ -42,7 +42,7 @@ var mod = {
                 flag.valid = r < Infinity;
                 return r;
             };
-            let flag = _.sortBy(flags, range)[0];
+            let flag = _.min(flags, range); //_.sortBy(flags, range)[0];
             return flag.valid ? flag.name : null;
         } else return flags[0].name;
     }, 
