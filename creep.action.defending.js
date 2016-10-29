@@ -22,8 +22,10 @@ action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
     this.run[creep.data.creepType](creep);
     if( creep.flee ) {
-        let home = Game.spawns[creep.data.motherSpawn];
-        creep.drive( home.pos, 1, 1, Infinity);
+        //let home = Game.spawns[creep.data.motherSpawn];
+        //creep.drive( home.pos, 1, 1, Infinity);
+        
+        creep.fleeMove();
     }
 };
 action.run = {
@@ -114,8 +116,9 @@ action.run = {
                     }
                 }
                 if( range < 3 ){
-                    var direction = creep.target.pos.getDirectionTo(creep);
-                    creep.move(direction);
+                    //var direction = creep.target.pos.getDirectionTo(creep);
+                    //creep.move(direction);
+                    creep.fleeMove();
                 }
             } else creep.flee = true;
         }   

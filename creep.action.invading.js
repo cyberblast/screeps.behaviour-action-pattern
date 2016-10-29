@@ -99,8 +99,10 @@ action.step = function(creep){
         this.assign(creep);
     this.run[creep.data.creepType](creep);
     if( creep.flee ) {
-        let home = Game.spawns[creep.data.motherSpawn];
-        creep.drive( home.pos, 1, 1, Infinity);
+        //let home = Game.spawns[creep.data.motherSpawn];
+        //creep.drive( home.pos, 1, 1, Infinity);
+        
+        creep.fleeMove();
     }
 }
 action.run = {
@@ -165,7 +167,8 @@ action.run = {
                     creep.moveTo(creep.target, {reusePath: 0});
                 }
                 if( range < 3 ){
-                    creep.move(creep.target.pos.getDirectionTo(creep));
+                    //creep.move(creep.target.pos.getDirectionTo(creep));
+                    creep.fleeMove();
                 }
             } else creep.flee = true;
         }
