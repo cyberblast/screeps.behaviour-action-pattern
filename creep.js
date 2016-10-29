@@ -273,12 +273,7 @@ var mod = {
                         roomCallback: function(roomName) {
                             let room = Game.rooms[roomName];
                             if (!room) return;
-                            let costs = room.costMatrix;
-                            // Avoid creeps in the room
-                            room.find(FIND_CREEPS).forEach(function(creep) {
-                                costs.set(creep.pos.x, creep.pos.y, 0xff);
-                            });
-                            return costs;
+                            return room.currentCostMatrix;
                         }
                     }
                 );

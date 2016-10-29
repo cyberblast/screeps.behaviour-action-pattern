@@ -16,7 +16,7 @@ action.newTarget = function(creep){
     let target;
     if( creep.room.situation.invasion ) {
         // pickup near sources only
-        if( target == null ) target = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY, {
+        target = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY, {
             filter: (o) => this.isAddableTarget(o, creep) && o.pos.findInRange(creep.room.sources, 1).length > 0
         });
     } else {
@@ -24,7 +24,7 @@ action.newTarget = function(creep){
             filter: (o) => ( o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep))
         });
         
-        if( target == null ) target = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY, {
+        if( !target ) target = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY, {
             filter: (o) => this.isAddableTarget(o, creep)
         });
     }
@@ -33,6 +33,17 @@ action.newTarget = function(creep){
 action.work = function(creep){
     var result = creep.pickup(creep.target);
     if( result == OK ){
+        // is there another in range?
+        let loot = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {
+            filter: (o) => this.isAddableTarget(o, creep)
+        });
+        if( !loot || loot.length < 1 ) loot = creep.pos.findInRange(FIND_DROPPED_ENERGY, 1, {
+            filter: (o) => this.isAddableTarget(o, creep)
+        });
+        if( loot && loot.length > 0 ) {
+            this.assign(creep, loot[0]);
+            return result;
+        }
         // unregister
         creep.data.actionName = null;
         creep.data.targetId = null;

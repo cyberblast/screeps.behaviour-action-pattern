@@ -304,6 +304,15 @@ var mod = {
                     return this._creeps;
                 }
             },
+            'allCreeps': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._allCreeps) ){ 
+                        this._allCreeps = this.find(FIND_CREEPS);
+                    }
+                    return this._allCreeps;
+                }
+            },
             'hostiles': {
                 configurable: true,
                 get: function() {
@@ -539,6 +548,20 @@ var mod = {
                     Memory.pathfinder[this.name].updated = Game.time;
                     if( DEBUG ) console.log("Calulating cost matrix for " + this.name);
                     return costMatrix;
+                }
+            }, 
+            'currentCostMatrix': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._currentCostMatrix) ) {
+                        let costs = this.costMatrix;
+                        // Avoid creeps in the room
+                        this.allCreeps.forEach(function(creep) {
+                            costs.set(creep.pos.x, creep.pos.y, 0xff);
+                        });
+                        this._currentCostMatrix = costs;
+                    }
+                    return this._currentCostMatrix;
                 }
             }
         });
@@ -1029,7 +1052,8 @@ var mod = {
             delete this._combatCreeps;
             delete this._defenseLevel;
             delete this._hostileThreatLevel;
-            delete this._minerals;              
+            delete this._minerals;    
+            delete this._currentCostMatrix;          
         }
         
         Room.prototype.loop = function(){
