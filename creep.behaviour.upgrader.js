@@ -40,13 +40,19 @@ module.exports = {
             args.where = pos => { return !_.some(invalid,{x:pos.x,y:pos.y}); };
             
             let spots = Room.fieldsInRange(args);
-                if( spots.length > 0 ){
-                    let spot = creep.pos.findClosestByPath(spots) || spots[0];
-                    if( spot ) creep.data.determinatedSpot = {
-                        x: spot.x, 
-                        y: spot.y
-                    }
-                } 
+            if( spots.length > 0 ){
+                let spot = creep.pos.findClosestByPath(spots, {filter: pos => {
+                    return !_.some( 
+                        creep.room.lookForAt(LOOK_STRUCTURES, pos), 
+                        {'structureType': STRUCTURE_ROAD }
+                    );
+                }})
+                if( !spot ) spot = creep.pos.findClosestByPath(spots) || spots[0];
+                if( spot ) creep.data.determinatedSpot = {
+                    x: spot.x, 
+                    y: spot.y
+                }
+            } 
             if( !creep.data.determinatedSpot ) logError('Unable to determine working location for upgrader in room ' + creep.pos.roomName);
             else if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9962), SAY_PUBLIC); 
         }
@@ -59,7 +65,6 @@ module.exports = {
                     let store = creep.room.linksController.find(l => l.energy > 0);
                     if( !store ) store = creep.room.containerController.find(l => l.store.energy > 0);
                     if( store ) creep.withdraw(store, RESOURCE_ENERGY);
-                    // else logError(`Upgrader ${creep.name} has no energy in room ${creep.pos.roomName}!`);
                 }
                 creep.upgradeController(creep.room.controller);
             }

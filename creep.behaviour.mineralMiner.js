@@ -48,7 +48,13 @@ module.exports = {
                     });
                 let spots = Room.fieldsInRange(args);
                 if( spots.length > 0 ){
-                    let spot = creep.pos.findClosestByPath(spots) || spots[0];
+                    let spot = creep.pos.findClosestByPath(spots, {filter: pos => {
+                        return !_.some( 
+                            creep.room.lookForAt(LOOK_STRUCTURES, pos), 
+                            {'structureType': STRUCTURE_ROAD }
+                        );
+                    }})
+                    if( !spot ) spot = creep.pos.findClosestByPath(spots) || spots[0];
                     if( spot ) creep.data.determinatedSpot = {
                         x: spot.x, 
                         y: spot.y
