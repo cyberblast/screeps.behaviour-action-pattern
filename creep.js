@@ -91,7 +91,6 @@ var mod = {
 
         Creep.prototype.run = function(behaviour){
             if( !this.spawning ){
-                this.flee = ( (this.hits/this.hitsMax) < 0.35 );
                 if(!behaviour && this.data && this.data.creepType) {
                     behaviour = Creep.behaviour[this.data.creepType];
                 }
@@ -141,6 +140,10 @@ var mod = {
                             Population.countCreep(this.room, entry);
                         } else this.suicide();
                     }
+                }
+                if( this.flee ) {
+                    this.fleeMove();
+                    if( SAY_ASSIGNMENT ) this.say(String.fromCharCode(10133), SAY_PUBLIC); 
                 }
             }
         };
@@ -255,37 +258,6 @@ var mod = {
             if( this.fatigue > 0 ) return;
             let path;
             if( !this.data.fleePath || this.data.fleePath.length < 2 || this.data.fleePath[0].x != this.pos.x || this.data.fleePath[0].y != this.pos.y || this.data.fleePath[0].roomName != this.pos.roomName ) {
-                let GetCostMatrix = function(roomName) {
-                    var room = Game.rooms[roomName];
-                    if(!room) {
-                        return;
-                    }
-                
-                    Memory.pathfinder = Memory.pathfinder || {};
-                    Memory.pathfinder[roomName] = Memory.pathfinder[roomName] || {};
-                
-                    if(Memory.pathfinder[roomName].costMatrix && (Game.time - Memory.pathfinder[roomName].updated) < 500) {
-                        return PathFinder.CostMatrix.deserialize(Memory.pathfinder[roomName].costMatrix);
-                    }
-                
-                    var costMatrix = new PathFinder.CostMatrix;
-                
-                    var structures = room.find(FIND_STRUCTURES);
-                    for(var i = 0; i < structures.length; i++) {
-                        var structure = structures[i];
-                
-                        if(structure.structureType == STRUCTURE_ROAD) {
-                            costMatrix.set(structure.pos.x, structure.pos.y, 1);
-                        } else if(structure.structureType !== STRUCTURE_RAMPART || !structure.my ) {
-                            costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
-                        }
-                    }
-                
-                    Memory.pathfinder[roomName].costMatrix = costMatrix.serialize();
-                    Memory.pathfinder[roomName].updated = Game.time;
-                    if( DEBUG ) console.log("Recalculated costMatrix for " + roomName);
-                    return costMatrix;
-                };
                 let goals = _.map(this.room.hostiles, function(o) {  
                     return { pos: o.pos, range: 5 };
                 });
@@ -301,7 +273,7 @@ var mod = {
                         roomCallback: function(roomName) {
                             let room = Game.rooms[roomName];
                             if (!room) return;
-                            let costs = GetCostMatrix(roomName);
+                            let costs = room.costMatrix;
                             // Avoid creeps in the room
                             room.find(FIND_CREEPS).forEach(function(creep) {
                                 costs.set(creep.pos.x, creep.pos.y, 0xff);
@@ -319,12 +291,25 @@ var mod = {
             }
             if( path && path.length > 0 )
                 this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
-            else {
-                // TBD
-            }
         };
-
         
+        Object.defineProperty(Creep.prototype, 'flee', {
+            configurable: true,
+            get: function() {
+                if( this.data.flee ){
+                    // release when restored
+                    this.data.flee = this.hits != this.hitsMax;                       
+                } else {
+                    // set when low
+                    this.data.flee = (this.hits/this.hitsMax) < 0.35; 
+                }
+                return this.data.flee;
+            }, 
+            set: function(newValue) {
+                this.data.flee = newValue;
+            }
+        });
+    
     }
 }
 

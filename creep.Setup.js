@@ -159,7 +159,7 @@ var Setup = function(typeName){
             else if( parts.includes(HEAL) ) {
                 let index = parts.indexOf(HEAL);
                 parts.splice(index, 1);
-                parts.splice(parts.length-1, 0, HEAL);
+                parts.push(HEAL);
             }
         }
         return parts;

@@ -21,12 +21,6 @@ action.newTarget = function(creep){
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
     this.run[creep.data.creepType](creep);
-    if( creep.flee ) {
-        //let home = Game.spawns[creep.data.motherSpawn];
-        //creep.drive( home.pos, 1, 1, Infinity);
-        
-        creep.fleeMove();
-    }
 };
 action.run = {
     ranger: function(creep) {

@@ -37,7 +37,6 @@ module.exports = {
                 }
             }
         }
-        if( creep.flee ) if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9855), SAY_PUBLIC); 
     },
     nextAction: function(creep){ 
         let priority = [

@@ -511,8 +511,43 @@ var mod = {
                     }
                     return this.memory.mineralType;
                 }
+            }, 
+            'costMatrix': {
+                configurable: true, 
+                get: function () {
+                    if( _.isUndefined(Memory.pathfinder)) Memory.pathfinder = {};
+                    if( _.isUndefined(Memory.pathfinder[this.name])) Memory.pathfinder[this.name] = {};
+                
+                    if( Memory.pathfinder[this.name].costMatrix && (Game.time - Memory.pathfinder[this.name].updated) < COST_MATRIX_VALIDITY) {
+                        return PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
+                    }
+                
+                    var costMatrix = new PathFinder.CostMatrix;
+                
+                    var structures = this.find(FIND_STRUCTURES);
+                    for(var i = 0; i < structures.length; i++) {
+                        var structure = structures[i];
+                
+                        if(structure.structureType == STRUCTURE_ROAD) {
+                            costMatrix.set(structure.pos.x, structure.pos.y, 1);
+                        } else if(structure.structureType !== STRUCTURE_RAMPART || !structure.isPublic ) {
+                            costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                        }
+                    }
+                
+                    Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
+                    Memory.pathfinder[this.name].updated = Game.time;
+                    if( DEBUG ) console.log("Calulating cost matrix for " + this.name);
+                    return costMatrix;
+                }
             }
         });
+
+        Room.getCostMatrix = function(roomName) {
+            var room = Game.rooms[roomName];
+            if(!room) return;
+            return room.costMatrix;        
+        };
 
         Room.isMine = function(roomName) {
             let room = Game.rooms[roomName];
@@ -521,7 +556,6 @@ var mod = {
 
         Room.prototype.defenseMaxWeight = function(base, type) {
             let defenseMaxWeight = 0;
-            //let base = 2000;
             let maxRange = 2;
             let that = this;
             let distance, reserved, flag;

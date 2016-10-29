@@ -98,12 +98,6 @@ action.step = function(creep){
     if( (creep.target instanceof Flag) && (creep.target.pos.roomName == creep.pos.roomName))
         this.assign(creep);
     this.run[creep.data.creepType](creep);
-    if( creep.flee ) {
-        //let home = Game.spawns[creep.data.motherSpawn];
-        //creep.drive( home.pos, 1, 1, Infinity);
-        
-        creep.fleeMove();
-    }
 }
 action.run = {
     melee: function(creep){
