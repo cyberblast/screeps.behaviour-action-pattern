@@ -289,36 +289,39 @@ var mod = {
         };
         Creep.prototype.idleMove = function( ) {
             if( this.fatigue > 0 ) return;
-            let path;
-            if( !this.data.idlePath || this.data.idlePath.length < 2 || this.data.idlePath[0].x != this.pos.x || this.data.idlePath[0].y != this.pos.y || this.data.idlePath[0].roomName != this.pos.roomName ) {
-                let goals = _.map(this.room.structures, function(o) {  
-                    return { pos: o.pos, range: 1 };
-                });
-                
-                let ret = PathFinder.search(
-                    this.pos, goals, {
-                        flee: true,
-                        plainCost: 2,
-                        swampCost: 10, 
-                        maxOps: 350, 
-                        maxRooms: 1, 
-                        
-                        roomCallback: function(roomName) {
-                            let room = Game.rooms[roomName];
-                            if (!room) return;
-                            return room.currentCostMatrix;
+            // check if on road/structure
+            let here = this.room.lookForAt(LOOK_STRUCTURES, this.pos);
+            if( here && here.length > 0 ) {
+                let path;
+                if( !this.data.idlePath || this.data.idlePath.length < 2 || this.data.idlePath[0].x != this.pos.x || this.data.idlePath[0].y != this.pos.y || this.data.idlePath[0].roomName != this.pos.roomName ) {
+                    let goals = _.map(this.room.structures, function(o) {  
+                        return { pos: o.pos, range: 1 };
+                    });
+                    
+                    let ret = PathFinder.search(
+                        this.pos, goals, {
+                            flee: true,
+                            plainCost: 2,
+                            swampCost: 10, 
+                            maxOps: 350, 
+                            maxRooms: 1, 
+                            
+                            roomCallback: function(roomName) {
+                                let room = Game.rooms[roomName];
+                                if (!room) return;
+                                return room.currentCostMatrix;
+                            }
                         }
-                    }
-                );
-                path = ret.path
-
-                this.data.idlePath = path;
-            } else {
-                this.data.idlePath.shift();
-                path = this.data.idlePath;
+                    );
+                    path = ret.path;
+                    this.data.idlePath = path;
+                } else {
+                    this.data.idlePath.shift();
+                    path = this.data.idlePath;
+                }
+                if( path && path.length > 0 )
+                    this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
             }
-            if( path && path.length > 0 )
-                this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
         };
         
         Object.defineProperties(Creep.prototype, {
