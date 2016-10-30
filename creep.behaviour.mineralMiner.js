@@ -73,7 +73,7 @@ module.exports = {
                             creep.transfer(source.link, RESOURCE_ENERGY);
                         creep.harvest(source);
                     }
-                } else if( source.container && _.sum(source.container.store) < source.container.storeCapacity ) {
+                } else if( source.container && source.container.sum < source.container.storeCapacity ) {
                     if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
                     let range = this.approach(creep);
                     if( range == 0 ){

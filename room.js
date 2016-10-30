@@ -215,7 +215,7 @@ var mod = {
                         let byType = c => (c.source === true || c.mineral === true ) && c.controller == false;
                         this._containerIn = _.filter(this.container, byType);
                         // add managed
-                        let isFull = c => _.sum(c.store) >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
+                        let isFull = c => c.sum >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
                         this._containerIn = this._containerIn.concat(this.containerManaged.filter(isFull));
                     }
                     return this._containerIn;
@@ -228,7 +228,7 @@ var mod = {
                         let byType = c => (c.source === false && !c.mineral);
                         this._containerOut = _.filter(this.container, byType);
                         // add managed                         
-                        let isEmpty = c => _.sum(c.store) <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
+                        let isEmpty = c => c.sum <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
                         this._containerOut = this._containerOut.concat(this.containerManaged.filter(isEmpty));
                     }
                     return this._containerOut;
