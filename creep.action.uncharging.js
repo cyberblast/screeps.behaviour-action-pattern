@@ -5,7 +5,7 @@ action.isAddableTarget = function(target){ return true;}
 action.isValidAction = function(creep){ return creep.sum < creep.carryCapacity; }
 action.isValidTarget = function(target){
     return ( target && 
-        (( target.structureType == 'container' && target.sum > 400 ) ||
+        (( target.structureType == 'container' && target.sum > 500 ) ||
         ( target.structureType == 'link' && target.energy > 0 )));
 };   
 action.newTarget = function(creep){ 
@@ -43,10 +43,15 @@ action.work = function(creep){
     let workResult = OK;
     if( creep.target.source === true && creep.target.controller == true ) {
         let max = creep.target.sum - (creep.target.storeCapacity * MANAGED_CONTAINER_TRIGGER);
+        console.log('energy in container: ' + creep.target.store.energy);
+        console.log('max allowed withdraw: ' + max);
         if( max < 1) workResult = ERR_NOT_ENOUGH_RESOURCES;
         else {
-            let amount = _.min(creep.target.store.energy, max);
+            let space = creep.carryCapacity - creep.sum;
+            let amount = _.min(creep.target.store.energy, max, space);
+            console.log('withdrawing: ' + amount);
             workResult = creep.withdraw(creep.target, RESOURCE_ENERGY, amount);
+            console.log('result: ' + workResult);
         }
     } else if (creep.target.store != null ) {
         let withdraw = r => {
