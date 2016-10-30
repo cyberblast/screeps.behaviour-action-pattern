@@ -22,7 +22,7 @@ action.isAddableTarget = function(target, creep){
         (target.structureType == 'container' && (target.storeCapacity - target.sum) > Math.min(creep.carry.energy, 500)) ||
         ( target.structureType == 'link' )
     ) && (
-        target.structureType != 'container' || !target.controller || creep.carry.energy == _.sum(creep.carry) // don't put minerals in upgrader container
+        target.structureType != 'container' || !target.controller || creep.carry.energy == creep.sum // don't put minerals in upgrader container
     );
 };
 action.newTarget = function(creep){
@@ -56,7 +56,7 @@ action.work = function(creep){
     let workResult;
     if( creep.target.source === true && creep.target.controller == true ) {
         // don't overfill managed container'
-        let max = (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER)) - target.sum;
+        let max = (creep.target.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER)) - creep.target.sum;
         if( max < 1) workResult = ERR_FULL;
         else {
             let amount = _.min(creep.carry.energy, max);

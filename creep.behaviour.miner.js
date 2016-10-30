@@ -64,7 +64,7 @@ module.exports = {
             }
 
             if( creep.data.determinatedSpot ) {
-                let carrying = _.sum(creep.carry);
+                let carrying = creep.sum;
                 if( source.link && source.link.energy < source.link.energyCapacity ) {
                     if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
                     let range = this.approach(creep);

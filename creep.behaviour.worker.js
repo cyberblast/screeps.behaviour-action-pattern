@@ -53,7 +53,7 @@ module.exports = {
                 priority.unshift(Creep.action.upgrading);
             }
         }
-        if( _.sum(creep.carry) > creep.carry.energy ) {
+        if( creep.sum > creep.carry.energy ) {
             priority.unshift(Creep.action.storing);
         }
         for(var iAction = 0; iAction < priority.length; iAction++) {

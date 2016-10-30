@@ -4,12 +4,12 @@ action.maxPerAction = 4;
 action.isValidAction = function(creep){
     return ( 
         creep.room.storage != null && 
-        _.sum(creep.carry) > 0 && 
+        creep.sum > 0 && 
         (
             creep.data.creepType == 'hauler' || 
             creep.data.creepType == 'privateer' ||
             ( 
-                _.sum(creep.carry) > creep.carry.energy || 
+                creep.sum > creep.carry.energy || 
                 (
                     (
                         !creep.room.population || 

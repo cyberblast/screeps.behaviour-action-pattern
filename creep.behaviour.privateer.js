@@ -24,7 +24,7 @@ module.exports = {
         }
     },
     nextAction: function(creep){
-        let carrySum = _.sum(creep.carry);
+        let carrySum = creep.sum;
         // at home
         if( creep.pos.roomName == creep.data.homeRoom ){ 
             // carrier filled
@@ -58,7 +58,7 @@ module.exports = {
             // at target room
             if( creep.flag && creep.flag.pos.roomName == creep.pos.roomName ){
                 // carrier not full
-                if( _.sum(creep.carry) < creep.carryCapacity ) {
+                if( creep.sum < creep.carryCapacity ) {
                     // sources depleted
                     if( creep.room.sourceEnergyAvailable == 0 ){
                         // cloak flag
@@ -115,7 +115,7 @@ module.exports = {
             // not at target room
             else {
                 // travelling
-                if( _.sum(creep.carry) < creep.carryCapacity*0.5 && this.exploitNextRoom(creep) ) 
+                if( creep.sum < creep.carryCapacity*0.5 && this.exploitNextRoom(creep) ) 
                     return;
                 else {
                     // no new flag

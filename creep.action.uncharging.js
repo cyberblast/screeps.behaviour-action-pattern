@@ -2,7 +2,7 @@ var action = new Creep.Action('uncharging'); // get from container
 action.renewTarget = false;
 action.isAddableAction = function(creep){ return true; }
 action.isAddableTarget = function(target){ return true;}
-action.isValidAction = function(creep){ return _.sum(creep.carry) < creep.carryCapacity; }
+action.isValidAction = function(creep){ return creep.sum < creep.carryCapacity; }
 action.isValidTarget = function(target){
     return ( target && 
         (( target.structureType == 'container' && target.sum > 400 ) ||
@@ -29,7 +29,7 @@ action.newTarget = function(creep){
             let contFilling = cont.sum;
             if( cont.targetOf )
                 contFilling -= _.sum( cont.targetOf.map( t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 )));
-            if( contFilling < Math.min(creep.carryCapacity - _.sum(creep.carry), 400) ) return;
+            if( contFilling < Math.min(creep.carryCapacity - creep.sum, 400) ) return;
             if( contFilling > filling ){
                 filling = contFilling ;
                 target = cont;
@@ -42,7 +42,7 @@ action.newTarget = function(creep){
 action.work = function(creep){
     let workResult = OK;
     if( creep.target.source === true && creep.target.controller == true ) {
-        let max = target.sum - (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
+        let max = creep.target.sum - (creep.target.storeCapacity * MANAGED_CONTAINER_TRIGGER);
         if( max < 1) workResult = ERR_NOT_ENOUGH_RESOURCES;
         else {
             let amount = _.min(creep.target.energy, max);

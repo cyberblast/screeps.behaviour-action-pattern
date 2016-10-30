@@ -34,7 +34,7 @@ var mod = {
     }, 
     registerAction: function(creep, action, target, entry) {
         if( entry === undefined ) entry = this.getCreep(creep.name);
-        entry.carryCapacityLeft = creep.carryCapacity - _.sum(creep.carry);
+        entry.carryCapacityLeft = creep.carryCapacity - creep.sum;
         let room = creep.room;
         if( room.population === undefined ) {
             room.population = {

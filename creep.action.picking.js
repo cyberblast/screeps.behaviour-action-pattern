@@ -2,7 +2,7 @@ var action = new Creep.Action('picking');
 action.maxPerAction = 4;
 action.maxPerTarget = 2;
 action.isValidAction = function(creep){
-    return ( _.sum(creep.carry) < creep.carryCapacity );
+    return ( creep.sum < creep.carryCapacity );
 };
 action.isValidTarget = function(target){
     return (target != null && target.amount != null && target.amount > 0);

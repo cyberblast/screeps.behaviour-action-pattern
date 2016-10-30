@@ -14,19 +14,19 @@ action.isAddableTarget = function(target){
     return true;
 };
 action.isAddableAction = function(creep){
-    return _.sum(creep.carry) == 0;
+    return creep.sum == 0;
 };
 action.newTarget = function(creep){
-    if( (_.sum(creep.carry) == 0) == (creep.room.terminal.store.energy > TERMINAL_ENERGY*1.05) ) return creep.room.terminal;
+    if( (creep.sum == 0) == (creep.room.terminal.store.energy > TERMINAL_ENERGY*1.05) ) return creep.room.terminal;
     else return creep.room.storage; 
 };
 action.work = function(creep){
     var workResult = null;
-    if( _.sum(creep.carry) == 0 && creep.target.structureType == STRUCTURE_STORAGE ){
+    if( creep.sum == 0 && creep.target.structureType == STRUCTURE_STORAGE ){
         workResult = creep.withdraw(creep.target, creep.room.mineralType);
         this.assign(creep, creep.room.terminal);    
         delete creep.data.path;
-    } else if( _.sum(creep.carry) == 0 && creep.target.structureType == STRUCTURE_TERMINAL ) {
+    } else if( creep.sum == 0 && creep.target.structureType == STRUCTURE_TERMINAL ) {
         workResult = creep.withdraw(creep.target, RESOURCE_ENERGY);
         this.assign(creep, creep.room.storage);    
         delete creep.data.path;

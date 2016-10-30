@@ -3,7 +3,7 @@ action.maxPerAction = 3;
 action.maxPerTarget = 3;
 action.renewTarget = false;
 action.isValidAction = function(creep){
-    return ( _.sum(creep.carry) < creep.carryCapacity );
+    return creep.sum < creep.carryCapacity;
 };
 action.isValidTarget = function(target){
     return target != null;

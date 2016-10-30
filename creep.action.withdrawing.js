@@ -5,7 +5,7 @@ action.isValidAction = function(creep){
     return ( 
         creep.room.storage && 
         creep.room.storage.store.energy > 0  && 
-        _.sum(creep.carry) < creep.carryCapacity && 
+        creep.sum < creep.carryCapacity && 
         (!creep.room.conserveForDefense || creep.room.relativeEnergyAvailable < 0.8)
     );
 };

@@ -288,23 +288,34 @@ var mod = {
                 this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
         };
         
-        Object.defineProperty(Creep.prototype, 'flee', {
-            configurable: true,
-            get: function() {
-                if( this.data.flee ){
-                    // release when restored
-                    this.data.flee = this.hits != this.hitsMax;                       
-                } else {
-                    // set when low
-                    this.data.flee = (this.hits/this.hitsMax) < 0.35; 
+        Object.defineProperties(Creep.prototype, {
+            'flee': {
+                configurable: true,
+                get: function() {
+                    if( this.data.flee ){
+                        // release when restored
+                        this.data.flee = this.hits != this.hitsMax;                       
+                    } else {
+                        // set when low
+                        this.data.flee = (this.hits/this.hitsMax) < 0.35; 
+                    }
+                    return this.data.flee;
+                }, 
+                set: function(newValue) {
+                    this.data.flee = newValue;
                 }
-                return this.data.flee;
             }, 
-            set: function(newValue) {
-                this.data.flee = newValue;
+            'sum': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._sum) || this._sumSet != Game.time ) {
+                        this._sumSet = Game.time;
+                        this._sum = _.sum(this.carry);
+                    }
+                    return this._sum;
+                }
             }
-        });
-    
+        });    
     }
 }
 

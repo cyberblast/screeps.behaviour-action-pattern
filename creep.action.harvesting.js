@@ -19,7 +19,7 @@ action.isAddableTarget = function(target, creep){
         target.targetOf.length < target.accessibleFields );
 };
 action.isValidAction = function(creep){
-    return ( _.sum(creep.carry) < creep.carryCapacity && 
+    return ( creep.sum < creep.carryCapacity && 
     creep.room.sourceEnergyAvailable > 0 );
 };
 action.isValidTarget = function(target){
