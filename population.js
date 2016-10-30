@@ -167,7 +167,7 @@ var mod = {
                 }
                 else if(creep.ticksToLive == entry.spawningTime) { // will die in ticks equal to spawning time
                     if(CENSUS_ANNOUNCEMENTS) console.log(dye(CRAYON.system, entry.creepName + ' &gt; ') + dye(CRAYON.death, 'Farewell!') );
-                    if( Game.time % SPAWN_INTERVAL != 0 && !spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' ) { 
+                    if( !spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' ) { 
                         spawnsToProbe.push(entry.motherSpawn);
                     }
                 }
@@ -221,6 +221,11 @@ var mod = {
             }
         }
         _.forEach(Memory.population, validateAssignment);
+
+        if( Game.time % SPAWN_INTERVAL != 0 ) {
+            let probeSpawn = spawnName => Game.spawns[spawn].loop();
+            _.forEach(spawnsToProbe, probeSpawn);
+        }
     }
 }
 module.exports = mod;

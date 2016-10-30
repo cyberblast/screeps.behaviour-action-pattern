@@ -29,7 +29,7 @@ action.newTarget = function(creep){
             let contFilling = cont.sum;
             if( cont.targetOf )
                 contFilling -= _.sum( cont.targetOf.map( t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 )));
-            if( contFilling < Math.min(creep.carryCapacity - creep.sum, 400) ) return;
+            if( contFilling < Math.min(creep.carryCapacity - creep.sum, 500) ) return;
             if( contFilling > filling ){
                 filling = contFilling ;
                 target = cont;
@@ -45,7 +45,7 @@ action.work = function(creep){
         let max = creep.target.sum - (creep.target.storeCapacity * MANAGED_CONTAINER_TRIGGER);
         if( max < 1) workResult = ERR_NOT_ENOUGH_RESOURCES;
         else {
-            let amount = _.min(creep.target.energy, max);
+            let amount = _.min(creep.target.store.energy, max);
             workResult = creep.withdraw(creep.target, RESOURCE_ENERGY, amount);
         }
     } else if (creep.target.store != null ) {
