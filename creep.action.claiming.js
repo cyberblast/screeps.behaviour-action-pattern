@@ -1,6 +1,6 @@
 var action = new Creep.Action('claiming');
 action.isValidAction = function(creep){ return true; }; 
-action.isValidTarget = function(target){ return true; }; 
+action.isValidTarget = function(target){ return !target.room || !target.owner; }; // no sight or not owned
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; }; 
 action.newTarget = function(creep){
@@ -50,7 +50,10 @@ action.step = function(creep){
     creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
 };
 action.work = function(creep){
+    return creep.claimController(creep.target)
+    /*
     var workResult;
+        workResult = creep.claimController(creep.target);
     if( creep.target.owner && !creep.target.my ){
         workResult = creep.attackController(creep.target);
     }
@@ -61,6 +64,7 @@ action.work = function(creep){
         }
     }
     return workResult;
+    */
 };
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9983), SAY_PUBLIC); 
