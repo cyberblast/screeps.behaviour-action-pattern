@@ -19,7 +19,7 @@ action.isAddableTarget = function(target, creep){
             )
         )
     ) && (
-        (target.structureType == 'container' && (target.storeCapacity - _.sum(target.store)) > Math.min(creep.carry.energy, 500)) ||
+        (target.structureType == 'container' && (target.storeCapacity - target.sum) > Math.min(creep.carry.energy, 500)) ||
         ( target.structureType == 'link' )
     ) && (
         target.structureType != 'container' || !target.controller || creep.carry.energy == _.sum(creep.carry) // don't put minerals in upgrader container
@@ -53,6 +53,21 @@ action.newTarget = function(creep){
     } 
 };
 action.work = function(creep){
+    let workResult;
+    if( creep.target.source === true && creep.target.controller == true ) {
+        // don't overfill managed container'
+        let max = (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER)) - target.sum;
+        if( max < 1) workResult = ERR_FULL;
+        else {
+            let amount = _.min(creep.carry.energy, max);
+            workResult = creep.transfer(creep.target, RESOURCE_ENERGY, amount);
+        }
+    } else  workResult = creep.transfer(creep.target, RESOURCE_ENERGY);
+    // unregister
+    creep.data.actionName = null;
+    creep.data.targetId = null;
+    return workResult;
+    /* container charging with minerals not supported currently
     var workResult;
     if( creep.target.structureType == 'container' ) {
         for(var resourceType in creep.carry) {
@@ -62,9 +77,10 @@ action.work = function(creep){
             }
         }
     } else if( creep.target.structureType == 'link' ) {
-        workResult = creep.transfer(creep.target, RESOURCE_ENERGY);;
+        workResult = creep.transfer(creep.target, RESOURCE_ENERGY);
     }
     return workResult;
+    */
 };
 action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC); 

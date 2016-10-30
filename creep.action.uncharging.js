@@ -40,17 +40,27 @@ action.newTarget = function(creep){
     }
 };
 action.work = function(creep){
-    let ret = OK;
-    if (creep.target.store != null ) {
+    let workResult = OK;
+    if( creep.target.source === true && creep.target.controller == true ) {
+        let max = target.sum - (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
+        if( max < 1) workResult = ERR_NOT_ENOUGH_RESOURCES;
+        else {
+            let amount = _.min(creep.target.energy, max);
+            workResult = creep.withdraw(creep.target, RESOURCE_ENERGY, amount);
+        }
+    } else if (creep.target.store != null ) {
         let withdraw = r => {
             if( creep.target.store[r] > 0 )
-                ret = creep.withdraw(creep.target, r);
+                workResult = creep.withdraw(creep.target, r);
         };
         _.forEach(Object.keys(creep.target.store), withdraw);
     } else {
-        ret = creep.withdraw(creep.target, RESOURCE_ENERGY);
+        workResult = creep.withdraw(creep.target, RESOURCE_ENERGY);
     }
-    return ret;
+    // unregister
+    creep.data.actionName = null;
+    creep.data.targetId = null;
+    return workResult;
 };
 action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9738), SAY_PUBLIC);
