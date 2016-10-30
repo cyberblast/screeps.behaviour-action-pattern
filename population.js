@@ -194,8 +194,8 @@ var mod = {
                 let target = action && entry.targetId ? Game.getObjectById(entry.targetId) || Game.spawns[entry.targetId] || Game.flags[entry.targetId] : null;
                 if( action && target ) this.registerAction( creep, action, target, entry );
                 else {
-                    entry.actionName = null;
-                    entry.targetId = null;
+                    delete entry.actionName;
+                    delete entry.targetId;
                     creep.action = null;
                     creep.target = null;
                 }
@@ -211,8 +211,8 @@ var mod = {
                 let oldId = creep.target.id || creep.target.name; 
                 let target = creep.action.validateActionTarget(creep, creep.target);
                 if( !target ) {
-                    entry.actionName = null;
-                    entry.targetId = null;
+                    delete entry.actionName;
+                    delete entry.targetId;
                     creep.action = null;
                     creep.target = null;
                 } else if( oldId != target.id || target.name ) {

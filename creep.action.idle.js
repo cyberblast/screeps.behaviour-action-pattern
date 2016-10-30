@@ -9,8 +9,8 @@ action.newTarget = function(creep){
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
     creep.idleMove();
-    creep.data.actionName = null;
-    creep.data.targetId = null;
+    delete creep.data.actionName;
+    delete creep.data.targetId;
 };
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9835), SAY_PUBLIC); 

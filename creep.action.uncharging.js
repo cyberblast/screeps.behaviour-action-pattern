@@ -42,29 +42,27 @@ action.newTarget = function(creep){
 action.work = function(creep){
     let workResult = OK;
     if( creep.target.source === true && creep.target.controller == true ) {
+        // managed container fun...
         let max = creep.target.sum - (creep.target.storeCapacity * MANAGED_CONTAINER_TRIGGER);
-        console.log('energy in container: ' + creep.target.store.energy);
-        console.log('max allowed withdraw: ' + max);
         if( max < 1) workResult = ERR_NOT_ENOUGH_RESOURCES;
         else {
             let space = creep.carryCapacity - creep.sum;
-            let amount = _.min(creep.target.store.energy, max, space);
-            console.log('withdrawing: ' + amount);
+            let amount = _.min([creep.target.store.energy, max, space]);
             workResult = creep.withdraw(creep.target, RESOURCE_ENERGY, amount);
-            console.log('result: ' + workResult);
         }
     } else if (creep.target.store != null ) {
+        // container
         let withdraw = r => {
             if( creep.target.store[r] > 0 )
                 workResult = creep.withdraw(creep.target, r);
         };
         _.forEach(Object.keys(creep.target.store), withdraw);
-    } else {
+    } else { // link
         workResult = creep.withdraw(creep.target, RESOURCE_ENERGY);
     }
     // unregister
-    creep.data.actionName = null;
-    creep.data.targetId = null;
+    delete creep.data.actionName;
+    delete creep.data.targetId;
     return workResult;
 };
 action.onAssignment = function(creep, target) {

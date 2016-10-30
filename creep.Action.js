@@ -33,8 +33,8 @@ var Action = function(actionName){
             var workResult = this.work(creep);
             if( workResult != OK ) {
                 if( DEBUG ) logErrorCode(creep, workResult);
-                creep.data.actionName = null;
-                creep.data.targetId = null;
+                delete creep.data.actionName;
+                delete creep.data.targetId;
                 creep.action = null;
                 creep.target = null;
                 return;

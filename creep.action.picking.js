@@ -45,8 +45,8 @@ action.work = function(creep){
             return result;
         }
         // unregister
-        creep.data.actionName = null;
-        creep.data.targetId = null;
+        delete creep.data.actionName;
+        delete creep.data.targetId;
     }
     return result;
 };

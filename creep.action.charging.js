@@ -59,13 +59,13 @@ action.work = function(creep){
         let max = (creep.target.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER)) - creep.target.sum;
         if( max < 1) workResult = ERR_FULL;
         else {
-            let amount = _.min(creep.carry.energy, max);
+            let amount = _.min([creep.carry.energy, max]);
             workResult = creep.transfer(creep.target, RESOURCE_ENERGY, amount);
         }
     } else  workResult = creep.transfer(creep.target, RESOURCE_ENERGY);
     // unregister
-    creep.data.actionName = null;
-    creep.data.targetId = null;
+    delete creep.data.actionName;
+    delete creep.data.targetId;
     return workResult;
     /* container charging with minerals not supported currently
     var workResult;

@@ -40,7 +40,8 @@ action.newTarget = function(creep){
     if( !flag ){
         // unregister 
         creep.action = null;
-        creep.data.actionName = null;
+        delete creep.data.actionName;
+        delete creep.data.targetId;
         return;
     }
     if( !flag.room.controller || !flag.room.controller.my ) {        
