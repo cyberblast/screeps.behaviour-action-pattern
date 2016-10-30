@@ -9,7 +9,7 @@ action.isValidTarget = function(target){
 };  
 action.newTarget = function(creep){
     let that = this;
-    let target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+    let target = creep.pos.findClosestByRange(creep.room.structures, {
         filter: (structure) => that.isValidTarget(structure)
     });
     return target;

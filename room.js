@@ -1,6 +1,15 @@
 var mod = {
     extend: function(){
         Object.defineProperties(Room.prototype, {
+            'structures': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._structures) ){ 
+                        this._structures = this.find(FIND_STRUCTURES);
+                    }
+                    return this._structures;
+                }
+            },
             'sources': {
                 configurable: true,
                 get: function() {
@@ -126,12 +135,15 @@ var mod = {
                 get: function() {
                     if( _.isUndefined(this._repairableSites) ){ 
                         let that = this;
-                        this._repairableSites = _.sortBy(that.find(FIND_STRUCTURES, {
-                            filter: (structure) => (
-                                structure.hits < structure.hitsMax && 
-                                (!that.controller || !that.controller.my || structure.hits < MAX_REPAIR_LIMIT[that.controller.level] ) && 
-                                ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
-                                (structure.towers === undefined || structure.towers.length == 0)) }) , 
+                        this._repairableSites =_.sortBy( 
+                            that.structures.filter(
+                                structure => (
+                                    structure.hits < structure.hitsMax && 
+                                    (!that.controller || !that.controller.my || structure.hits < MAX_REPAIR_LIMIT[that.controller.level] ) && 
+                                    ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
+                                    (structure.towers === undefined || structure.towers.length == 0)
+                                )
+                            ),
                             'hits'
                         );
                     }
@@ -154,12 +166,15 @@ var mod = {
                 get: function() {
                     if( _.isUndefined(this._fortifyableSites) ){ 
                         let that = this;
-                        this._fortifyableSites = _.sortBy(that.find(FIND_STRUCTURES, {
-                            filter: (structure) => (
-                                structure.hits < structure.hitsMax && 
-                                (!that.controller || !that.controller.my || structure.hits < MAX_FORTIFY_LIMIT[that.controller.level] ) && 
-                                ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
-                                (structure.towers === undefined || structure.towers.length == 0)) }) , 
+                        this._fortifyableSites = _.sortBy(
+                            that.structures.filter(
+                                structure => (
+                                    structure.hits < structure.hitsMax && 
+                                    (!that.controller || !that.controller.my || structure.hits < MAX_FORTIFY_LIMIT[that.controller.level] ) && 
+                                    ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
+                                    (structure.towers === undefined || structure.towers.length == 0)
+                                )
+                            ), 
                             'hits'
                         );
                     }
@@ -539,23 +554,20 @@ var mod = {
                     if( Memory.pathfinder[this.name].costMatrix && (Game.time - Memory.pathfinder[this.name].updated) < COST_MATRIX_VALIDITY) {
                         return PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
                     }
-                
+
+                    if( DEBUG ) console.log("Calulating cost matrix for " + this.name);                
                     var costMatrix = new PathFinder.CostMatrix;
-                
-                    var structures = this.find(FIND_STRUCTURES);
-                    for(var i = 0; i < structures.length; i++) {
-                        var structure = structures[i];
-                
+                    let setCosts = structure => {
                         if(structure.structureType == STRUCTURE_ROAD) {
                             costMatrix.set(structure.pos.x, structure.pos.y, 1);
                         } else if(structure.structureType !== STRUCTURE_RAMPART || !structure.isPublic ) {
                             costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
                         }
-                    }
+                    };
+                    this.structures.forEach(setCosts);
                 
                     Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
                     Memory.pathfinder[this.name].updated = Game.time;
-                    if( DEBUG ) console.log("Calulating cost matrix for " + this.name);
                     return costMatrix;
                 }
             }, 
@@ -818,9 +830,9 @@ var mod = {
         };
         Room.prototype.saveContainers = function(){
             this.memory.container = [];
-            let containers = this.find(FIND_STRUCTURES, {
-                filter: (structure) => ( structure.structureType == STRUCTURE_CONTAINER )
-            });
+            let containers = this.structures.filter( 
+                structure => structure.structureType == STRUCTURE_CONTAINER 
+            );
             let add = (cont) => {
                 let source = cont.pos.findInRange(this.sources, 2);
                 let mineral = cont.pos.findInRange(this.minerals, 2);
@@ -881,11 +893,15 @@ var mod = {
         };
         Room.prototype.saveMinerals = function() {
             let that = this;
-            let toPos = o => { return {
-                x: o.pos.x,
-                y: o.pos.y
-            };};
-            let extractorPos = this.find(FIND_STRUCTURES, {filter:{structureType:STRUCTURE_EXTRACTOR}}).map(toPos);
+            let toPos = o => { 
+                return {
+                    x: o.pos.x,
+                    y: o.pos.y
+                };
+            };
+            let extractorPos = this.structures.filter( 
+                structure => structure.structureType == STRUCTURE_EXTRACTOR 
+            ).map(toPos);
             let hasExtractor = m => _.some(extractorPos, {
                 x: m.pos.x, 
                 y: m.pos.y
@@ -1030,6 +1046,7 @@ var mod = {
             this.memory.hostileIds = this.hostileIds;  
         }
         Room.prototype.init = function(){
+            delete this._structures;
             delete this._sourceEnergyAvailable;
             delete this._droppedResources;
             delete this._ticksToNextRegeneration;
