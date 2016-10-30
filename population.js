@@ -223,7 +223,7 @@ var mod = {
         _.forEach(Memory.population, validateAssignment);
 
         if( Game.time % SPAWN_INTERVAL != 0 ) {
-            let probeSpawn = spawnName => Game.spawns[spawn].loop();
+            let probeSpawn = spawnName => Game.spawns[spawnName].loop();
             _.forEach(spawnsToProbe, probeSpawn);
         }
     }
