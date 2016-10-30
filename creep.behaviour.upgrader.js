@@ -29,11 +29,9 @@ module.exports = {
             if( creep.room.linksController ){
                 creep.room.linksController.forEach(addSpot);
             }
-            // TODO: remove spot of existing upgrader (with ttl > time to approach)
-            // TODO: remove spot of miner
             let invalid = [];
             let findInvalid = entry => { 
-                if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot) 
+                if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot && entry.ttl > entry.spawningTime) 
                     invalid.push(entry.determinatedSpot)
             };
             _.forEach(Memory.population, findInvalid);

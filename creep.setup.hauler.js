@@ -5,6 +5,7 @@ setup.maxMulti = function(room) {
     if( room.minerals.length > 0 ) 
         max += 2; 
     let contSum = _.sum(room.containerIn.map(e => _.sum(e.store)));
+    contSum += _.sum(room.droppedResources, 'amount');    
     max += Math.floor(contSum / 1000);
     max += Creep.setup.upgrader.maxMulti(room);
     return Math.min(max, 16);

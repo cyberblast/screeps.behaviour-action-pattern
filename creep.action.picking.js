@@ -16,15 +16,15 @@ action.newTarget = function(creep){
     let target;
     if( creep.room.situation.invasion ) {
         // pickup near sources only
-        target = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY, {
+        target = creep.pos.findClosestByPath(creep.room.droppedResources, {
             filter: (o) => this.isAddableTarget(o, creep) && o.pos.findInRange(creep.room.sources, 1).length > 0
         });
     } else {
-        target = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
+        target = creep.pos.findClosestByPath(creep.room.droppedResources, {
             filter: (o) => ( o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep))
         });
         
-        if( !target ) target = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY, {
+        if( !target ) target = creep.pos.findClosestByPath(creep.room.droppedResources, {
             filter: (o) => this.isAddableTarget(o, creep)
         });
     }
@@ -34,10 +34,10 @@ action.work = function(creep){
     var result = creep.pickup(creep.target);
     if( result == OK ){
         // is there another in range?
-        let loot = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {
+        let loot = creep.pos.findInRange(creep.room.droppedResources, 1, {
             filter: (o) => o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep)
         });
-        if( !loot || loot.length < 1 ) loot = creep.pos.findInRange(FIND_DROPPED_ENERGY, 1, {
+        if( !loot || loot.length < 1 ) loot = creep.pos.findInRange(creep.room.droppedResources, 1, {
             filter: (o) => this.isAddableTarget(o, creep)
         });
         if( loot && loot.length > 0 ) {

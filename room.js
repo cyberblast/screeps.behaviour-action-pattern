@@ -18,6 +18,15 @@ var mod = {
                     return this._sources;
                 }
             },
+            'droppedResources': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._droppedResources) ){ 
+                        this._droppedResources = this.find(FIND_DROPPED_RESOURCES);
+                    }
+                    return this._droppedResources;
+                }
+            },
             'sourceAccessibleFields': {
                 configurable: true,
                 get: function() {
@@ -1022,6 +1031,7 @@ var mod = {
         }
         Room.prototype.init = function(){
             delete this._sourceEnergyAvailable;
+            delete this._droppedResources;
             delete this._ticksToNextRegeneration;
             delete this._relativeEnergyAvailable;
             delete this._towerFreeCapacity;

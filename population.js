@@ -171,6 +171,7 @@ var mod = {
                         spawnsToProbe.push(entry.motherSpawn);
                     }
                 }
+                entry.ttl = creep.ticksToLive;
 
                 if( entry.creepType && 
                     ( creep.ticksToLive === undefined || 
