@@ -214,10 +214,13 @@ var mod = {
                 let val = Memory.pavementArt[roomName] === undefined ? '' : Memory.pavementArt[roomName];
                 let posMap = flag => 'x'+flag.pos.x+'y'+flag.pos.y;
                 Memory.pavementArt[roomName] = val + flags.map(posMap).join('');
-                let setSite = flag => flag.room.createConstructionSite(f, STRUCTURE_WALL);
+                let setSite = flag => flag.room.createConstructionSite(flag, STRUCTURE_WALL);
                 flags.forEach(setSite);
                 let remove = flag => flag.remove();
                 flags.forEach(remove); 
+            }, 
+            unpave: function(roomname){
+
             }
         });
     }
