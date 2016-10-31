@@ -2,9 +2,10 @@ var action = new Creep.Action('reallocating');
 action.maxPerTarget = 4;
 action.maxPerAction = 4;
 action.isValidAction = function(creep){
-    return creep.room.storage && creep.room.terminal && creep.room.storage.store[creep.room.mineralType] && 
+    return creep.room.storage && creep.room.terminal &&  
         (creep.room.terminal.store.energy > TERMINAL_ENERGY*1.05 || 
-        ((creep.room.terminal.sum - creep.room.terminal.energy + Math.max(creep.room.terminal.energy, TERMINAL_ENERGY)) < creep.room.terminal.storeCapacity &&
+        (creep.room.storage.store[creep.room.mineralType] && 
+        (creep.room.terminal.sum - creep.room.terminal.store.energy + Math.max(creep.room.terminal.store.energy, TERMINAL_ENERGY)) < creep.room.terminal.storeCapacity &&
         creep.room.storage.store[creep.room.mineralType] > MAX_STORAGE_MINERAL*1.05));
 };
 action.isValidTarget = function(target){
