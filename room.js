@@ -139,9 +139,9 @@ var mod = {
                             that.structures.filter(
                                 structure => (
                                     structure.hits < structure.hitsMax && 
-                                    (!that.controller || !that.controller.my || structure.hits < MAX_REPAIR_LIMIT[that.controller.level] ) && 
+                                    (!that.controller || !that.controller.my || structure.hits < MAX_REPAIR_LIMIT[that.controller.level] || (structure.structureType === 'container' && structure.hits < LIMIT_URGENT_REPAIRING * 15)) && 
                                     ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
-                                    (structure.towers === undefined || structure.towers.length == 0) && 
+                                    ( structure.towers === undefined || structure.towers.length == 0) && 
                                     ( Memory.pavementArt[that.name] === undefined || Memory.pavementArt[that.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y) < 0 )
                                 )
                             ),
