@@ -23,9 +23,11 @@ var Setup = function(typeName){
     this.minControllerLevel = 0;
     this.globalMeasurement = false;
     this.measureByHome = false;
-    this.sortedParts = false;
+    this.sortedParts = true;
+    this.mixMoveParts = false;
     
     this.SelfOrCall = function(obj, param) {
+        if( obj == null ) return null;
         if (typeof obj === 'function' ) 
             return obj(param);
         else return obj; 
@@ -49,7 +51,7 @@ var Setup = function(typeName){
             breeding: 1
         };        
         memory.setup = this.type;
-        memory.parts = this.setParamParts(spawn.room);
+        memory.parts = this.parts(spawn.room);
         memory.cost = this.bodyCosts(memory.parts);  
         memory.mother = spawn.name; 
         memory.home = spawn.pos.roomName;
@@ -98,6 +100,23 @@ var Setup = function(typeName){
         }
         return existingCount < maxCount && existingWeight < maxWeight;
     };
+    this.existingWeight = function(room){
+        let existingWeight = 0;
+        if( this.measureByHome ){
+            let home = room.name;
+            let count = entry => {
+                if( entry.creepType == this.type && entry.homeRoom == home ){
+                    existingWeight += entry.weight;
+                }
+            };
+            _.forEach(Memory.population, count);
+        } else {
+            let population = this.globalMeasurement ? Population : room.population;
+            existingWeight = population ? (population.typeWeight[this.type] || 0) : 0;
+        }
+        return existingWeight;
+    };
+
     this.bodyCosts = function(body){
         let costs = 0;
         if( body ){
@@ -112,23 +131,54 @@ var Setup = function(typeName){
         let fixedCosts = this.bodyCosts(this.SelfOrCall(rcl.fixedBody, room));
         let multiCosts = this.bodyCosts(this.SelfOrCall(rcl.multiBody, room));
         let max = this.SelfOrCall(rcl.maxMulti, room);
-        return _.min([Math.floor( (room.energyAvailable-fixedCosts) / multiCosts), max]);
+        if( max == 0 || multiCosts == 0 ) return 0;
+        let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
+        if( maxWeight == null)
+            return _.min([Math.floor( (room.energyAvailable-fixedCosts) / multiCosts), max]);
+        let existingWeight = this.existingWeight(room);  
+        return Math.floor(_.min([((room.energyAvailable-fixedCosts) / multiCosts), max,((maxWeight - existingWeight - fixedCosts) / multiCosts)]));
     }; 
-    this.setParamParts = function(room){
+    this.parts = function(room){
         let rcl = this.RCL[room.controller.level];
         let fixedBody = this.SelfOrCall(rcl.fixedBody, room);
         let multiBody = this.SelfOrCall(rcl.multiBody, room);
         var parts = [];
+        let min = this.SelfOrCall(rcl.minMulti, room);
         let multi = this.multi(room);
+        if( multi < (min ? min : 0) ) return parts;
         for (let iMulti = 0; iMulti < multi; iMulti++) {
             parts = parts.concat(multiBody);
         }
         for( let iPart = 0; iPart < fixedBody.length; iPart ++ ){
             parts[parts.length] = fixedBody[iPart];
         }
-        if( this.sortedParts ) 
+        if( this.sortedParts ) {
             parts.sort(this.partsComparator);
+            if( this.mixMoveParts ) 
+                parts = this.mixParts(parts);
+            else if( parts.includes(HEAL) ) {
+                let index = parts.indexOf(HEAL);
+                parts.splice(index, 1);
+                parts.push(HEAL);
+            }
+        }
         return parts;
+    };
+    this.mixParts = function(parts){
+        let sum = _.countBy(parts);
+        let nonMove = parts.filter( part => part != MOVE );
+        let mix = [];
+        for( let iNonMove = nonMove.length-1; iNonMove >= 0; iNonMove-- ){
+            if( sum[MOVE]-- > 0 ){
+                mix.unshift(MOVE);
+            }
+            mix.unshift(nonMove[iNonMove]);
+        }
+        while(sum[MOVE] > 0){
+            mix.unshift(MOVE);
+            sum[MOVE]--;
+        }
+        return mix;
     };
     this.partsComparator = function (a, b) {
         let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, HEAL, MOVE];

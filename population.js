@@ -34,7 +34,7 @@ var mod = {
     }, 
     registerAction: function(creep, action, target, entry) {
         if( entry === undefined ) entry = this.getCreep(creep.name);
-        entry.carryCapacityLeft = creep.carryCapacity - _.sum(creep.carry);
+        entry.carryCapacityLeft = creep.carryCapacity - creep.sum;
         let room = creep.room;
         if( room.population === undefined ) {
             room.population = {
@@ -151,7 +151,7 @@ var mod = {
         let register = entry => {
             let creep = Game.creeps[entry.creepName];
             if ( !creep ) {
-                if(DEBUG) console.log(dye(CRAYON.system, entry.homeRoom + ' &gt; ') + dye(CRAYON.death, 'Good night ' + entry.creepName + '!') );
+                if(CENSUS_ANNOUNCEMENTS) console.log(dye(CRAYON.system, entry.homeRoom + ' &gt; ') + dye(CRAYON.death, 'Good night ' + entry.creepName + '!') );
                 this.unregisterCreep(entry.creepName);
             } 
             else {                
@@ -166,11 +166,12 @@ var mod = {
                     spawnsToProbe.push(entry.motherSpawn);
                 }
                 else if(creep.ticksToLive == entry.spawningTime) { // will die in ticks equal to spawning time
-                    if(DEBUG) console.log(dye(CRAYON.system, entry.creepName + ' &gt; ') + dye(CRAYON.death, 'Good night!') );
-                    if( Game.time % SPAWN_INTERVAL != 0 && !spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' ) { 
+                    if(CENSUS_ANNOUNCEMENTS) console.log(dye(CRAYON.system, entry.creepName + ' &gt; ') + dye(CRAYON.death, 'Farewell!') );
+                    if( !spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' ) { 
                         spawnsToProbe.push(entry.motherSpawn);
                     }
                 }
+                entry.ttl = creep.ticksToLive;
 
                 if( entry.creepType && 
                     ( creep.ticksToLive === undefined || 
@@ -193,8 +194,8 @@ var mod = {
                 let target = action && entry.targetId ? Game.getObjectById(entry.targetId) || Game.spawns[entry.targetId] || Game.flags[entry.targetId] : null;
                 if( action && target ) this.registerAction( creep, action, target, entry );
                 else {
-                    entry.actionName = null;
-                    entry.targetId = null;
+                    delete entry.actionName;
+                    delete entry.targetId;
                     creep.action = null;
                     creep.target = null;
                 }
@@ -210,8 +211,8 @@ var mod = {
                 let oldId = creep.target.id || creep.target.name; 
                 let target = creep.action.validateActionTarget(creep, creep.target);
                 if( !target ) {
-                    entry.actionName = null;
-                    entry.targetId = null;
+                    delete entry.actionName;
+                    delete entry.targetId;
                     creep.action = null;
                     creep.target = null;
                 } else if( oldId != target.id || target.name ) {
@@ -220,6 +221,11 @@ var mod = {
             }
         }
         _.forEach(Memory.population, validateAssignment);
+
+        if( Game.time % SPAWN_INTERVAL != 0 ) {
+            let probeSpawn = spawnName => Game.spawns[spawnName].loop();
+            _.forEach(spawnsToProbe, probeSpawn);
+        }
     }
 }
 module.exports = mod;

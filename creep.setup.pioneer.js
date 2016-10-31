@@ -1,8 +1,6 @@
 var setup = new Creep.Setup('pioneer');
 setup.minControllerLevel = 3;
 setup.globalMeasurement = true;
-setup.sortedParts = false;
-
 setup.maxCount = function(room){
     if ( room.situation.invasion || room.conserveForDefense ) 
         return 0;

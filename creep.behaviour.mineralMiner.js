@@ -1,5 +1,5 @@
 module.exports = {
-    name: 'miner',
+    name: 'mineralMiner',
     approach: function(creep){
         let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.pos.roomName);
         let range = creep.pos.getRangeTo(targetPos);
@@ -15,10 +15,10 @@ module.exports = {
                 let existingBranding = _.find(Memory.population, hasThisSource);
                 return !existingBranding;
             };
-            source = _.find(creep.room.sources, notDeterminated);
+            source = _.find(creep.room.minerals, notDeterminated);
             if( source ) {
                 creep.data.determinatedTarget = source.id;
-            }
+            } 
             if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9935), SAY_PUBLIC); 
         } else { // get dedicated source
             source = Game.getObjectById(creep.data.determinatedTarget);
@@ -60,7 +60,7 @@ module.exports = {
                         y: spot.y
                     }
                 } 
-                if( !creep.data.determinatedSpot ) logError('Unable to determine working location for miner in room ' + creep.pos.roomName);
+                if( !creep.data.determinatedSpot ) logError('Unable to determine working location for mineralMiner in room ' + creep.pos.roomName);
             }
 
             if( creep.data.determinatedSpot ) {

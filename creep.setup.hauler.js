@@ -1,21 +1,25 @@
 var setup = new Creep.Setup('hauler');
 setup.minControllerLevel = 3;
-setup.sortedParts = false;
-
 setup.maxMulti = function(room) {
     let max = 7; 
     if( room.minerals.length > 0 ) 
         max += 2; 
-    let contSum = _.sum(room.containerIn.map(e => _.sum(e.store)));
+    let contSum = _.sum(room.containerIn, 'sum');
+    contSum += _.sum(room.droppedResources, 'amount');    
     max += Math.floor(contSum / 1000);
-    return max;
+    max += Creep.setup.upgrader.maxMulti(room);
+    return Math.min(max, 16);
 };
 setup.maxCount = function(room){
+    let count = 0;
     if(room.population && room.population.typeCount['miner'] > 0) {
-        if( room.links.length > 2) return 1;
-        else return 2;
+        count += Creep.setup.upgrader.maxCount(room);
+        if( room.links.length < 3) count++;
     }
-    return 0; 
+    return count; 
+};
+setup.maxWeight = function(room){
+    return setup.maxCount(room) * 2000; 
 };
 setup.default = {
     fixedBody: [], 
@@ -24,7 +28,7 @@ setup.default = {
     minEnergyAvailable: 0.4,
     maxMulti: setup.maxMulti,
     maxCount: setup.maxCount, 
-    maxWeight: 2000
+    maxWeight: setup.maxWeight
 };
 setup.RCL = {
     1: setup.none,

@@ -15,13 +15,29 @@ module.exports = {
         } else {
             logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
         }
+        if( creep.flee ) {
+            if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9855), SAY_PUBLIC); 
+            let drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
+            _.forEach(Object.keys(creep.carry), drop);
+            let home = Game.spawns[creep.data.motherSpawn];
+            creep.drive( home.pos, 1, 1, Infinity);
+        }
     },
     nextAction: function(creep){
+        let carrySum = creep.sum;
         // at home
         if( creep.pos.roomName == creep.data.homeRoom ){ 
             // carrier filled
-            if( _.sum(creep.carry) > 0 ){
-                if( Creep.action.storing.assign(creep) ) return;
+            if( carrySum > 0 ){
+                let deposit = [];
+                if( creep.carry.energy == carrySum ) deposit = creep.room.linksPrivateers;
+                if( creep.room.storage ) deposit.push(creep.room.storage);
+                if( deposit.length > 0 ){
+                    let target = creep.pos.findClosestByRange(deposit);
+                    if( target.structureType == STRUCTURE_STORAGE && Creep.action.storing.assign(creep, target) ) return;
+                    else if(Creep.action.charging.assign(creep, target) ) return;
+                }
+                //if( Creep.action.storing.assign(creep) ) return;
                 if( Creep.action.charging.assign(creep) ) return;
                 Creep.behaviour.worker.nextAction(creep);
                 return;
@@ -42,7 +58,7 @@ module.exports = {
             // at target room
             if( creep.flag && creep.flag.pos.roomName == creep.pos.roomName ){
                 // carrier not full
-                if( _.sum(creep.carry) < creep.carryCapacity ) {
+                if( creep.sum < creep.carryCapacity ) {
                     // sources depleted
                     if( creep.room.sourceEnergyAvailable == 0 ){
                         // cloak flag
@@ -99,7 +115,7 @@ module.exports = {
             // not at target room
             else {
                 // travelling
-                if( _.sum(creep.carry) < creep.carryCapacity*0.5 && this.exploitNextRoom(creep) ) 
+                if( creep.sum < creep.carryCapacity*0.5 && this.exploitNextRoom(creep) ) 
                     return;
                 else {
                     // no new flag

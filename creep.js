@@ -10,6 +10,7 @@ var mod = {
             defending: require('./creep.action.defending'),
             dismantling: require('./creep.action.dismantling'),
             feeding: require('./creep.action.feeding'), 
+            fortifying: require('./creep.action.fortifying'), 
             fueling: require('./creep.action.fueling'), 
             guarding: require('./creep.action.guarding'), 
             harvesting: require('./creep.action.harvesting'),
@@ -23,7 +24,8 @@ var mod = {
             uncharging: require('./creep.action.uncharging'),
             upgrading: require('./creep.action.upgrading'), 
             withdrawing: require('./creep.action.withdrawing'),
-            robbing:require('./creep.action.robbing')
+            robbing:require('./creep.action.robbing'),
+            reallocating:require('./creep.action.reallocating')
         };
         Creep.behaviour = {
             claimer: require('./creep.behaviour.claimer'),
@@ -31,10 +33,12 @@ var mod = {
             healer: require('./creep.behaviour.healer'),
             melee: require('./creep.behaviour.melee'),
             miner: require('./creep.behaviour.miner'),
+            mineralMiner: require('./creep.behaviour.mineralMiner'),
             pioneer: require('./creep.behaviour.pioneer'),
             privateer: require('./creep.behaviour.privateer'),
             ranger: require('./creep.behaviour.ranger'),
             upgrader: require('./creep.behaviour.upgrader'),
+            warrior: require('./creep.behaviour.warrior'),
             worker: require('./creep.behaviour.worker')
         };
         Creep.setup = {
@@ -43,10 +47,12 @@ var mod = {
             healer: require('./creep.setup.healer'), 
             melee: require('./creep.setup.melee'),
             miner: require('./creep.setup.miner'),
+            mineralMiner: require('./creep.setup.mineralMiner'),
             pioneer: require('./creep.setup.pioneer'),
             privateer: require('./creep.setup.privateer'),
             ranger: require('./creep.setup.ranger'),
             upgrader: require('./creep.setup.upgrader'),
+            warrior: require('./creep.setup.warrior'),
             worker: require('./creep.setup.worker')
         };
         Creep.loop = function(){
@@ -71,6 +77,16 @@ var mod = {
             };
             body.forEach(evaluatePart);
             return threat;
+        }
+
+        Creep.prototype.hasActiveOffensivePart = function(){
+            return (this.body.find((part) => ( [ATTACK, RANGED_ATTACK].includes(part.type) && part.hits > 0 )) != null);
+        }
+        Creep.prototype.hasActiveAttackPart = function(){
+            return (this.body.find((part) => ( ATTACK == part.type && part.hits > 0 )) != null);
+        }
+        Creep.prototype.hasActiveRangedAttackPart = function(){
+            return (this.body.find((part) => ( RANGED_ATTACK == part.type && part.hits > 0 )) != null);
         }
 
         Creep.prototype.run = function(behaviour){
@@ -104,9 +120,9 @@ var mod = {
                     } else {
                         console.log( dye(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ));
                         // trying to import creep
-                        if( this.body.includes(WORK) && this.body.includes(CARRY))
+                        let counts = _.countBy(this.body, 'type');
+                        if( counts[WORK] && counts[CARRY])
                         {
-                            let counts = _.countBy(this.body, 'type');
                             let weight = (counts[WORK]*PART_COSTS[WORK]) + (counts[CARRY]*PART_COSTS[CARRY]) + (counts[MOVE]*PART_COSTS[MOVE]); 
                             var entry = Population.setCreep({
                                 creepName: this.name, 
@@ -125,6 +141,10 @@ var mod = {
                         } else this.suicide();
                     }
                 }
+                if( this.flee ) {
+                    this.fleeMove();
+                    if( SAY_ASSIGNMENT ) this.say(String.fromCharCode(10133), SAY_PUBLIC); 
+                }
             }
         };
         Creep.prototype.leaveBorder = function() {
@@ -142,16 +162,14 @@ var mod = {
             // TODO: CORNER cases
         };
         Creep.prototype.honk = function(){
-            if( HONK ) this.say(String.fromCharCode(9940), SAY_PUBLIC);//8655
+            //if( HONK ) this.say(String.fromCharCode(9940), SAY_PUBLIC);//8655
+            if( HONK ) this.say('\u{26D4}\u{FE0E}', SAY_PUBLIC);//8655
+            
         },
         Creep.prototype.honkEvade = function(){
             if( HONK ) this.say(String.fromCharCode(9936), SAY_PUBLIC);
         },
         Creep.prototype.drive = function( targetPos, intentionRange, enoughRange, range ) {
-            // temporary cleanup
-            if( this.data.route ) delete this.data.route;
-            if( Memory.pathfinder ) delete Memory.pathfinder;
-            
             if( !targetPos || this.fatigue > 0 || range <= intentionRange ) return;
             if( !range ) range = this.pos.getRangeTo(targetPos);
             let lastPos = this.data.lastPos;
@@ -221,22 +239,9 @@ var mod = {
             }
         };
         Creep.prototype.getPath = function( targetPos, ignoreCreeps ) {
+            let tempTarget = targetPos;
             if (ROUTE_PRECALCULATION && this.pos.roomName != targetPos.roomName) {
-                var route = Game.map.findRoute(this.room, targetPos.roomName, {
-                    routeCallback(roomName) {
-                        let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
-                        let isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
-                        let isMyRoom = Game.rooms[roomName] &&
-                            Game.rooms[roomName].controller &&
-                            Game.rooms[roomName].controller.my;
-                        let isExploitationRoom = FlagDir.find(FLAG_COLOR.invade.exploit, new RoomPosition(25, 28, roomName), true);
-                        if (isHighway || isMyRoom || isExploitationRoom) {
-                            return 1;
-                        } else {
-                            return 30;
-                        }
-                    }
-                });
+                var route = this.room.findRoute(targetPos.roomName);
                 if ( route.length > 0 )
                     targetPos = new RoomPosition(25,25,route[0].room);
             }
@@ -249,6 +254,104 @@ var mod = {
                 return path.substr(4);
             else return null;
         };
+        Creep.prototype.fleeMove = function( ) {
+            if( this.fatigue > 0 ) return;
+            let path;
+            if( !this.data.fleePath || this.data.fleePath.length < 2 || this.data.fleePath[0].x != this.pos.x || this.data.fleePath[0].y != this.pos.y || this.data.fleePath[0].roomName != this.pos.roomName ) {
+                let goals = _.map(this.room.hostiles, function(o) {  
+                    return { pos: o.pos, range: 5 };
+                });
+                
+                let ret = PathFinder.search(
+                    this.pos, goals, {
+                        flee: true,
+                        plainCost: 2,
+                        swampCost: 10, 
+                        maxOps: 500, 
+                        maxRooms: 2, 
+                        
+                        roomCallback: function(roomName) {
+                            let room = Game.rooms[roomName];
+                            if (!room) return;
+                            return room.currentCostMatrix;
+                        }
+                    }
+                );
+                path = ret.path
+
+                this.data.fleePath = path;
+            } else {
+                this.data.fleePath.shift();
+                path = this.data.fleePath;
+            }
+            if( path && path.length > 0 )
+                this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
+        };
+        Creep.prototype.idleMove = function( ) {
+            if( this.fatigue > 0 ) return;
+            // check if on road/structure
+            let here = this.room.lookForAt(LOOK_STRUCTURES, this.pos);
+            if( here && here.length > 0 ) {
+                let path;
+                if( !this.data.idlePath || this.data.idlePath.length < 2 || this.data.idlePath[0].x != this.pos.x || this.data.idlePath[0].y != this.pos.y || this.data.idlePath[0].roomName != this.pos.roomName ) {
+                    let goals = _.map(this.room.structures, function(o) {  
+                        return { pos: o.pos, range: 1 };
+                    });
+                    
+                    let ret = PathFinder.search(
+                        this.pos, goals, {
+                            flee: true,
+                            plainCost: 2,
+                            swampCost: 10, 
+                            maxOps: 350, 
+                            maxRooms: 1, 
+                            
+                            roomCallback: function(roomName) {
+                                let room = Game.rooms[roomName];
+                                if (!room) return;
+                                return room.currentCostMatrix;
+                            }
+                        }
+                    );
+                    path = ret.path;
+                    this.data.idlePath = path;
+                } else {
+                    this.data.idlePath.shift();
+                    path = this.data.idlePath;
+                }
+                if( path && path.length > 0 )
+                    this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
+            }
+        };
+        
+        Object.defineProperties(Creep.prototype, {
+            'flee': {
+                configurable: true,
+                get: function() {
+                    if( this.data.flee ){
+                        // release when restored
+                        this.data.flee = this.hits != this.hitsMax;                       
+                    } else {
+                        // set when low
+                        this.data.flee = (this.hits/this.hitsMax) < 0.35; 
+                    }
+                    return this.data.flee;
+                }, 
+                set: function(newValue) {
+                    this.data.flee = newValue;
+                }
+            }, 
+            'sum': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._sum) || this._sumSet != Game.time ) {
+                        this._sumSet = Game.time;
+                        this._sum = _.sum(this.carry);
+                    }
+                    return this._sum;
+                }
+            }
+        });    
     }
 }
 

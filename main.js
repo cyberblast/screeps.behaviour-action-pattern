@@ -34,3 +34,9 @@ module.exports.loop = function () {
     // uncomment for 1 loop toremove all construction Sites
     //_.forEach(Game.constructionSites, s => s.remove());
 };
+
+// use in console to spawn something...
+// Game.spawns['Spawn15'].createCreepBySetup(Creep.setup.worker)
+
+// move Creep
+// Game.creeps['ranger-900-1'].move(RIGHT)

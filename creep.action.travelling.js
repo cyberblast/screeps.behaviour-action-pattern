@@ -10,8 +10,8 @@ action.step = function(creep){
     }
     if( creep.target.pos.roomName == creep.pos.roomName ){
         // unregister
-        creep.data.actionName = null;
-        creep.data.targetId = null;
+        delete creep.data.actionName;
+        delete creep.data.targetId;
     }
 }
 action.onAssignment = function(creep, target) {

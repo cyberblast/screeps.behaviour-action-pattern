@@ -21,10 +21,11 @@ module.exports = {
         if( creep.carry.energy == 0 ) { 
             priority = [
                 Creep.action.picking,
-                Creep.action.withdrawing, 
                 Creep.action.uncharging, 
+                Creep.action.withdrawing, 
                 Creep.action.dismantling,
                 Creep.action.harvesting, 
+                Creep.action.reallocating, 
                 Creep.action.idle];
         }    
         else {                
@@ -38,20 +39,21 @@ module.exports = {
                 priority = [
                     Creep.action.repairing, 
                     Creep.action.building, 
-                    Creep.action.feeding, 
                     Creep.action.fueling, 
+                    Creep.action.fortifying,
+                    Creep.action.feeding, 
                     Creep.action.upgrading, 
                     Creep.action.storing, 
                     Creep.action.idle];
             }
-            if( creep.room.relativeEnergyAvailable < 1 && (!creep.room.population || !creep.room.population.typeCount['hauler'] || creep.room.population.typeCount['hauler'] < 1) ) { 
+            if( creep.room.relativeEnergyAvailable < 1 && (!creep.room.population || !creep.room.population.typeCount['hauler'] || creep.room.population.typeCount['hauler'] < 1 || !creep.room.population.typeCount['miner'] || creep.room.population.typeCount['miner'] < 1) ) { 
                 priority.unshift(Creep.action.feeding);
             }
             if( creep.room.controller && creep.room.controller.ticksToDowngrade < 2000 ) { // urgent upgrading 
                 priority.unshift(Creep.action.upgrading);
             }
         }
-        if( _.sum(creep.carry) > creep.carry.energy ) {
+        if( creep.sum > creep.carry.energy ) {
             priority.unshift(Creep.action.storing);
         }
         for(var iAction = 0; iAction < priority.length; iAction++) {

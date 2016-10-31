@@ -25,15 +25,10 @@ var mod = {
                         filter: {'color': COLOR_RED, 'secondaryColor': COLOR_YELLOW }
                     },
                 },
-
                 //COLOR_PURPLE,
                 //COLOR_BLUE,
                 //COLOR_CYAN,
-                idle: { // creeps go here to have a nice time (getting out of the way)
-                    color: COLOR_GREEN, 
-                    secondaryColor: COLOR_GREEN,
-                    filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_GREEN }
-                },
+                // COLOR_GREEN
                 defense: { // point to gather troops
                     color: COLOR_YELLOW, 
                     secondaryColor: COLOR_YELLOW,
@@ -49,7 +44,11 @@ var mod = {
                         filter: {'color': COLOR_ORANGE, 'secondaryColor': COLOR_YELLOW }
                     },  
                 },
-                // COLOR_BROWN,
+                pavementArt: {
+                    color: COLOR_BROWN, 
+                    secondaryColor: COLOR_BROWN,
+                    filter: {'color': COLOR_BROWN, 'secondaryColor': COLOR_BROWN },
+                },
                 // COLOR_GREY
                 claim: { // claim this room
                     color: COLOR_WHITE, 
@@ -191,6 +190,34 @@ var mod = {
                     let send = mail => Game.notify(mail);
                     _.forEach(mails, send);
                 }
+            },
+            routeRange: function(fromRoom, toRoom){
+                if( _.isUndefined(Memory.routeRange) ){
+                    Memory.routeRange = {};
+                }
+                if( _.isUndefined(Memory.routeRange[fromRoom]) ){
+                    Memory.routeRange[fromRoom] = {};
+                }
+                if( _.isUndefined(Memory.routeRange[fromRoom][toRoom]) ){
+                    let room = null;
+                    if( fromRoom instanceof Room ) room = fromRoom;
+                    else room = Game.rooms[fromRoom];
+                    if( _.isUndefined(room) ) return Room.roomDistance(fromRoom, toRoom, false);
+                    let route = room.findRoute(toRoom, false, false);
+                    if( _.isUndefined(route) ) return Room.roomDistance(fromRoom, toRoom, false);
+                    Memory.routeRange[fromRoom][toRoom] = route == ERR_NO_PATH ? Infinity : route.length;
+                }
+                return Memory.routeRange[fromRoom][toRoom];
+            },
+            pave: function(roomName){
+                let flags = _.values(Game.flags).filter(flag => flag.pos.roomName == roomName && flag.color == COLOR_BROWN);
+                let val = Memory.pavementArt[roomName] === undefined ? '' : Memory.pavementArt[roomName];
+                let posMap = flag => 'x'+flag.pos.x+'y'+flag.pos.y;
+                Memory.pavementArt[roomName] = val + flags.map(posMap).join('');
+                let setSite = flag => flag.room.createConstructionSite(f, STRUCTURE_WALL);
+                flags.forEach(setSite);
+                let remove = flag => flag.remove();
+                flags.forEach(remove); 
             }
         });
     }

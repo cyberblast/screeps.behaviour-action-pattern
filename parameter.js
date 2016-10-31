@@ -2,23 +2,37 @@ var mod = {
     CHATTY: false, // creeps say their current action 
     HONK: true, // HONK when stored path is blocked by other creeps
     OOPS: true, // Creeps say Oops when dropping energy during dropmining
-    SAY_ASSIGNMENT: true,
+    SAY_ASSIGNMENT: true, // say a symbol representing the assiged action
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details
+    CENSUS_ANNOUNCEMENTS: true, // log birth and death
     SPAWN_INTERVAL: 10, // loops between regular spawn probe
-    MAX_STORAGE_ENERGY: 200000,// stop storing energy when reached
-    MIN_STORAGE_ENERGY: 40000,// prefer storing energy until reached
-    MAX_STORAGE_MINERAL:300000, // keep a max of each type of minerals in store, stop mining if above this limit
-    MAX_REPAIR_LIMIT: { // Limits how high structures get repaired, regarding RCL
-        1: 10000,
-        2: 10000,
-        3: 10000,
-        4: 20000,
-        5: 50000,
-        6: 80000,
-        7: 120000,
-        8: 3000000
+    MAX_STORAGE_ENERGY: 300000,// stop storing energy when reached
+    MIN_STORAGE_ENERGY: 50000,// prefer storing energy until reached
+    MAX_STORAGE_MINERAL:250000, // keep a max of each type of minerals in store
+    MIN_MINERAL_SELL_AMOUNT:50000, 
+    MAX_SELL_RANGE: 40, 
+    TERMINAL_ENERGY: 100000, 
+    MAX_REPAIR_LIMIT: { // Limits how high structures get repaired by towers, regarding RCL
+        1: 1000,
+        2: 1000,
+        3: 2000,
+        4: 4000,
+        5: 8000,
+        6: 15000,
+        7: 20000,
+        8: 40000
     }, 
+    MAX_FORTIFY_LIMIT: { // Limits how high structures get repaired by creeps, regarding RCL
+        1: 1000,
+        2: 1000,
+        3: 2000,
+        4: 50000,
+        5: 100000,
+        6: 300000,
+        7: 500000,
+        8: Infinity
+    },
     LIMIT_URGENT_REPAIRING: 1000, // urgent repair when hits below
     GAP_REPAIR_DECAYABLE: 800, // decayables (e.g. roads) only get repaired when that much hits are missing
     MEMORY_RESYNC_INTERVAL: 100, // interval to reload spawns & towers present in a room
@@ -35,6 +49,8 @@ var mod = {
     MANAGED_CONTAINER_TRIGGER: 0.25, // managed containers get filled below this relative energy amount and emptied when above 1-this value
     ROUTE_PRECALCULATION: false, 
     NOTIFICATE_INVADER: false, // Also log common 'Invader' hostiles
-    COMBAT_CREEPS_RESPECT_RAMPARTS: false // causes own creeps not to leave through ramparts
+    COMBAT_CREEPS_RESPECT_RAMPARTS: false, // causes own creeps not to leave through ramparts
+    COST_MATRIX_VALIDITY: 500,
+    PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah'] // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
 }
 module.exports = mod;
