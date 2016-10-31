@@ -141,7 +141,8 @@ var mod = {
                                     structure.hits < structure.hitsMax && 
                                     (!that.controller || !that.controller.my || structure.hits < MAX_REPAIR_LIMIT[that.controller.level] ) && 
                                     ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
-                                    (structure.towers === undefined || structure.towers.length == 0)
+                                    (structure.towers === undefined || structure.towers.length == 0) && 
+                                    ( Memory.pavementArt[that.name] === undefined || Memory.pavementArt[that.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y) < 0 )
                                 )
                             ),
                             'hits'
@@ -170,9 +171,12 @@ var mod = {
                             that.structures.filter(
                                 structure => (
                                     structure.hits < structure.hitsMax && 
-                                    (!that.controller || !that.controller.my || structure.hits < MAX_FORTIFY_LIMIT[that.controller.level] ) && 
+                                    that.controller && that.controller.my &&
+                                    structure.hits < MAX_FORTIFY_LIMIT[that.controller.level] && 
+                                    structure.structureType != STRUCTURE_CONTAINER && 
                                     ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
-                                    (structure.towers === undefined || structure.towers.length == 0)
+                                    (structure.towers === undefined || structure.towers.length == 0) && 
+                                    ( Memory.pavementArt[that.name] === undefined || Memory.pavementArt[that.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y) < 0 )
                                 )
                             ), 
                             'hits'
@@ -1080,7 +1084,9 @@ var mod = {
             delete this._defenseLevel;
             delete this._hostileThreatLevel;
             delete this._minerals;    
-            delete this._currentCostMatrix;          
+            delete this._currentCostMatrix;
+
+            if( Memory.pavementArt === undefined ) Memory.pavementArt = {};
         }
         
         Room.prototype.loop = function(){

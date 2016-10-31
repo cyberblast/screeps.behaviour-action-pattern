@@ -44,7 +44,11 @@ var mod = {
                         filter: {'color': COLOR_ORANGE, 'secondaryColor': COLOR_YELLOW }
                     },  
                 },
-                // COLOR_BROWN,
+                pavementArt: {
+                    color: COLOR_BROWN, 
+                    secondaryColor: COLOR_BROWN,
+                    filter: {'color': COLOR_BROWN, 'secondaryColor': COLOR_BROWN },
+                },
                 // COLOR_GREY
                 claim: { // claim this room
                     color: COLOR_WHITE, 
@@ -204,6 +208,16 @@ var mod = {
                     Memory.routeRange[fromRoom][toRoom] = route == ERR_NO_PATH ? Infinity : route.length;
                 }
                 return Memory.routeRange[fromRoom][toRoom];
+            },
+            pave: function(roomName){
+                let flags = _.values(Game.flags).filter(flag => flag.pos.roomName == roomName && flag.color == COLOR_BROWN);
+                let val = Memory.pavementArt[roomName] === undefined ? '' : Memory.pavementArt[roomName];
+                let posMap = flag => 'x'+flag.pos.x+'y'+flag.pos.y;
+                Memory.pavementArt[roomName] = val + flags.map(posMap).join('');
+                let setSite = flag => flag.room.createConstructionSite(f, STRUCTURE_WALL);
+                flags.forEach(setSite);
+                let remove = flag => flag.remove();
+                flags.forEach(remove); 
             }
         });
     }
