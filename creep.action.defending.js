@@ -11,10 +11,11 @@ action.isValidTarget = function(target){
 }; 
 action.newTarget = function(creep){
     var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
-        filter: function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
+        filter : c => _.indexOf(PLAYER_WHITELIST, c.owner.username) == -1 &&
+        function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
     });    
     if(!closestHostile) {
-        closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, { filter : c => _.indexOf(PLAYER_WHITELIST, c.owner.username) == -1 });
     }     
     return closestHostile;
 };
