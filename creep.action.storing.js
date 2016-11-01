@@ -35,20 +35,21 @@ action.isAddableTarget = function(target){
 action.isValidMineralToTerminal = function(room){
     return ( room.storage.store[room.mineralType] && 
         room.storage.store[room.mineralType] > MAX_STORAGE_MINERAL*1.05 && 
-        (room.terminal.sum - room.terminal.store.energy + Math.max(room.terminal.store.energy, TERMINAL_ENERGY)) < room.terminal.storeCapacity);
+        ((room.terminal.sum - room.terminal.store.energy) + Math.max(room.terminal.store.energy, TERMINAL_ENERGY)) < room.terminal.storeCapacity);
 };
 action.newTarget = function(creep){
     let roomMineralType = creep.room.mineralType;
     let sendMineralToTerminal = creep => (
         creep.carry[roomMineralType] &&    
         creep.carry[roomMineralType] > 0 &&     
-        creep.room.storage.store[roomMineralType] && 
         this.isValidMineralToTerminal(creep.room));
     let sendEnergyToTerminal = creep => (
-        creep.carry.energy > 0 &&        
+        creep.carry.energy > 0 && 
         creep.room.storage.store.energy > ((MAX_STORAGE_ENERGY-MIN_STORAGE_ENERGY)/2)+MIN_STORAGE_ENERGY &&
-        creep.room.terminal.store.energy < TERMINAL_ENERGY*0.95 && 
-        (creep.room.terminal.storeCapacity - creep.room.terminal.sum) >= creep.carry[roomMineralType]);
+        creep.room.terminal.store.energy < TERMINAL_ENERGY*0.95 &&
+        creep.room.terminal.sum  < creep.room.terminal.storeCapacity);
+        // && 
+        //(creep.room.terminal.storeCapacity - creep.room.terminal.sum) >= creep.carry[roomMineralType]);
 
     if( creep.room.terminal &&  
         ( sendMineralToTerminal(creep) || sendEnergyToTerminal(creep) ) &&
@@ -67,6 +68,8 @@ action.work = function(creep){
             if( workResult != OK ) break;
         }
     }
+    delete creep.data.actionName;
+    delete creep.data.targetId;
     return workResult;
 };
 action.onAssignment = function(creep, target) {

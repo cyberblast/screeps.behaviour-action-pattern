@@ -32,7 +32,7 @@ action.isAddableTarget = function(target){
     return true;
 };
 action.newTarget = function(creep){
-    if( (creep.sum == 0) == (creep.room.terminal.store.energy > TERMINAL_ENERGY*1.05) ) return creep.room.terminal;
+    if( (creep.sum == 0) == (creep.room.terminal.store.energy > TERMINAL_ENERGY*1.05 || this.isValidMineralToStorage(creep)) ) return creep.room.terminal;
     else return creep.room.storage; 
 };
 action.work = function(creep){
@@ -44,9 +44,9 @@ action.work = function(creep){
         delete creep.data.path;
     } else if( creep.sum == 0 && creep.target.structureType == STRUCTURE_TERMINAL ) {
         // load: terminal => storage
-        if( this.isValidEnergyToStorage(creep.room) )
+        if( this.isValidEnergyToStorage(creep) )
             workResult = creep.withdraw(creep.target, RESOURCE_ENERGY);
-        else if( isValidMineralToStorage(creep.room) ){
+        else if( this.isValidMineralToStorage(creep) ){
             // TODO: get minerals != room mineral
             let withdraw = r => {
                 if( r != RESOURCE_ENERGY && r != creep.room.mineralType && creep.target.store[r] > 0 )
@@ -75,11 +75,13 @@ action.work = function(creep){
         }
         //workResult = creep.transfer(creep.target, RESOURCE_ENERGY);
         // unregister action
-        delete creep.data.actionName;
-        delete creep.data.targetId;
-        creep.action = null;
-        creep.target = null;    
-        delete creep.data.path;
+        if( creep.sum == 0 ){
+            delete creep.data.actionName;
+            delete creep.data.targetId;
+            creep.action = null;
+            creep.target = null;    
+            delete creep.data.path;
+        }
     } else {
         delete creep.data.actionName;
         delete creep.data.targetId;
