@@ -11,13 +11,16 @@ setup.maxMulti = function(room){
         let surplus = room.storage.store.energy - MAX_STORAGE_ENERGY;
         multi += Math.ceil( surplus / 20000 ); // one more multi for each 20k surplus (+1)
     }
-    return Math.min(11, multi); 
+    // at rcl 8 limit upgrading
+    let rclMax = ( room.controller.level == 8 ) ? CONTROLLER_MAX_UPGRADE_PER_TICK / UPGRADE_CONTROLLER_POWER : 50;
+    return Math.min(11, multi, rclMax); 
 };
 setup.maxCount = function(room){
     if (room.situation.invasion || 
         room.conserveForDefense || 
         (room.containerController.length + room.linksController.length) == 0 ) 
         return 0;
+    if( room.controller.level == 8 ) return 1;
     return room.storage ? Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY) / 100000)) : 1;
 };
 setup.default = {

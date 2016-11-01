@@ -86,7 +86,7 @@ action.run = {
         let hasRangedAttack = creep.hasActiveRangedAttackPart();
         if( !creep.flee ){
             if( hasAttack ){
-                let path = creep.room.findPath(creep.pos, creep.target.pos);
+                let path = creep.room.findPath(creep.pos, creep.target.pos, {'maxRooms': 1});
                 // not standing in rampart or next step is rampart as well
                 if( path && path.length > 0 && (
                     !COMBAT_CREEPS_RESPECT_RAMPARTS ||
@@ -97,7 +97,7 @@ action.run = {
                 }
             } else if( hasRangedAttack ) {
                 if( range > 3 ){
-                    var path = creep.room.findPath(creep.pos, creep.target.pos, {ignoreCreeps: false});
+                    var path = creep.room.findPath(creep.pos, creep.target.pos, {'maxRooms': 1});
                     if( path && path.length > 0 ) {
                         var isRampart = COMBAT_CREEPS_RESPECT_RAMPARTS && _.some( creep.room.lookForAt(LOOK_STRUCTURES, path[0].x, path[0].y), {'structureType': STRUCTURE_RAMPART });
                         if(!isRampart){
