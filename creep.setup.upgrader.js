@@ -11,19 +11,14 @@ setup.maxMulti = function(room){
         let surplus = room.storage.store.energy - MAX_STORAGE_ENERGY;
         multi += Math.ceil( surplus / 20000 ); // one more multi for each 20k surplus (+1)
     }
-    return multi; 
+    return Math.min(11, multi); 
 };
 setup.maxCount = function(room){
     if (room.situation.invasion || 
         room.conserveForDefense || 
         (room.containerController.length + room.linksController.length) == 0 ) 
         return 0;
-    return room.storage ? Math.max(1, Math.floor(room.storage.store.energy / MAX_STORAGE_ENERGY)) : 1;
-    // no storage => 1
-    // storage < MAX_STORAGE_ENERGY => 1
-    // storage < 2 * MAX_STORAGE_ENERGY => 1 (but increased size)
-    // storage < 3 * MAX_STORAGE_ENERGY => 2 (and increased size)
-    // storage < 4 * MAX_STORAGE_ENERGY => 3 (and increased size) etc..
+    return room.storage ? Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY) / 100000)) : 1;
 };
 setup.default = {
     fixedBody: [WORK, WORK, CARRY, MOVE], 

@@ -1,10 +1,19 @@
 var mod = {
     extend: function(){
         Object.defineProperties(Room.prototype, {
+            'structures': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._structures) ){ 
+                        this._structures = this.find(FIND_STRUCTURES);
+                    }
+                    return this._structures;
+                }
+            },
             'sources': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.memory.sources) ) {                        
+                    if( _.isUndefined(this.memory.sources) || this.name == 'sim') {                        
                         this._sources = this.find(FIND_SOURCES);
                         if( this._sources.length > 0 ){
                             this.memory.sources = this._sources.map(s => s.id);
@@ -16,6 +25,15 @@ var mod = {
                         this.memory.sources.forEach(addSource);
                     }
                     return this._sources;
+                }
+            },
+            'droppedResources': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._droppedResources) ){ 
+                        this._droppedResources = this.find(FIND_DROPPED_RESOURCES);
+                    }
+                    return this._droppedResources;
                 }
             },
             'sourceAccessibleFields': {
@@ -103,10 +121,11 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._constructionSites) ) { 
-                        this._constructionSites = this.find(FIND_MY_CONSTRUCTION_SITES); 
+                        let sites = this.find(FIND_MY_CONSTRUCTION_SITES); 
                         let siteOrder = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_WALL,STRUCTURE_RAMPART];
-                        let getOrder = site => {let o = siteOrder.indexOf(site); return o < 0 ? 100 : o;};
-                        this._constructionSites.sort( (a, b) => {return getOrder(a.structureType) - getOrder(b.structureType);} );
+                        let getOrder = site => {let o = siteOrder.indexOf(site.structureType); return o < 0 ? 100 : o;};
+                        //this._constructionSites.sort( (a, b) => {return getOrder(a.structureType) - getOrder(b.structureType);} );
+                        this._constructionSites = _.sortBy(sites, getOrder);
                     }
                     return this._constructionSites;
                 }
@@ -116,12 +135,16 @@ var mod = {
                 get: function() {
                     if( _.isUndefined(this._repairableSites) ){ 
                         let that = this;
-                        this._repairableSites = _.sortBy(that.find(FIND_STRUCTURES, {
-                            filter: (structure) => (
-                                structure.hits < structure.hitsMax && 
-                                (!that.controller || !that.controller.my || structure.hits < MAX_REPAIR_LIMIT[that.controller.level] ) && 
-                                ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
-                                (structure.towers === undefined || structure.towers.length == 0)) }) , 
+                        this._repairableSites =_.sortBy( 
+                            that.structures.filter(
+                                structure => (
+                                    structure.hits < structure.hitsMax && 
+                                    (!that.controller || !that.controller.my || structure.hits < MAX_REPAIR_LIMIT[that.controller.level] || (structure.structureType === 'container' && structure.hits < LIMIT_URGENT_REPAIRING * 15)) && 
+                                    ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
+                                    ( structure.towers === undefined || structure.towers.length == 0) && 
+                                    ( Memory.pavementArt[that.name] === undefined || Memory.pavementArt[that.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y) < 0 )
+                                )
+                            ),
                             'hits'
                         );
                     }
@@ -139,6 +162,29 @@ var mod = {
                     return this._urgentRepairableSites;
                 }
             }, 
+            'fortifyableSites': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._fortifyableSites) ){ 
+                        let that = this;
+                        this._fortifyableSites = _.sortBy(
+                            that.structures.filter(
+                                structure => (
+                                    structure.hits < structure.hitsMax && 
+                                    that.controller && that.controller.my &&
+                                    structure.hits < MAX_FORTIFY_LIMIT[that.controller.level] && 
+                                    structure.structureType != STRUCTURE_CONTAINER && 
+                                    ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
+                                    (structure.towers === undefined || structure.towers.length == 0) && 
+                                    ( Memory.pavementArt[that.name] === undefined || Memory.pavementArt[that.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y) < 0 )
+                                )
+                            ), 
+                            'hits'
+                        );
+                    }
+                    return this._fortifyableSites;
+                }
+            },
             'fuelables': {
                 configurable: true,
                 get: function() {
@@ -188,7 +234,7 @@ var mod = {
                         let byType = c => (c.source === true || c.mineral === true ) && c.controller == false;
                         this._containerIn = _.filter(this.container, byType);
                         // add managed
-                        let isFull = c => _.sum(c.store) >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
+                        let isFull = c => c.sum >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
                         this._containerIn = this._containerIn.concat(this.containerManaged.filter(isFull));
                     }
                     return this._containerIn;
@@ -201,7 +247,7 @@ var mod = {
                         let byType = c => (c.source === false && !c.mineral);
                         this._containerOut = _.filter(this.container, byType);
                         // add managed                         
-                        let isEmpty = c => _.sum(c.store) <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
+                        let isEmpty = c => c.sum <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
                         this._containerOut = this._containerOut.concat(this.containerManaged.filter(isEmpty));
                     }
                     return this._containerOut;
@@ -267,6 +313,16 @@ var mod = {
                     return this._linksIn;
                 }
             },
+            'linksPrivateers': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._linksPrivateers) ) { 
+                        let byType = l => l.storage == false && l.controller == false && l.source == false && l.energy < l.energyCapacity * 0.85;
+                        this._linksPrivateers = _.filter(this.links, byType);
+                    }
+                    return this._linksPrivateers;
+                }
+            },
             'creeps': {
                 configurable: true,
                 get: function() {
@@ -276,11 +332,20 @@ var mod = {
                     return this._creeps;
                 }
             },
+            'allCreeps': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._allCreeps) ){ 
+                        this._allCreeps = this.find(FIND_CREEPS);
+                    }
+                    return this._allCreeps;
+                }
+            },
             'hostiles': {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._hostiles) ){ 
-                        this._hostiles = this.find(FIND_HOSTILE_CREEPS);
+                        this._hostiles = this.find(FIND_HOSTILE_CREEPS, { filter : c => _.indexOf(PLAYER_WHITELIST, c.owner.username) == -1 });
                     }
                     return this._hostiles;
                 }
@@ -359,16 +424,14 @@ var mod = {
                     if (_.isUndefined(this._privateerMaxWeight) ) {
                         this._privateerMaxWeight = 0;
                         if ( !this.situation.invasion && !this.conserveForDefense ) {
-                            let base = 3000;
+                            let base = this.controller.level * 1000;
                             let that = this;
                             let adjacent, ownNeighbor, room, mult;
 
                             let flagEntries = FlagDir.filter(FLAG_COLOR.invade.exploit);
                             let countOwn = roomName => {
                                 if( roomName == that.name ) return;
-                                room = Game.rooms[roomName];
-                                if( room && room.controller && room.controller.my )
-                                    ownNeighbor++;
+                                if( Room.isMine(roomName) ) ownNeighbor++;
                             };
                             let calcWeight = flagEntry => {
                                 if( !this.adjacentAccessibleRooms.includes(flagEntry.roomName) ) return;
@@ -395,7 +458,7 @@ var mod = {
                 get: function () {
                     if (_.isUndefined(this._claimerMaxWeight) ) {
                         this._claimerMaxWeight = 0;
-                        let base = 1300;
+                        let base = 1000;
                         let maxRange = 2;
                         let that = this;
                         let distance, reserved, flag;
@@ -417,20 +480,10 @@ var mod = {
                     return this._claimerMaxWeight;
                 }
             },
-            'minStorageLevel': {
-                configurable: true,
-                get: function () {
-                    let defConMin = SPAWN_DEFENSE_ON_ATTACK ? 
-                        (Creep.setup.melee.maxCost(this) + Creep.setup.ranger.maxCost(this)) * 1.5 : // one of each + buffer
-                        0; 
-                    return Math.max(MIN_STORAGE_ENERGY, defConMin);
-                }
-            },
             'conserveForDefense': {
                 configurable: true,
                 get: function () {
-                    if (!this.storage) return false; // No storage 
-                    return (this.storage.store.energy < this.minStorageLevel); 
+                    return (this.storage && this.storage.store.energy < MIN_STORAGE_ENERGY); 
                 }
             },
             'hostileThreatLevel': {
@@ -483,8 +536,66 @@ var mod = {
                     }
                     return this._minerals;
                 }
+            },
+            'mineralType': {
+                configurable:true,
+                get: function () {
+                    if( _.isUndefined(this.memory.mineralType)) {
+                        let minerals = this.find(FIND_MINERALS);
+                        if( minerals && minerals.length > 0 )
+                            this.memory.mineralType = minerals[0].mineralType;
+                        else this.memory.mineralType = '';
+                    }
+                    return this.memory.mineralType;
+                }
+            }, 
+            'costMatrix': {
+                configurable: true, 
+                get: function () {
+                    if( _.isUndefined(Memory.pathfinder)) Memory.pathfinder = {};
+                    if( _.isUndefined(Memory.pathfinder[this.name])) Memory.pathfinder[this.name] = {};
+                
+                    if( Memory.pathfinder[this.name].costMatrix && (Game.time - Memory.pathfinder[this.name].updated) < COST_MATRIX_VALIDITY) {
+                        return PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
+                    }
+
+                    if( DEBUG ) console.log("Calulating cost matrix for " + this.name);                
+                    var costMatrix = new PathFinder.CostMatrix;
+                    let setCosts = structure => {
+                        if(structure.structureType == STRUCTURE_ROAD) {
+                            costMatrix.set(structure.pos.x, structure.pos.y, 1);
+                        } else if(structure.structureType !== STRUCTURE_RAMPART || !structure.isPublic ) {
+                            costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                        }
+                    };
+                    this.structures.forEach(setCosts);
+                
+                    Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
+                    Memory.pathfinder[this.name].updated = Game.time;
+                    return costMatrix;
+                }
+            }, 
+            'currentCostMatrix': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._currentCostMatrix) ) {
+                        let costs = this.costMatrix;
+                        // Avoid creeps in the room
+                        this.allCreeps.forEach(function(creep) {
+                            costs.set(creep.pos.x, creep.pos.y, 0xff);
+                        });
+                        this._currentCostMatrix = costs;
+                    }
+                    return this._currentCostMatrix;
+                }
             }
         });
+
+        Room.getCostMatrix = function(roomName) {
+            var room = Game.rooms[roomName];
+            if(!room) return;
+            return room.costMatrix;        
+        };
 
         Room.isMine = function(roomName) {
             let room = Game.rooms[roomName];
@@ -493,7 +604,6 @@ var mod = {
 
         Room.prototype.defenseMaxWeight = function(base, type) {
             let defenseMaxWeight = 0;
-            //let base = 2000;
             let maxRange = 2;
             let that = this;
             let distance, reserved, flag;
@@ -523,11 +633,12 @@ var mod = {
                     _.forEach(roomExits, add);
                 }
                 _.forEach(exits, addValidRooms);
+                /*
                 if( flag.targetOf ){
                     let ofType = flag.targetOf.filter(t => t.creepType == type);
                     reserved = _.sum(ofType,'weight');
-                } else reserved = 0;
-                defenseMaxWeight += ( (base - reserved) / ownNeighbor );
+                } else reserved = 0;*/
+                defenseMaxWeight += ( base  / ownNeighbor );
             };
             flagEntries.forEach(calcWeight);
             return defenseMaxWeight;
@@ -550,7 +661,11 @@ var mod = {
             }
             _.forEach(exits, addValidRooms);
             return validRooms;
-        },
+        };
+        Room.isCenterRoom = function(roomName){
+            let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+            return (parsed[1] % 10 === 5) && (parsed[2] % 10 === 5);
+        };
         Room.adjacentRooms = function(roomName){
             let parts = roomName.split(/([N,E,S,W])/);
             let dirs = ['N','E','S','W'];
@@ -563,14 +678,45 @@ var mod = {
             }
             return names;
         };
-        Room.roomDistance = function(roomName1, roomName2, diagonal){
+        Room.roomDistance = function(roomName1, roomName2, diagonal, continuous){
+            if( diagonal ) return Game.map.getRoomLinearDistance(roomName1, roomName2, continuous);
             if( roomName1 == roomName2 ) return 0;
             let posA = roomName1.split(/([N,E,S,W])/);
             let posB = roomName2.split(/([N,E,S,W])/);
             let xDif = posA[1] == posB[1] ? Math.abs(posA[2]-posB[2]) : posA[2]+posB[2]+1;
             let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
-            if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1 
+            //if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1 
             return xDif + yDif; // count diagonal as 2        
+        };
+        Room.prototype.findRoute = function(targetRoomName, checkOwner = true, preferHighway = true){
+            if (this.name == targetRoomName)  return [];
+
+            return Game.map.findRoute(this, targetRoomName, {
+                routeCallback(roomName) {
+                    let isHighway = false;
+                    if( preferHighway ){
+                        let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+                        isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
+                    }
+                    let isMyOrNeutralRoom = false;
+                    if( checkOwner ){
+                        let room = Game.rooms[roomName];
+                        isMyOrNeutralRoom = room &&
+                            room.controller &&
+                            (room.controller.my || 
+                            (room.controller.owner === undefined));
+                    }
+
+                    if (isMyOrNeutralRoom || roomName == targetRoomName) 
+                        return 1;
+                    else if (isHighway)
+                        return 3;
+                    else if( Game.map.isRoomAvailable(roomName))
+                        return (checkOwner || preferHighway) ? 11 : 1;
+                    return Infinity;
+                }
+            });
+            
         };
         /*
         Room.adjacentFields = function(pos, where = null){
@@ -593,8 +739,9 @@ var mod = {
                 look = Game.rooms[roomName].lookAtArea(minY,minX,maxY,maxX);
             }
             let invalidObject = o => {
-                return ((o.type == 'terrain' && o.terrain == 'wall') || 
-                    (o.type == 'structure' && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType)));
+                return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') || 
+                    o.type == LOOK_CONSTRUCTION_SITES ||
+                    (o.type == LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType) ));
             };
             let isWalkable = (posX, posY) => look[posY][posX].filter(invalidObject).length == 0;
 
@@ -688,12 +835,12 @@ var mod = {
         };
         Room.prototype.saveContainers = function(){
             this.memory.container = [];
-            let containers = this.find(FIND_STRUCTURES, {
-                filter: (structure) => ( structure.structureType == STRUCTURE_CONTAINER )
-            });
+            let containers = this.structures.filter( 
+                structure => structure.structureType == STRUCTURE_CONTAINER 
+            );
             let add = (cont) => {
-                let source = cont.pos.findInRange(this.sources, 1);
-                let mineral = cont.pos.findInRange(this.minerals, 1);
+                let source = cont.pos.findInRange(this.sources, 2);
+                let mineral = cont.pos.findInRange(this.minerals, 2);
                 this.memory.container.push({
                     id: cont.id, 
                     source: (source.length > 0), 
@@ -715,6 +862,7 @@ var mod = {
             let storageLinks = this.storage ? this.storage.pos.findInRange(links, 2).map(l => l.id) : [];
 
             // for each memory entry, keep if existing
+            /*
             let kept = [];
             let keep = (entry) => {
                 if( links.find( (c) => c.id == entry.id )){
@@ -723,34 +871,42 @@ var mod = {
                 }                    
             };
             this.memory.links.forEach(keep);
-            //this.memory.links = kept;
+            this.memory.links = kept;
+            */
             this.memory.links = [];
 
             // for each link add to memory ( if not contained )
             let add = (link) => {
                 if( !this.memory.links.find( (l) => l.id == link.id ) ) {
                     let isControllerLink = ( link.pos.getRangeTo(this.controller) < 4 );
-                    this.memory.links.push({
-                        id: link.id, 
-                        storage: storageLinks.includes(link.id),
-                        controller: isControllerLink
-                    });
+                    let isSource = false;
                     if( !isControllerLink ) {
                         let source = link.pos.findInRange(this.sources, 2);
                         let assign = s => s.memory.link = link.id;
                         source.forEach(assign);  
-                    }                  
+                        isSource = source.length > 0;
+                    }
+                    this.memory.links.push({
+                        id: link.id, 
+                        storage: storageLinks.includes(link.id),
+                        controller: isControllerLink, 
+                        source: isSource
+                    });
                 }
             };
             links.forEach(add);
         };
         Room.prototype.saveMinerals = function() {
             let that = this;
-            let toPos = o => { return {
-                x: o.pos.x,
-                y: o.pos.y
-            };};
-            let extractorPos = this.find(FIND_STRUCTURES, {filter:{structureType:STRUCTURE_EXTRACTOR}}).map(toPos);
+            let toPos = o => { 
+                return {
+                    x: o.pos.x,
+                    y: o.pos.y
+                };
+            };
+            let extractorPos = this.structures.filter( 
+                structure => structure.structureType == STRUCTURE_EXTRACTOR 
+            ).map(toPos);
             let hasExtractor = m => _.some(extractorPos, {
                 x: m.pos.x, 
                 y: m.pos.y
@@ -763,7 +919,7 @@ var mod = {
         };
         
         Room.prototype.linkDispatcher = function () {
-            let filled = l => l.cooldown == 0 && l.energy > l.energyCapacity * 0.85;
+            let filled = l => l.cooldown == 0 && l.energy > (l.energyCapacity * (l.source ? 0.85 : 0.5));
             let empty = l =>  l.energy < l.energyCapacity * 0.15;
             let filledIn = this.linksIn.filter(filled); 
             let emptyController = this.linksController.filter(empty); 
@@ -794,17 +950,66 @@ var mod = {
                 filledStorage.forEach(handleFilledStorage);
             }
         };
+        Room.prototype.terminalBroker = function () {
+            let that = this;
+            if( !this.terminal ) return;
+            let mineral = this.mineralType;
+            if( this.terminal.store[mineral] >= MIN_MINERAL_SELL_AMOUNT ) {
+                if(DEBUG) console.log('Executing terminalBroker in ' + this.name);
+                let orders = Game.market.getAllOrders( o => {
+                    if( !o.roomName ||
+                        o.resourceType != mineral || 
+                        o.type != 'buy' ||
+                        o.amount < MIN_MINERAL_SELL_AMOUNT ) return false;
+
+                    o.range = Game.map.getRoomLinearDistance(o.roomName, that.name, true);
+                    o.transactionAmount = Math.min(o.amount, that.terminal.store[mineral]);
+                    o.transactionCost = Game.market.calcTransactionCost(
+                        o.transactionAmount, 
+                        that.name, 
+                        o.roomName);
+                    if(o.transactionCost > that.terminal.store.energy && o.transactionAmount > MIN_MINERAL_SELL_AMOUNT) {
+                        // cant afford. try min amount
+                        o.transactionAmount = MIN_MINERAL_SELL_AMOUNT;
+                        o.transactionCost = Game.market.calcTransactionCost(
+                            o.transactionAmount, 
+                            that.name, 
+                            o.roomName);
+                    }
+
+                    o.credits = o.transactionAmount*o.price;
+                    o.ratio = o.credits/o.transactionCost; 
+                    
+                    return ( 
+                        o.ratio >= MIN_SELL_RATIO[mineral] &&
+                        //o.range <= MAX_SELL_RANGE && 
+                        o.transactionCost <= that.terminal.store.energy);
+                }); 
+
+                if( orders.length > 0 ){
+                    let order = _.max(orders, 'ratio');
+                    let result = Game.market.deal(order.id, order.transactionAmount, that.name);
+                    let message = '<h2>Room ' + that.name + ' executed an order!</h2><br/>Result: ' + translateErrorCode(result) + '<br/>Details:<br/> ' + JSON.stringify(order).replace(',',',<br/>');
+                    console.log(message);
+                    Game.notify( message );
+                }                
+            }
+        };
         Room.prototype.springGun = function(){
             if( this.situation.invasion ){
+                let RCL = {
+                    1: Creep.setup.melee,
+                    2: Creep.setup.melee,
+                    3: Creep.setup.melee,
+                    4: Creep.setup.ranger,
+                    5: Creep.setup.ranger,
+                    6: Creep.setup.warrior,
+                    7: Creep.setup.warrior,
+                    8: Creep.setup.warrior
+                };
                 let idleSpawns = this.spawns.filter( s => !s.spawning );
                 for( let iSpawn = 0; iSpawn < idleSpawns.length && this.defenseLevel.sum < this.hostileThreatLevel; iSpawn++ ) {
-                    // need more Defense!
-                    let setup;
-                    if( this.defenseLevel.melee > this.defenseLevel.ranger ) { 
-                        setup = Creep.setup.ranger; 
-                    } else {
-                        setup = Creep.setup.melee; 
-                    }
+                    let setup = RCL[this.controller.level];
                     if( DEBUG ) console.log( dye(CRAYON.system, this.name + ' &gt; ') + 'Spring Gun System activated in room ' + this.name + '! Trying to spawn an additional ' + setup.type + '.');
                     let creepParams = idleSpawns[iSpawn].createCreepBySetup(setup);
                     if( creepParams ){
@@ -815,14 +1020,57 @@ var mod = {
                 }
             }
         };
-        
-        Room.prototype.loop = function(){
+        Room.prototype.statistics = function(){
+            let that = this; 
+            if( this.memory.hostileIds === undefined )
+                this.memory.hostileIds = [];
+            if( this.memory.statistics === undefined)
+                this.memory.statistics = {};
+
+            if( this.controller && this.controller.my ) {
+                var registerHostile = creep => {
+                    if( !that.memory.hostileIds.includes(creep.id) ){ 
+                        var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
+                        if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
+                            var message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + that.name + ' at ' + toDateTimeString(toLocalDate(new Date()));
+                            Game.notify(message);
+                            console.log(message);
+                        }
+                        if(that.memory.statistics.invaders === undefined)
+                            that.memory.statistics.invaders = [];
+                        that.memory.statistics.invaders.push({
+                            owner: creep.owner.username, 
+                            id: creep.id,
+                            body: bodyCount, 
+                            enter: Game.time, 
+                            time: Date.now()
+                        });
+                    }
+                }
+                _.forEach(this.hostiles, registerHostile);
+                
+                var registerHostileLeave = id => {
+                    if( !that.hostileIds.includes(id) && that.memory.statistics && that.memory.statistics.invaders !== undefined && that.memory.statistics.invaders.length > 0){
+                        var select = invader => invader.id == id && invader.leave === undefined;
+                        var entry = _.find(that.memory.statistics.invaders, select);
+                        if( entry != undefined ) entry.leave = Game.time;
+                    }
+                }
+                _.forEach(this.memory.hostileIds, registerHostileLeave);
+            }
+
+            this.memory.hostileIds = this.hostileIds;  
+        }
+        Room.prototype.init = function(){
+            delete this._structures;
             delete this._sourceEnergyAvailable;
+            delete this._droppedResources;
             delete this._ticksToNextRegeneration;
             delete this._relativeEnergyAvailable;
             delete this._towerFreeCapacity;
             delete this._constructionSites;
             delete this._repairableSites;
+            delete this._fortifyableSites;
             delete this._fuelables;
             delete this._urgentRepairableSites;
             delete this._hostiles;
@@ -841,69 +1089,40 @@ var mod = {
             delete this._linksController;
             delete this._linksStorage;
             delete this._linksIn;
+            delete this._linksPrivateers;
             delete this._privateerMaxWeight;
             delete this._claimerMaxWeight;
             delete this._combatCreeps;
             delete this._defenseLevel;
             delete this._hostileThreatLevel;
-            delete this._minerals;
-              
+            delete this._minerals;    
+            delete this._currentCostMatrix;
+
+            if( Memory.pavementArt === undefined ) Memory.pavementArt = {};
+        }
+        
+        Room.prototype.loop = function(){
+            this.init();
             try {                
                 let that = this; 
-                if( Game.time % MEMORY_RESYNC_INTERVAL == 0 ) {
+                if( Game.time % MEMORY_RESYNC_INTERVAL == 0 || this.name == 'sim' ) {
                     //if( DEBUG ) console.log('MEMORY_RESYNC_INTERVAL reached');
                     this.saveMinerals();
                     this.saveTowers();
                     this.saveSpawns();
                     this.saveContainers();
                     this.saveLinks();
+                    this.terminalBroker();
                 }
-                if( this.memory.hostileIds === undefined )
-                    this.memory.hostileIds = [];
-                if( this.memory.statistics === undefined)
-                    this.memory.statistics = {};
-
                 this.roadConstruction();
                 this.springGun();
                 this.linkDispatcher();
-
-                if( this.controller && this.controller.my ) {
-                    var registerHostile = creep => {
-                        if( !that.memory.hostileIds.includes(creep.id) ){ 
-                            var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-                            if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
-                                var message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + that.name + ' at ' + toDateTimeString(toLocalDate(new Date()));
-                                Game.notify(message);
-                                console.log(message);
-                            }
-                            if(that.memory.statistics.invaders === undefined)
-                                that.memory.statistics.invaders = [];
-                            that.memory.statistics.invaders.push({
-                                owner: creep.owner.username, 
-                                id: creep.id,
-                                body: bodyCount, 
-                                enter: Game.time, 
-                                time: Date.now()
-                            });
-                        }
-                    }
-                    _.forEach(this.hostiles, registerHostile);
-                    
-                    var registerHostileLeave = id => {
-                        if( !that.hostileIds.includes(id) && that.memory.statistics && that.memory.statistics.invaders !== undefined && that.memory.statistics.invaders.length > 0){
-                            var select = invader => invader.id == id && invader.leave === undefined;
-                            var entry = _.find(that.memory.statistics.invaders, select);
-                            if( entry != undefined ) entry.leave = Game.time;
-                        }
-                    }
-                    _.forEach(this.memory.hostileIds, registerHostileLeave);
-                }
+                this.statistics();
             }
             catch(err) {
                 Game.notify('Error in room.js (Room.prototype.loop): ' + err);
                 console.log('Error in room.js (Room.prototype.loop): ' + err);
-            }
-            this.memory.hostileIds = this.hostileIds;            
+            }          
         };
     }
 }

@@ -18,23 +18,23 @@ module.exports = {
     },
     nextAction: function(creep){
         let priority;
-        if( _.sum(creep.carry) < creep.carryCapacity/2 ) { 
+        if( creep.sum < creep.carryCapacity/2 ) { 
             priority = [
+                Creep.action.uncharging,
                 Creep.action.picking,
-                Creep.action.uncharging, 
+                Creep.action.reallocating, 
                 Creep.action.withdrawing, 
                 Creep.action.idle];
         }
         else {	  
             priority = [
-                Creep.action.picking,
                 Creep.action.feeding, 
                 Creep.action.fueling, 
                 Creep.action.charging, 
                 Creep.action.storing, 
                 Creep.action.idle];
 
-            if ( _.sum(creep.carry) > creep.carry.energy || 
+            if ( creep.sum > creep.carry.energy || 
                 ( !creep.room.situation.invasion
                 && SPAWN_DEFENSE_ON_ATTACK
                 && creep.room.conserveForDefense && creep.room.relativeEnergyAvailable > 0.8)) {

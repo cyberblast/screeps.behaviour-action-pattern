@@ -33,10 +33,15 @@ var Action = function(actionName){
             var workResult = this.work(creep);
             if( workResult != OK ) {
                 if( DEBUG ) logErrorCode(creep, workResult);
-                creep.data.actionName = null;
+                delete creep.data.actionName;
+                delete creep.data.targetId;
+                creep.action = null;
+                creep.target = null;
+                return;
             }
         } 
-        creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
+        if( creep.target )
+            creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
     };
     this.work = function(creep){
         return ERR_INVALID_ARGS;

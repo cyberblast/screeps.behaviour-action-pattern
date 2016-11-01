@@ -118,8 +118,7 @@ var mod = {
             get: function() {
                 let that = this;
                 if( _.isUndefined(this.memory.container)) {
-                    let c = this.room.find(FIND_STRUCTURES, {filter:{structureType:STRUCTURE_CONTAINER}})
-                        .filter(c => c.pos.getRangeTo(that.pos) <= 2);
+                    let c = this.room.structures.filter(c => c.structureType == STRUCTURE_CONTAINER && c.pos.getRangeTo(that.pos) <= 2);
                     if (c.length > 0) this.memory.container = c[0].id;
                 };
 
@@ -145,6 +144,26 @@ var mod = {
             }
         });
         Object.defineProperty(StructureStorage.prototype, 'sum', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._sum) || this._sumSet != Game.time ) {
+                    this._sumSet = Game.time;
+                    this._sum = _.sum(this.store);
+                }
+                return this._sum;
+            }
+        });
+        Object.defineProperty(StructureTerminal.prototype, 'sum', {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._sum) || this._sumSet != Game.time ) {
+                    this._sumSet = Game.time;
+                    this._sum = _.sum(this.store);
+                }
+                return this._sum;
+            }
+        });
+        Object.defineProperty(StructureContainer.prototype, 'sum', {
             configurable: true,
             get: function() {
                 if( _.isUndefined(this._sum) || this._sumSet != Game.time ) {

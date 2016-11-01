@@ -14,7 +14,7 @@ action.isAddableTarget = function(target){
 };
 action.newTarget = function(creep){
     var that = this;
-    return creep.pos.findClosestByPath(FIND_STRUCTURES, {
+    return creep.pos.findClosestByPath(creep.room.structures, {
         filter: (structure) => {
             return ((structure.structureType == STRUCTURE_EXTENSION || 
                 structure.structureType == STRUCTURE_SPAWN ) 
@@ -26,6 +26,7 @@ action.work = function(creep){
     return creep.transfer(creep.target, RESOURCE_ENERGY);
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC); 
+    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC); 
+    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);    
 };
 module.exports = action;

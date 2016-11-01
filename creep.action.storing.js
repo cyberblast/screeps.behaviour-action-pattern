@@ -4,12 +4,12 @@ action.maxPerAction = 4;
 action.isValidAction = function(creep){
     return ( 
         creep.room.storage != null && 
-        _.sum(creep.carry) > 0 && 
+        creep.sum > 0 && 
         (
             creep.data.creepType == 'hauler' || 
             creep.data.creepType == 'privateer' ||
             ( 
-                _.sum(creep.carry) > creep.carry.energy || 
+                creep.sum > creep.carry.energy || 
                 (
                     (
                         !creep.room.population || 
@@ -32,7 +32,30 @@ action.isAddableTarget = function(target){
     return ( target.my && 
         (!target.targetOf || target.targetOf.length < this.maxPerTarget));
 };
+action.isValidMineralToTerminal = function(room){
+    return ( room.storage.store[room.mineralType] && 
+        room.storage.store[room.mineralType] > MAX_STORAGE_MINERAL*1.05 && 
+        ((room.terminal.sum - room.terminal.store.energy) + Math.max(room.terminal.store.energy, TERMINAL_ENERGY)) < room.terminal.storeCapacity);
+};
 action.newTarget = function(creep){
+    let roomMineralType = creep.room.mineralType;
+    let sendMineralToTerminal = creep => (
+        creep.carry[roomMineralType] &&    
+        creep.carry[roomMineralType] > 0 &&     
+        this.isValidMineralToTerminal(creep.room));
+    let sendEnergyToTerminal = creep => (
+        creep.carry.energy > 0 && 
+        creep.room.storage.store.energy > ((MAX_STORAGE_ENERGY-MIN_STORAGE_ENERGY)/2)+MIN_STORAGE_ENERGY &&
+        creep.room.terminal.store.energy < TERMINAL_ENERGY*0.95 &&
+        creep.room.terminal.sum  < creep.room.terminal.storeCapacity);
+        // && 
+        //(creep.room.terminal.storeCapacity - creep.room.terminal.sum) >= creep.carry[roomMineralType]);
+
+    if( creep.room.terminal &&  
+        ( sendMineralToTerminal(creep) || sendEnergyToTerminal(creep) ) &&
+        this.isAddableTarget(creep.room.terminal, creep)) {
+            return creep.room.terminal;        
+    }
     if( this.isValidTarget(creep.room.storage) && this.isAddableTarget(creep.room.storage, creep) )
         return creep.room.storage;
     return null;
@@ -45,9 +68,12 @@ action.work = function(creep){
             if( workResult != OK ) break;
         }
     }
+    delete creep.data.actionName;
+    delete creep.data.targetId;
     return workResult;
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC); 
+    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC); 
+    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);    
 };
 module.exports = action;

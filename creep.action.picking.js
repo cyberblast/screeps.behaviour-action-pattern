@@ -2,7 +2,7 @@ var action = new Creep.Action('picking');
 action.maxPerAction = 4;
 action.maxPerTarget = 2;
 action.isValidAction = function(creep){
-    return ( _.sum(creep.carry) < creep.carryCapacity );
+    return ( creep.sum < creep.carryCapacity );
 };
 action.isValidTarget = function(target){
     return (target != null && target.amount != null && target.amount > 0);
@@ -16,15 +16,15 @@ action.newTarget = function(creep){
     let target;
     if( creep.room.situation.invasion ) {
         // pickup near sources only
-        if( target == null ) target = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY, {
+        target = creep.pos.findClosestByPath(creep.room.droppedResources, {
             filter: (o) => this.isAddableTarget(o, creep) && o.pos.findInRange(creep.room.sources, 1).length > 0
         });
     } else {
-        target = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
+        target = creep.pos.findClosestByPath(creep.room.droppedResources, {
             filter: (o) => ( o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep))
         });
         
-        if( target == null ) target = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY, {
+        if( !target ) target = creep.pos.findClosestByPath(creep.room.droppedResources, {
             filter: (o) => this.isAddableTarget(o, creep)
         });
     }
@@ -33,9 +33,20 @@ action.newTarget = function(creep){
 action.work = function(creep){
     var result = creep.pickup(creep.target);
     if( result == OK ){
+        // is there another in range?
+        let loot = creep.pos.findInRange(creep.room.droppedResources, 1, {
+            filter: (o) => o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep)
+        });
+        if( !loot || loot.length < 1 ) loot = creep.pos.findInRange(creep.room.droppedResources, 1, {
+            filter: (o) => this.isAddableTarget(o, creep)
+        });
+        if( loot && loot.length > 0 ) {
+            this.assign(creep, loot[0]);
+            return result;
+        }
         // unregister
-        creep.data.actionName = null;
-        creep.data.targetId = null;
+        delete creep.data.actionName;
+        delete creep.data.targetId;
     }
     return result;
 };

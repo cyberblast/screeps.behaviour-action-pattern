@@ -3,7 +3,9 @@ action.renewTarget = false;
 action.isAddableAction = function(creep){ 
     return (!creep.room.population || 
         !creep.room.population.typeCount['hauler'] || 
-        creep.room.population.typeCount['hauler'] < 1); 
+        !creep.room.population.typeCount['miner'] || 
+        creep.room.population.typeCount['hauler'] < 1 || 
+        creep.room.population.typeCount['miner'] < 1); 
 };
 action.isAddableTarget = function(target, creep){ 
     return (
@@ -17,7 +19,7 @@ action.isAddableTarget = function(target, creep){
         target.targetOf.length < target.accessibleFields );
 };
 action.isValidAction = function(creep){
-    return ( _.sum(creep.carry) < creep.carryCapacity && 
+    return ( creep.sum < creep.carryCapacity && 
     creep.room.sourceEnergyAvailable > 0 );
 };
 action.isValidTarget = function(target){

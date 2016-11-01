@@ -1,10 +1,11 @@
 var action = new Creep.Action('withdrawing');
 action.maxPerTarget = 2;
+action.maxPerAction = 2;
 action.isValidAction = function(creep){
     return ( 
         creep.room.storage && 
         creep.room.storage.store.energy > 0  && 
-        _.sum(creep.carry) < creep.carryCapacity && 
+        creep.sum < creep.carryCapacity && 
         (!creep.room.conserveForDefense || creep.room.relativeEnergyAvailable < 0.8)
     );
 };
@@ -18,6 +19,7 @@ action.work = function(creep){
     return creep.withdraw(creep.target, RESOURCE_ENERGY);
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9738), SAY_PUBLIC); 
+    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9738), SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E4}\u{FE0E}', SAY_PUBLIC);     
 };
 module.exports = action;

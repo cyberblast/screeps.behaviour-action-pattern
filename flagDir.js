@@ -28,11 +28,11 @@ var mod = {
         if( flags.length == 1 ) 
             return flags[0].name;
         
-        // some flags found - find nearest by roughly estimated range
+        // some flags found - find nearest
         if( pos && pos.roomName ){
             var range = flag => {
                 var r = 0;
-                let roomDist = Room.roomDistance(flag.roomName, pos.roomName);
+                let roomDist = routeRange(pos.roomName, flag.roomName);
                 if( roomDist == 0 )
                     r = _.max([Math.abs(flag.x-pos.x), Math.abs(flag.y-pos.y)]);
                 else r = roomDist * 50;
@@ -42,7 +42,7 @@ var mod = {
                 flag.valid = r < Infinity;
                 return r;
             };
-            let flag = _.sortBy(flags, range)[0];
+            let flag = _.min(flags, range); //_.sortBy(flags, range)[0];
             return flag.valid ? flag.name : null;
         } else return flags[0].name;
     }, 
@@ -130,28 +130,29 @@ var mod = {
         if( range > 200 ) return Infinity;
         if( range > 100 ) range = range * 3;
         var flag = Game.flags[flagItem.name];
-        let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepName == creepName ? 0 : t.weight )) : 0;
-        //console.log('assigned: ' + assigned);
-        if( assigned > 2599 ) return Infinity;
-        return ((range*range) / (2600 - assigned))*500;
+        return flag.targetOf && flag.targetOf.length > 0 ? Infinity : range;
     },
     reserveMod: function(range, flagItem, creepName){
-        //console.log('range: ' + range);
-        let claimRange = FlagDir.claimMod(range, flagItem, creepName);
-        //console.log('claimRange: ' + claimRange);
-        if( claimRange == Infinity ) return Infinity;
+        if( range > 200 ) return Infinity;
+        if( range > 100 ) range = range * 3;
         var flag = Game.flags[flagItem.name];
+
+        let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepName == creepName ? 0 : t.weight )) : 0;
+        if( assigned > 3500 ) return Infinity;
+        if( assigned > 2000 ) assigned += 1000;
+
+        let reservation = 0;
         if( flag.room && flag.room.controller && flag.room.controller.reservation ) {
-            //console.log('adding reservation: ' + claimRange + flag.room.controller.reservation.ticksToEnd);
-            return claimRange + flag.room.controller.reservation.ticksToEnd;
+            reservation = flag.room.controller.reservation.ticksToEnd;
         } 
-        return claimRange;
+
+        return assigned + reservation + (range*10);
     },
     exploitMod: function(range, flagItem, creepName){
         if( range > 100 ) return Infinity;
         var flag = Game.flags[flagItem.name];
-        let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepName == creepName ? 0 : t.carryCapacityLeft)) : 0;
         if( flag.room ) {
+            let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepName == creepName ? 0 : t.carryCapacityLeft)) : 0;
             if( flag.room.sourceEnergyAvailable <= assigned ) return Infinity;
             return (range*range) / (flag.room.sourceEnergyAvailable - assigned);
         } 
