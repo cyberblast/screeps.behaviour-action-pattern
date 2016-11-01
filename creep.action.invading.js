@@ -44,21 +44,24 @@ action.newTarget = function(creep){
         delete creep.data.targetId;
         return;
     }
+
+
     if( !flag.room.controller || !flag.room.controller.my ) {        
         //attack healer
-        var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
-            filter: function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
+        var target = creep.pos.findClosestByRange(creep.room.hostiles, {
+            function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
         });
         if( target ) 
             return target;
         //attack attacker
-        target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
-            filter: function(hostile){ return _.some(hostile.body, function(part){return part.type == ATTACK || part.type == RANGED_ATTACK}); } 
+        target = creep.pos.findClosestByRange(creep.room.hostiles, {
+            function(hostile){ return _.some(hostile.body, function(part){return part.type == ATTACK || part.type == RANGED_ATTACK}); } 
         });
         if( target ) 
             return target;
+  
         // attack tower
-        target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
+       target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
             filter: (structure) => {
                 return structure.structureType == STRUCTURE_TOWER;
             }
@@ -66,7 +69,7 @@ action.newTarget = function(creep){
         if( target ) 
             return target;
         // attack remaining creeps
-        target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        target = creep.pos.findClosestByRange(creep.room.hostiles);
         if( target ) 
             return target;        
         // attack spawn
@@ -79,7 +82,7 @@ action.newTarget = function(creep){
             return target;        
         // attack structures
         target = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {
-            filter: (structure) => {
+            filter : (structure) => {
                 return structure.structureType != STRUCTURE_CONTROLLER;
             }
         });

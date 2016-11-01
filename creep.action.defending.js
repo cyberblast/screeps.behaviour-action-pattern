@@ -9,12 +9,12 @@ action.isValidTarget = function(target){
         target.hits > 0 &&
         target.my == false );
 }; 
-action.newTarget = function(creep){
-    var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
-        filter: function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
+action.newTarget = function(creep){    
+    var closestHostile = creep.pos.findClosestByRange(creep.room.hostiles, {
+        function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
     });    
     if(!closestHostile) {
-        closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        closestHostile = creep.pos.findClosestByRange(creep.room.hostiles);
     }     
     return closestHostile;
 };
