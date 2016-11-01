@@ -48,15 +48,13 @@ action.newTarget = function(creep){
 
     if( !flag.room.controller || !flag.room.controller.my ) {        
         //attack healer
-        var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
-            filter : c => _.indexOf(PLAYER_WHITELIST, c.owner.username) == -1 &&
+        var target = creep.pos.findClosestByRange(creep.room.hostiles, {
             function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
         });
         if( target ) 
             return target;
         //attack attacker
-        target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, {
-            filter : c => _.indexOf(PLAYER_WHITELIST, c.owner.username) == -1 &&
+        target = creep.pos.findClosestByRange(creep.room.hostiles, {
             function(hostile){ return _.some(hostile.body, function(part){return part.type == ATTACK || part.type == RANGED_ATTACK}); } 
         });
         if( target ) 
@@ -71,7 +69,7 @@ action.newTarget = function(creep){
         if( target ) 
             return target;
         // attack remaining creeps
-        target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, { filter : c => _.indexOf(PLAYER_WHITELIST, c.owner.username) == -1 });
+        target = creep.pos.findClosestByRange(creep.room.hostiles);
         if( target ) 
             return target;        
         // attack spawn
