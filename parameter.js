@@ -42,7 +42,7 @@ var mod = {
         7: 500000,
         8: Infinity
     },
-    LIMIT_URGENT_REPAIRING: 1000, // urgent repair when hits below
+    LIMIT_URGENT_REPAIRING: 750, // urgent repair when hits below
     GAP_REPAIR_DECAYABLE: 800, // decayables (e.g. roads) only get repaired when that much hits are missing
     MEMORY_RESYNC_INTERVAL: 100, // interval to reload spawns & towers present in a room
     TIME_REPORT: 28000, // ticks between room reports

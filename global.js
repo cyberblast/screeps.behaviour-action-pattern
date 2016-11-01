@@ -81,6 +81,11 @@ var mod = {
                 claim: 600, 
                 tough: 10
             },
+            DECAY_AMOUNT: {
+                'rampart': RAMPART_DECAY_AMOUNT, // 300
+                'road': ROAD_DECAY_AMOUNT, // 100
+                'container': CONTAINER_DECAY, // 5000
+            },
             DECAYABLES: [
                 STRUCTURE_ROAD, 
                 STRUCTURE_CONTAINER, 

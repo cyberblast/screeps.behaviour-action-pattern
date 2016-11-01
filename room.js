@@ -155,8 +155,7 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._urgentRepairableSites) ){ 
-                        var isUrgent = site => (site.hits < LIMIT_URGENT_REPAIRING || 
-                            (site.structureType === 'container' && site.hits < LIMIT_URGENT_REPAIRING * 15)); 
+                        var isUrgent = site => (site.hits < (LIMIT_URGENT_REPAIRING + (3*(DECAY_AMOUNT[site.structureType] || 0)))); 
                         this._urgentRepairableSites = _.filter(this.repairableSites, isUrgent);
                     }
                     return this._urgentRepairableSites;
