@@ -956,18 +956,30 @@ var mod = {
             if( this.terminal.store[mineral] >= MIN_MINERAL_SELL_AMOUNT ) {
                 if(DEBUG) console.log('Executing terminalBroker in ' + this.name);
                 let orders = Game.market.getAllOrders( o => {
-                    if( !o.roomName ) return false;
+                    if( !o.roomName ||
+                        o.resourceType != mineral || 
+                        o.type != 'buy' ||
+                        o.amount < MIN_MINERAL_SELL_AMOUNT ) return false;
+
                     o.range = Game.map.getRoomLinearDistance(o.roomName, that.name, true);
+                    o.transactionAmount = Math.min(o.amount, that.terminal.store[mineral]);
                     o.transactionCost = Game.market.calcTransactionCost(
-                        Math.min(o.amount, that.terminal.store[mineral]), 
+                        o.transactionAmount, 
                         that.name, 
                         o.roomName);
-                    o.credits = o.amount*o.price;
-                    o.ratio = o.credits/o.transactionCost;  
+                    if(o.transactionCost > that.terminal.store.energy && o.transactionAmount > MIN_MINERAL_SELL_AMOUNT) {
+                        // cant afford. try min amount
+                        o.transactionAmount = MIN_MINERAL_SELL_AMOUNT;
+                        o.transactionCost = Game.market.calcTransactionCost(
+                            o.transactionAmount, 
+                            that.name, 
+                            o.roomName);
+                    }
+
+                    o.credits = o.transactionAmount*o.price;
+                    o.ratio = o.credits/o.transactionCost; 
+                    
                     return ( 
-                        o.resourceType == mineral &&  
-                        o.type == 'buy' &&  
-                        o.amount >= MIN_MINERAL_SELL_AMOUNT &&
                         o.ratio >= MIN_SELL_RATIO[mineral] &&
                         //o.range <= MAX_SELL_RANGE && 
                         o.transactionCost <= that.terminal.store.energy);
@@ -975,7 +987,7 @@ var mod = {
 
                 if( orders.length > 0 ){
                     let order = _.max(orders, 'ratio');
-                    let result = Game.market.deal(order.id, Math.min(order.amount, that.terminal.store[mineral]), that.name);
+                    let result = Game.market.deal(order.id, order.transactionAmount, that.name);
                     let message = '<h2>Room ' + that.name + ' executed an order!</h2><br/>Result: ' + translateErrorCode(result) + '<br/>Details:<br/> ' + JSON.stringify(order).replace(',',',<br/>');
                     console.log(message);
                     Game.notify( message );
