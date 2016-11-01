@@ -954,7 +954,7 @@ var mod = {
             if( !this.terminal ) return;
             let mineral = this.mineralType;
             if( this.terminal.store[mineral] >= MIN_MINERAL_SELL_AMOUNT ) {
-                if( DEBUG) console.log('Executing terminalBroker in ' + this.name);
+                if(DEBUG) console.log('Executing terminalBroker in ' + this.name);
                 let orders = Game.market.getAllOrders( o => {
                     if( !o.roomName ) return false;
                     o.range = Game.map.getRoomLinearDistance(o.roomName, that.name, true);
@@ -968,17 +968,16 @@ var mod = {
                         o.resourceType == mineral &&  
                         o.type == 'buy' &&  
                         o.amount >= MIN_MINERAL_SELL_AMOUNT &&
-                        o.range <= MAX_SELL_RANGE && 
+                        o.ratio >= MIN_SELL_RATIO[mineral] &&
+                        //o.range <= MAX_SELL_RANGE && 
                         o.transactionCost <= that.terminal.store.energy);
-                }); // TODO: replace max range with min ratio ?
+                }); 
 
                 if( orders.length > 0 ){
-                    //orders = _.sortBy(orders, 'ratio');
-                    //let order = orders.pop();
                     let order = _.max(orders, 'ratio');
                     let result = Game.market.deal(order.id, Math.min(order.amount, that.terminal.store[mineral]), that.name);
-                    let message = '<h2>Room ' + that.name + ' executed an order!</h2><br/>Result: ' + translateErrorCode(result) + '<br/>Details: ' + JSON.stringify(order);
-                    if( DEBUG) console.log(message);
+                    let message = '<h2>Room ' + that.name + ' executed an order!</h2><br/>Result: ' + translateErrorCode(result) + '<br/>Details:<br/> ' + JSON.stringify(order).replace(',',',<br/>');
+                    console.log(message);
                     Game.notify( message );
                 }                
             }

@@ -11,8 +11,17 @@ var mod = {
     MIN_STORAGE_ENERGY: 50000,// prefer storing energy until reached
     MAX_STORAGE_MINERAL:250000, // keep a max of each type of minerals in store
     MIN_MINERAL_SELL_AMOUNT:50000, 
-    MAX_SELL_RANGE: 40, 
+    MAX_SELL_RANGE: 60, 
     TERMINAL_ENERGY: 100000, 
+    MIN_SELL_RATIO: {
+        'H': 1,
+        'O': 1,
+        'U': 1.5,
+        'L': 1.5,
+        'K': 1.5,
+        'Z': 1.5,
+        'X': 2
+    },
     MAX_REPAIR_LIMIT: { // Limits how high structures get repaired by towers, regarding RCL
         1: 1000,
         2: 1000,
