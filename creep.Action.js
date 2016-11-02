@@ -1,7 +1,7 @@
 var Action = function(actionName){
     this.name = actionName;
-    this.maxPerTarget = 1;
-    this.maxPerAction = 1;
+    this.maxPerTarget = Infinity;
+    this.maxPerAction = Infinity;
     this.targetRange = 1;
     this.reachedRange = 1;
     this.renewTarget = true;

@@ -457,7 +457,7 @@ var mod = {
                 get: function () {
                     if (_.isUndefined(this._claimerMaxWeight) ) {
                         this._claimerMaxWeight = 0;
-                        let base = 1000;
+                        let base = 1250;
                         let maxRange = 2;
                         let that = this;
                         let distance, reserved, flag;

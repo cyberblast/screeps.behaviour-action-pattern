@@ -16,7 +16,7 @@ action.isAddableTarget = function(target, creep){
             )
         )
     ) && (target.targetOf === undefined || 
-        target.targetOf.length < target.accessibleFields );
+        target.targetOf.length < target.accessibleFields + 1 );
 };
 action.isValidAction = function(creep){
     return ( creep.sum < creep.carryCapacity && 
