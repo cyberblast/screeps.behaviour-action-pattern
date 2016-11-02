@@ -1,15 +1,6 @@
 var mod = {
     extend: function(){
         Object.defineProperties(Room.prototype, {
-            'structures': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._structures) ){ 
-                        this._structures = this.find(FIND_STRUCTURES);
-                    }
-                    return this._structures;
-                }
-            },
             'sources': {
                 configurable: true,
                 get: function() {
@@ -76,6 +67,15 @@ var mod = {
                         this._relativeEnergyAvailable = this.energyCapacityAvailable > 0 ? this.energyAvailable / this.energyCapacityAvailable : 0;
                     }
                     return this._relativeEnergyAvailable;
+                }
+            },
+            'structures': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._structures) ){ 
+                        this._structures = this.find(FIND_STRUCTURES);
+                    }
+                    return this._structures;
                 }
             },
             'spawns': {
@@ -587,6 +587,15 @@ var mod = {
                     }
                     return this._currentCostMatrix;
                 }
+            }, 
+            'my': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._my) ) {
+                        this._my = this.controller && this.controller.my;
+                    }
+                    return this._my;
+                }
             }
         });
 
@@ -953,6 +962,7 @@ var mod = {
             let that = this;
             if( !this.terminal ) return;
             let mineral = this.mineralType;
+            let transacting = false;
             if( this.terminal.store[mineral] >= MIN_MINERAL_SELL_AMOUNT ) {
                 if(DEBUG) console.log('Executing terminalBroker in ' + this.name);
                 let orders = Game.market.getAllOrders( o => {
@@ -991,7 +1001,25 @@ var mod = {
                     let message = '<h2>Room ' + that.name + ' executed an order!</h2><br/>Result: ' + translateErrorCode(result) + '<br/>Details:<br/> ' + JSON.stringify(order).replace(',',',<br/>');
                     console.log(message);
                     Game.notify( message );
+                    transacting = true;
                 }                
+            } 
+            if( this.controller.level == 8 && !transacting && 
+                this.storage.store.energy > MAX_STORAGE_ENERGY && 
+                this.terminal.store[mineral] < 100000 && 
+                this.terminal.store.energy > 50000 ){
+                let requiresEnergy = room => (
+                    room.my && 
+                    room.controller.level < 8 && 
+                    room.storage && room.terminal && 
+                    room.terminal.sum < room.terminal.storeCapacity - 50000 && 
+                    room.storage.sum < room.storage.storeCapacity * 0.8 && 
+                    !room._isReceivingEnergy
+                )
+                let targetRoom = _.min(_.filter(Game.rooms, requiresEnergy), 'storage.store.energy');
+                targetRoom._isReceivingEnergy = true;
+                let response = this.terminal.send('energy', 50000, targetRoom.name, 'have fun');
+                console.log(`Transfering 50k energy from room ${this.name} to ${targetRoom.name}. (${translateErrorCode(response)})`);
             }
         };
         Room.prototype.springGun = function(){
@@ -1096,6 +1124,8 @@ var mod = {
             delete this._hostileThreatLevel;
             delete this._minerals;    
             delete this._currentCostMatrix;
+            delete this._my;
+            delete this._isReceivingEnergy;
 
             if( Memory.pavementArt === undefined ) Memory.pavementArt = {};
         }
