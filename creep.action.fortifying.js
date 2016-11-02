@@ -1,4 +1,6 @@
 var action = new Creep.Action('fortifying');
+action.maxPerTarget = 1;
+action.maxPerAction = 1;
 action.targetRange = 3;
 action.isValidAction = function(creep){
     return (creep.carry.energy > 0 && ( !creep.room.storage || creep.room.storage.store.energy > MAX_STORAGE_ENERGY ));

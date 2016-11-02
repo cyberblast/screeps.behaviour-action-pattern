@@ -1,4 +1,6 @@
 var action = new Creep.Action('fueling');
+action.maxPerTarget = 1;
+action.maxPerAction = 1;
 action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 && creep.room.towerFreeCapacity > 0 );
 };
