@@ -1,11 +1,11 @@
 var action = new Creep.Action('harvesting');
 action.renewTarget = false;
 action.isAddableAction = function(creep){ 
-    return (!creep.room.population || 
-        !creep.room.population.typeCount['hauler'] || 
-        !creep.room.population.typeCount['miner'] || 
-        creep.room.population.typeCount['hauler'] < 1 || 
-        creep.room.population.typeCount['miner'] < 1); 
+    return true;//(!creep.room.population || 
+        //!creep.room.population.typeCount['hauler'] || 
+        //!creep.room.population.typeCount['miner'] || 
+        //creep.room.population.typeCount['hauler'] < 1 || 
+        //creep.room.population.typeCount['miner'] < 1); 
 };
 action.isAddableTarget = function(target, creep){ 
     return (
