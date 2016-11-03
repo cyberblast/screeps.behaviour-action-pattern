@@ -6,6 +6,15 @@ setup.maxCount = (room) => ( room.situation.invasion || room.conserveForDefense 
 setup.maxWeight = (room) => room.claimerMaxWeight;
 
 setup.small = {
+    fixedBody: [CLAIM, MOVE], 
+    multiBody: [], 
+    minAbsEnergyAvailable: 650, 
+    minEnergyAvailable: 0.6,
+    maxMulti: 0,
+    maxCount: setup.maxCount, 
+    maxWeight: setup.maxWeight
+};
+setup.mid = {
     fixedBody: [CLAIM, MOVE, CLAIM, MOVE], 
     multiBody: [], 
     minAbsEnergyAvailable: 1300, 
@@ -28,9 +37,9 @@ setup.RCL = {
     1: setup.none,
     2: setup.none,
     3: setup.small,
-    4: setup.small,
-    5: setup.small,
-    6: setup.small,
+    4: setup.mid,
+    5: setup.mid,
+    6: setup.mid,
     7: setup.large,
     8: setup.large
 }
