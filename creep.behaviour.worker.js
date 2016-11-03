@@ -43,6 +43,7 @@ module.exports = {
                     Creep.action.fortifying,
                     Creep.action.feeding, 
                     Creep.action.upgrading, 
+                    Creep.action.charging, 
                     Creep.action.storing, 
                     Creep.action.idle];
             }
