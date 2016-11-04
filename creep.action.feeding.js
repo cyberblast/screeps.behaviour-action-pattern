@@ -14,7 +14,7 @@ action.isAddableTarget = function(target){
 };
 action.newTarget = function(creep){
     var that = this;
-    return creep.pos.findClosestByPath(creep.room.structures, {
+    return creep.pos.findClosestByPath(creep.room.structures.all, {
         filter: (structure) => {
             return ((structure.structureType == STRUCTURE_EXTENSION || 
                 structure.structureType == STRUCTURE_SPAWN ) 

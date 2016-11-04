@@ -17,9 +17,9 @@ var mod = {
                     return;
                 }
             } 
-            if( tower.room.urgentRepairableSites.length > 0 ) { 
+            if( tower.room.structures.urgentRepairable.length > 0 ) { 
                 // urgent Repair
-                var target = tower.room.urgentRepairableSites[0]; 
+                var target = tower.room.structures.urgentRepairable[0]; 
                 tower.repair(target);
                 if( target.towers === undefined ) 
                     target.towers = [];
@@ -33,10 +33,10 @@ var mod = {
                 // Attack    
                 tower.attack(closestHostile);
             } 
-            else if( (tower.room.repairableSites.length > 0) && (tower.energy > (tower.energyCapacity * 0.8)) ) {
+            else if( (tower.room.structures.repairable.length > 0) && (tower.energy > (tower.energyCapacity * 0.8)) ) {
                 // Repair
                 var isAddable = target => (target.towers === undefined || target.towers.length == 0);
-                var target = _.find(tower.room.repairableSites, isAddable);
+                var target = _.find(tower.room.structures.repairable, isAddable);
                 if( !_.isUndefined(target) ){
                     tower.repair(target);
                     if( target.towers === undefined ) 

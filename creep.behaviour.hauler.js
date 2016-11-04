@@ -40,7 +40,7 @@ module.exports = {
                 && creep.room.conserveForDefense && creep.room.relativeEnergyAvailable > 0.8)) {
                     priority.unshift(Creep.action.storing);
             }
-            if (creep.room.urgentRepairableSites.length > 0 ) {
+            if (creep.room.structures.urgentRepairable.length > 0 ) {
                 priority.unshift(Creep.action.fueling);
             }
             if( creep.room.controller && creep.room.controller.ticksToDowngrade < 2000 ) { // urgent upgrading 
