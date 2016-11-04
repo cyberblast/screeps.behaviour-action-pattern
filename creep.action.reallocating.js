@@ -75,7 +75,7 @@ action.work = function(creep){
         }
         //workResult = creep.transfer(creep.target, RESOURCE_ENERGY);
         // unregister action
-        if( creep.sum == 0 ){
+        if( creep.sum == creep.carry.energy ){
             delete creep.data.actionName;
             delete creep.data.targetId;
             creep.action = null;
