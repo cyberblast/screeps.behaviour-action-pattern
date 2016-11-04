@@ -5,7 +5,7 @@ action.isValidAction = function(creep){
 };
 action.isValidTarget = function(target){
     return (target != null && target.energy != null && target.energy > 0 && 
-        (target.targetOf === undefined || !target.targetOf.miner));
+        (target.targetOf === undefined || !_.some(target.targetOf, {'creepType': 'miner'}) ));
 };
 action.isAddableTarget = function(target, creep){ 
     return (

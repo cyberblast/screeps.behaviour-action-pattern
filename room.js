@@ -169,12 +169,11 @@ var mod = {
                         this._fortifyableSites = _.sortBy(
                             that.structures.filter(
                                 structure => (
+                                    that.my &&
                                     structure.hits < structure.hitsMax && 
-                                    that.controller && that.controller.my &&
                                     structure.hits < MAX_FORTIFY_LIMIT[that.controller.level] && 
-                                    structure.structureType != STRUCTURE_CONTAINER && 
-                                    ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
-                                    (structure.towers === undefined || structure.towers.length == 0) && 
+                                    ( structure.structureType != STRUCTURE_CONTAINER || structure.hits < MAX_FORTIFY_CONTAINER ) &&
+                                    ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE*3 ) && 
                                     ( Memory.pavementArt[that.name] === undefined || Memory.pavementArt[that.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y) < 0 )
                                 )
                             ), 
@@ -1057,11 +1056,11 @@ var mod = {
             if( this.controller && this.controller.my ) {
                 var registerHostile = creep => {
                     if( !that.memory.hostileIds.includes(creep.id) ){ 
-                        var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
+                        let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
+                        let message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + that.name + ' at ' + toDateTimeString(toLocalDate(new Date()));
+                        if( DEBUG || NOTIFICATE_INVADER ) console.log(message);
                         if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
-                            var message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + that.name + ' at ' + toDateTimeString(toLocalDate(new Date()));
                             Game.notify(message);
-                            console.log(message);
                         }
                         if(that.memory.statistics.invaders === undefined)
                             that.memory.statistics.invaders = [];
@@ -1076,10 +1075,10 @@ var mod = {
                 }
                 _.forEach(this.hostiles, registerHostile);
                 
-                var registerHostileLeave = id => {
+                let registerHostileLeave = id => {
                     if( !that.hostileIds.includes(id) && that.memory.statistics && that.memory.statistics.invaders !== undefined && that.memory.statistics.invaders.length > 0){
-                        var select = invader => invader.id == id && invader.leave === undefined;
-                        var entry = _.find(that.memory.statistics.invaders, select);
+                        let select = invader => invader.id == id && invader.leave === undefined;
+                        let entry = _.find(that.memory.statistics.invaders, select);
                         if( entry != undefined ) entry.leave = Game.time;
                     }
                 }

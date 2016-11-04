@@ -39,9 +39,10 @@ var mod = {
         4: 50000,
         5: 100000,
         6: 300000,
-        7: 500000,
+        7: 750000,
         8: Infinity
     },
+    MAX_FORTIFY_CONTAINER: 50000,
     LIMIT_URGENT_REPAIRING: 750, // urgent repair when hits below
     GAP_REPAIR_DECAYABLE: 800, // decayables (e.g. roads) only get repaired when that much hits are missing
     MEMORY_RESYNC_INTERVAL: 100, // interval to reload spawns & towers present in a room
@@ -59,7 +60,7 @@ var mod = {
     ROUTE_PRECALCULATION: false, 
     NOTIFICATE_INVADER: false, // Also log common 'Invader' hostiles
     COMBAT_CREEPS_RESPECT_RAMPARTS: false, // causes own creeps not to leave through ramparts
-    COST_MATRIX_VALIDITY: 500,
+    COST_MATRIX_VALIDITY: 1000,
     PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah','fsck-u','Kansir','FaceWound','forkmantis'] 
     // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
 }

@@ -6,21 +6,7 @@ action.isValidAction = function(creep){
     return (creep.carry.energy > 0 && ( !creep.room.storage || creep.room.storage.store.energy > MAX_STORAGE_ENERGY ));
 };
 action.isValidTarget = function(target){
-    return ( target != null && target.hits && 
-    target.hits < target.hitsMax);
-};
-action.isAddableTarget = function(target, creep){
-    return (
-        (target instanceof OwnedStructure && target.my) || 
-        ( 
-            (!creep.room.controller || 
-                (
-                    (!creep.room.controller.owner || creep.room.controller.my) && 
-                    (!creep.room.controller.reservation || creep.room.controller.reservation.username == creep.owner.username) 
-                )
-            )
-        )
-    ) && (!target.targetOf || target.targetOf.length < this.maxPerTarget);
+    return ( target != null && target.hits && target.hits < target.hitsMax);
 };
 action.newTarget = function(creep){
     var that = this;
