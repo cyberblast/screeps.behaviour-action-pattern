@@ -124,8 +124,11 @@ module.exports = {
     exploitNextRoom: function(creep){
         if( creep.sum < creep.carryCapacity*0.4 ) {
             // calc by distance to home room
-            let flag = FlagDir.find(FLAG_COLOR.invade.robbing, Game.rooms[creep.data.homeRoom].controller.pos, false, FlagDir.exploitMod, creep.name);
-            if( !flag) flag = FlagDir.find(FLAG_COLOR.invade.exploit, Game.rooms[creep.data.homeRoom].controller.pos, false, FlagDir.exploitMod, creep.name);
+            let validColor = flagEntry => (
+                (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor) ||
+                (flagEntry.color == FLAG_COLOR.invade.robbing.color && flagEntry.secondaryColor == FLAG_COLOR.invade.robbing.secondaryColor)
+            );
+            let flag = FlagDir.find(validColor, Game.rooms[creep.data.homeRoom].controller.pos, false, FlagDir.exploitMod, creep.name);
             // new flag found
             if( flag ) {
                 // travelling

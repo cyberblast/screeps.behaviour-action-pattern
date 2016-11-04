@@ -15,13 +15,19 @@ var mod = {
         let that = this;
         if( flagColor == null || this.list.length == 0) 
             return null;
-
-        let filter = _.clone(flagColor.filter);
-        if( local && pos && pos.roomName )
-            _.assign(filter, {roomName: pos.roomName, cloaking: "0"});
-        else
-            _.assign(filter, {cloaking: "0"});
-        let flags = _.filter(this.list, filter);
+        let filter;
+        if (typeof flagColor === 'function' ) {
+            filter = flagEntry => ( flagColor(flagEntry) && flagEntry.cloaking == 0 && 
+                (!local || !pos || !pos.roomName || flagEntry.roomName != pos.roomName));
+        }
+        else {
+            filter = _.clone(flagColor.filter);
+            if( local && pos && pos.roomName )
+                _.assign(filter, {roomName: pos.roomName, cloaking: "0"});
+            else
+                _.assign(filter, {cloaking: "0"});
+        } 
+        let flags = _.filter(that.list, filter);
 
         if( flags.length == 0 ) 
             return null;
