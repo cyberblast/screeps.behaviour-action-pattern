@@ -103,7 +103,7 @@ var mod = {
         } else {
             filter = _.clone(flagColor.filter);
             if( local && pos && pos.roomName )
-                _.assign(filter, {roomName: pos.roomName});
+                _.assign(filter, {'roomName': pos.roomName});
         }
         return _.filter(this.list, filter);
     },

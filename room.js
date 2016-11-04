@@ -476,8 +476,8 @@ var mod = {
                                 reserved = flag.targetOf && flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepType == 'claimer' ? t.weight : 0 )) : 0;
                                 that._claimerMaxWeight += (base - reserved);
                             };
-                            flagEntries.forEach(calcWeight);
-                        }
+                        };
+                        flagEntries.forEach(calcWeight);
                     };
                     return this._claimerMaxWeight;
                 }

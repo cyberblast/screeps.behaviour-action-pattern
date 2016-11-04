@@ -7,7 +7,7 @@ action.getFlaggedStructure = function(flagColor, pos){
     let target = [];
     let checkFlag = flagEntry => {
         var flag = Game.flags[flagEntry.name];
-        if( flag && flag.room !== undefined ){ // room is visible
+        if( flag && flag.pos.roomName == pos.roomName && flag.room !== undefined ){ // room is visible
             var targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
             if( targets && targets.length > 0){
                 addTarget = structure => {

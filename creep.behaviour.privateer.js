@@ -64,8 +64,8 @@ module.exports = {
                     return;
                 }
 
-                // carrier not full
-                if( creep.sum < creep.carryCapacity ) {
+                // get some energy
+                if( creep.sum < creep.carryCapacity*0.4 ) {
                     // sources depleted
                     if( creep.room.sourceEnergyAvailable == 0 ){
                         // cloak flag
@@ -78,9 +78,9 @@ module.exports = {
                     else {
                         // harvesting or picking
                         var actions = [
+                            Creep.action.dismantling,
                             Creep.action.picking,
                             Creep.action.robbing,
-                            Creep.action.dismantling,
                             Creep.action.harvesting
                         ];
                         // TODO: Add extracting (if extractor present) ?
