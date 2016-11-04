@@ -460,20 +460,24 @@ var mod = {
                         let maxRange = 2;
                         let that = this;
                         let distance, reserved, flag;
+                        let rcl = this.controller.level;
 
-                        let flagEntries = FlagDir.filter([FLAG_COLOR.claim, FLAG_COLOR.claim.reserve]);
+                        let flagEntries = FlagDir.filter([FLAG_COLOR.claim, FLAG_COLOR.claim.reserve, FLAG_COLOR.invade.exploit]);
                         let calcWeight = flagEntry => {
-                            distance = Room.roomDistance(that.name, flagEntry.roomName);
-                            if( distance > maxRange ) 
-                                return;
-                            flag = Game.flags[flagEntry.name];
-                            if( flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)
-                                return;
+                            // don't spawn claimer for reservation at RCL < 4 (claimer not big enough)
+                            if( rcl > 3 || (flagEntry.color == FLAG_COLOR.claim.color && flagEntry.secondaryColor == FLAG_COLOR.claim.secondaryColor )) {
+                                distance = Room.roomDistance(that.name, flagEntry.roomName);
+                                if( distance > maxRange ) 
+                                    return;
+                                flag = Game.flags[flagEntry.name];
+                                if( flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)
+                                    return;
 
-                            reserved = flag.targetOf ? _.sum( flag.targetOf.map( t => t.weight )) : 0;
-                            that._claimerMaxWeight += (base - reserved);
-                        };
-                        flagEntries.forEach(calcWeight);
+                                reserved = flag.targetOf && flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepType == 'claimer' ? t.weight : 0 )) : 0;
+                                that._claimerMaxWeight += (base - reserved);
+                            };
+                            flagEntries.forEach(calcWeight);
+                        }
                     };
                     return this._claimerMaxWeight;
                 }

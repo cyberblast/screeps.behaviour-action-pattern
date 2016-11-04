@@ -5,6 +5,7 @@ action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; }; 
 action.newTarget = function(creep){
     let flag = FlagDir.find(FLAG_COLOR.claim.reserve, creep.pos, false, FlagDir.reserveMod, creep.name);
+    if( !flag ) flag = FlagDir.find(FLAG_COLOR.invade.exploit, creep.pos, false, FlagDir.reserveMod, creep.name);
     if( flag ) { 
         Population.registerCreepFlag(creep, flag);
     } 
@@ -14,20 +15,8 @@ action.newTarget = function(creep){
     if( !creep.flag.room || creep.flag.pos.roomName != creep.pos.roomName){
         return creep.flag;    
     }
-    if( creep.flag.room.controller.my ) { // TODO: AND is reserve flag
-        // already claimed, change flag
-        // TODO: only if no spawn or spawn-constructionSite present
-        creep.flag.setColor(FLAG_COLOR.claim.spawn.color, FLAG_COLOR.claim.spawn.secondaryColor);
-        // TODO: remove exploit flags
-        let remove = f => Game.flags[f.name].remove();
-        _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit, creep.flag.pos, true), remove);
-        // no valid target for claimer
-        return null;
-    }
-    else {
-        // set controller as target
-        return creep.flag.room.controller;
-    }
+    
+    return creep.flag.room.controller;
 };
 
 action.step = function(creep){

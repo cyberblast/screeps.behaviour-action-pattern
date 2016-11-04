@@ -57,22 +57,22 @@ module.exports = {
         else {
             // at target room
             if( creep.flag && creep.flag.pos.roomName == creep.pos.roomName ){
+                // check invader/cloaking state
+                if( creep.room.situation.invasion ) {
+                    creep.flag.cloaking = 50; // TODO: set to Infinity & release when solved
+                    this.exploitNextRoom(creep);
+                    return;
+                }
+
                 // carrier not full
                 if( creep.sum < creep.carryCapacity ) {
                     // sources depleted
                     if( creep.room.sourceEnergyAvailable == 0 ){
                         // cloak flag
-                        creep.flag.cloaking = creep.room.ticksToNextRegeneration;
+                        creep.flag.cloaking = _.max([creep.room.ticksToNextRegeneration-20,0]); // approach a bit earlier
                         // travelling
-                        if( this.exploitNextRoom(creep) ) 
-                            return;
-                        else {
-                            // no new flag
-                            // go home
-                            Population.registerCreepFlag(creep, null);
-                            Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
-                            return;
-                        }
+                        this.exploitNextRoom(creep);
+                        return;
                     }
                     // energy available
                     else {
@@ -83,7 +83,7 @@ module.exports = {
                             Creep.action.dismantling,
                             Creep.action.harvesting
                         ];
-                        // TODO: Add extracting (if extractor present)
+                        // TODO: Add extracting (if extractor present) ?
                         for(var iAction = 0; iAction < actions.length; iAction++) {   
                             var action = actions[iAction];             
                             if(action.isValidAction(creep) && 
@@ -92,9 +92,9 @@ module.exports = {
                                 return;
                         }
                         // no targets in current room
-                        creep.flag.cloaking = 10;
-                        if( this.exploitNextRoom(creep) )
-                            return;
+                        creep.flag.cloaking = 50;
+                        this.exploitNextRoom(creep);
+                        return;
                     }
                 }
                 // carrier full
@@ -114,32 +114,30 @@ module.exports = {
             }
             // not at target room
             else {
-                // travelling
-                if( creep.sum < creep.carryCapacity*0.5 && this.exploitNextRoom(creep) ) 
-                    return;
-                else {
-                    // no new flag
-                    // go home
-                    Population.registerCreepFlag(creep, null);
-                    Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
-                    return;
-                }
+                 this.exploitNextRoom(creep);
+                 return;
             }
         }
         // fallback
         Creep.action.idle.assign(creep);
     },
     exploitNextRoom: function(creep){
-        // calc by distance to home room
-        let flag = FlagDir.find(FLAG_COLOR.invade.exploit, Game.rooms[creep.data.homeRoom].controller.pos, false, FlagDir.exploitMod, creep.name);
-        // new flag found
-        if( flag ) {
-            // travelling
-            if( Creep.action.travelling.assign(creep, flag) ) {
-                Population.registerCreepFlag(creep, flag);
-                return true;
+        if( creep.sum < creep.carryCapacity*0.4 ) {
+            // calc by distance to home room
+            let flag = FlagDir.find(FLAG_COLOR.invade.exploit, Game.rooms[creep.data.homeRoom].controller.pos, false, FlagDir.exploitMod, creep.name);
+            // new flag found
+            if( flag ) {
+                // travelling
+                if( Creep.action.travelling.assign(creep, flag) ) {
+                    Population.registerCreepFlag(creep, flag);
+                    return true;
+                }
             }
         }
+        // no new flag
+        // go home
+        Population.registerCreepFlag(creep, null);
+        Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
         return false;
     }
 }
