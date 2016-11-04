@@ -1,11 +1,17 @@
 var action = new Creep.Action('reserving');
 action.isValidAction = function(creep){ return true; }; // TODO: check if it is a flag or a controller and reservation < 4999 
-action.isValidTarget = function(target){ return true; }; 
+action.isValidTarget = function(target){ return target && (
+    target instanceof Flag || (
+        target.reservation && target.reservation.ticksToEnd < 4999
+)) ; }; 
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; }; 
 action.newTarget = function(creep){
-    let flag = FlagDir.find(FLAG_COLOR.claim.reserve, creep.pos, false, FlagDir.reserveMod, creep.name);
-    if( !flag ) flag = FlagDir.find(FLAG_COLOR.invade.exploit, creep.pos, false, FlagDir.reserveMod, creep.name);
+    let validColor = flagEntry => (
+        (flagEntry.color == FLAG_COLOR.claim.reserve.color && flagEntry.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor) ||
+        (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor)
+    );
+    let flag = FlagDir.find(validColor, creep.pos, false, FlagDir.reserveMod, creep.name);
     if( flag ) { 
         Population.registerCreepFlag(creep, flag);
     } 
