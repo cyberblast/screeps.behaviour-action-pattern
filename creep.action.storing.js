@@ -17,7 +17,7 @@ action.isValidAction = function(creep){
                         )
                     ) &&
                     creep.room.sourceEnergyAvailable > 0 && 
-                    creep.room.storage.store.energy <= MAX_STORAGE_ENERGY
+                    creep.room.storage.store.energy <= MAX_STORAGE_ENERGY[creep.room.controller.level]
                 )
             )
         )
@@ -43,7 +43,7 @@ action.newTarget = function(creep){
         this.isValidMineralToTerminal(creep.room));
     let sendEnergyToTerminal = creep => (
         creep.carry.energy > 0 && 
-        creep.room.storage.store.energy > ((MAX_STORAGE_ENERGY-MIN_STORAGE_ENERGY)/2)+MIN_STORAGE_ENERGY &&
+        creep.room.storage.store.energy > ((MAX_STORAGE_ENERGY[creep.room.controller.level]-MIN_STORAGE_ENERGY[creep.room.controller.level])/2)+MIN_STORAGE_ENERGY[creep.room.controller.level] &&
         creep.room.terminal.store.energy < TERMINAL_ENERGY*0.95 &&
         creep.room.terminal.sum  < creep.room.terminal.storeCapacity);
         // && 

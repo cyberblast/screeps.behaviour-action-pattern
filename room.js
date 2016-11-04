@@ -485,7 +485,7 @@ var mod = {
             'conserveForDefense': {
                 configurable: true,
                 get: function () {
-                    return (this.storage && this.storage.store.energy < MIN_STORAGE_ENERGY); 
+                    return (this.storage && this.storage.store.energy < MIN_STORAGE_ENERGY[this.controller.level]); 
                 }
             },
             'hostileThreatLevel': {
@@ -1008,7 +1008,7 @@ var mod = {
                 }                
             } 
             if( this.controller.level == 8 && !transacting && 
-                this.storage.store.energy > MAX_STORAGE_ENERGY && 
+                this.storage.store.energy > MAX_STORAGE_ENERGY[this.controller.level] && 
                 this.terminal.store[mineral] < 100000 && 
                 this.terminal.store.energy > 50000 ){
                 let requiresEnergy = room => (
