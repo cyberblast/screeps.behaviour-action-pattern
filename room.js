@@ -599,6 +599,24 @@ var mod = {
                     }
                     return this._my;
                 }
+            },            
+            'spawnQueueHigh': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.memory.spawnQueueHigh) ) {                        
+                        this.memory.spawnQueueHigh = [];
+                    }
+                    return this.memory.spawnQueueHigh;
+                }
+            },            
+            'spawnQueueLow': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.memory.spawnQueueLow) ) {                        
+                        this.memory.spawnQueueLow = [];
+                    }
+                    return this.memory.spawnQueueLow;
+                }
             }
         });
 
