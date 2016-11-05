@@ -1,4 +1,6 @@
 var action = new Creep.Action('fueling');
+action.maxPerTarget = 1;
+action.maxPerAction = 1;
 action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 && creep.room.towerFreeCapacity > 0 );
 };
@@ -19,6 +21,6 @@ action.work = function(creep){
     return response;
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9981), SAY_PUBLIC); 
+    if( SAY_ASSIGNMENT ) creep.say('\u{26FD}\u{FE0E}', SAY_PUBLIC);
 };
 module.exports = action;

@@ -1,10 +1,9 @@
 var action = new Creep.Action('withdrawing');
-action.maxPerTarget = 2;
-action.maxPerAction = 2;
 action.isValidAction = function(creep){
     return ( 
         creep.room.storage && 
         creep.room.storage.store.energy > 0  && 
+        creep.data.creepType != 'privateer' &&
         creep.sum < creep.carryCapacity && 
         (!creep.room.conserveForDefense || creep.room.relativeEnergyAvailable < 0.8)
     );

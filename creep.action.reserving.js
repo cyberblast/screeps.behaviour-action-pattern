@@ -1,10 +1,17 @@
 var action = new Creep.Action('reserving');
 action.isValidAction = function(creep){ return true; }; // TODO: check if it is a flag or a controller and reservation < 4999 
-action.isValidTarget = function(target){ return true; }; 
+action.isValidTarget = function(target){ return target && (
+    target instanceof Flag || (
+        target.reservation && target.reservation.ticksToEnd < 4999
+)) ; }; 
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; }; 
 action.newTarget = function(creep){
-    let flag = FlagDir.find(FLAG_COLOR.claim.reserve, creep.pos, false, FlagDir.reserveMod, creep.name);
+    let validColor = flagEntry => (
+        (flagEntry.color == FLAG_COLOR.claim.reserve.color && flagEntry.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor) ||
+        (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor)
+    );
+    let flag = FlagDir.find(validColor, creep.pos, false, FlagDir.reserveMod, creep.name);
     if( flag ) { 
         Population.registerCreepFlag(creep, flag);
     } 
@@ -14,20 +21,8 @@ action.newTarget = function(creep){
     if( !creep.flag.room || creep.flag.pos.roomName != creep.pos.roomName){
         return creep.flag;    
     }
-    if( creep.flag.room.controller.my ) { // TODO: AND is reserve flag
-        // already claimed, change flag
-        // TODO: only if no spawn or spawn-constructionSite present
-        creep.flag.setColor(FLAG_COLOR.claim.spawn.color, FLAG_COLOR.claim.spawn.secondaryColor);
-        // TODO: remove exploit flags
-        let remove = f => Game.flags[f.name].remove();
-        _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit, creep.flag.pos, true), remove);
-        // no valid target for claimer
-        return null;
-    }
-    else {
-        // set controller as target
-        return creep.flag.room.controller;
-    }
+    
+    return creep.flag.room.controller;
 };
 
 action.step = function(creep){

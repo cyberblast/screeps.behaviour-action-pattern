@@ -7,12 +7,33 @@ var mod = {
     DEBUG: true, // gimme some more details
     CENSUS_ANNOUNCEMENTS: true, // log birth and death
     SPAWN_INTERVAL: 10, // loops between regular spawn probe
-    MAX_STORAGE_ENERGY: 300000,// stop storing energy when reached
-    MIN_STORAGE_ENERGY: 50000,// prefer storing energy until reached
+    MAX_STORAGE_ENERGY: { // stop storing energy when reached
+        4: 5000,
+        5: 50000,
+        6: 100000,
+        7: 200000,
+        8: 300000
+    },
+    MIN_STORAGE_ENERGY: { // prefer storing energy until reached
+        4: 1000,
+        5: 5000,
+        6: 10000,
+        7: 25000,
+        8: 50000
+    },
     MAX_STORAGE_MINERAL:250000, // keep a max of each type of minerals in store
     MIN_MINERAL_SELL_AMOUNT:50000, 
-    MAX_SELL_RANGE: 40, 
+    MAX_SELL_RANGE: 60, 
     TERMINAL_ENERGY: 100000, 
+    MIN_SELL_RATIO: {
+        'H': 1,
+        'O': 1,
+        'U': 1.5,
+        'L': 1.5,
+        'K': 1.5,
+        'Z': 1.5,
+        'X': 2
+    },
     MAX_REPAIR_LIMIT: { // Limits how high structures get repaired by towers, regarding RCL
         1: 1000,
         2: 1000,
@@ -30,10 +51,11 @@ var mod = {
         4: 50000,
         5: 100000,
         6: 300000,
-        7: 500000,
+        7: 750000,
         8: Infinity
     },
-    LIMIT_URGENT_REPAIRING: 1000, // urgent repair when hits below
+    MAX_FORTIFY_CONTAINER: 50000,
+    LIMIT_URGENT_REPAIRING: 750, // urgent repair when hits below
     GAP_REPAIR_DECAYABLE: 800, // decayables (e.g. roads) only get repaired when that much hits are missing
     MEMORY_RESYNC_INTERVAL: 100, // interval to reload spawns & towers present in a room
     TIME_REPORT: 28000, // ticks between room reports
@@ -50,7 +72,8 @@ var mod = {
     ROUTE_PRECALCULATION: false, 
     NOTIFICATE_INVADER: false, // Also log common 'Invader' hostiles
     COMBAT_CREEPS_RESPECT_RAMPARTS: false, // causes own creeps not to leave through ramparts
-    COST_MATRIX_VALIDITY: 500,
-    PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah'] // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
+    COST_MATRIX_VALIDITY: 1000,
+    PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah','fsck-u','Kansir','FaceWound','forkmantis'] 
+    // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
 }
 module.exports = mod;

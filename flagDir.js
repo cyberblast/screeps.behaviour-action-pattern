@@ -15,13 +15,19 @@ var mod = {
         let that = this;
         if( flagColor == null || this.list.length == 0) 
             return null;
-
-        let filter = _.clone(flagColor.filter);
-        if( local && pos && pos.roomName )
-            _.assign(filter, {roomName: pos.roomName, cloaking: "0"});
-        else
-            _.assign(filter, {cloaking: "0"});
-        let flags = _.filter(this.list, filter);
+        let filter;
+        if (typeof flagColor === 'function' ) {
+            filter = flagEntry => ( flagColor(flagEntry) && flagEntry.cloaking == 0 && 
+                (!local || !pos || !pos.roomName || flagEntry.roomName != pos.roomName));
+        }
+        else {
+            filter = _.clone(flagColor.filter);
+            if( local && pos && pos.roomName )
+                _.assign(filter, {roomName: pos.roomName, cloaking: "0"});
+            else
+                _.assign(filter, {cloaking: "0"});
+        } 
+        let flags = _.filter(that.list, filter);
 
         if( flags.length == 0 ) 
             return null;
@@ -103,7 +109,7 @@ var mod = {
         } else {
             filter = _.clone(flagColor.filter);
             if( local && pos && pos.roomName )
-                _.assign(filter, {roomName: pos.roomName});
+                _.assign(filter, {'roomName': pos.roomName});
         }
         return _.filter(this.list, filter);
     },
@@ -128,16 +134,17 @@ var mod = {
     }, 
     claimMod: function(range, flagItem, creepName){
         if( range > 200 ) return Infinity;
-        if( range > 100 ) range = range * 3;
         var flag = Game.flags[flagItem.name];
-        return flag.targetOf && flag.targetOf.length > 0 ? Infinity : range;
+        if( flag.targetOf && _.some(flag.targetOf, {'creepType': 'claimer'}) ) return Infinity;
+        if( range > 100 ) range = range * 3;
+        return range;        
     },
     reserveMod: function(range, flagItem, creepName){
         if( range > 200 ) return Infinity;
         if( range > 100 ) range = range * 3;
         var flag = Game.flags[flagItem.name];
 
-        let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepName == creepName ? 0 : t.weight )) : 0;
+        let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepType != 'claimer' || t.creepName == creepName ? 0 : t.weight )) : 0;
         if( assigned > 3500 ) return Infinity;
         if( assigned > 2000 ) assigned += 1000;
 
@@ -152,7 +159,7 @@ var mod = {
         if( range > 100 ) return Infinity;
         var flag = Game.flags[flagItem.name];
         if( flag.room ) {
-            let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepName == creepName ? 0 : t.carryCapacityLeft)) : 0;
+            let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepType != 'privateer' || t.creepName == creepName ? 0 : t.carryCapacityLeft)) : 0;
             if( flag.room.sourceEnergyAvailable <= assigned ) return Infinity;
             return (range*range) / (flag.room.sourceEnergyAvailable - assigned);
         } 

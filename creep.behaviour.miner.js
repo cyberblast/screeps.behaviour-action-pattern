@@ -36,6 +36,15 @@ module.exports = {
                     where: null, 
                     roomName: creep.pos.roomName
                 }
+
+                let invalid = [];
+                let findInvalid = entry => { 
+                    if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot && entry.ttl > entry.spawningTime) 
+                        invalid.push(entry.determinatedSpot)
+                };
+                _.forEach(Memory.population, findInvalid);
+                args.where = pos => { return !_.some(invalid,{x:pos.x,y:pos.y}); };
+
                 if( source.container )
                     args.spots.push({
                         pos: source.container.pos, 

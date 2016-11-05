@@ -1,7 +1,7 @@
 var Action = function(actionName){
     this.name = actionName;
-    this.maxPerTarget = 1;
-    this.maxPerAction = 1;
+    this.maxPerTarget = Infinity;
+    this.maxPerAction = Infinity;
     this.targetRange = 1;
     this.reachedRange = 1;
     this.renewTarget = true;
@@ -18,10 +18,10 @@ var Action = function(actionName){
         return (target != null);
     };
     this.isAddableAction = function(creep){
-        return (!creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
+        return (this.maxPerAction === Infinity || !creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
     };
     this.isAddableTarget = function(target){ // target is valid to be given to an additional creep
-        return (!target.targetOf || target.targetOf.length < this.maxPerTarget);
+        return (this.maxPerTarget === Infinity || !target.targetOf || target.targetOf.length < this.maxPerTarget);
     };
     this.newTarget = function(creep){
         return null;
