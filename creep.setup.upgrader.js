@@ -2,11 +2,11 @@ var setup = new Creep.Setup('upgrader');
 setup.minControllerLevel = 3;
 setup.maxMulti = function(room){ 
     let multi = 0;
-    if( !room.storage || room.storage.store.energy > MIN_STORAGE_ENERGY)
+    if( !room.storage || room.storage.store.energy > MIN_STORAGE_ENERGY[room.controller.level])
         multi++;
-    if( !room.storage || room.storage.store.energy > ((MAX_STORAGE_ENERGY-MIN_STORAGE_ENERGY)/2)+MIN_STORAGE_ENERGY)
+    if( !room.storage || room.storage.store.energy > ((MAX_STORAGE_ENERGY[room.controller.level]-MIN_STORAGE_ENERGY[room.controller.level])/2)+MIN_STORAGE_ENERGY[room.controller.level])
         multi++;
-    if( room.storage && room.storage.store.energy >= MAX_STORAGE_ENERGY )
+    if( room.storage && room.storage.store.energy >= MAX_STORAGE_ENERGY[room.controller.level] )
     {
         let surplus = room.storage.store.energy - MAX_STORAGE_ENERGY;
         multi += Math.ceil( surplus / 20000 ); // one more multi for each 20k surplus (+1)
@@ -21,7 +21,7 @@ setup.maxCount = function(room){
         (room.containerController.length + room.linksController.length) == 0 ) 
         return 0;
     if( room.controller.level == 8 ) return 1;
-    return room.storage ? Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY) / 100000)) : 1;
+    return room.storage ? Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000)) : 1;
 };
 setup.default = {
     fixedBody: [WORK, WORK, CARRY, MOVE], 
