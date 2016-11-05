@@ -15,7 +15,7 @@ setup.maxCount = function(room){
     if(room.population && room.population.typeCount['miner'] > 0) {
         count += Creep.setup.upgrader.maxCount(room);
         if( room.structures.links.all.length < 3 || 
-           (room.storage && room.storage.store.energy > MAX_STORAGE_ENERGY && 
+           (room.storage && room.storage.store.energy > MAX_STORAGE_ENERGY[room.controller.level] && 
             room.structures.container.controller && _.sum(room.structures.container.controller, 'store.energy') == 0 )) count++;
     }
     return count; 
