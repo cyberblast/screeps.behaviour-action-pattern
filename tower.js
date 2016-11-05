@@ -1,7 +1,7 @@
 var mod = {
     loop: function(room){
         var run = tower => this.run(tower);
-        _.forEach(room.towers, run);
+        _.forEach(room.structures.towers, run);
     },
     run: function(tower){
         if(tower) {
