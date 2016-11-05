@@ -173,6 +173,8 @@ var mod = {
                 return this._sum;
             }
         });
+        
+        if( Memory.pavementArt === undefined ) Memory.pavementArt = {};
     }
 }
 module.exports = mod;

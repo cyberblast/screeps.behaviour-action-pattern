@@ -371,7 +371,7 @@ var mod = {
                     }
                     return this._constructionSites;
                 }
-            },
+            },            
             'creeps': {
                 configurable: true,
                 get: function() {
@@ -664,6 +664,15 @@ var mod = {
                     }
                     return this.memory.spawnQueueLow;
                 }
+            },
+            'pavementArt': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.memory.pavementArt) ) {                        
+                        this.memory.pavementArt = [];
+                    }
+                    return this.memory.pavementArt;
+                }
             }
         });
 
@@ -672,54 +681,10 @@ var mod = {
             if(!room) return;
             return room.costMatrix;        
         };
-
         Room.isMine = function(roomName) {
             let room = Game.rooms[roomName];
             return( room && room.controller && room.controller.my );
         };
-
-        Room.prototype.defenseMaxWeight = function(base, type) {
-            let defenseMaxWeight = 0;
-            let maxRange = 2;
-            let that = this;
-            let distance, reserved, flag;
-
-            let flagEntries = FlagDir.filter(FLAG_COLOR.defense);
-            let calcWeight = flagEntry => {
-                distance = Room.roomDistance(that.name, flagEntry.roomName);
-                if( distance > maxRange ) 
-                    return;
-                flag = Game.flags[flagEntry.name];
-
-                let ownNeighbor = 0;
-                let validRooms = [];
-                let exits = Game.map.describeExits(flag.pos.roomName);
-                let addValidRooms = (roomName) => {
-                    if( !validRooms.includes(roomName) ){
-                        validRooms.push(roomName);
-                        if( Room.isMine(roomName) ) ownNeighbor++;
-                    }
-                    let roomExits = Game.map.describeExits(roomName);
-                    let add = roomName2 => {
-                        if( !validRooms.includes(roomName2) ){
-                            validRooms.push(roomName2);
-                                if( Room.isMine(roomName2) ) ownNeighbor++;
-                        }                                         
-                    }
-                    _.forEach(roomExits, add);
-                }
-                _.forEach(exits, addValidRooms);
-                /*
-                if( flag.targetOf ){
-                    let ofType = flag.targetOf.filter(t => t.creepType == type);
-                    reserved = _.sum(ofType,'weight');
-                } else reserved = 0;*/
-                defenseMaxWeight += ( base  / ownNeighbor );
-            };
-            flagEntries.forEach(calcWeight);
-            return defenseMaxWeight;
-        }
-
         Room.adjacentAccessibleRooms = function(roomName, diagonal = true) {
             let validRooms = [];
             let exits = Game.map.describeExits(roomName);
@@ -764,50 +729,6 @@ var mod = {
             //if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1 
             return xDif + yDif; // count diagonal as 2        
         };
-        Room.prototype.findRoute = function(targetRoomName, checkOwner = true, preferHighway = true){
-            if (this.name == targetRoomName)  return [];
-
-            return Game.map.findRoute(this, targetRoomName, {
-                routeCallback(roomName) {
-                    let isHighway = false;
-                    if( preferHighway ){
-                        let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
-                        isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
-                    }
-                    let isMyOrNeutralRoom = false;
-                    if( checkOwner ){
-                        let room = Game.rooms[roomName];
-                        isMyOrNeutralRoom = room &&
-                            room.controller &&
-                            (room.controller.my || 
-                            (room.controller.owner === undefined));
-                    }
-
-                    if (isMyOrNeutralRoom || roomName == targetRoomName) 
-                        return 1;
-                    else if (isHighway)
-                        return 3;
-                    else if( Game.map.isRoomAvailable(roomName))
-                        return (checkOwner || preferHighway) ? 11 : 1;
-                    return Infinity;
-                }
-            });
-            
-        };
-        /*
-        Room.adjacentFields = function(pos, where = null){
-            let fields = [];
-            for(x = pos.x-1; x < pos.x+2; x++){
-                for(y = pos.y-1; y < pos.y+2; y++){
-                    if( x > 1 && x < 48 && y > 1 && y < 48 ){
-                        let p = new RoomPosition(x, y, pos.roomName);
-                        if( !where || where(p) )
-                            fields.push(p);
-                    }
-                }
-            }
-            return fields;
-        };*/
 
         Room.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
             let look;
@@ -846,6 +767,78 @@ var mod = {
             let minY = Math.max(...minusRangeY);
             let maxY = Math.min(...plusRangeY);
             return Room.validFields(args.roomName, minX, maxX, minY, maxY, args.checkWalkable, args.where);
+        };
+        
+        Room.prototype.defenseMaxWeight = function(base, type) {
+            let defenseMaxWeight = 0;
+            let maxRange = 2;
+            let that = this;
+            let distance, reserved, flag;
+
+            let flagEntries = FlagDir.filter(FLAG_COLOR.defense);
+            let calcWeight = flagEntry => {
+                distance = Room.roomDistance(that.name, flagEntry.roomName);
+                if( distance > maxRange ) 
+                    return;
+                flag = Game.flags[flagEntry.name];
+
+                let ownNeighbor = 0;
+                let validRooms = [];
+                let exits = Game.map.describeExits(flag.pos.roomName);
+                let addValidRooms = (roomName) => {
+                    if( !validRooms.includes(roomName) ){
+                        validRooms.push(roomName);
+                        if( Room.isMine(roomName) ) ownNeighbor++;
+                    }
+                    let roomExits = Game.map.describeExits(roomName);
+                    let add = roomName2 => {
+                        if( !validRooms.includes(roomName2) ){
+                            validRooms.push(roomName2);
+                                if( Room.isMine(roomName2) ) ownNeighbor++;
+                        }                                         
+                    }
+                    _.forEach(roomExits, add);
+                }
+                _.forEach(exits, addValidRooms);
+                /*
+                if( flag.targetOf ){
+                    let ofType = flag.targetOf.filter(t => t.creepType == type);
+                    reserved = _.sum(ofType,'weight');
+                } else reserved = 0;*/
+                defenseMaxWeight += ( base  / ownNeighbor );
+            };
+            flagEntries.forEach(calcWeight);
+            return defenseMaxWeight;
+        };
+        Room.prototype.findRoute = function(targetRoomName, checkOwner = true, preferHighway = true){
+            if (this.name == targetRoomName)  return [];
+
+            return Game.map.findRoute(this, targetRoomName, {
+                routeCallback(roomName) {
+                    let isHighway = false;
+                    if( preferHighway ){
+                        let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+                        isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
+                    }
+                    let isMyOrNeutralRoom = false;
+                    if( checkOwner ){
+                        let room = Game.rooms[roomName];
+                        isMyOrNeutralRoom = room &&
+                            room.controller &&
+                            (room.controller.my || 
+                            (room.controller.owner === undefined));
+                    }
+
+                    if (isMyOrNeutralRoom || roomName == targetRoomName) 
+                        return 1;
+                    else if (isHighway)
+                        return 3;
+                    else if( Game.map.isRoomAvailable(roomName))
+                        return (checkOwner || preferHighway) ? 11 : 1;
+                    return Infinity;
+                }
+            });
+            
         };
 
         Room.prototype.roadConstruction = function( minDeviation = ROAD_CONSTRUCTION_MIN_DEVIATION ) {
@@ -1156,6 +1149,8 @@ var mod = {
             this.memory.hostileIds = this.hostileIds;  
         }
         Room.prototype.init = function(){
+            // required. otherwise the objects will keep the values. Which would be ok if reliable. 
+            // but will be empty or "old" when redirected to an other server (load balancing), because it has its own cache
             delete this._structures;
             delete this._sourceEnergyAvailable;
             delete this._droppedResources;
@@ -1178,8 +1173,6 @@ var mod = {
             delete this._currentCostMatrix;
             delete this._my;
             delete this._isReceivingEnergy;
-
-            if( Memory.pavementArt === undefined ) Memory.pavementArt = {};
         }
         
         Room.prototype.loop = function(){
@@ -1187,7 +1180,6 @@ var mod = {
             try {                
                 let that = this; 
                 if( Game.time % MEMORY_RESYNC_INTERVAL == 0 || this.name == 'sim' ) {
-                    //if( DEBUG ) console.log('MEMORY_RESYNC_INTERVAL reached');
                     this.saveMinerals();
                     this.saveTowers();
                     this.saveSpawns();
@@ -1202,10 +1194,25 @@ var mod = {
             }
             catch(err) {
                 Game.notify('Error in room.js (Room.prototype.loop): ' + err);
-                console.log('Error in room.js (Room.prototype.loop): ' + err);
+                console.log( dye(CRAYON.error, 'Error in room.js (Room.prototype.loop): <br/>' + JSON.stringify(err))); 
             }          
         };
     }
 }
 
 module.exports = mod;
+
+        /*
+        Room.adjacentFields = function(pos, where = null){
+            let fields = [];
+            for(x = pos.x-1; x < pos.x+2; x++){
+                for(y = pos.y-1; y < pos.y+2; y++){
+                    if( x > 1 && x < 48 && y > 1 && y < 48 ){
+                        let p = new RoomPosition(x, y, pos.roomName);
+                        if( !where || where(p) )
+                            fields.push(p);
+                    }
+                }
+            }
+            return fields;
+        };*/
