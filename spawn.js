@@ -36,10 +36,9 @@ var mod = {
             return null;
         };
         Spawn.loop = function(){      
-            var loop = spawn => { 
-                if( !spawn.spawning ) 
-                    spawn.loop(); 
-            };
+            var loop = spawn => {
+                if(spawn.room.my) spawn.loop();
+            }
             _.forEach(Game.spawns, loop);
         }
     }
