@@ -8,7 +8,7 @@ setup.maxMulti = function(room){
         multi++;
     if( room.storage && room.storage.store.energy >= MAX_STORAGE_ENERGY[room.controller.level] )
     {
-        let surplus = room.storage.store.energy - MAX_STORAGE_ENERGY;
+        let surplus = room.storage.store.energy - MAX_STORAGE_ENERGY[room.controller.level];
         multi += Math.ceil( surplus / 20000 ); // one more multi for each 20k surplus (+1)
     }
     // at rcl 8 limit upgrading
