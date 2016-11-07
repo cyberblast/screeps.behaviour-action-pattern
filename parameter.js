@@ -23,7 +23,7 @@ var mod = {
     },
     MAX_STORAGE_MINERAL:250000, // keep a max of each type of minerals in store
     MIN_MINERAL_SELL_AMOUNT:50000, 
-    MAX_SELL_RANGE: 60, 
+    //MAX_SELL_RANGE: 60, 
     TERMINAL_ENERGY: 100000, 
     MIN_SELL_RATIO: {
         'H': 1,
@@ -73,7 +73,7 @@ var mod = {
     NOTIFICATE_INVADER: false, // Also log common 'Invader' hostiles
     COMBAT_CREEPS_RESPECT_RAMPARTS: false, // causes own creeps not to leave through ramparts
     COST_MATRIX_VALIDITY: 1000,
-    PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah','fsck-u','Kansir','FaceWound','forkmantis'] 
+    PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah','fsck-u','Kansir','FaceWound','forkmantis','DoctorPC','Vultured'] 
     // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
 }
 module.exports = mod;
