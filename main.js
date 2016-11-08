@@ -38,3 +38,5 @@ module.exports.loop = function () {
 
 // move Creep
 // Game.creeps['ranger-900-1'].move(RIGHT)
+
+// Game.rooms['W44N3'].spawnQueueHigh.push({parts:[MOVE],name:'max',setup:'Healer',cost:50})

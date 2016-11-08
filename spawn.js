@@ -28,19 +28,23 @@ var mod = {
         };
         Spawn.prototype.createCreepBySetup = function(setup){
             var params = setup.buildParams(this);
-            if( this.create(params.parts, params.name, params.setup, params.cost) ) 
+            if( this.create(params.parts, params.name, params.setup) ) 
                 return params;
             return null;
         };
         Spawn.prototype.createCreepByQueue = function(queue){
             if( !queue || queue.length == 0 ) return null;
             let params = queue.shift();
-            return this.create(params.parts, params.name, params.setup, params.cost, params.destiny);
+            return this.create(params.parts, params.name, params.setup, params.destiny);
         };
-        Spawn.prototype.create = function(body, name, type, cost, destiny){
+        Spawn.prototype.create = function(body, name, type, destiny){
             if( body.length == 0 ) return false;
             var newName = this.createCreep(body, name, null);
             if( name == newName || translateErrorCode(newName) === undefined ){
+                let cost = 0;
+                body.forEach(function(part){
+                    cost += PART_COSTS[part];
+                });
                 Population.registerCreep(
                     newName, 
                     type, 
