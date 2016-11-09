@@ -26,7 +26,7 @@ module.exports = {
                 }
             } 
             if( flag.room && flag.room.controller.my ) { // inside owned target room
-                if( flag.room.spawns && flag.room.spawns.length > 0 ){ // spawn complete
+                if( flag.room.structures.spawns && flag.room.structures.spawns.length > 0 ){ // spawn complete
                     flag.remove();
                     // also remove exploit flags
                     let remove = f => Game.flags[f.name].remove();

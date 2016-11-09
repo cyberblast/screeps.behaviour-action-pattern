@@ -12,7 +12,7 @@ var mod = {
         Memory.population[val.creepName] = val;
         return Memory.population[val.creepName];
     },
-    registerCreep: function(creepName, creepType, creepCost, room, spawnName, body){
+    registerCreep: function(creepName, creepType, creepCost, room, spawnName, body, destiny = null){
         var entry = this.setCreep({
             creepName: creepName, 
             creepType: creepType, 
@@ -24,7 +24,8 @@ var mod = {
             targetId: null,
             spawningTime: 0, 
             flagName: null,
-            body: _.countBy(body)
+            body: _.countBy(body), 
+            destiny: destiny
         });
         this.countCreep(room, entry);
     }, 
@@ -170,6 +171,8 @@ var mod = {
                     if( !spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' ) { 
                         spawnsToProbe.push(entry.motherSpawn);
                     }
+                } else if( entry.destiny ) {
+                    // TODO: assign predefined destiny
                 }
                 entry.ttl = creep.ticksToLive;
 

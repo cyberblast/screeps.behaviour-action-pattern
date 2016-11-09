@@ -68,7 +68,8 @@ var mod = {
             'ranged_attack': { common: 2, boosted: 5 },
             'heal': { common: 2, boosted: 5 },
             'claim': { common: 1, boosted: 3 },
-            'tough': { common: 1, boosted: 3 }
+            'tough': { common: 1, boosted: 3 },
+            tower: 20
         }
         Creep.bodyThreat = function(body) {
             let threat = 0;
@@ -292,7 +293,7 @@ var mod = {
             if( here && here.length > 0 ) {
                 let path;
                 if( !this.data.idlePath || this.data.idlePath.length < 2 || this.data.idlePath[0].x != this.pos.x || this.data.idlePath[0].y != this.pos.y || this.data.idlePath[0].roomName != this.pos.roomName ) {
-                    let goals = _.map(this.room.structures, function(o) {  
+                    let goals = _.map(this.room.structures.all, function(o) {  
                         return { pos: o.pos, range: 1 };
                     });
                     

@@ -4,7 +4,7 @@ setup.maxMulti = function(room) {
     let max = 7; 
     if( room.minerals.length > 0 ) 
         max += 2; 
-    let contSum = _.sum(room.containerIn, 'sum');
+    let contSum = _.sum(room.structures.container.in, 'sum');
     contSum += _.sum(room.droppedResources, 'amount');    
     max += Math.floor(contSum / 1000);
     max += Creep.setup.upgrader.maxMulti(room);
@@ -14,9 +14,9 @@ setup.maxCount = function(room){
     let count = 0;
     if(room.population && room.population.typeCount['miner'] > 0) {
         count += Creep.setup.upgrader.maxCount(room);
-        if( room.links.length < 3 || 
+        if( room.structures.links.all.length < 3 || 
            (room.storage && room.storage.store.energy > MAX_STORAGE_ENERGY[room.controller.level] && 
-            room.containerController && _.sum(room.containerController, 'store.energy') == 0 )) count++;
+            room.structures.container.controller && _.sum(room.structures.container.controller, 'store.energy') == 0 )) count++;
     }
     return count; 
 };

@@ -18,7 +18,7 @@ setup.maxMulti = function(room){
 setup.maxCount = function(room){
     if (room.situation.invasion || 
         room.conserveForDefense || 
-        (room.containerController.length + room.linksController.length) == 0 ) 
+        (room.structures.container.controller.length + room.structures.links.controller.length) == 0 ) 
         return 0;
     if( room.controller.level == 8 ) return 1;
     return room.storage ? Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000)) : 1;

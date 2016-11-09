@@ -10,10 +10,10 @@ action.isValidTarget = function(target){
 };   
 action.newTarget = function(creep){ 
     // if storage link is not empty & no controller link < 15% => uncharge
-    if( creep.room.linksStorage.length > 0 ){
-        let linkStorage = creep.room.linksStorage.find(l => l.energy > 0);
+    if( creep.room.structures.links.storage.length > 0 ){
+        let linkStorage = creep.room.structures.links.storage.find(l => l.energy > 0);
         if( linkStorage ){
-            let emptyControllerLink = creep.room.linksController.find(l => l.energy < l.energyCapacity * 0.15);
+            let emptyControllerLink = creep.room.structures.links.controller.find(l => l.energy < l.energyCapacity * 0.15);
             if( !emptyControllerLink || linkStorage.energy <= linkStorage.energyCapacity * 0.85 ) // also clear half filled
                 return linkStorage;
         }
@@ -21,7 +21,7 @@ action.newTarget = function(creep){
 
     var that = this;
     let isAddable = target => that.isValidTarget(target);    
-    if( creep.room.containerIn.length > 0 ) {
+    if( creep.room.structures.container.in.length > 0 ) {
         // take from fullest IN container having energy
         let target = null;
         let filling = 0;
@@ -35,7 +35,7 @@ action.newTarget = function(creep){
                 target = cont;
             }
         };
-        _.forEach(creep.room.containerIn, fullest);
+        _.forEach(creep.room.structures.container.in, fullest);
         return target;
     }
 };

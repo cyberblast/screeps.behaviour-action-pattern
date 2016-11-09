@@ -118,7 +118,7 @@ var mod = {
             get: function() {
                 let that = this;
                 if( _.isUndefined(this.memory.container)) {
-                    let c = this.room.structures.filter(c => c.structureType == STRUCTURE_CONTAINER && c.pos.getRangeTo(that.pos) <= 2);
+                    let c = this.room.structures.all.filter(c => c.structureType == STRUCTURE_CONTAINER && c.pos.getRangeTo(that.pos) <= 2);
                     if (c.length > 0) this.memory.container = c[0].id;
                 };
 
@@ -173,6 +173,8 @@ var mod = {
                 return this._sum;
             }
         });
+        
+        if( Memory.pavementArt === undefined ) Memory.pavementArt = {};
     }
 }
 module.exports = mod;

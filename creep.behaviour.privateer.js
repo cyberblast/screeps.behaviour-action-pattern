@@ -30,7 +30,7 @@ module.exports = {
             // carrier filled
             if( carrySum > 0 ){
                 let deposit = [];
-                if( creep.carry.energy == carrySum ) deposit = creep.room.linksPrivateers;
+                if( creep.carry.energy == carrySum ) deposit = creep.room.structures.links.privateers;
                 if( creep.room.storage ) deposit.push(creep.room.storage);
                 if( deposit.length > 0 ){
                     let target = creep.pos.findClosestByRange(deposit);
@@ -58,7 +58,8 @@ module.exports = {
             // at target room
             if( creep.flag && creep.flag.pos.roomName == creep.pos.roomName ){
                 // check invader/cloaking state
-                if( creep.room.situation.invasion && creep.flag.color != FLAG_COLOR.invade.robbing.color && creep.flag.secondaryColor != FLAG_COLOR.invade.robbing.secondaryColor ) {
+                if( creep.room.situation.invasion && 
+                    (creep.flag.color != FLAG_COLOR.invade.robbing.color || creep.flag.secondaryColor != FLAG_COLOR.invade.robbing.secondaryColor )) {
                     creep.flag.cloaking = 50; // TODO: set to Infinity & release when solved
                     this.exploitNextRoom(creep);
                     return;

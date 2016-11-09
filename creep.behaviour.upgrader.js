@@ -23,11 +23,11 @@ module.exports = {
                 pos: s.pos, 
                 range: 1
             });
-            if( creep.room.containerController ){
-                creep.room.containerController.forEach(addSpot);
+            if( creep.room.structures.container.controller ){
+                creep.room.structures.container.controller.forEach(addSpot);
             }
-            if( creep.room.linksController ){
-                creep.room.linksController.forEach(addSpot);
+            if( creep.room.structures.links.controller ){
+                creep.room.structures.links.controller.forEach(addSpot);
             }
             let invalid = [];
             let findInvalid = entry => { 
@@ -60,8 +60,8 @@ module.exports = {
             if( range == 0 ){
                 let carryThreshold = (creep.data.body&&creep.data.body.work ? creep.data.body.work : (creep.carryCapacity/2));
                 if( creep.carry.energy <= carryThreshold ){
-                    let store = creep.room.linksController.find(l => l.energy > 0);
-                    if( !store ) store = creep.room.containerController.find(l => l.store.energy > 0);
+                    let store = creep.room.structures.links.controller.find(l => l.energy > 0);
+                    if( !store ) store = creep.room.structures.container.controller.find(l => l.store.energy > 0);
                     if( store ) creep.withdraw(store, RESOURCE_ENERGY);
                 }
                 creep.upgradeController(creep.room.controller);
