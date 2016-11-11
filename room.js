@@ -371,7 +371,8 @@ var mod = {
                     }
                     return this._constructionSites;
                 }
-            },            
+            },
+
             'creeps': {
                 configurable: true,
                 get: function() {
@@ -417,6 +418,18 @@ var mod = {
                     return this._combatCreeps;
                 }
             },
+            'casualties': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._casualties) ){ 
+                        var isInjured = creep => creep.hits < creep.hitsMax && 
+                            (creep.towers === undefined || creep.towers.length == 0);
+                        this._casualties = _.sortBy(_.filter(this.creeps, isInjured), 'hits');
+                    }
+                    return this._casualties;
+                }
+            },
+
             'situation': {
                 configurable: true,
                 get: function() {
@@ -427,17 +440,6 @@ var mod = {
                         }
                     }
                     return this._situation;
-                }
-            },
-            'casualties': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._casualties) ){ 
-                        var isInjured = creep => creep.hits < creep.hitsMax && 
-                            (creep.towers === undefined || creep.towers.length == 0);
-                        this._casualties = _.sortBy(_.filter(this.creeps, isInjured), 'hits');
-                    }
-                    return this._casualties;
                 }
             },
             'roadConstructionTrace': {
@@ -1067,7 +1069,7 @@ var mod = {
             } 
             if( this.controller.level == 8 && !transacting && 
                 this.storage.store.energy > MAX_STORAGE_ENERGY[this.controller.level] && 
-                this.terminal.store[mineral] < 100000 && 
+                this.terminal.store[mineral] < 150000 && 
                 this.terminal.store.energy > 50000 ){
                 let requiresEnergy = room => (
                     room.my && 
