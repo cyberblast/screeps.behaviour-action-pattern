@@ -17,6 +17,7 @@ setup.maxCount = function(room){
         if( room.structures.links.all.length < 3 || 
            (room.storage && room.storage.store.energy > MAX_STORAGE_ENERGY[room.controller.level] && 
             room.structures.container.controller && _.sum(room.structures.container.controller, 'store.energy') == 0 )) count++;
+        if( count == 0 ) count = 1;
     }
     return count; 
 };
