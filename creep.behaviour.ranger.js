@@ -20,21 +20,8 @@ module.exports = {
             logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
         }
 
-        // Heal self
         if( creep.data.body.heal !== undefined && creep.hits < creep.hitsMax ){
             creep.heal(creep);
-        }
-        // Heal other
-        else if( !creep.attackingRanged && creep.room.casualties.length > 0 ){
-            let injured = creep.pos.findInRange(creep.room.casualties, 3);
-            if( injured.length > 0 ){
-                if(creep.pos.isNearTo(injured[0])) {
-                    creep.heal(injured[0]);
-                }
-                else {
-                    creep.rangedHeal(injured[0]);
-                }
-            }
         }
     },
     nextAction: function(creep){ 

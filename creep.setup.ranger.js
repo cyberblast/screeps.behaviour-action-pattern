@@ -25,7 +25,7 @@ setup.small = {
     minEnergyAvailable: 0.5,
     maxMulti: 6,
     maxCount: setup.maxCount,
-    maxWeight: null//(room) => room.defenseMaxWeight(1750, 'ranger')
+    maxWeight: null
 };
 setup.mid = {
     fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE], 
@@ -34,7 +34,7 @@ setup.mid = {
     minEnergyAvailable: 0.5,
     maxMulti: 10,
     maxCount: setup.maxCount,
-    maxWeight: null//(room) => room.defenseMaxWeight(2000, 'ranger')
+    maxWeight: null
 };
 setup.big = {
     fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE], 
@@ -43,7 +43,7 @@ setup.big = {
     minEnergyAvailable: 0.5,
     maxMulti: 15,
     maxCount: setup.maxCount,
-    maxWeight: null//(room) => room.defenseMaxWeight(2500, 'ranger')
+    maxWeight: null
 };
 setup.RCL = {
     1: setup.none,
@@ -51,20 +51,8 @@ setup.RCL = {
     3: setup.none,
     4: setup.small,
     5: setup.mid,
-    6: setup.none,
-    7: setup.none,
-    8: setup.none
-};
-/*
-setup.RCL = {
-    1: setup.none,
-    2: setup.none,
-    3: setup.small,
-    4: setup.small,
-    5: setup.mid,
     6: setup.mid,
     7: setup.big,
     8: setup.big
 };
-*/
 module.exports = setup;

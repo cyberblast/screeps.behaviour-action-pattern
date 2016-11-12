@@ -413,7 +413,7 @@ var mod = {
                 configurable: true,
                 get: function() {
                     if( _.isUndefined(this._combatCreeps) ){ 
-                        this._combatCreeps = this.creeps.filter( c => ['melee','ranger','healer', 'warrior'].includes(c.data.creepType) );
+                        this._combatCreeps = this.creeps.filter( c => ['melee','ranger','healer'].includes(c.data.creepType) );
                     }
                     return this._combatCreeps;
                 }
@@ -1093,9 +1093,9 @@ var mod = {
                     3: Creep.setup.melee,
                     4: Creep.setup.ranger,
                     5: Creep.setup.ranger,
-                    6: Creep.setup.warrior,
-                    7: Creep.setup.warrior,
-                    8: Creep.setup.warrior
+                    6: Creep.setup.ranger,
+                    7: Creep.setup.ranger,
+                    8: Creep.setup.ranger
                 };
                 let idleSpawns = this.structures.spawns.filter( s => !s.spawning );
                 for( let iSpawn = 0; iSpawn < idleSpawns.length && this.defenseLevel.sum < this.hostileThreatLevel; iSpawn++ ) {
