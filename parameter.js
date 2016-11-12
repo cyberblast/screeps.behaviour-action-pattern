@@ -26,13 +26,13 @@ var mod = {
     //MAX_SELL_RANGE: 60, 
     TERMINAL_ENERGY: 100000, 
     MIN_SELL_RATIO: {
-        'H': 1,
-        'O': 1,
-        'U': 1.5,
-        'L': 1.5,
-        'K': 1.5,
-        'Z': 1.5,
-        'X': 2
+        'H': 0.8,
+        'O': 0.8,
+        'U': 1,
+        'L': 1,
+        'K': 1,
+        'Z': 1,
+        'X': 1.1
     },
     MAX_REPAIR_LIMIT: { // Limits how high structures get repaired by towers, regarding RCL
         1: 1000,
