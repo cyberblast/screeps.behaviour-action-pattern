@@ -226,6 +226,100 @@ var mod = {
             }, 
             unpave: function(roomname){
                 
+            },            
+            loadPaths: function(){
+                Memory.modules = {
+                    action: {},
+                    behaviour: {},
+                    setup: {},
+                }
+                var actionList = [
+                    'building',
+                    'charging',
+                    'claiming',
+                    'reserving',
+                    'defending',
+                    'dismantling',
+                    'feeding',
+                    'fortifying',
+                    'fueling',
+                    'guarding',
+                    'harvesting',
+                    'healing',
+                    'idle',
+                    'invading',
+                    'picking',
+                    'reallocating',
+                    'repairing',
+                    'robbing',
+                    'travelling',
+                    'storing',
+                    'uncharging',
+                    'upgrading',
+                    'withdrawing'
+                ];
+                _.forEach(actionList, function(action) {
+                    var path = './custom.creep.action.' + action;
+                    try {
+                        var a = require(path);
+                    }
+                    catch (e) {
+                        path = './creep.action.' + action
+                    }
+                    finally {
+                        Memory.modules.action[action] = path;
+                    }
+                });
+                var behaviourList = [
+                    'claimer',
+                    'hauler',
+                    'healer',
+                    'melee',
+                    'miner',
+                    'mineralMiner',
+                    'pioneer',
+                    'privateer',
+                    'ranger',
+                    'upgrader',
+                    'worker'
+                ];
+                _.forEach(behaviourList, function(behaviour) {
+                    var path = './custom.creep.behaviour.' + behaviour;
+                    try {
+                        var a = require(path);
+                    }
+                    catch (e) {
+                        path = './creep.behaviour.' + behaviour
+                    }
+                    finally {
+                        Memory.modules.behaviour[behaviour] = path;
+                    }
+                });
+                var setupList = [
+                    'claimer',
+                    'hauler',
+                    'healer',
+                    'melee',
+                    'miner',
+                    'mineralMiner',
+                    'pioneer',
+                    'privateer',
+                    'ranger',
+                    'upgrader',
+                    'worker'
+                ];
+                _.forEach(setupList, function(setup) {
+                    var path = './custom.creep.setup.' + setup;
+                    try {
+                        var a = require(path);
+                    }
+                    catch (e) {
+                        path = './creep.setup.' + setup
+                    }
+                    finally {
+                        Memory.modules.setup[setup] = path;
+                    }
+                });
             }
         });
     }
