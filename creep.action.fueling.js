@@ -6,9 +6,9 @@ action.isValidAction = function(creep){
 };
 action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
-};   
+};
 action.isAddableTarget = function(target){
-    return ( target.my && 
+    return ( target.my &&
         (!target.targetOf || target.targetOf.length < this.maxPerTarget));
 };
 action.newTarget = function(creep){
@@ -16,7 +16,7 @@ action.newTarget = function(creep){
 };
 action.work = function(creep){
     let response = creep.transfer(creep.target, RESOURCE_ENERGY);
-    if( creep.target.energyCapacity - creep.target.energy < 20 ) 
+    if( creep.target.energyCapacity - creep.target.energy < 20 )
         creep.data.targetId = null;
     return response;
 };

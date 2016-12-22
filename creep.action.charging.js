@@ -3,18 +3,18 @@ action.renewTarget = false;
 action.isValidAction = function(creep){ return creep.carry.energy > 0; }
 action.isAddableAction = function(creep){ return true; }
 action.isValidTarget = function(target){
-    return ( target && 
+    return ( target &&
         (( target.structureType == 'container' && target.sum < target.storeCapacity) ||
         ( target.structureType == 'link' && target.energy < target.storeCapacity * 0.85 )));
-};   
+};
 action.isAddableTarget = function(target, creep){
     return (
-        (target instanceof OwnedStructure && target.my) || 
-        ( 
-            (!creep.room.controller || 
+        (target instanceof OwnedStructure && target.my) ||
+        (
+            (!creep.room.controller ||
                 (
-                    (!creep.room.controller.owner || creep.room.controller.my) && 
-                    (!creep.room.controller.reservation || creep.room.controller.reservation.username == creep.owner.username) 
+                    (!creep.room.controller.owner || creep.room.controller.my) &&
+                    (!creep.room.controller.reservation || creep.room.controller.reservation.username == creep.owner.username)
                 )
             )
         )
@@ -27,7 +27,7 @@ action.isAddableTarget = function(target, creep){
 };
 action.newTarget = function(creep){
     // if storage link is not full & controller link < 15% => charge
-    if( creep.room.structures.links.storage.length > 0 ){        
+    if( creep.room.structures.links.storage.length > 0 ){
         let linkStorage = creep.room.structures.links.storage.find(l => l.energy < l.energyCapacity * 0.85);
         if( linkStorage ){
             let emptyControllerLink = creep.room.structures.links.controller.find(l => l.energy <= l.energyCapacity * 0.15);
@@ -39,7 +39,7 @@ action.newTarget = function(creep){
     var that = this;
     if( creep.room.structures.container.out.length > 0 ) {
         let target = null;
-        let maxFree = 0; 
+        let maxFree = 0;
         var emptyest = o => {
             if( !that.isAddableTarget(o, creep) ) return;
             let free = o.storeCapacity - o.sum;
@@ -50,7 +50,7 @@ action.newTarget = function(creep){
         };
         _.forEach(creep.room.structures.container.out, emptyest);
         return target;
-    } 
+    }
 };
 action.work = function(creep){
     let workResult;
@@ -83,7 +83,7 @@ action.work = function(creep){
     */
 };
 action.onAssignment = function(creep, target) {
-    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC); 
-    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);    
+    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);
 };
 module.exports = action;

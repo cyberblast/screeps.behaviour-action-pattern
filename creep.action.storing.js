@@ -1,22 +1,22 @@
 var action = new Creep.Action('storing');
 action.isValidAction = function(creep){
-    return ( 
-        creep.room.storage != null && 
-        creep.sum > 0 && 
+    return (
+        creep.room.storage != null &&
+        creep.sum > 0 &&
         (
-            creep.data.creepType == 'hauler' || 
+            creep.data.creepType == 'hauler' ||
             creep.data.creepType == 'privateer' ||
-            ( 
-                creep.sum > creep.carry.energy || 
+            (
+                creep.sum > creep.carry.energy ||
                 (
                     (
-                        !creep.room.population || 
+                        !creep.room.population ||
                         (
-                            creep.room.population.actionCount.upgrading != null && 
+                            creep.room.population.actionCount.upgrading != null &&
                             creep.room.population.actionCount.upgrading >= 1
                         )
                     ) &&
-                    creep.room.sourceEnergyAvailable > 0 && 
+                    creep.room.sourceEnergyAvailable > 0 &&
                     creep.room.storage.store.energy <= MAX_STORAGE_ENERGY[creep.room.controller.level]
                 )
             )
@@ -27,32 +27,32 @@ action.isValidTarget = function(target){
     return ((target != null) && (target.store != null) && target.sum < target.storeCapacity);
 };
 action.isAddableTarget = function(target){
-    return ( target.my && 
+    return ( target.my &&
         (!target.targetOf || target.targetOf.length < this.maxPerTarget));
 };
 action.isValidMineralToTerminal = function(room){
-    return ( room.storage.store[room.mineralType] && 
-        room.storage.store[room.mineralType] > MAX_STORAGE_MINERAL*1.05 && 
+    return ( room.storage.store[room.mineralType] &&
+        room.storage.store[room.mineralType] > MAX_STORAGE_MINERAL*1.05 &&
         ((room.terminal.sum - room.terminal.store.energy) + Math.max(room.terminal.store.energy, TERMINAL_ENERGY)) < room.terminal.storeCapacity);
 };
 action.newTarget = function(creep){
     let roomMineralType = creep.room.mineralType;
     let sendMineralToTerminal = creep => (
-        creep.carry[roomMineralType] &&    
-        creep.carry[roomMineralType] > 0 &&     
+        creep.carry[roomMineralType] &&
+        creep.carry[roomMineralType] > 0 &&
         this.isValidMineralToTerminal(creep.room));
     let sendEnergyToTerminal = creep => (
-        creep.carry.energy > 0 && 
+        creep.carry.energy > 0 &&
         creep.room.storage.store.energy > ((MAX_STORAGE_ENERGY[creep.room.controller.level]-MIN_STORAGE_ENERGY[creep.room.controller.level])/2)+MIN_STORAGE_ENERGY[creep.room.controller.level] &&
         creep.room.terminal.store.energy < TERMINAL_ENERGY*0.95 &&
         creep.room.terminal.sum  < creep.room.terminal.storeCapacity);
-        // && 
+        // &&
         //(creep.room.terminal.storeCapacity - creep.room.terminal.sum) >= creep.carry[roomMineralType]);
 
-    if( creep.room.terminal &&  
+    if( creep.room.terminal &&
         ( sendMineralToTerminal(creep) || sendEnergyToTerminal(creep) ) &&
         this.isAddableTarget(creep.room.terminal, creep)) {
-            return creep.room.terminal;        
+            return creep.room.terminal;
     }
     if( this.isValidTarget(creep.room.storage) && this.isAddableTarget(creep.room.storage, creep) )
         return creep.room.storage;
@@ -71,7 +71,7 @@ action.work = function(creep){
     return workResult;
 };
 action.onAssignment = function(creep, target) {
-    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC); 
-    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);    
+    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);
 };
 module.exports = action;

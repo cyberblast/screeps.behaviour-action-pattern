@@ -1,9 +1,11 @@
-### __Please have a look at the [Wiki](https://github.com/cyberblast/screeps.behaviour-action-pattern/wiki)!__
 
-We are also forming an ingame player alliance, the Open Collaboration Society (OCS). 
-Please contact one of the alliance members if you want to join the alliance. 
+## Links
 
-[OCS Constitution](https://github.com/ScreepsGamers/OCS)  
-[OCS map](http://www.leagueofautomatednations.com/a/OCS)  
+[Public repository](https://github.com/ScreepsOCS/screeps.behaviour-action-pattern)  
+[Internal repository](https://github.com/cyberblast/screeps.ocs.internal)  
+[Internal package repository](https://github.com/cyberblast/screeps.ocs.internal.package)  
+[Wiki](https://github.com/ScreepsOCS/screeps.behaviour-action-pattern/wiki)  
+[OCS Constitution](https://screepsocs.github.io/screeps.ocs/OCS_Constitution)  
 [OCS on slack](https://screeps.slack.com/messages/ocs)  
-[mail](mailto://ocs@cyberblast.org)
+[Alliance map](http://www.leagueofautomatednations.com/a/OCS)  
+[mail](mailto://ocs@cyberblast.org)  

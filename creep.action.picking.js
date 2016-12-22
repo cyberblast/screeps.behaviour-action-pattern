@@ -6,10 +6,10 @@ action.isValidAction = function(creep){
 };
 action.isValidTarget = function(target){
     return (target != null && target.amount != null && target.amount > 0);
-};   
+};
 action.isAddableTarget = function(target){
-    return (!target.targetOf || ( 
-        target.targetOf.length < this.maxPerTarget) && 
+    return (!target.targetOf || (
+        target.targetOf.length < this.maxPerTarget) &&
         target.amount > _.sum( target.targetOf.map( t => ( t.actionName == 'picking' ? t.carryCapacityLeft : 0 ))));
 };
 action.newTarget = function(creep){
@@ -23,7 +23,7 @@ action.newTarget = function(creep){
         target = creep.pos.findClosestByPath(creep.room.droppedResources, {
             filter: (o) => ( o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep))
         });
-        
+
         if( !target ) target = creep.pos.findClosestByPath(creep.room.droppedResources, {
             filter: (o) => this.isAddableTarget(o, creep)
         });
@@ -51,6 +51,6 @@ action.work = function(creep){
     return result;
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(8681), SAY_PUBLIC); 
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(8681), SAY_PUBLIC);
 };
 module.exports = action;
