@@ -46,61 +46,46 @@ module.exports.loop = function () {
         }
         return Memory.modules[modName];
     };
-    global.load = (modName) => {
-        let mod;
-        let path = getPath(modName);
+    global.tryGetModule = (p, silent = false) => {
+        let m;
         try{        
-            mod = require(path);
-        }catch(e){
-            mod = null;
+            m = require(p);
+        } catch(e) {
             if( e.message && e.message.indexOf('Unknown module') > -1 ){
-                let reevaluate = getPath(modName, true);
-                if( path != reevaluate ){
-                    try {
-                        mod = require(reevaluate);
-                    } catch(e2){
-                        mod = null;
-                        e = e2;
-                    }
-                }
-            }
-            if( e.message && e.message.indexOf('Unknown module') > -1 ){
-                console.log(`Module "${modName}" not found!`);
-            } else if(mod == null) {
+                if(!silent) console.log(`Module "${modName}" not found!`);
+            } else if(m == null) {
                 console.log(`Error loading module "${modName}"!<br/>${e.toString()}`);
             }
+            m = null;
+        }
+        return m;
+    };        
+    global.load = (modName) => {
+        // read stored module path
+        let path = getPath(modName);
+        // try to load module
+        let mod = tryGetModule(path, true);
+        if( !mod ) {
+            // re-evaluate path
+            path = getPath(modName, true);
+            // try to load module. Log error to console.
+            mod = tryGetModule(path);
         }
         if( mod ) {
             if( Memory.modules.internalViral[modName] ) {
-                let viralOverride;
-                try {
-                    viralOverride = require('./internalViral.' + modName);
-                }
-                catch (e) {
-                    viralOverride = null;
-                    if( e.message && e.message.indexOf('Unknown module') > -1 ){
-                        console.log(`Viral override for "${modName}" not found!`);
-                    } else if(mod == null) {
-                        console.log(`Error loading viral override "${modName}"!<br/>${e.toString()}`);
-                    }
-                }
+                // read stored viral override path
+                let viralOverride = tryGetModule('./internalViral.' + modName);
+                // override
                 if( viralOverride ) _.assign(mod, viralOverride);
+                // cleanup
                 else delete Memory.modules.internalViral[modName];
             }
             if( Memory.modules.viral[modName] ) {
-                let viralOverride;
-                try {
-                    viralOverride = require('./viral.' + modName);
-                }
-                catch (e) {
-                    viralOverride = null;
-                    if( e.message && e.message.indexOf('Unknown module') > -1 ){
-                        console.log(`Viral override for "${modName}" not found!`);
-                    } else if(mod == null) {
-                        console.log(`Error loading viral override "${modName}"!<br/>${e.toString()}`);
-                    }
-                }
+                // read stored viral override path
+                let viralOverride = tryGetModule('./viral.' + modName);
+                // override
                 if( viralOverride ) _.assign(mod, viralOverride);
+                // cleanup
                 else delete Memory.modules.viral[modName];
             }
         }

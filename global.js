@@ -36,16 +36,6 @@ var mod = {
                         color: COLOR_RED,
                         secondaryColor: COLOR_YELLOW,
                         filter: {'color': COLOR_RED, 'secondaryColor': COLOR_YELLOW }
-                    },
-                    hopper: { // the room where tower is
-                        color: COLOR_RED,
-                        secondaryColor: COLOR_PURPLE,
-                        filter: {'color': COLOR_RED, 'secondaryColor': COLOR_PURPLE }
-                    },
-                    hopperHome: { // room to heal in
-                        color: COLOR_RED,
-                        secondaryColor: COLOR_BLUE,
-                        filter: {'color': COLOR_RED, 'secondaryColor': COLOR_BLUE }
                     }
                 },
                 //COLOR_PURPLE,
@@ -157,8 +147,8 @@ var mod = {
             logError: function(message) {
                 console.log( dye(CRAYON.error, message) );
             },
-            logSystem: function(systemMessage, message) {
-                console.log( dye(CRAYON.system, systemMessage  + ' &gt; ') + message );
+            logSystem: function(roomName, message) {
+                console.log( dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${roomName}</a>`  + ' &gt; ') + message );
             },
             isObj: function(val){
                 if (val === null) { return false;}
