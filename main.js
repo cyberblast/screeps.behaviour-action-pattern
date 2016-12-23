@@ -1,48 +1,43 @@
 /* https://github.com/cyberblast/screeps.ocs.internal */
 
 module.exports.loop = function () {
+    if (Memory.modules === undefined) 
+        Memory.modules = {};
+    if (Memory.modules.viral === undefined) 
+        Memory.modules.viral = {};
+    if (Memory.modules.internalViral === undefined) 
+        Memory.modules.internalViral = {};
+    global.validatePath = path => {
+        let mod;
+        try {
+            mod = require(path);
+        }
+        catch (e) {
+            mod = null;
+        }
+        return mod != null;
+    };
     global.getPath = (modName, reevaluate = false) => {
-        if (Memory.modules === undefined) 
-            Memory.modules = {};
-        if (Memory.modules.viral === undefined) 
-            Memory.modules.viral = {};
         if( reevaluate || !Memory.modules[modName] ){
             // find base file
             let path = './custom.' + modName;
-            try {
-                let a = require(path);
-            }
-            catch (e) {
+            if(!validatePath(path)) {
                 path = './internal.' + modName;
-                try {
-                    let a = require(path);
-                }
-                catch (e) {
-                    path = './' + modName
-                }
+                if(!validatePath(path)) 
+                    path = './' + modName;
             }
-            finally {
-                Memory.modules[modName] = path;
-            }
+            Memory.modules[modName] = path;
             // find viral file
-            let viralOverride = null;
             path = './internalViral.' + modName;
-            try {
-                viralOverride = require(path);
-                if( viralOverride ) Memory.modules.internalViral[modName] = true;
-            }
-            catch (e) { } // expected
-            if( !viralOverride && Memory.modules.internalViral && Memory.modules.internalViral[modName] ) 
+            if(validatePath(path))
+                Memory.modules.internalViral[modName] = true;
+            else if( Memory.modules.internalViral[modName] )
                 delete Memory.modules.internalViral[modName];
-            viralOverride = null
             path = './viral.' + modName;
-            try {
-                viralOverride = require(path);
-                if( viralOverride ) Memory.modules.viral[modName] = true;
-            }
-            catch (e) { } // expected
-            if( !viralOverride && Memory.modules.internalViral && Memory.modules.internalViral[modName] ) 
-                delete Memory.modules.internalViral[modName];
+            if(validatePath(path))
+                Memory.modules.viral[modName] = true;
+            else if( Memory.modules.viral[modName] )
+                delete Memory.modules.viral[modName];
         }
         return Memory.modules[modName];
     };
@@ -61,7 +56,7 @@ module.exports.loop = function () {
         return mod;
     };
     global.infect = (mod, namespace, modName) => {
-        if( Memory.modules[namespace] && Memory.modules[namespace][modName] ) {
+        if( Memory.modules[namespace][modName] ) {
             // get module from stored viral override path
             let viralOverride = tryRequire(`./${namespace}.${modName}`);
             // override
