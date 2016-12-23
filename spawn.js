@@ -10,8 +10,7 @@ var mod = {
             Creep.setup.healer,
             Creep.setup.pioneer,
             Creep.setup.privateer,
-            Creep.setup.claimer,
-            Creep.setup.hopper];
+            Creep.setup.claimer];
         Spawn.prototype.loop = function(){
             if( this.spawning ) return;
             let room = this.room;

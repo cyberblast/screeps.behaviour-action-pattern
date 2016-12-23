@@ -25,69 +25,67 @@ module.exports.loop = function () {
                 Memory.modules[modName] = path;
             }
             // find viral file
+            let viralOverride = null;
             path = './internalViral.' + modName;
             try {
-                let viralOverride = require(path);
+                viralOverride = require(path);
                 if( viralOverride ) Memory.modules.internalViral[modName] = true;
-                else delete Memory.modules.internalViral[modName];
             }
-            catch (e) {
+            catch (e) { } // expected
+            if( !viralOverride && Memory.modules.internalViral && Memory.modules.internalViral[modName] ) 
                 delete Memory.modules.internalViral[modName];
-            }
+            viralOverride = null
             path = './viral.' + modName;
             try {
-                let viralOverride = require(path);
+                viralOverride = require(path);
                 if( viralOverride ) Memory.modules.viral[modName] = true;
-                else delete Memory.modules.viral[modName];
             }
-            catch (e) {
-                delete Memory.modules.viral[modName];
-            }
+            catch (e) { } // expected
+            if( !viralOverride && Memory.modules.internalViral && Memory.modules.internalViral[modName] ) 
+                delete Memory.modules.internalViral[modName];
         }
         return Memory.modules[modName];
     };
-    global.tryGetModule = (p, silent = false) => {
-        let m;
-        try{        
-            m = require(p);
+    global.tryRequire = (path, silent = false) => {
+        let mod;
+        try{
+            mod = require(path);
         } catch(e) {
             if( e.message && e.message.indexOf('Unknown module') > -1 ){
-                if(!silent) console.log(`Module "${modName}" not found!`);
-            } else if(m == null) {
-                console.log(`Error loading module "${modName}"!<br/>${e.toString()}`);
+                if(!silent) console.log(`Module "${path}" not found!`);
+            } else if(mod == null) {
+                console.log(`Error loading module "${path}"!<br/>${e.toString()}`);
             }
-            m = null;
+            mod = null;
         }
-        return m;
-    };        
+        return mod;
+    };
+    global.infect = (mod, namespace, modName) => {
+        if( Memory.modules[namespace] && Memory.modules[namespace][modName] ) {
+            // get module from stored viral override path
+            let viralOverride = tryRequire(`./${namespace}.${modName}`);
+            // override
+            if( viralOverride ) _.assign(mod, viralOverride);
+            // cleanup
+            else delete Memory.modules[namespace][modName];
+        }
+        return mod;
+    }
     global.load = (modName) => {
         // read stored module path
         let path = getPath(modName);
         // try to load module
-        let mod = tryGetModule(path, true);
+        let mod = tryRequire(path, true);
         if( !mod ) {
             // re-evaluate path
             path = getPath(modName, true);
             // try to load module. Log error to console.
-            mod = tryGetModule(path);
+            mod = tryRequire(path);
         }
         if( mod ) {
-            if( Memory.modules.internalViral[modName] ) {
-                // read stored viral override path
-                let viralOverride = tryGetModule('./internalViral.' + modName);
-                // override
-                if( viralOverride ) _.assign(mod, viralOverride);
-                // cleanup
-                else delete Memory.modules.internalViral[modName];
-            }
-            if( Memory.modules.viral[modName] ) {
-                // read stored viral override path
-                let viralOverride = tryGetModule('./viral.' + modName);
-                // override
-                if( viralOverride ) _.assign(mod, viralOverride);
-                // cleanup
-                else delete Memory.modules.viral[modName];
-            }
+            // load viral overrides 
+            mod = infect(mod, 'internalViral', modName);
+            mod = infect(mod, 'viral', modName);
         }
         return mod;
     };
