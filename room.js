@@ -1204,7 +1204,7 @@ var mod = {
                 var registerHostile = creep => {
                     if( !that.memory.hostileIds.includes(creep.id) ){
                         let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-                        if( DEBUG || NOTIFICATE_INVADER ) logSystem(this.name, `Hostile intruder (${bodyCount}) from "${creep.owner.username}.`);
+                        if( DEBUG || NOTIFICATE_INVADER ) logSystem(this.name, `Hostile intruder (${bodyCount}) from "${creep.owner.username}."`);
                         if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
                             Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${that.name} at ${toDateTimeString(toLocalDate(new Date()))}`);
                         }
