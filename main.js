@@ -1,87 +1,105 @@
-/* https://github.com/ScreepsGamers/screeps.behaviour-action-pattern */ 
+/* https://github.com/cyberblast/screeps.ocs.internal */
 
 module.exports.loop = function () {
+    if (Memory.modules === undefined) 
+        Memory.modules = {};
+    if (Memory.modules.viral === undefined) 
+        Memory.modules.viral = {};
+    if (Memory.modules.internalViral === undefined) 
+        Memory.modules.internalViral = {};
+    global.validatePath = path => {
+        let mod;
+        try {
+            mod = require(path);
+        }
+        catch (e) {
+            mod = null;
+        }
+        return mod != null;
+    };
     global.getPath = (modName, reevaluate = false) => {
-        if (Memory.modules === undefined) 
-            Memory.modules = {};
-        if (Memory.modules.viral === undefined) 
-            Memory.modules.viral = {};
         if( reevaluate || !Memory.modules[modName] ){
+            // find base file
             let path = './custom.' + modName;
-            try {
-                let a = require(path);
+            if(!validatePath(path)) {
+                path = './internal.' + modName;
+                if(!validatePath(path)) 
+                    path = './' + modName;
             }
-            catch (e) {
-                path = './' + modName
-            }
-            finally {
-                Memory.modules[modName] = path;
-            }
+            Memory.modules[modName] = path;
+            // find viral file
+            path = './internalViral.' + modName;
+            if(validatePath(path))
+                Memory.modules.internalViral[modName] = true;
+            else if( Memory.modules.internalViral[modName] )
+                delete Memory.modules.internalViral[modName];
             path = './viral.' + modName;
-            try {
-                let viralOverride = require(path);
-                if( viralOverride ) Memory.modules.viral[modName] = true;
-            }
-            catch (e) {
+            if(validatePath(path))
+                Memory.modules.viral[modName] = true;
+            else if( Memory.modules.viral[modName] )
                 delete Memory.modules.viral[modName];
-            }
         }
         return Memory.modules[modName];
     };
-    global.load = (modName) => {
+    global.tryRequire = (path, silent = false) => {
         let mod;
-        let path = getPath(modName);
-        try{        
+        try{
             mod = require(path);
-        }catch(e){
-            mod = null;
+        } catch(e) {
             if( e.message && e.message.indexOf('Unknown module') > -1 ){
-                let reevaluate = getPath(modName, true);
-                if( path != reevaluate ){
-                    try {
-                        mod = require(reevaluate);
-                    } catch(e2){
-                        mod = null;
-                        e = e2;
-                    }
-                }
-            }
-            if( e.message && e.message.indexOf('Unknown module') > -1 ){
-                console.log(`Module "${modName}" not found!`);
+                if(!silent) console.log(`Module "${path}" not found!`);
             } else if(mod == null) {
-                console.log(`Error loading module "${modName}"!<br/>${e.toString()}`);
+                console.log(`Error loading module "${path}"!<br/>${e.toString()}`);
             }
+            mod = null;
         }
-        if( mod && Memory.modules.viral[modName] ) {
-            let viralOverride;
-            try {
-                viralOverride = require('./viral.' + modName);
-            }
-            catch (e) {
-                viralOverride = null;
-                if( e.message && e.message.indexOf('Unknown module') > -1 ){
-                    console.log(`Viral override for "${modName}" not found!`);
-                } else if(mod == null) {
-                    console.log(`Error loading viral override "${modName}"!<br/>${e.toString()}`);
-                }
-            }
+        return mod;
+    };
+    global.infect = (mod, namespace, modName) => {
+        if( Memory.modules[namespace][modName] ) {
+            // get module from stored viral override path
+            let viralOverride = tryRequire(`./${namespace}.${modName}`);
+            // override
             if( viralOverride ) _.assign(mod, viralOverride);
-            else delete Memory.modules.viral[modName];
+            // cleanup
+            else delete Memory.modules[namespace][modName];
+        }
+        return mod;
+    }
+    global.load = (modName) => {
+        // read stored module path
+        let path = getPath(modName);
+        // try to load module
+        let mod = tryRequire(path, true);
+        if( !mod ) {
+            // re-evaluate path
+            path = getPath(modName, true);
+            // try to load module. Log error to console.
+            mod = tryRequire(path);
+        }
+        if( mod ) {
+            // load viral overrides 
+            mod = infect(mod, 'internalViral', modName);
+            mod = infect(mod, 'viral', modName);
         }
         return mod;
     };
 
     // initialize global & parameters
-    let params = load('parameter');
-    let glob = load('global');
+    let params = load("parameter");
+    let glob = load("global");
     glob.init(params);
 
     // Extend Server Objects
-    Extensions.extend();  
-    Creep.extend();  
-    Room.extend();  
+    Extensions.extend();
+    Creep.extend();
+    Room.extend();
     Spawn.extend();
     FlagDir.extend();
+    if( glob.extend ) glob.extend();
+
+    // Register task hooks
+    Task.register();
 
     // Analyze environment
     Population.loop();
@@ -93,11 +111,11 @@ module.exports.loop = function () {
     _.forEach(Game.rooms, roomLoop);
 
     // Execution
-    Creep.loop();   
-    Spawn.loop(); 
+    Creep.loop();
+    Spawn.loop();
 
     // Evaluation
     if( Memory.statistics && Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time )
-        load('statistics').loop();
+        load("statistics").loop();
     processReports();
 };

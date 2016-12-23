@@ -16,7 +16,7 @@ module.exports = {
             logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
         }
         if( creep.flee ) {
-            if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9855), SAY_PUBLIC); 
+            if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9855), SAY_PUBLIC);
             let drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
             _.forEach(Object.keys(creep.carry), drop);
             let home = Game.spawns[creep.data.motherSpawn];
@@ -26,7 +26,7 @@ module.exports = {
     nextAction: function(creep){
         let carrySum = creep.sum;
         // at home
-        if( creep.pos.roomName == creep.data.homeRoom ){ 
+        if( creep.pos.roomName == creep.data.homeRoom ){
             // carrier filled
             if( carrySum > 0 ){
                 let deposit = [];
@@ -44,7 +44,7 @@ module.exports = {
             }
             // empty
             // travelling
-            if( this.exploitNextRoom(creep) ) 
+            if( this.exploitNextRoom(creep) )
                 return;
             else {
                 // no new flag
@@ -58,7 +58,7 @@ module.exports = {
             // at target room
             if( creep.flag && creep.flag.pos.roomName == creep.pos.roomName ){
                 // check invader/cloaking state
-                if( creep.room.situation.invasion && 
+                if( creep.room.situation.invasion &&
                     (creep.flag.color != FLAG_COLOR.invade.robbing.color || creep.flag.secondaryColor != FLAG_COLOR.invade.robbing.secondaryColor )) {
                     creep.flag.cloaking = 50; // TODO: set to Infinity & release when solved
                     this.exploitNextRoom(creep);
@@ -85,10 +85,10 @@ module.exports = {
                             Creep.action.harvesting
                         ];
                         // TODO: Add extracting (if extractor present) ?
-                        for(var iAction = 0; iAction < actions.length; iAction++) {   
-                            var action = actions[iAction];             
-                            if(action.isValidAction(creep) && 
-                                action.isAddableAction(creep) && 
+                        for(var iAction = 0; iAction < actions.length; iAction++) {
+                            var action = actions[iAction];
+                            if(action.isValidAction(creep) &&
+                                action.isAddableAction(creep) &&
                                 action.assign(creep))
                                 return;
                         }
@@ -101,10 +101,10 @@ module.exports = {
                 // carrier full
                 else {
                     var actions = [Creep.action.repairing, Creep.action.building];
-                    for(var iAction = 0; iAction < actions.length; iAction++) {   
-                        var action = actions[iAction];             
-                        if(action.isValidAction(creep) && 
-                            action.isAddableAction(creep) && 
+                    for(var iAction = 0; iAction < actions.length; iAction++) {
+                        var action = actions[iAction];
+                        if(action.isValidAction(creep) &&
+                            action.isAddableAction(creep) &&
                             action.assign(creep))
                             return;
                     }

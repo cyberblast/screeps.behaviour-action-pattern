@@ -5,17 +5,17 @@ action.isAddableTarget = function(){ return true; };
 action.isValidTarget = function(target){
     return (
         target &&
-        target.hits != null && 
+        target.hits != null &&
         target.hits > 0 &&
         target.my == false );
-}; 
-action.newTarget = function(creep){    
+};
+action.newTarget = function(creep){
     var closestHostile = creep.pos.findClosestByRange(creep.room.hostiles, {
-        function(hostile){ return _.some(hostile.body, {'type': HEAL}); } 
-    });    
+        function(hostile){ return _.some(hostile.body, {'type': HEAL}); }
+    });
     if(!closestHostile) {
         closestHostile = creep.pos.findClosestByRange(creep.room.hostiles);
-    }     
+    }
     return closestHostile;
 };
 action.step = function(creep){
@@ -44,9 +44,9 @@ action.run = {
                 creep.move(direction);
             }
         }
-        
+
         // attack ranged
-        var targets = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3);
+        var targets = creep.pos.findInRange(creep.room.hostiles, 3);
         if(targets.length > 2) { // TODO: precalc damage dealt
             if(CHATTY) creep.say('MassAttack');
             creep.attackingRanged = creep.rangedMassAttack() == OK;
@@ -59,29 +59,29 @@ action.run = {
         if(targets.length > 0){
             creep.attackingRanged = creep.rangedAttack(targets[0]) == OK;
         }
-    }, 
+    },
     melee: function(creep) {
         if( !creep.flee ){
             var path = creep.room.findPath(creep.pos, creep.target.pos);
             // not standing in rampart or next step is rampart as well
             if( path && path.length > 0 && (
                 !COMBAT_CREEPS_RESPECT_RAMPARTS ||
-                !_.some( creep.room.lookForAt(LOOK_STRUCTURES, creep.pos.x, creep.pos.y), {'structureType': STRUCTURE_RAMPART } )  || 
+                !_.some( creep.room.lookForAt(LOOK_STRUCTURES, creep.pos.x, creep.pos.y), {'structureType': STRUCTURE_RAMPART } )  ||
                 _.some( creep.room.lookForAt(LOOK_STRUCTURES, path[0].x, path[0].y), {'structureType': STRUCTURE_RAMPART }))
             ){
                 creep.move(path[0].direction);
-            }      
-        }   
+            }
+        }
         // attack
-        let attacking = creep.attack(creep.target);        
+        let attacking = creep.attack(creep.target);
         if( attacking == ERR_NOT_IN_RANGE ) {
-            let targets = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 1);
+            let targets = creep.pos.findInRange(creep.room.hostiles, 1);
             if( targets.length > 0)
                 creep.attacking = creep.attack(targets[0]) == OK;
         } else creep.attacking = attacking == OK;
     }
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9876), SAY_PUBLIC); 
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9876), SAY_PUBLIC);
 };
 module.exports = action;

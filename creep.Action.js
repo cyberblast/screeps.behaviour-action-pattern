@@ -5,7 +5,7 @@ var Action = function(actionName){
     this.targetRange = 1;
     this.reachedRange = 1;
     this.renewTarget = true;
-    this.getTargetId = function(target){ 
+    this.getTargetId = function(target){
         return target.id || target.name;
     };
     this.getTargetById = function(id){
@@ -39,7 +39,7 @@ var Action = function(actionName){
                 creep.target = null;
                 return;
             }
-        } 
+        }
         if( creep.target )
             creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
     };
@@ -48,13 +48,13 @@ var Action = function(actionName){
     };
     this.validateActionTarget = function(creep, target){
         if( this.isValidAction(creep) ){ // validate target or new
-            if( !this.isValidTarget(target)){ 
+            if( !this.isValidTarget(target)){
                 if( this.renewTarget ){ // invalid. try to find a new one...
                     delete creep.data.path;
                     return this.newTarget(creep);
                 }
             } else return target;
-        } 
+        }
         return null;
     };
     this.assign = function(creep, target){

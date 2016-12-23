@@ -3,10 +3,10 @@ action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.isValidTarget = function(target){
     return ( target != null &&
-        target.hits != null && 
+        target.hits != null &&
         target.hits < target.hitsMax &&
         target.my );
-}; 
+};
 action.newTarget = function(creep){
     if(creep.room.casualties.length > 0){
         return creep.room.casualties[0];
@@ -25,6 +25,6 @@ action.work = function(creep){
     }
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9960), SAY_PUBLIC); 
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9960), SAY_PUBLIC);
 };
 module.exports = action;

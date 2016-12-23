@@ -1,20 +1,20 @@
 var action = new Creep.Action('claiming');
-action.isValidAction = function(creep){ return true; }; 
+action.isValidAction = function(creep){ return true; };
 action.isValidTarget = function(target){ return !target.room || !target.owner; }; // no sight or not owned
 action.isAddableAction = function(){ return true; };
-action.isAddableTarget = function(){ return true; }; 
+action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){
     let flag = FlagDir.find(FLAG_COLOR.claim, creep.pos, false, FlagDir.claimMod, creep.name);
-    if( flag ) { 
+    if( flag ) {
         Population.registerCreepFlag(creep, flag);
-    } 
+    }
     else return null;
 
     // not there, go to flagged room
     if( !creep.flag.room || creep.flag.pos.roomName != creep.pos.roomName){
-        return creep.flag;    
+        return creep.flag;
     }
-    if( creep.flag.room.controller.my ) { // TODO: AND is claim flag 
+    if( creep.flag.room.controller.my ) { // TODO: AND is claim flag
         // already claimed, change flag
         // TODO: only if no spawn or spawn-constructionSite present
         creep.flag.setColor(FLAG_COLOR.claim.spawn.color, FLAG_COLOR.claim.spawn.secondaryColor);
@@ -31,9 +31,9 @@ action.newTarget = function(creep){
 };
 
 action.step = function(creep){
-    if(CHATTY) creep.say(this.name, SAY_PUBLIC);  
+    if(CHATTY) creep.say(this.name, SAY_PUBLIC);
     if( creep.target.color ){
-        if( creep.flag.pos.roomName == creep.pos.roomName ) 
+        if( creep.flag.pos.roomName == creep.pos.roomName )
             creep.data.targetId = null;
         creep.drive( creep.target.pos, 0, 1, Infinity );
         return;
@@ -47,7 +47,7 @@ action.step = function(creep){
             delete creep.data.actionName;
             delete creep.data.targetId;
         }
-    } 
+    }
     creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
 };
 action.work = function(creep){
@@ -68,6 +68,6 @@ action.work = function(creep){
     */
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9983), SAY_PUBLIC); 
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9983), SAY_PUBLIC);
 };
 module.exports = action;
