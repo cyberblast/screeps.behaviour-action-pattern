@@ -148,7 +148,8 @@ var mod = {
                 console.log( dye(CRAYON.error, message) );
             },
             logSystem: function(roomName, message) {
-                console.log( dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${roomName}</a>`  + ' &gt; ') + message );
+                let text = dye(CRAYON.system, roomName);
+                console.log( dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt; `) + message );
             },
             isObj: function(val){
                 if (val === null) { return false;}
