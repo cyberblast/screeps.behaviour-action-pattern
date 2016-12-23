@@ -1,7 +1,7 @@
 # Open Collaboration Society
 
-We are forming a screeps game player alliance, the Open Collaboration Society (OCS). 
-Please contact one of the alliance members if you want to join the alliance. 
+We are also forming a [screeps game](https://screeps.com) player alliance, the Open Collaboration Society [OCS]. 
+Please contact us via [mail](mailto://ocs@cyberblast.org) or on [slack](https://screeps.slack.com/messages/ocs) if you want to join the alliance. 
 
 [Public Repository](https://github.com/ScreepsOCS/screeps.behaviour-action-pattern)  
 [Wiki](https://github.com/ScreepsOCS/screeps.behaviour-action-pattern/wiki)  
