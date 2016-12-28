@@ -1,4 +1,4 @@
-/* https://github.com/cyberblast/screeps.ocs.internal */
+/* https://github.com/ScreepsOCS/screeps.behaviour-action-pattern */
 
 module.exports.loop = function () {
     if (Memory.modules === undefined) 
