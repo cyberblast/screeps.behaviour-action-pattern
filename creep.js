@@ -65,10 +65,10 @@ var mod = {
             'carry': { common: 0, boosted: 0 },
             'attack': { common: 2, boosted: 5 },
             'ranged_attack': { common: 2, boosted: 5 },
-            'heal': { common: 2, boosted: 5 },
+            'heal': { common: 4, boosted: 10 },
             'claim': { common: 1, boosted: 3 },
             'tough': { common: 1, boosted: 3 },
-            tower: 20
+            tower: 25
         }
         Creep.bodyThreat = function(body) {
             let threat = 0;
