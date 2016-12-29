@@ -830,47 +830,6 @@ var mod = {
                 return find.apply(this, arguments);
         }
 
-        Room.prototype.defenseMaxWeight = function(base, type) {
-            let defenseMaxWeight = 0;
-            let maxRange = 2;
-            let that = this;
-            let distance, reserved, flag;
-
-            let flagEntries = FlagDir.filter(FLAG_COLOR.defense);
-            let calcWeight = flagEntry => {
-                distance = Room.roomDistance(that.name, flagEntry.roomName);
-                if( distance > maxRange )
-                    return;
-                flag = Game.flags[flagEntry.name];
-
-                let ownNeighbor = 0;
-                let validRooms = [];
-                let exits = Game.map.describeExits(flag.pos.roomName);
-                let addValidRooms = (roomName) => {
-                    if( !validRooms.includes(roomName) ){
-                        validRooms.push(roomName);
-                        if( Room.isMine(roomName) ) ownNeighbor++;
-                    }
-                    let roomExits = Game.map.describeExits(roomName);
-                    let add = roomName2 => {
-                        if( !validRooms.includes(roomName2) ){
-                            validRooms.push(roomName2);
-                                if( Room.isMine(roomName2) ) ownNeighbor++;
-                        }
-                    }
-                    _.forEach(roomExits, add);
-                }
-                _.forEach(exits, addValidRooms);
-                /*
-                if( flag.targetOf ){
-                    let ofType = flag.targetOf.filter(t => t.creepType == type);
-                    reserved = _.sum(ofType,'weight');
-                } else reserved = 0;*/
-                defenseMaxWeight += ( base  / ownNeighbor );
-            };
-            flagEntries.forEach(calcWeight);
-            return defenseMaxWeight;
-        };
         Room.prototype.findRoute = function(targetRoomName, checkOwner = true, preferHighway = true){
             if (this.name == targetRoomName)  return [];
 
