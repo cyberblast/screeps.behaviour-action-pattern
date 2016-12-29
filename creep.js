@@ -334,6 +334,12 @@ var mod = {
             }
         };
 
+        Creep.prototype.controllerSign = function() {
+            if(CONTROLLER_SIGN && this.target.sign.username != this.owner.username) {
+                this.signController(this.target, CONTROLLER_SIGN_MESSAGE);
+            }
+        };
+
         Object.defineProperties(Creep.prototype, {
             'flee': {
                 configurable: true,
