@@ -1,9 +1,9 @@
 var setup = new Creep.Setup('miner');
 setup.minControllerLevel = 3;
 setup.default = {
-    fixedBody: [WORK, WORK, WORK, WORK, CARRY, MOVE], 
-    multiBody: [WORK, MOVE], 
-    minAbsEnergyAvailable: 500, 
+    fixedBody: [WORK, WORK, WORK, WORK, CARRY, MOVE],
+    multiBody: [WORK, MOVE],
+    minAbsEnergyAvailable: 500,
     minEnergyAvailable: 0.3,
     maxMulti: 1,
     maxCount: room => room.sources.length

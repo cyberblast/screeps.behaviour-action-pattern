@@ -16,7 +16,7 @@ module.exports = {
             logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
         }
     },
-    nextAction: function(creep){ 
+    nextAction: function(creep){
         let priority = [
             Creep.action.claiming,
             Creep.action.reserving,
@@ -24,11 +24,11 @@ module.exports = {
         ];
         for(var iAction = 0; iAction < priority.length; iAction++) {
             var action = priority[iAction];
-            if(action.isValidAction(creep) && 
-                action.isAddableAction(creep) && 
+            if(action.isValidAction(creep) &&
+                action.isAddableAction(creep) &&
                 action.assign(creep)) {
                     return;
             }
-        }    
+        }
     }
 }

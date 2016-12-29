@@ -1,11 +1,11 @@
 var Action = function(actionName){
     this.name = actionName;
-    this.maxPerTarget = 1;
-    this.maxPerAction = 1;
+    this.maxPerTarget = Infinity;
+    this.maxPerAction = Infinity;
     this.targetRange = 1;
     this.reachedRange = 1;
     this.renewTarget = true;
-    this.getTargetId = function(target){ 
+    this.getTargetId = function(target){
         return target.id || target.name;
     };
     this.getTargetById = function(id){
@@ -18,10 +18,10 @@ var Action = function(actionName){
         return (target != null);
     };
     this.isAddableAction = function(creep){
-        return (!creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
+        return (this.maxPerAction === Infinity || !creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
     };
     this.isAddableTarget = function(target){ // target is valid to be given to an additional creep
-        return (!target.targetOf || target.targetOf.length < this.maxPerTarget);
+        return (this.maxPerTarget === Infinity || !target.targetOf || target.targetOf.length < this.maxPerTarget);
     };
     this.newTarget = function(creep){
         return null;
@@ -39,7 +39,7 @@ var Action = function(actionName){
                 creep.target = null;
                 return;
             }
-        } 
+        }
         if( creep.target )
             creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
     };
@@ -48,13 +48,13 @@ var Action = function(actionName){
     };
     this.validateActionTarget = function(creep, target){
         if( this.isValidAction(creep) ){ // validate target or new
-            if( !this.isValidTarget(target)){ 
+            if( !this.isValidTarget(target)){
                 if( this.renewTarget ){ // invalid. try to find a new one...
                     delete creep.data.path;
                     return this.newTarget(creep);
                 }
             } else return target;
-        } 
+        }
         return null;
     };
     this.assign = function(creep, target){

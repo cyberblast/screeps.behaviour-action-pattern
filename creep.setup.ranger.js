@@ -8,7 +8,7 @@ setup.maxCount = function(room){
     let distance, flag;
     let calcMax = flagEntry => {
         distance = routeRange(room.name, flagEntry.roomName);
-        if( distance > maxRange ) 
+        if( distance > maxRange )
             return;
         flag = Game.flags[flagEntry.name];
         if( !flag.targetOf || flag.targetOf.length == 0 )
@@ -19,31 +19,31 @@ setup.maxCount = function(room){
     return max;
 };
 setup.small = {
-    fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE], 
-    multiBody: [RANGED_ATTACK, MOVE], 
-    minAbsEnergyAvailable: 1200, 
+    fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE],
+    multiBody: [RANGED_ATTACK, MOVE],
+    minAbsEnergyAvailable: 1200,
     minEnergyAvailable: 0.5,
     maxMulti: 6,
     maxCount: setup.maxCount,
-    maxWeight: null//(room) => room.defenseMaxWeight(1750, 'ranger')
+    maxWeight: null
 };
 setup.mid = {
-    fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE], 
-    multiBody: [RANGED_ATTACK, MOVE], 
-    minAbsEnergyAvailable: 2000, 
+    fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE],
+    multiBody: [RANGED_ATTACK, MOVE],
+    minAbsEnergyAvailable: 2000,
     minEnergyAvailable: 0.5,
     maxMulti: 10,
     maxCount: setup.maxCount,
-    maxWeight: null//(room) => room.defenseMaxWeight(2000, 'ranger')
+    maxWeight: null
 };
 setup.big = {
-    fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE], 
-    multiBody: [RANGED_ATTACK, MOVE], 
-    minAbsEnergyAvailable: 2500,  
+    fixedBody: [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE,HEAL,MOVE],
+    multiBody: [RANGED_ATTACK, MOVE],
+    minAbsEnergyAvailable: 2500,
     minEnergyAvailable: 0.5,
     maxMulti: 15,
     maxCount: setup.maxCount,
-    maxWeight: null//(room) => room.defenseMaxWeight(2500, 'ranger')
+    maxWeight: null
 };
 setup.RCL = {
     1: setup.none,

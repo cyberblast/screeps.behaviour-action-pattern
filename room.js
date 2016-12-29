@@ -1,11 +1,286 @@
 var mod = {
     extend: function(){
+
+        let Container = function(room){
+            this.room = room;
+
+            Object.defineProperties(this, {
+                'all': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this.room.memory.container)) {
+                            this.room.saveContainers();
+                        }
+                        if( _.isUndefined(this._container) ){
+                            this._container = [];
+                            let add = entry => {
+                                let cont = Game.getObjectById(entry.id);
+                                if( cont ) {
+                                    _.assign(cont, entry);
+                                    this._container.push(cont);
+                                }
+                            };
+                            _.forEach(this.room.memory.container, add);
+                        }
+                        return this._container;
+                    }
+                },
+                'controller': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._controller) ){
+                            if( this.room.my && this.room.controller.memory.storage ){
+                                this._controller = [Game.getObjectById(this.room.controller.memory.storage)];
+                                if( !this._controller[0] ) delete this.room.controller.memory.storage;
+                            } else {
+                                let byType = c => c.controller == true;
+                                this._controller = _.filter(this.all, byType);
+                            }
+                        }
+                        return this._controller;
+                    }
+                },
+                'in': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._in) ){
+                            let byType = c => (c.source === true || c.mineral === true ) && c.controller == false;
+                            this._in = _.filter(this.all, byType);
+                            // add managed
+                            let isFull = c => c.sum >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
+                            this._in = this._in.concat(this.managed.filter(isFull));
+                        }
+                        return this._in;
+                    }
+                },
+                'out': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._out) ){
+                            let byType = c => (c.source === false && !c.mineral);
+                            this._out = _.filter(this.all, byType);
+                            // add managed
+                            let isEmpty = c => c.sum <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
+                            this._out = this._out.concat(this.managed.filter(isEmpty));
+                        }
+                        return this._out;
+                    }
+                },
+                'managed': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._managed) ){
+                            let byType = c => c.source === true && c.controller == true;
+                            this._managed = _.filter(this.all, byType);
+                        }
+                        return this._managed;
+                    }
+                }
+            });
+        };
+
+        let Links = function(room){
+            this.room = room;
+
+            Object.defineProperties(this, {
+                'all': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this.room.memory.links)) {
+                            this.room.saveLinks();
+                        }
+                        if( _.isUndefined(this._all) ){
+                            this._all = [];
+                            let add = entry => {
+                                let o = Game.getObjectById(entry.id);
+                                if( o ) {
+                                    _.assign(o, entry);
+                                    this._all.push(o);
+                                }
+                            };
+                            _.forEach(this.room.memory.links, add);
+                        }
+                        return this._all;
+                    }
+                },
+                'controller': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._controller) ){
+                            let byType = c => c.controller === true;
+                            this._controller = this.all.filter(byType);
+                        }
+                        return this._controller;
+                    }
+                },
+                'storage': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._storage) ) {
+                            let byType = l => l.storage == true;
+                            this._storage = this.all.filter(byType);
+                        }
+                        return this._storage;
+                    }
+                },
+                'in': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._in) ) {
+                            let byType = l => l.storage == false && l.controller == false;
+                            this._in = _.filter(this.all, byType);
+                        }
+                        return this._in;
+                    }
+                },
+                'privateers': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._privateers) ) {
+                            let byType = l => l.storage == false && l.controller == false && l.source == false && l.energy < l.energyCapacity * 0.85;
+                            this._privateers = _.filter(this.all, byType);
+                        }
+                        return this._privateers;
+                    }
+                }
+            });
+        }
+
+        let Structures = function(room){
+            this.room = room;
+
+            Object.defineProperties(this, {
+                'all': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._all) ){
+                            this._all = this.room.find(FIND_STRUCTURES);
+                        }
+                        return this._all;
+                    }
+                },
+                'spawns': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this.room.memory.spawns) ) {
+                            this.room.saveSpawns();
+                        }
+                        if( _.isUndefined(this._spawns) ){
+                            this._spawns = [];
+                            var addSpawn = id => { addById(this._spawns, id); };
+                            _.forEach(this.room.memory.spawns, addSpawn);
+                        }
+                        return this._spawns;
+                    }
+                },
+                'towers': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this.room.memory.towers)) {
+                            this.room.saveTowers();
+                        }
+                        if( _.isUndefined(this._towers) ){
+                            this._towers = [];
+                            var add = id => { addById(this._towers, id); };
+                            _.forEach(this.room.memory.towers, add);
+                        }
+                        return this._towers;
+                    }
+                },
+                'repairable': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._repairable) ){
+                            let that = this;
+                            this._repairable = _.sortBy(
+                                that.all.filter(
+                                    structure => (
+                                        structure.hits < structure.hitsMax &&
+                                        ( !that.room.my || structure.hits < MAX_REPAIR_LIMIT[that.room.controller.level] || structure.hits < (LIMIT_URGENT_REPAIRING + (3*(DECAY_AMOUNT[structure.structureType] || 0)))) &&
+                                        ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) &&
+                                        ( structure.towers === undefined || structure.towers.length == 0) &&
+                                        ( Memory.pavementArt[that.room.name] === undefined || Memory.pavementArt[that.room.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y+'x') < 0 ) && 
+                                        ( !FlagDir.list.some(f => f.roomName == structure.pos.roomName && f.color == COLOR_ORANGE && f.x == structure.pos.x && f.y == structure.pos.y) )
+                                    )
+                                ),
+                                'hits'
+                            );
+                        }
+                        return this._repairable;
+                    }
+                },
+                'urgentRepairable': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._urgentRepairableSites) ){
+                            var isUrgent = site => (site.hits < (LIMIT_URGENT_REPAIRING + (3*(DECAY_AMOUNT[site.structureType] || 0))));
+                            this._urgentRepairableSites = _.filter(this.repairable, isUrgent);
+                        }
+                        return this._urgentRepairableSites;
+                    }
+                },
+                'fortifyable': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._fortifyableSites) ){
+                            let that = this;
+                            this._fortifyableSites = _.sortBy(
+                                that.all.filter(
+                                    structure => (
+                                        that.room.my &&
+                                        structure.hits < structure.hitsMax &&
+                                        structure.hits < MAX_FORTIFY_LIMIT[that.room.controller.level] &&
+                                        ( structure.structureType != STRUCTURE_CONTAINER || structure.hits < MAX_FORTIFY_CONTAINER ) &&
+                                        ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE*3 ) &&
+                                        ( Memory.pavementArt[that.room.name] === undefined || Memory.pavementArt[that.room.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y+'x') < 0 ) && 
+                                        ( !FlagDir.list.some(f => f.roomName == structure.pos.roomName && f.color == COLOR_ORANGE && f.x == structure.pos.x && f.y == structure.pos.y) )
+                                    )
+                                ),
+                                'hits'
+                            );
+                        }
+                        return this._fortifyableSites;
+                    }
+                },
+                'fuelable': {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._fuelables) ){
+                            var that = this;
+                            var factor = that.room.situation.invasion ? 1 : 0.82;
+                            var fuelable = target => (target.energy < (target.energyCapacity * factor));
+                            this._fuelables = _.sortBy( _.filter(this.towers, fuelable), 'energy') ; // TODO: Add Nuker
+                        }
+                        return this._fuelables;
+                    }
+                },
+                'container' : {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._container) ){
+                            this._container = new Container(this.room);
+                        }
+                        return this._container;
+                    }
+                },
+                'links' : {
+                    configurable: true,
+                    get: function() {
+                        if( _.isUndefined(this._links) ){
+                            this._links = new Links(this.room);
+                        }
+                        return this._links;
+                    }
+                }
+            });
+        };
+
         Object.defineProperties(Room.prototype, {
             'structures': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._structures) ){ 
-                        this._structures = this.find(FIND_STRUCTURES);
+                    if( _.isUndefined(this._structures) ){
+                        this._structures = new Structures(this);
                     }
                     return this._structures;
                 }
@@ -13,13 +288,13 @@ var mod = {
             'sources': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.memory.sources) || this.name == 'sim') {                        
+                    if( _.isUndefined(this.memory.sources) || this.name == 'sim') {
                         this._sources = this.find(FIND_SOURCES);
                         if( this._sources.length > 0 ){
                             this.memory.sources = this._sources.map(s => s.id);
                         } else this.memory.sources = [];
                     }
-                    if( _.isUndefined(this._sources) ){  
+                    if( _.isUndefined(this._sources) ){
                         this._sources = [];
                         var addSource = id => { addById(this._sources, id); };
                         this.memory.sources.forEach(addSource);
@@ -30,7 +305,7 @@ var mod = {
             'droppedResources': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._droppedResources) ){ 
+                    if( _.isUndefined(this._droppedResources) ){
                         this._droppedResources = this.find(FIND_DROPPED_RESOURCES);
                     }
                     return this._droppedResources;
@@ -52,7 +327,7 @@ var mod = {
             'sourceEnergyAvailable': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._sourceEnergyAvailable) ){ 
+                    if( _.isUndefined(this._sourceEnergyAvailable) ){
                         this._sourceEnergyAvailable = 0;
                         var countEnergy = source => (this._sourceEnergyAvailable += source.energy);
                         _.forEach(this.sources, countEnergy);
@@ -72,47 +347,43 @@ var mod = {
             'relativeEnergyAvailable': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._relativeEnergyAvailable) ){  
+                    if( _.isUndefined(this._relativeEnergyAvailable) ){
                         this._relativeEnergyAvailable = this.energyCapacityAvailable > 0 ? this.energyAvailable / this.energyCapacityAvailable : 0;
                     }
                     return this._relativeEnergyAvailable;
                 }
             },
-            'spawns': {
+            'reservedSpawnEnergy': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.memory.spawns) ) {
-                        this.saveSpawns();
+                    if( _.isUndefined(this._reservedSpawnEnergy) ) {
+                        this._reservedSpawnEnergy = 0;
                     }
-                    if( _.isUndefined(this._spawns) ){ 
-                        this._spawns = [];
-                        var addSpawn = id => { addById(this._spawns, id); };
-                        _.forEach(this.memory.spawns, addSpawn);
-                    }
-                    return this._spawns;
+                    return this._reservedSpawnEnergy;
+                },
+                set: function(value) {
+                    this._reservedSpawnEnergy = value;;
                 }
             },
-            'towers': {
+            'remainingEnergyAvailable': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this.memory.towers)) {
-                        this.saveTowers();
-                    }
-                    if( _.isUndefined(this._towers) ){ 
-                        this._towers = [];
-                        var add = id => { addById(this._towers, id); };
-                        _.forEach(this.memory.towers, add);
-                    }
-                    return this._towers;
+                    return this.energyAvailable - this.reservedSpawnEnergy;
+                }
+            },
+            'relativeRemainingEnergyAvailable': {
+                configurable: true,
+                get: function() {
+                    return this.energyCapacityAvailable > 0 ? this.remainingEnergyAvailable / this.energyCapacityAvailable : 0;
                 }
             },
             'towerFreeCapacity': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._towerFreeCapacity) ) { 
+                    if( _.isUndefined(this._towerFreeCapacity) ) {
                         this._towerFreeCapacity = 0;
                         var addFreeCapacity = tower => this._towerFreeCapacity += (tower.energyCapacity - tower.energy);
-                        _.forEach(this.towers, addFreeCapacity);
+                        _.forEach(this.structures.towers, addFreeCapacity);
                     }
                     return this._towerFreeCapacity;
                 }
@@ -120,213 +391,17 @@ var mod = {
             'constructionSites': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._constructionSites) ) { 
-                        let sites = this.find(FIND_MY_CONSTRUCTION_SITES); 
-                        let siteOrder = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_WALL,STRUCTURE_RAMPART];
-                        let getOrder = site => {let o = siteOrder.indexOf(site.structureType); return o < 0 ? 100 : o;};
-                        //this._constructionSites.sort( (a, b) => {return getOrder(a.structureType) - getOrder(b.structureType);} );
-                        this._constructionSites = _.sortBy(sites, getOrder);
+                    if( _.isUndefined(this._constructionSites) ) {
+                        this._constructionSites = this.find(FIND_MY_CONSTRUCTION_SITES);
                     }
                     return this._constructionSites;
                 }
             },
-            'repairableSites': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._repairableSites) ){ 
-                        let that = this;
-                        this._repairableSites =_.sortBy( 
-                            that.structures.filter(
-                                structure => (
-                                    structure.hits < structure.hitsMax && 
-                                    (!that.controller || !that.controller.my || structure.hits < MAX_REPAIR_LIMIT[that.controller.level] || (structure.structureType === 'container' && structure.hits < LIMIT_URGENT_REPAIRING * 15)) && 
-                                    ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
-                                    ( structure.towers === undefined || structure.towers.length == 0) && 
-                                    ( Memory.pavementArt[that.name] === undefined || Memory.pavementArt[that.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y) < 0 )
-                                )
-                            ),
-                            'hits'
-                        );
-                    }
-                    return this._repairableSites;
-                }
-            },
-            'urgentRepairableSites': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._urgentRepairableSites) ){ 
-                        var isUrgent = site => (site.hits < LIMIT_URGENT_REPAIRING || 
-                            (site.structureType === 'container' && site.hits < LIMIT_URGENT_REPAIRING * 15)); 
-                        this._urgentRepairableSites = _.filter(this.repairableSites, isUrgent);
-                    }
-                    return this._urgentRepairableSites;
-                }
-            }, 
-            'fortifyableSites': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._fortifyableSites) ){ 
-                        let that = this;
-                        this._fortifyableSites = _.sortBy(
-                            that.structures.filter(
-                                structure => (
-                                    structure.hits < structure.hitsMax && 
-                                    that.controller && that.controller.my &&
-                                    structure.hits < MAX_FORTIFY_LIMIT[that.controller.level] && 
-                                    structure.structureType != STRUCTURE_CONTAINER && 
-                                    ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) && 
-                                    (structure.towers === undefined || structure.towers.length == 0) && 
-                                    ( Memory.pavementArt[that.name] === undefined || Memory.pavementArt[that.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y) < 0 )
-                                )
-                            ), 
-                            'hits'
-                        );
-                    }
-                    return this._fortifyableSites;
-                }
-            },
-            'fuelables': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._fuelables) ){
-                        var that = this; 
-                        var factor = that.situation.invasion ? 1 : 0.82;
-                        var fuelable = target => (target.energy < (target.energyCapacity * factor));
-                        this._fuelables = _.sortBy( _.filter(this.towers, fuelable), 'energy') ; // TODO: Add Nuker
-                    }
-                    return this._fuelables;
-                }
-            },
-            'container': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this.memory.container)) {
-                        this.saveContainers();
-                    }
-                    if( _.isUndefined(this._container) ){ 
-                        this._container = [];
-                        let add = entry => {
-                            let cont = Game.getObjectById(entry.id); 
-                            if( cont ) {
-                                _.assign(cont, entry);
-                                this._container.push(cont);
-                            }
-                        };
-                        _.forEach(this.memory.container, add);
-                    }
-                    return this._container;
-                }
-            },
-            'containerController': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._containerController) ){ 
-                        let byType = c => c.controller == true;
-                        this._containerController = _.filter(this.container, byType);
-                    }
-                    return this._containerController;
-                }
-            },
-            'containerIn': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._containerIn) ){ 
-                        let byType = c => (c.source === true || c.mineral === true ) && c.controller == false;
-                        this._containerIn = _.filter(this.container, byType);
-                        // add managed
-                        let isFull = c => c.sum >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
-                        this._containerIn = this._containerIn.concat(this.containerManaged.filter(isFull));
-                    }
-                    return this._containerIn;
-                }
-            },
-            'containerOut': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._containerOut) ){ 
-                        let byType = c => (c.source === false && !c.mineral);
-                        this._containerOut = _.filter(this.container, byType);
-                        // add managed                         
-                        let isEmpty = c => c.sum <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
-                        this._containerOut = this._containerOut.concat(this.containerManaged.filter(isEmpty));
-                    }
-                    return this._containerOut;
-                }
-            },
-            'containerManaged': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._containerManaged) ){ 
-                        let byType = c => c.source === true && c.controller == true;
-                        this._containerManaged = _.filter(this.container, byType);
-                    }
-                    return this._containerManaged;
-                }
-            },
-            'links': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this.memory.links)) {
-                        this.saveLinks();
-                    }
-                    if( _.isUndefined(this._links) ){ 
-                        this._links = [];
-                        let add = entry => {
-                            let o = Game.getObjectById(entry.id); 
-                            if( o ) {
-                                _.assign(o, entry);
-                                this._links.push(o);
-                            }
-                        };
-                        _.forEach(this.memory.links, add);
-                    }
-                    return this._links;
-                }
-            },
-            'linksController': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._linksController) ){ 
-                        let byType = c => c.controller === true;
-                        this._linksController = this.links.filter(byType);
-                    }
-                    return this._linksController;
-                }
-            },
-            'linksStorage': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._linksStorage) ) { 
-                        let byType = l => l.storage == true;
-                        this._linksStorage = this.links.filter(byType);
-                    }
-                    return this._linksStorage;
-                }
-            },
-            'linksIn': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._linksIn) ) { 
-                        let byType = l => l.storage == false && l.controller == false;
-                        this._linksIn = _.filter(this.links, byType);
-                    }
-                    return this._linksIn;
-                }
-            },
-            'linksPrivateers': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._linksPrivateers) ) { 
-                        let byType = l => l.storage == false && l.controller == false && l.source == false && l.energy < l.energyCapacity * 0.85;
-                        this._linksPrivateers = _.filter(this.links, byType);
-                    }
-                    return this._linksPrivateers;
-                }
-            },
+
             'creeps': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._creeps) ){ 
+                    if( _.isUndefined(this._creeps) ){
                         this._creeps = this.find(FIND_MY_CREEPS);
                     }
                     return this._creeps;
@@ -335,7 +410,7 @@ var mod = {
             'allCreeps': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._allCreeps) ){ 
+                    if( _.isUndefined(this._allCreeps) ){
                         this._allCreeps = this.find(FIND_CREEPS);
                     }
                     return this._allCreeps;
@@ -344,8 +419,12 @@ var mod = {
             'hostiles': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._hostiles) ){ 
-                        this._hostiles = this.find(FIND_HOSTILE_CREEPS, { filter : c => _.indexOf(PLAYER_WHITELIST, c.owner.username) == -1 });
+                    if( _.isUndefined(this._hostiles) ){
+                        let notWhitelisted = (creep) => 
+                            !(PLAYER_WHITELIST.some((player) => 
+                                player.toLowerCase() == creep.owner.username.toLowerCase()
+                            ));
+                        this._hostiles = this.find(FIND_HOSTILE_CREEPS, { filter : notWhitelisted });
                     }
                     return this._hostiles;
                 }
@@ -353,7 +432,7 @@ var mod = {
             'hostileIds': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._hostileIds) ){ 
+                    if( _.isUndefined(this._hostileIds) ){
                         this._hostileIds = _.map(this.hostiles, 'id');
                     }
                     return this._hostileIds;
@@ -362,33 +441,34 @@ var mod = {
             'combatCreeps': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._combatCreeps) ){ 
-                        this._combatCreeps = this.creeps.filter( c => ['melee','ranger','healer'].includes(c.data.creepType) );
+                    if( _.isUndefined(this._combatCreeps) ){
+                        this._combatCreeps = this.creeps.filter( c => ['melee','ranger','healer', 'warrior'].includes(c.data.creepType) );
                     }
                     return this._combatCreeps;
-                }
-            },
-            'situation': {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._situation) ){ 
-                        this._situation = {
-                            noEnergy: this.sourceEnergyAvailable == 0, 
-                            invasion: this.hostiles.length > 0
-                        }
-                    }
-                    return this._situation;
                 }
             },
             'casualties': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._casualties) ){ 
-                        var isInjured = creep => creep.hits < creep.hitsMax && 
+                    if( _.isUndefined(this._casualties) ){
+                        var isInjured = creep => creep.hits < creep.hitsMax &&
                             (creep.towers === undefined || creep.towers.length == 0);
                         this._casualties = _.sortBy(_.filter(this.creeps, isInjured), 'hits');
                     }
                     return this._casualties;
+                }
+            },
+
+            'situation': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._situation) ){
+                        this._situation = {
+                            noEnergy: this.sourceEnergyAvailable == 0,
+                            invasion: this.hostiles.length > 0 && (!this.controller || !this.controller.safeMode)
+                        }
+                    }
+                    return this._situation;
                 }
             },
             'roadConstructionTrace': {
@@ -399,7 +479,7 @@ var mod = {
                     }
                     return this.memory.roadConstructionTrace;
                 }
-            }, 
+            },
             'adjacentRooms': {
                 configurable: true,
                 get: function () {
@@ -428,7 +508,7 @@ var mod = {
                             let that = this;
                             let adjacent, ownNeighbor, room, mult;
 
-                            let flagEntries = FlagDir.filter(FLAG_COLOR.invade.exploit);
+                            let flagEntries = FlagDir.filter([FLAG_COLOR.invade.robbing, FLAG_COLOR.invade.exploit]);
                             let countOwn = roomName => {
                                 if( roomName == that.name ) return;
                                 if( Room.isMine(roomName) ) ownNeighbor++;
@@ -458,22 +538,26 @@ var mod = {
                 get: function () {
                     if (_.isUndefined(this._claimerMaxWeight) ) {
                         this._claimerMaxWeight = 0;
-                        let base = 1000;
+                        let base = 1250;
                         let maxRange = 2;
                         let that = this;
                         let distance, reserved, flag;
+                        let rcl = this.controller.level;
 
-                        let flagEntries = FlagDir.filter([FLAG_COLOR.claim, FLAG_COLOR.claim.reserve]);
+                        let flagEntries = FlagDir.filter([FLAG_COLOR.claim, FLAG_COLOR.claim.reserve, FLAG_COLOR.invade.exploit]);
                         let calcWeight = flagEntry => {
-                            distance = Room.roomDistance(that.name, flagEntry.roomName);
-                            if( distance > maxRange ) 
-                                return;
-                            flag = Game.flags[flagEntry.name];
-                            if( flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)
-                                return;
+                            // don't spawn claimer for reservation at RCL < 4 (claimer not big enough)
+                            if( rcl > 3 || (flagEntry.color == FLAG_COLOR.claim.color && flagEntry.secondaryColor == FLAG_COLOR.claim.secondaryColor )) {
+                                distance = Room.roomDistance(that.name, flagEntry.roomName);
+                                if( distance > maxRange )
+                                    return;
+                                flag = Game.flags[flagEntry.name];
+                                if( flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)
+                                    return;
 
-                            reserved = flag.targetOf ? _.sum( flag.targetOf.map( t => t.weight )) : 0;
-                            that._claimerMaxWeight += (base - reserved);
+                                reserved = flag.targetOf && flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepType == 'claimer' ? t.weight : 0 )) : 0;
+                                that._claimerMaxWeight += (base - reserved);
+                            };
                         };
                         flagEntries.forEach(calcWeight);
                     };
@@ -483,7 +567,7 @@ var mod = {
             'conserveForDefense': {
                 configurable: true,
                 get: function () {
-                    return (this.storage && this.storage.store.energy < MIN_STORAGE_ENERGY); 
+                    return (this.my && this.storage && this.storage.store.energy < MIN_STORAGE_ENERGY[this.controller.level]);
                 }
             },
             'hostileThreatLevel': {
@@ -505,20 +589,16 @@ var mod = {
                 get: function () {
                     if (_.isUndefined(this._defenseLevel) ) {
                         this._defenseLevel = {
-                            melee: 0, 
-                            ranger: 0,
-                            healer: 0,
                             towers: 0,
-                            threat: 0, 
+                            creeps: 0,
                             sum: 0
                         }
                         let evaluate = creep => {
-                            this._defenseLevel.threat += Creep.bodyThreat(creep.body);
-                            this._defenseLevel[creep.data.creepType] += creep.data.weight;
+                            this._defenseLevel.creeps += Creep.bodyThreat(creep.body);
                         };
                         this.combatCreeps.forEach(evaluate);
-                        this._defenseLevel.towers = this.towers.length;
-                        this._defenseLevel.sum = this._defenseLevel.threat + (this._defenseLevel.towers * 18);
+                        this._defenseLevel.towers = this.structures.towers.length;
+                        this._defenseLevel.sum = this._defenseLevel.creeps + (this._defenseLevel.towers * Creep.partThreat.tower);
                     }
                     return this._defenseLevel;
                 }
@@ -548,18 +628,18 @@ var mod = {
                     }
                     return this.memory.mineralType;
                 }
-            }, 
+            },
             'costMatrix': {
-                configurable: true, 
+                configurable: true,
                 get: function () {
                     if( _.isUndefined(Memory.pathfinder)) Memory.pathfinder = {};
                     if( _.isUndefined(Memory.pathfinder[this.name])) Memory.pathfinder[this.name] = {};
-                
+
                     if( Memory.pathfinder[this.name].costMatrix && (Game.time - Memory.pathfinder[this.name].updated) < COST_MATRIX_VALIDITY) {
                         return PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
                     }
 
-                    if( DEBUG ) console.log("Calulating cost matrix for " + this.name);                
+                    if( DEBUG ) logSystem(this.name, 'Calulating cost matrix');
                     var costMatrix = new PathFinder.CostMatrix;
                     let setCosts = structure => {
                         if(structure.structureType == STRUCTURE_ROAD) {
@@ -568,13 +648,13 @@ var mod = {
                             costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
                         }
                     };
-                    this.structures.forEach(setCosts);
-                
+                    this.structures.all.forEach(setCosts);
+
                     Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
                     Memory.pathfinder[this.name].updated = Game.time;
                     return costMatrix;
                 }
-            }, 
+            },
             'currentCostMatrix': {
                 configurable: true,
                 get: function () {
@@ -588,79 +668,68 @@ var mod = {
                     }
                     return this._currentCostMatrix;
                 }
+            },
+            'my': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._my) ) {
+                        this._my = this.controller && this.controller.my;
+                    }
+                    return this._my;
+                }
+            },
+            'spawnQueueHigh': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.memory.spawnQueueHigh) ) {
+                        this.memory.spawnQueueHigh = [];
+                    }
+                    return this.memory.spawnQueueHigh;
+                }
+            },
+            'spawnQueueMedium': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.memory.spawnQueueMedium) ) {
+                        this.memory.spawnQueueMedium = [];
+                    }
+                    return this.memory.spawnQueueMedium;
+                }
+            },
+            'spawnQueueLow': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.memory.spawnQueueLow) ) {
+                        this.memory.spawnQueueLow = [];
+                    }
+                    return this.memory.spawnQueueLow;
+                }
+            },
+            'pavementArt': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.memory.pavementArt) ) {
+                        this.memory.pavementArt = [];
+                    }
+                    return this.memory.pavementArt;
+                }
             }
         });
 
+        Room.bestSpawnRoomFor = function(flag) {
+            var range = spawn => routeRange(spawn.pos.roomName, flag.pos.roomName);
+            let spawn = _.min(Game.spawns, range);
+
+            return spawn.pos.roomName;
+        }
         Room.getCostMatrix = function(roomName) {
             var room = Game.rooms[roomName];
             if(!room) return;
-            return room.costMatrix;        
+            return room.costMatrix;
         };
-
         Room.isMine = function(roomName) {
             let room = Game.rooms[roomName];
-            return( room && room.controller && room.controller.my );
-        };
-
-        Room.prototype.defenseMaxWeight = function(base, type) {
-            let defenseMaxWeight = 0;
-            let maxRange = 2;
-            let that = this;
-            let distance, reserved, flag;
-
-            let flagEntries = FlagDir.filter(FLAG_COLOR.defense);
-            let calcWeight = flagEntry => {
-                distance = Room.roomDistance(that.name, flagEntry.roomName);
-                if( distance > maxRange ) 
-                    return;
-                flag = Game.flags[flagEntry.name];
-
-                let ownNeighbor = 0;
-                let validRooms = [];
-                let exits = Game.map.describeExits(flag.pos.roomName);
-                let addValidRooms = (roomName) => {
-                    if( !validRooms.includes(roomName) ){
-                        validRooms.push(roomName);
-                        if( Room.isMine(roomName) ) ownNeighbor++;
-                    }
-                    let roomExits = Game.map.describeExits(roomName);
-                    let add = roomName2 => {
-                        if( !validRooms.includes(roomName2) ){
-                            validRooms.push(roomName2);
-                                if( Room.isMine(roomName2) ) ownNeighbor++;
-                        }                                         
-                    }
-                    _.forEach(roomExits, add);
-                }
-                _.forEach(exits, addValidRooms);
-                /*
-                if( flag.targetOf ){
-                    let ofType = flag.targetOf.filter(t => t.creepType == type);
-                    reserved = _.sum(ofType,'weight');
-                } else reserved = 0;*/
-                defenseMaxWeight += ( base  / ownNeighbor );
-            };
-            flagEntries.forEach(calcWeight);
-            return defenseMaxWeight;
-        }
-
-        Room.adjacentAccessibleRooms = function(roomName, diagonal = true) {
-            let validRooms = [];
-            let exits = Game.map.describeExits(roomName);
-            let addValidRooms = (roomName, direction) => {
-                if( diagonal ) {
-                    let roomExits = Game.map.describeExits(roomName);
-                    let dirA = (direction + 2) % 8;
-                    let dirB = (direction + 6) % 8; 
-                    if( roomExits[dirA] && !validRooms.includes(roomExits[dirA]) )
-                        validRooms.push(roomExits[dirA]);
-                    if( roomExits[dirB] && !validRooms.includes(roomExits[dirB]) )
-                        validRooms.push(roomExits[dirB]);
-                }
-                validRooms.push(roomName);
-            }
-            _.forEach(exits, addValidRooms);
-            return validRooms;
+            return( room && room.my );
         };
         Room.isCenterRoom = function(roomName){
             let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
@@ -678,6 +747,24 @@ var mod = {
             }
             return names;
         };
+        Room.adjacentAccessibleRooms = function(roomName, diagonal = true) {
+            let validRooms = [];
+            let exits = Game.map.describeExits(roomName);
+            let addValidRooms = (roomName, direction) => {
+                if( diagonal ) {
+                    let roomExits = Game.map.describeExits(roomName);
+                    let dirA = (direction + 2) % 8;
+                    let dirB = (direction + 6) % 8;
+                    if( roomExits[dirA] && !validRooms.includes(roomExits[dirA]) )
+                        validRooms.push(roomExits[dirA]);
+                    if( roomExits[dirB] && !validRooms.includes(roomExits[dirB]) )
+                        validRooms.push(roomExits[dirB]);
+                }
+                validRooms.push(roomName);
+            }
+            _.forEach(exits, addValidRooms);
+            return validRooms;
+        };
         Room.roomDistance = function(roomName1, roomName2, diagonal, continuous){
             if( diagonal ) return Game.map.getRoomLinearDistance(roomName1, roomName2, continuous);
             if( roomName1 == roomName2 ) return 0;
@@ -685,61 +772,21 @@ var mod = {
             let posB = roomName2.split(/([N,E,S,W])/);
             let xDif = posA[1] == posB[1] ? Math.abs(posA[2]-posB[2]) : posA[2]+posB[2]+1;
             let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
-            //if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1 
-            return xDif + yDif; // count diagonal as 2        
+            //if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1
+            return xDif + yDif; // count diagonal as 2
         };
-        Room.prototype.findRoute = function(targetRoomName, checkOwner = true, preferHighway = true){
-            if (this.name == targetRoomName)  return [];
-
-            return Game.map.findRoute(this, targetRoomName, {
-                routeCallback(roomName) {
-                    let isHighway = false;
-                    if( preferHighway ){
-                        let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
-                        isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
-                    }
-                    let isMyOrNeutralRoom = false;
-                    if( checkOwner ){
-                        let room = Game.rooms[roomName];
-                        isMyOrNeutralRoom = room &&
-                            room.controller &&
-                            (room.controller.my || 
-                            (room.controller.owner === undefined));
-                    }
-
-                    if (isMyOrNeutralRoom || roomName == targetRoomName) 
-                        return 1;
-                    else if (isHighway)
-                        return 3;
-                    else if( Game.map.isRoomAvailable(roomName))
-                        return (checkOwner || preferHighway) ? 11 : 1;
-                    return Infinity;
-                }
-            });
-            
+        Room.getCostMatrix = function(roomName) {
+            var room = Game.rooms[roomName];
+            if(!room) return;
+            return room.costMatrix;
         };
-        /*
-        Room.adjacentFields = function(pos, where = null){
-            let fields = [];
-            for(x = pos.x-1; x < pos.x+2; x++){
-                for(y = pos.y-1; y < pos.y+2; y++){
-                    if( x > 1 && x < 48 && y > 1 && y < 48 ){
-                        let p = new RoomPosition(x, y, pos.roomName);
-                        if( !where || where(p) )
-                            fields.push(p);
-                    }
-                }
-            }
-            return fields;
-        };*/
-
         Room.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
             let look;
             if( checkWalkable ) {
                 look = Game.rooms[roomName].lookAtArea(minY,minX,maxY,maxX);
             }
             let invalidObject = o => {
-                return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') || 
+                return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
                     o.type == LOOK_CONSTRUCTION_SITES ||
                     (o.type == LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType) ));
             };
@@ -772,30 +819,86 @@ var mod = {
             return Room.validFields(args.roomName, minX, maxX, minY, maxY, args.checkWalkable, args.where);
         };
 
+        let find = Room.prototype.find;
+        Room.prototype.find = function (c, opt) {
+            if (_.isArray(c)) {
+                return _(c)
+                    .map(x => find.call(this, x, opt))
+                    .flatten()
+                    .value();
+            } else
+                return find.apply(this, arguments);
+        }
+
+        Room.prototype.findRoute = function(targetRoomName, checkOwner = true, preferHighway = true){
+            if (this.name == targetRoomName)  return [];
+
+            return Game.map.findRoute(this, targetRoomName, {
+                routeCallback(roomName) {
+                    let isHighway = false;
+                    if( preferHighway ){
+                        let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+                        isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
+                    }
+                    let isMyOrNeutralRoom = false;
+                    if( checkOwner ){
+                        let room = Game.rooms[roomName];
+                        isMyOrNeutralRoom = room &&
+                            room.controller &&
+                            (room.controller.my ||
+                            (room.controller.owner === undefined));
+                    }
+
+                    if (isMyOrNeutralRoom || roomName == targetRoomName)
+                        return 1;
+                    else if (isHighway)
+                        return 3;
+                    else if( Game.map.isRoomAvailable(roomName))
+                        return (checkOwner || preferHighway) ? 11 : 1;
+                    return Infinity;
+                }
+            });
+
+        };
+
+        Room.prototype.getBestConstructionSiteFor = function(pos, filter = null) {
+            let sites;
+            if( filter ) sites = this.constructionSites.filter(filter);
+            else sites = this.constructionSites;
+            let siteOrder = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_LINK,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_WALL,STRUCTURE_RAMPART];
+            let rangeOrder = site => {
+                let order = siteOrder.indexOf(site.structureType); 
+                if( order < 0 ) return 100000 + pos.getRangeTo(site);
+                return ((order - (site.progress / site.progressTotal)) * 100) + pos.getRangeTo(site);
+            };
+            return _.min(sites, rangeOrder);
+        };
+
         Room.prototype.roadConstruction = function( minDeviation = ROAD_CONSTRUCTION_MIN_DEVIATION ) {
 
             if( !ROAD_CONSTRUCTION_ENABLE || Game.time % ROAD_CONSTRUCTION_INTERVAL != 0 ) return;
+            if( _.isNumber(ROAD_CONSTRUCTION_ENABLE) && (!this.my || ROAD_CONSTRUCTION_ENABLE > this.controller.level)) return;
 
             let data = Object.keys(this.roadConstructionTrace)
-                .map( k => { 
+                .map( k => {
                     return { // convert to [{key,n,x,y}]
                         'n': this.roadConstructionTrace[k], // count of steps on x,y cordinates
                         'x': k.charCodeAt(0)-32, // extract x from key
                         'y': k.charCodeAt(1)-32 // extraxt y from key
                     };
                 });
-                
+
             let min = Math.max(ROAD_CONSTRUCTION_ABS_MIN, (data.reduce( (_sum, b) => _sum + b.n, 0 ) / data.length) * minDeviation);
 
             data = data.filter( e => {
-                return e.n > min && 
+                return e.n > min &&
                     this.lookForAt(LOOK_STRUCTURES,e.x,e.y).length == 0 &&
                     this.lookForAt(LOOK_CONSTRUCTION_SITES,e.x,e.y).length == 0;
             });
-            
+
             // build roads on all most frequent used fields
             let setSite = pos => {
-                if( DEBUG ) console.log(`Constructing new road in ${this.name} at ${pos.x}'${pos.y} (${pos.n} traces)`);
+                if( DEBUG ) logSystem(this.name, `Constructing new road at ${pos.x}'${pos.y} (${pos.n} traces)`);
                 this.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD);
             };
             _.forEach(data, setSite);
@@ -807,8 +910,8 @@ var mod = {
             if( !ROAD_CONSTRUCTION_ENABLE ) return;
             let x = creep.pos.x;
             let y = creep.pos.y;
-            if ( x == 0 || y == 0 || x == 49 || y == 49 || 
-                creep.carry.energy == 0 || creep.data.actionName == 'building' ) 
+            if ( x == 0 || y == 0 || x == 49 || y == 49 ||
+                creep.carry.energy == 0 || creep.data.actionName == 'building' )
                 return;
 
             let key = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
@@ -835,27 +938,47 @@ var mod = {
         };
         Room.prototype.saveContainers = function(){
             this.memory.container = [];
-            let containers = this.structures.filter( 
-                structure => structure.structureType == STRUCTURE_CONTAINER 
+            let containers = this.structures.all.filter(
+                structure => structure.structureType == STRUCTURE_CONTAINER
             );
             let add = (cont) => {
+                let minerals = this.find(FIND_MINERALS);
                 let source = cont.pos.findInRange(this.sources, 2);
-                let mineral = cont.pos.findInRange(this.minerals, 2);
+                let mineral = cont.pos.findInRange(minerals, 2);
                 this.memory.container.push({
-                    id: cont.id, 
-                    source: (source.length > 0), 
+                    id: cont.id,
+                    source: (source.length > 0),
                     controller: ( cont.pos.getRangeTo(this.controller) < 4 ),
                     mineral: (mineral.length > 0),
                 });
                 let assignContainer = s => s.memory.container = cont.id;
-                source.forEach(assignContainer);  
+                source.forEach(assignContainer);
+                mineral.forEach(assignContainer);
             };
             containers.forEach(add);
+
+            if( this.terminal ) {
+                let source = this.terminal.pos.findInRange(this.sources, 2);
+                let mineral = this.terminal.pos.findInRange(this.minerals, 2);
+                let assignTerminal = s => s.memory.terminal = this.terminal.id;
+                source.forEach(assignTerminal);
+                mineral.forEach(assignTerminal);
+            }
+            if( this.storage ) {
+                let source = this.storage.pos.findInRange(this.sources, 2);
+                let mineral = this.storage.pos.findInRange(this.minerals, 2);
+                let assignStorage = s => s.memory.storage = this.storage.id;
+                source.forEach(assignStorage);
+                mineral.forEach(assignStorage);
+
+                if( this.storage.pos.getRangeTo(this.controller) < 4 )
+                    this.controller.memory.storage = this.storage.id;
+            }
         };
         Room.prototype.saveLinks = function(){
-            if( _.isUndefined(this.memory.links) ){ 
+            if( _.isUndefined(this.memory.links) ){
                 this.memory.links = [];
-            } 
+            }
             let links = this.find(FIND_MY_STRUCTURES, {
                 filter: (structure) => ( structure.structureType == STRUCTURE_LINK )
             });
@@ -867,8 +990,8 @@ var mod = {
             let keep = (entry) => {
                 if( links.find( (c) => c.id == entry.id )){
                     entry.storage = storageLinks.includes(entry.id);
-                    kept.push(entry); 
-                }                    
+                    kept.push(entry);
+                }
             };
             this.memory.links.forEach(keep);
             this.memory.links = kept;
@@ -883,13 +1006,13 @@ var mod = {
                     if( !isControllerLink ) {
                         let source = link.pos.findInRange(this.sources, 2);
                         let assign = s => s.memory.link = link.id;
-                        source.forEach(assign);  
+                        source.forEach(assign);
                         isSource = source.length > 0;
                     }
                     this.memory.links.push({
-                        id: link.id, 
+                        id: link.id,
                         storage: storageLinks.includes(link.id),
-                        controller: isControllerLink, 
+                        controller: isControllerLink,
                         source: isSource
                     });
                 }
@@ -898,17 +1021,17 @@ var mod = {
         };
         Room.prototype.saveMinerals = function() {
             let that = this;
-            let toPos = o => { 
+            let toPos = o => {
                 return {
                     x: o.pos.x,
                     y: o.pos.y
                 };
             };
-            let extractorPos = this.structures.filter( 
-                structure => structure.structureType == STRUCTURE_EXTRACTOR 
+            let extractorPos = this.structures.all.filter(
+                structure => structure.structureType == STRUCTURE_EXTRACTOR
             ).map(toPos);
             let hasExtractor = m => _.some(extractorPos, {
-                x: m.pos.x, 
+                x: m.pos.x,
                 y: m.pos.y
             });
             this._minerals = this.find(FIND_MINERALS).filter(hasExtractor);
@@ -917,16 +1040,16 @@ var mod = {
                 this.memory.minerals = _.map(that._minerals, id);
             } else this.memory.minerals = [];
         };
-        
+
         Room.prototype.linkDispatcher = function () {
-            let filled = l => l.cooldown == 0 && l.energy > (l.energyCapacity * (l.source ? 0.85 : 0.5));
+            let filled = l => l.cooldown == 0 && l.energy >= (l.energyCapacity * (l.source ? 0.85 : 0.5));
             let empty = l =>  l.energy < l.energyCapacity * 0.15;
-            let filledIn = this.linksIn.filter(filled); 
-            let emptyController = this.linksController.filter(empty); 
+            let filledIn = this.structures.links.in.filter(filled);
+            let emptyController = this.structures.links.controller.filter(empty);
 
             if( filledIn.length > 0  ){
-                let emptyStorage = this.linksStorage.filter(empty); 
-                
+                let emptyStorage = this.structures.links.storage.filter(empty);
+
                 let handleFilledIn = f => { // first fill controller, then storage
                     if( emptyController.length > 0 ){
                         f.transferEnergy(emptyController[0]);
@@ -940,7 +1063,7 @@ var mod = {
             }
 
             if( emptyController.length > 0 ){ // controller still empty, send from storage
-                let filledStorage = this.linksStorage.filter(filled); 
+                let filledStorage = this.structures.links.storage.filter(filled);
                 let handleFilledStorage = f => {
                     if( emptyController.length > 0 ){
                         f.transferEnergy(emptyController[0]);
@@ -951,77 +1074,88 @@ var mod = {
             }
         };
         Room.prototype.terminalBroker = function () {
+            if( !this.my || !this.terminal ) return;
             let that = this;
-            if( !this.terminal ) return;
             let mineral = this.mineralType;
+            let transacting = false;
+            let terminalFull = (this.terminal.sum / this.terminal.storeCapacity) > 0.8;
             if( this.terminal.store[mineral] >= MIN_MINERAL_SELL_AMOUNT ) {
-                if(DEBUG) console.log('Executing terminalBroker in ' + this.name);
                 let orders = Game.market.getAllOrders( o => {
                     if( !o.roomName ||
-                        o.resourceType != mineral || 
+                        o.resourceType != mineral ||
                         o.type != 'buy' ||
                         o.amount < MIN_MINERAL_SELL_AMOUNT ) return false;
 
                     o.range = Game.map.getRoomLinearDistance(o.roomName, that.name, true);
                     o.transactionAmount = Math.min(o.amount, that.terminal.store[mineral]);
                     o.transactionCost = Game.market.calcTransactionCost(
-                        o.transactionAmount, 
-                        that.name, 
+                        o.transactionAmount,
+                        that.name,
                         o.roomName);
                     if(o.transactionCost > that.terminal.store.energy && o.transactionAmount > MIN_MINERAL_SELL_AMOUNT) {
                         // cant afford. try min amount
                         o.transactionAmount = MIN_MINERAL_SELL_AMOUNT;
                         o.transactionCost = Game.market.calcTransactionCost(
-                            o.transactionAmount, 
-                            that.name, 
+                            o.transactionAmount,
+                            that.name,
                             o.roomName);
                     }
 
                     o.credits = o.transactionAmount*o.price;
-                    o.ratio = o.credits/o.transactionCost; 
-                    
-                    return ( 
-                        o.ratio >= MIN_SELL_RATIO[mineral] &&
-                        //o.range <= MAX_SELL_RANGE && 
+                    //o.ratio = o.credits/o.transactionCost; // old formula
+                    //o.ratio = (o.credits-o.transactionCost)/o.transactionAmount; // best offer assuming 1e == 1 credit
+                    //o.ratio = o.credits/(o.transactionAmount+o.transactionCost); // best offer assuming 1e == 1 mineral
+                    o.ratio = (o.credits - (o.transactionCost*ENERGY_VALUE_CREDITS)) / o.transactionAmount; // best offer assuming 1e == ENERGY_VALUE_CREDITS credits
+
+                    return (
+                        (terminalFull || o.ratio >= MIN_SELL_RATIO[mineral]) &&
+                        //o.range <= MAX_SELL_RANGE &&
                         o.transactionCost <= that.terminal.store.energy);
-                }); 
+                });
 
                 if( orders.length > 0 ){
                     let order = _.max(orders, 'ratio');
                     let result = Game.market.deal(order.id, order.transactionAmount, that.name);
-                    let message = '<h2>Room ' + that.name + ' executed an order!</h2><br/>Result: ' + translateErrorCode(result) + '<br/>Details:<br/> ' + JSON.stringify(order).replace(',',',<br/>');
-                    console.log(message);
-                    Game.notify( message );
-                }                
+                    if( DEBUG ) logSystem(that.name, `Selling ${order.transactionAmount} ${mineral} for ${order.credits} (${order.price} ¢/${mineral}, ${order.transactionCost} e): ${translateErrorCode(result)}`);
+                    if( SELL_NOTIFICATION ) Game.notify( `<h2>Room ${that.name} executed an order!</h2><br/>Result: ${translateErrorCode(result)}<br/>Details:<br/>${JSON.stringify(order).replace(',',',<br/>')}` );
+                    transacting = result == OK;
+                }
+            }
+            if( this.controller.level == 8 && !transacting &&
+                this.storage.store.energy > MAX_STORAGE_ENERGY[this.controller.level] * 0.8 &&
+                this.terminal.store[mineral] < 150000 &&
+                this.terminal.store.energy > 55000 ){
+                let requiresEnergy = room => (
+                    room.my &&
+                    room.controller.level < 8 &&
+                    room.storage && room.terminal &&
+                    room.terminal.sum < room.terminal.storeCapacity - 50000 &&
+                    room.storage.sum < room.storage.storeCapacity * 0.8 &&
+                    !room._isReceivingEnergy
+                )
+                let targetRoom = _.min(_.filter(Game.rooms, requiresEnergy), 'storage.store.energy');
+                if( targetRoom && Game.market.calcTransactionCost(50000, this.name, targetRoom.name) < (this.terminal.store.energy-50000)) {
+                    targetRoom._isReceivingEnergy = true;
+                    let response = this.terminal.send('energy', 50000, targetRoom.name, 'have fun');
+                    if( DEBUG ) logSystem(that.name, `Transferring 50k energy to ${targetRoom.name}: ${translateErrorCode(response)}`);
+                }
             }
         };
         Room.prototype.springGun = function(){
-            if( this.situation.invasion ){
-                let RCL = {
-                    1: Creep.setup.melee,
-                    2: Creep.setup.melee,
-                    3: Creep.setup.melee,
-                    4: Creep.setup.ranger,
-                    5: Creep.setup.ranger,
-                    6: Creep.setup.warrior,
-                    7: Creep.setup.warrior,
-                    8: Creep.setup.warrior
-                };
-                let idleSpawns = this.spawns.filter( s => !s.spawning );
+            if( this.my && this.situation.invasion ){
+                let idleSpawns = this.structures.spawns.filter( s => !s.spawning );
                 for( let iSpawn = 0; iSpawn < idleSpawns.length && this.defenseLevel.sum < this.hostileThreatLevel; iSpawn++ ) {
-                    let setup = RCL[this.controller.level];
-                    if( DEBUG ) console.log( dye(CRAYON.system, this.name + ' &gt; ') + 'Spring Gun System activated in room ' + this.name + '! Trying to spawn an additional ' + setup.type + '.');
-                    let creepParams = idleSpawns[iSpawn].createCreepBySetup(setup);
+                    if( DEBUG ) logSystem(this.name, 'Spring Gun System activated! Trying to spawn an additional melee creep.');
+                    let creepParams = idleSpawns[iSpawn].createCreepBySetup(Creep.setup.melee);
                     if( creepParams ){
                         // add to defenseLevel
-                        this._defenseLevel.threat += Creep.bodyThreat(creepParams.parts);
-                        this._defenseLevel[creepParams.setup] += creepParams.cost;
+                        this._defenseLevel.creeps += Creep.bodyThreat(creepParams.parts);
                     }
                 }
             }
         };
         Room.prototype.statistics = function(){
-            let that = this; 
+            let that = this;
             if( this.memory.hostileIds === undefined )
                 this.memory.hostileIds = [];
             if( this.memory.statistics === undefined)
@@ -1029,39 +1163,40 @@ var mod = {
 
             if( this.controller && this.controller.my ) {
                 var registerHostile = creep => {
-                    if( !that.memory.hostileIds.includes(creep.id) ){ 
-                        var bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
+                    if( !that.memory.hostileIds.includes(creep.id) ){
+                        let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
+                        if( DEBUG || NOTIFICATE_INVADER ) logSystem(this.name, `Hostile intruder (${bodyCount}) from "${creep.owner.username}."`);
                         if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
-                            var message = 'Hostile intruder ' + creep.id + ' (' + bodyCount + ') from "' + creep.owner.username + '" in room ' + that.name + ' at ' + toDateTimeString(toLocalDate(new Date()));
-                            Game.notify(message);
-                            console.log(message);
+                            Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${that.name} at ${toDateTimeString(toLocalDate(new Date()))}`);
                         }
                         if(that.memory.statistics.invaders === undefined)
                             that.memory.statistics.invaders = [];
                         that.memory.statistics.invaders.push({
-                            owner: creep.owner.username, 
+                            owner: creep.owner.username,
                             id: creep.id,
-                            body: bodyCount, 
-                            enter: Game.time, 
+                            body: bodyCount,
+                            enter: Game.time,
                             time: Date.now()
                         });
                     }
                 }
                 _.forEach(this.hostiles, registerHostile);
-                
-                var registerHostileLeave = id => {
+
+                let registerHostileLeave = id => {
                     if( !that.hostileIds.includes(id) && that.memory.statistics && that.memory.statistics.invaders !== undefined && that.memory.statistics.invaders.length > 0){
-                        var select = invader => invader.id == id && invader.leave === undefined;
-                        var entry = _.find(that.memory.statistics.invaders, select);
+                        let select = invader => invader.id == id && invader.leave === undefined;
+                        let entry = _.find(that.memory.statistics.invaders, select);
                         if( entry != undefined ) entry.leave = Game.time;
                     }
                 }
                 _.forEach(this.memory.hostileIds, registerHostileLeave);
             }
 
-            this.memory.hostileIds = this.hostileIds;  
+            this.memory.hostileIds = this.hostileIds;
         }
         Room.prototype.init = function(){
+            // required. otherwise the objects will keep the values. Which would be ok if reliable.
+            // but will be empty or "old" when redirected to an other server (load balancing), because it has its own cache
             delete this._structures;
             delete this._sourceEnergyAvailable;
             delete this._droppedResources;
@@ -1069,44 +1204,29 @@ var mod = {
             delete this._relativeEnergyAvailable;
             delete this._towerFreeCapacity;
             delete this._constructionSites;
-            delete this._repairableSites;
-            delete this._fortifyableSites;
-            delete this._fuelables;
-            delete this._urgentRepairableSites;
             delete this._hostiles;
             delete this._hostileIds;
             delete this._situation;
             delete this._maxPerJob;
             delete this._creeps
             delete this._casualties;
-            delete this._container;
-            delete this._containerIn;
-            delete this._containerOut;
-            //delete this._containerSource;
-            delete this._containerManaged;
-            delete this._containerController;
-            delete this._links;
-            delete this._linksController;
-            delete this._linksStorage;
-            delete this._linksIn;
-            delete this._linksPrivateers;
             delete this._privateerMaxWeight;
             delete this._claimerMaxWeight;
             delete this._combatCreeps;
             delete this._defenseLevel;
             delete this._hostileThreatLevel;
-            delete this._minerals;    
+            delete this._minerals;
             delete this._currentCostMatrix;
-
-            if( Memory.pavementArt === undefined ) Memory.pavementArt = {};
+            delete this._my;
+            delete this._isReceivingEnergy;
+            delete this._reservedSpawnEnergy;
         }
-        
+
         Room.prototype.loop = function(){
             this.init();
-            try {                
-                let that = this; 
+            try {
+                let that = this;
                 if( Game.time % MEMORY_RESYNC_INTERVAL == 0 || this.name == 'sim' ) {
-                    //if( DEBUG ) console.log('MEMORY_RESYNC_INTERVAL reached');
                     this.saveMinerals();
                     this.saveTowers();
                     this.saveSpawns();
@@ -1120,9 +1240,9 @@ var mod = {
                 this.statistics();
             }
             catch(err) {
-                Game.notify('Error in room.js (Room.prototype.loop): ' + err);
-                console.log('Error in room.js (Room.prototype.loop): ' + err);
-            }          
+                Game.notify('Error in room.js (Room.prototype.loop) for "' + this.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
+                console.log( dye(CRAYON.error, 'Error in room.js (Room.prototype.loop) for "' + this.name + '": <br/>' + JSON.stringify(err)));
+            }
         };
     }
 }

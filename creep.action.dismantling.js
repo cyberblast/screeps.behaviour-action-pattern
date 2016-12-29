@@ -7,7 +7,7 @@ action.isValidAction = function(creep){
 };
 action.isValidTarget = function(target){
     return target != null;
-};   
+};
 action.newTarget = function(creep){
     let target;
     let flag = FlagDir.find(FLAG_COLOR.destroy.dismantle, creep.pos, true);
@@ -15,7 +15,7 @@ action.newTarget = function(creep){
         if( flag.room !== undefined ){ // room is visible
             var targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
             if( targets && targets.length > 0)
-                return targets[0]; 
+                return targets[0];
             else { // remove flag. try next flag
                 let oldName = flag.name;
                 FlagDir.removeFromDir(flag.name);
@@ -31,7 +31,7 @@ action.newTarget = function(creep){
                     if( flag.room !== undefined ){ // room is visible
                         var targets = flag.room.lookForAt(LOOK_STRUCTURES, flag.pos.x, flag.pos.y);
                         if( targets && targets.length > 0)
-                            return targets[0]; 
+                            return targets[0];
                         else { // remove flag. try next flag
                             FlagDir.removeFromDir(flag.name);
                             flag.remove();
@@ -49,6 +49,6 @@ action.work = function(creep){
     return creep.dismantle(creep.target);
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9850), SAY_PUBLIC); 
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9850), SAY_PUBLIC);
 };
 module.exports = action;

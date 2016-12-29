@@ -2,7 +2,7 @@ var setup = new Creep.Setup('mineralMiner');
 setup.minControllerLevel = 6;
 setup.maxCount = function(room){
     let max = 0;
-    if( room.storage ) {
+    if( room.storage && room.storage.sum < room.storage.storeCapacity * 0.9 ) {
         let add = mineral => {
             if(mineral.mineralAmount > 0) max++;
         };
@@ -11,11 +11,11 @@ setup.maxCount = function(room){
     return max;
 };
 setup.default = {
-    fixedBody: [WORK, WORK, WORK, CARRY, MOVE], 
-    multiBody: [WORK, WORK, WORK, MOVE], 
-    minAbsEnergyAvailable: 750, 
+    fixedBody: [WORK, WORK, WORK, CARRY, MOVE],
+    multiBody: [WORK, WORK, WORK, MOVE],
+    minAbsEnergyAvailable: 750,
     minEnergyAvailable: 0.3,
-    maxMulti: 11, 
+    maxMulti: 11,
     minMulti: 1,
     maxCount: setup.maxCount
 };

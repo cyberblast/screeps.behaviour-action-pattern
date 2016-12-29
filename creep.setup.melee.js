@@ -8,7 +8,7 @@ setup.maxCount = function(room){
     let distance, flag;
     let calcMax = flagEntry => {
         distance = routeRange(room.name, flagEntry.roomName);
-        if( distance > maxRange ) 
+        if( distance > maxRange )
             return;
         flag = Game.flags[flagEntry.name];
         if( !flag.targetOf || flag.targetOf.length == 0 )
@@ -19,33 +19,33 @@ setup.maxCount = function(room){
     return max;
 };
 setup.small = {
-    fixedBody: [MOVE, HEAL], 
-    multiBody: [MOVE, ATTACK], 
-    minAbsEnergyAvailable: 450, 
+    fixedBody: [MOVE, HEAL],
+    multiBody: [MOVE, ATTACK],
+    minAbsEnergyAvailable: 450,
     minEnergyAvailable: 0.8,
     maxMulti: 10,
-    maxCount: setup.maxCount, 
-    maxWeight: null//(room) => room.defenseMaxWeight(500, 'melee')
+    maxCount: setup.maxCount,
+    maxWeight: null
 };
 setup.medium = {
-    fixedBody: [MOVE, MOVE, HEAL, HEAL], 
-    multiBody: [MOVE, ATTACK], 
-    minAbsEnergyAvailable: 900, 
+    fixedBody: [MOVE, MOVE, HEAL, HEAL],
+    multiBody: [MOVE, ATTACK],
+    minAbsEnergyAvailable: 900,
     minEnergyAvailable: 0.8,
     maxMulti: 13,
     minMulti: 5,
-    maxCount: setup.maxCount, 
-    maxWeight: null//(room) => room.defenseMaxWeight(1000, 'melee')
+    maxCount: setup.maxCount,
+    maxWeight: null
 };
 setup.big = {
-    fixedBody: [MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL], 
-    multiBody: [MOVE, ATTACK], 
-    minAbsEnergyAvailable: 1800, 
+    fixedBody: [MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL],
+    multiBody: [MOVE, ATTACK],
+    minAbsEnergyAvailable: 1800,
     minEnergyAvailable: 0.8,
     maxMulti: 17,
     minMulti: 10,
-    maxCount: setup.maxCount, 
-    maxWeight: null//(room) => room.defenseMaxWeight(1300, 'melee')
+    maxCount: setup.maxCount,
+    maxWeight: null
 };
 setup.RCL = {
     1: setup.none,
