@@ -1,5 +1,6 @@
 var action = new Creep.Action('repairing');
 action.targetRange = 3;
+action.maxPerTarget = 1;
 action.isValidAction = function(creep){
     return (creep.carry.energy > 0 );
 };

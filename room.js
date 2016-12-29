@@ -902,15 +902,17 @@ var mod = {
 
         };
 
-        Room.prototype.getBestConstrucionSiteFor = function(creep) {
-            let sites = this.constructionSites;
+        Room.prototype.getBestConstructionSiteFor = function(pos, filter = null) {
+            let sites;
+            if( filter ) sites = this.constructionSites.filter(filter);
+            else sites = this.constructionSites;
             let siteOrder = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_LINK,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_WALL,STRUCTURE_RAMPART];
-            let getOrder = site => {
-                let o = (siteOrder.indexOf(site.structureType) - (site.progress / site.progressTotal)) * 100;
-                o = o + creep.pos.getRangeTo(site);
-                return o < 0 ? Infinity : o;
+            let rangeOrder = site => {
+                let order = siteOrder.indexOf(site.structureType); 
+                if( order < 0 ) return 100000 + pos.getRangeTo(site);
+                return ((order - (site.progress / site.progressTotal)) * 100) + pos.getRangeTo(site);
             };
-            return _.sortBy(sites, getOrder);
+            return _.min(sites, rangeOrder);
         };
 
         Room.prototype.roadConstruction = function( minDeviation = ROAD_CONSTRUCTION_MIN_DEVIATION ) {
