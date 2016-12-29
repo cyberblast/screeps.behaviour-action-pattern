@@ -97,6 +97,7 @@ module.exports.loop = function () {
     Spawn.extend();
     FlagDir.extend();
     if( glob.extend ) glob.extend();
+    if( glob.custom ) glob.custom();
 
     // Register task hooks
     Task.register();
