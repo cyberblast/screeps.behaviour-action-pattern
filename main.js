@@ -105,11 +105,7 @@ module.exports.loop = function () {
     // Analyze environment
     Population.loop();
     FlagDir.loop();
-    let roomLoop = room => {
-        room.loop();
-        Tower.loop(room);
-    };
-    _.forEach(Game.rooms, roomLoop);
+    Room.loop();
 
     // Execution
     Creep.loop();

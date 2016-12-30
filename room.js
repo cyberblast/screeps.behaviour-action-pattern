@@ -1154,21 +1154,29 @@ var mod = {
                 }
             }
         };
-        Room.prototype.statistics = function(){
+        Room.prototype.processInvaders = function(){
             let that = this;
             if( this.memory.hostileIds === undefined )
                 this.memory.hostileIds = [];
             if( this.memory.statistics === undefined)
                 this.memory.statistics = {};
 
-            if( this.controller && this.controller.my ) {
-                var registerHostile = creep => {
-                    if( !that.memory.hostileIds.includes(creep.id) ){
-                        let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-                        if( DEBUG || NOTIFICATE_INVADER ) logSystem(this.name, `Hostile intruder (${bodyCount}) from "${creep.owner.username}."`);
-                        if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
-                            Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${that.name} at ${toDateTimeString(toLocalDate(new Date()))}`);
-                        }
+            var registerHostile = creep => {
+                // if invader id unregistered
+                if( !that.memory.hostileIds.includes(creep.id) ){
+                    // handle new invader
+                    // register 
+                    this.memory.hostileIds.push(creep.id);
+                    // create notification
+                    let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
+                    if( DEBUG || NOTIFICATE_INVADER ) logSystem(this.name, `Hostile intruder (${bodyCount}) from "${creep.owner.username}.`);
+                    if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
+                        Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${that.name} at ${toDateTimeString(toLocalDate(new Date()))}`);
+                    }
+                    // trigger subscribers
+                    Room.newInvader.trigger(creep);
+                    // create statistics
+                    if( SEND_STATISTIC_REPORTS ) {
                         if(that.memory.statistics.invaders === undefined)
                             that.memory.statistics.invaders = [];
                         that.memory.statistics.invaders.push({
@@ -1180,20 +1188,29 @@ var mod = {
                         });
                     }
                 }
-                _.forEach(this.hostiles, registerHostile);
+            }
+            _.forEach(this.hostiles, registerHostile);
 
-                let registerHostileLeave = id => {
-                    if( !that.hostileIds.includes(id) && that.memory.statistics && that.memory.statistics.invaders !== undefined && that.memory.statistics.invaders.length > 0){
+            let registerHostileLeave = id => {
+                // for each known invader
+                if( !that.hostileIds.includes(id) ) { // not found anymore
+                    // trigger subscribers
+                    Room.goneInvader.trigger(id);
+                    // update statistics
+                    if( SEND_STATISTIC_REPORTS && that.memory.statistics && that.memory.statistics.invaders !== undefined && that.memory.statistics.invaders.length > 0 ){
                         let select = invader => invader.id == id && invader.leave === undefined;
                         let entry = _.find(that.memory.statistics.invaders, select);
                         if( entry != undefined ) entry.leave = Game.time;
                     }
+                } else {
+                    // trigger subscribers
+                    Room.knownInvader.trigger(id);
                 }
-                _.forEach(this.memory.hostileIds, registerHostileLeave);
             }
+            _.forEach(this.memory.hostileIds, registerHostileLeave);
 
             this.memory.hostileIds = this.hostileIds;
-        }
+        };
         Room.prototype.init = function(){
             // required. otherwise the objects will keep the values. Which would be ok if reliable.
             // but will be empty or "old" when redirected to an other server (load balancing), because it has its own cache
@@ -1220,8 +1237,29 @@ var mod = {
             delete this._my;
             delete this._isReceivingEnergy;
             delete this._reservedSpawnEnergy;
-        }
+        };
 
+        Room.processSightlessRoom = function(roomName, memory){
+            let triggerKnownInvaders = id =>  Room.knownInvader.trigger(id);
+            _.forEach(memory.hostileIds, triggerKnownInvaders);
+        };
+
+        Room.loop = function(){
+            let roomLoop = (memory, roomName) => {
+                let room = Game.rooms[roomName];
+                if( room ){
+                    // has sight
+                    room.loop();
+                    Tower.loop(room);
+                }
+                else {
+                    // no sight
+                    Room.processSightlessRoom(roomName, memory);
+                }
+            };
+            //_.forEach(Game.rooms, roomLoop);
+            _.forEach(Memory.rooms, roomLoop);
+        };
         Room.prototype.loop = function(){
             this.init();
             try {
@@ -1237,7 +1275,7 @@ var mod = {
                 this.roadConstruction();
                 this.springGun();
                 this.linkDispatcher();
-                this.statistics();
+                this.processInvaders();
             }
             catch(err) {
                 Game.notify('Error in room.js (Room.prototype.loop) for "' + this.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
