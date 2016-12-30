@@ -3,7 +3,8 @@ var mod = {
         Flag.found.on( flag => Task.guard.handleFlagFound(flag) );
         Creep.spawningStarted.on( params => Task.guard.handleSpawningStarted(params) );
         Creep.spawningCompleted.on( creep => Task.guard.handleSpawningCompleted(creep) );
-        Creep.predictedRenewal.on( creep => Task.guard.handlePredictedRenewal(creep) );
+        Creep.predictedRenewal.on( creep => Task.guard.handleCreepDied(creep.name) );
+        Creep.died.on( name => Task.guard.handleCreepDied(name) );
     },
     handleFlagFound: flag => {
         if( flag.color == FLAG_COLOR.defense.color && flag.secondaryColor == FLAG_COLOR.defense.secondaryColor ){
@@ -54,10 +55,11 @@ var mod = {
             memory.spawning = spawning;
         }
     },
-    handlePredictedRenewal: creep => {
-        if (!creep.data || !creep.data.destiny || !creep.data.destiny.task || creep.data.destiny.task != 'guard')
+    handleCreepDied: name => {
+        let mem = Memory.population[name];
+        if (!mem || !mem.destiny || !mem.destiny.task || mem.destiny.task != 'guard')
             return;
-        let flag = Game.flags[creep.data.destiny.flagName];
+        let flag = Game.flags[mem.destiny.flagName];
         if (flag) {
             let memory = Task.guard.memory(flag);
             // validate running creeps
@@ -66,7 +68,7 @@ var mod = {
                 let creep = Game.creeps[o];
                 // invalidate old creeps for predicted spawning
                 // TODO: better distance calculation
-                if( creep && creep.ticksToLive > (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*50) ) ) {
+                if( creep && creep.name != name && creep.ticksToLive > (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*50) ) ) {
                     running.push(o);
                 }
             };

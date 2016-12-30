@@ -1,12 +1,14 @@
 /* https://github.com/ScreepsOCS/screeps.behaviour-action-pattern */
 
 module.exports.loop = function () {
+    // ensure required memory namespaces
     if (Memory.modules === undefined) 
         Memory.modules = {};
     if (Memory.modules.viral === undefined) 
         Memory.modules.viral = {};
     if (Memory.modules.internalViral === undefined) 
         Memory.modules.internalViral = {};
+    // check if a path is valid
     global.validatePath = path => {
         let mod;
         try {
@@ -17,6 +19,8 @@ module.exports.loop = function () {
         }
         return mod != null;
     };
+    // evaluate existing module overrides and store them to memory. 
+    // return current module path to use for require
     global.getPath = (modName, reevaluate = false) => {
         if( reevaluate || !Memory.modules[modName] ){
             // find base file
@@ -41,6 +45,7 @@ module.exports.loop = function () {
         }
         return Memory.modules[modName];
     };
+    // try to require a module. Log errors.
     global.tryRequire = (path, silent = false) => {
         let mod;
         try{
@@ -55,6 +60,7 @@ module.exports.loop = function () {
         }
         return mod;
     };
+    // partially override a module using a registered viral file
     global.infect = (mod, namespace, modName) => {
         if( Memory.modules[namespace][modName] ) {
             // get module from stored viral override path
@@ -66,6 +72,8 @@ module.exports.loop = function () {
         }
         return mod;
     }
+    // loads (require) a module. use this function anywhere you want to load a module.
+    // respects custom and viral overrides
     global.load = (modName) => {
         // read stored module path
         let path = getPath(modName);
@@ -97,6 +105,7 @@ module.exports.loop = function () {
     Spawn.extend();
     FlagDir.extend();
     if( glob.extend ) glob.extend();
+    // use a viral.global.js module to implement your own custom function
     if( glob.custom ) glob.custom();
 
     // Register task hooks
@@ -105,11 +114,7 @@ module.exports.loop = function () {
     // Analyze environment
     Population.loop();
     FlagDir.loop();
-    let roomLoop = room => {
-        room.loop();
-        Tower.loop(room);
-    };
-    _.forEach(Game.rooms, roomLoop);
+    Room.loop();
 
     // Execution
     Creep.loop();
