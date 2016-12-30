@@ -4,7 +4,7 @@ var mod = {
         Creep.spawningStarted.on( params => Task.guard.handleSpawningStarted(params) );
         Creep.spawningCompleted.on( creep => Task.guard.handleSpawningCompleted(creep) );
         Creep.predictedRenewal.on( creep => Task.guard.handleCreepDied(creep.name) );
-        Creep.died.on( creep => Task.guard.handleCreepDied(name) );
+        Creep.died.on( name => Task.guard.handleCreepDied(name) );
     },
     handleFlagFound: flag => {
         if( flag.color == FLAG_COLOR.defense.color && flag.secondaryColor == FLAG_COLOR.defense.secondaryColor ){
