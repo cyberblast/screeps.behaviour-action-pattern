@@ -333,7 +333,16 @@ var mod = {
                     this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
             }
         };
-
+        Creep.prototype.repairNearby = function( ) {
+            // if it has energy and a work part
+            if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
+                let nearby = this.pos.findInRange(this.room.structures.repairable, 3);
+                if( nearby && nearby.length > 0 ){
+                    this.repair(nearby[0]);
+                }
+            }
+        };
+        
         Creep.prototype.controllerSign = function() {
             if(CONTROLLER_SIGN && (!this.target.sign || this.target.sign.username != this.owner.username)) {
                 this.signController(this.target, CONTROLLER_SIGN_MESSAGE);
