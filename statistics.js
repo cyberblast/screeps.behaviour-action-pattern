@@ -1,9 +1,11 @@
 var mod = {
     storedStatisticsTime: (Memory.statistics && Memory.statistics.time ? Memory.statistics.time : 0 ),
     loop: function(){
-        if( _.isUndefined(Memory.statistics.reports) )
-            Memory.statistics.reports = [];
-
+        if( _.isUndefined(Memory.statistics) ) {
+            Memory.statistics = {
+                reports: []
+            };
+        }
         var message;
         if( SEND_STATISTIC_REPORTS && this.storedStatisticsTime > 0 ) {
             message = '<div><h3><b>Status report </b></h3>'

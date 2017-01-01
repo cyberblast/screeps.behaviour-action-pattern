@@ -121,7 +121,7 @@ module.exports.loop = function () {
     Spawn.loop();
 
     // Evaluation
-    if( Memory.statistics && Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time )
+    if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
         load("statistics").loop();
     processReports();
 };
