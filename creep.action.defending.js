@@ -1,5 +1,5 @@
 var action = new Creep.Action('defending');
-action.isValidAction = function(creep){ return creep.room.situation.invasion; };
+action.isValidAction = function(creep){ return creep.room.hostiles.length > 0; };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.isValidTarget = function(target){
