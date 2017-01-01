@@ -77,13 +77,15 @@ var mod = {
         }
     },
     memory: (flag) => {
-        if( !flag.memory.tasks ) flag.memory.tasks = {};
-        // TODO: remove flag.memory.tasks.guard.name check
-        if( !flag.memory.tasks.guard || flag.memory.tasks.guard.name ) flag.memory.tasks.guard = {};
-        if( !flag.memory.tasks.guard.queued ) flag.memory.tasks.guard.queued = [];
-        // TODO: remove isArray check
-        if( !flag.memory.tasks.guard.spawning || !Array.isArray(flag.memory.tasks.guard.spawning)) flag.memory.tasks.guard.spawning = [];
-        if( !flag.memory.tasks.guard.running ) flag.memory.tasks.guard.running = [];
+        if( !flag.memory.tasks ) 
+            flag.memory.tasks = {};
+        if( !flag.memory.tasks.guard ) {
+            flag.memory.tasks.guard = {
+                queued: [], 
+                spawning: [],
+                running: []
+            }
+        }
         return flag.memory.tasks.guard;
     },
     checkForRequiredCreeps: (flag) => {
