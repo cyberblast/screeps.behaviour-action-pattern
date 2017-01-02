@@ -60,14 +60,14 @@ var mod = {
              completeName = params.name + '-' + son;
             }
             params.name = completeName;
-            let result = this.create(params.parts, params.name, params.setup, params.destiny);
+            let result = this.create(params.parts, params.name, params.behaviour || params.setup, params.destiny);
             if( !result ){
                 params.name = stumb;
                 queue.unshift(params);
             }
             return result;
         };
-        Spawn.prototype.create = function(body, name, type, destiny){
+        Spawn.prototype.create = function(body, name, behaviour, destiny){
             if( body.length == 0 ) return false;
             var newName = this.createCreep(body, name, null);
             if( name == newName || translateErrorCode(newName) === undefined ){
@@ -78,7 +78,7 @@ var mod = {
                 this.room.reservedSpawnEnergy += cost;
                 Population.registerCreep(
                     newName,
-                    type,
+                    behaviour,
                     cost,
                     this.room,
                     this.name,

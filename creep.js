@@ -366,6 +366,15 @@ var mod = {
                     }
                     return this._sum;
                 }
+            }, 
+            'threat': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._threat) ) {
+                        this._threat = Creep.bodyThreat(this.body);
+                    }
+                    return this._threat;
+                }
             }
         });
     }

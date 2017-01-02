@@ -577,7 +577,7 @@ var mod = {
                         // TODO: add towers when in foreign room
                         this._hostileThreatLevel = 0;
                         let evaluateBody = creep => {
-                            this._hostileThreatLevel += Creep.bodyThreat(creep.body);
+                            this._hostileThreatLevel += creep.threat;
                         };
                         this.hostiles.forEach(evaluateBody);
                     }
@@ -594,7 +594,7 @@ var mod = {
                             sum: 0
                         }
                         let evaluate = creep => {
-                            this._defenseLevel.creeps += Creep.bodyThreat(creep.body);
+                            this._defenseLevel.creeps += creep.threat;
                         };
                         this.combatCreeps.forEach(evaluate);
                         this._defenseLevel.towers = this.structures.towers.length;
@@ -716,8 +716,8 @@ var mod = {
             }
         });
 
-        Room.bestSpawnRoomFor = function(flag) {
-            var range = spawn => routeRange(spawn.pos.roomName, flag.pos.roomName);
+        Room.bestSpawnRoomFor = function(targetRoomName) {
+            var range = spawn => routeRange(spawn.pos.roomName, targetRoomName);
             let spawn = _.min(Game.spawns, range);
 
             return spawn.pos.roomName;

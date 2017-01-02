@@ -93,7 +93,7 @@ var mod = {
         // if creeps below requirement
         if( count < 1 ) {
             // add creep
-            let room = Game.rooms[Room.bestSpawnRoomFor(flag)];
+            let room = Game.rooms[Room.bestSpawnRoomFor(flag.pos.roomName)];
             let fixedBody = [RANGED_ATTACK, MOVE];
             let multiBody = [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE];
             let name = 'ranger-' + flag.name;
@@ -101,7 +101,7 @@ var mod = {
             let creep = {
                 parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
                 name: name,
-                setup: 'ranger',
+                behaviour: 'ranger',
                 destiny: { task: "guard", flagName: flag.name }
             };
 
