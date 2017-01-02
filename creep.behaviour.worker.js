@@ -17,7 +17,7 @@ module.exports = {
         }
     },
     nextAction: function(creep){
-        if( creep.pos.roomName != creep.data.homeRoom && Game.rooms[creep.data.homeRoom] && Game.rooms[creep.data.homeRoom].controller ) {
+        if( creep.data.creepType == "worker" && creep.pos.roomName != creep.data.homeRoom && Game.rooms[creep.data.homeRoom] && Game.rooms[creep.data.homeRoom].controller ) {
             Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
             return;
         }
