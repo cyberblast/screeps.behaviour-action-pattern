@@ -1,10 +1,15 @@
 // Defense task handles spotted invaders. Spawns defenders and gives them special behaviour.
 module.exports = {
+    // hook into events
     register: () => {
+        // When a new invader has been spotted
         Room.newInvader.on( flag => Task.defense.handleNewInvader(invaderCreep) );
+        // When an invader leaves a room
         Room.goneInvader.on( flag => Task.defense.handleGoneInvader(invaderId) );
+        // a creep died
         Creep.died.on( params => Task.defense.handleCreepDied(creepName) );
     },
+    // When a new invader has been spotted
     handleNewInvader: invaderCreep => {
         // check room threat balance
         if( invaderCreep.room.defenseLevel.sum > invaderCreep.room.hostileThreatLevel ) {
@@ -15,8 +20,9 @@ module.exports = {
             invaderCreep.room.hostiles.forEach(Task.defense.orderDefenses);
         }
     },
+    // When an invader leaves a room
     handleGoneInvader: invaderId => {
-        // check if creep is gone or in an other room (requires vision)
+        // check if invader died or in an other room (requires vision)
         let invader = Game.getObjectById(invaderId);
         if( !invader ) { 
             // Invader not found anymore
@@ -40,6 +46,7 @@ module.exports = {
             // other existing creeps will recycle themself via nextAction (see below)
         }
     },
+    // when a creep died
     handleCreepDied: creepName => {        
         // check if its our creep
         let creepMemory = Memory.population[name];
@@ -60,9 +67,11 @@ module.exports = {
         // order reinforements
         Task.defense.orderDefenses(invader);
     },
+    // get task memory
     memory: invaderId => {
         return Task.memory['defense'][invaderId];
     },
+    // spawn defenses against an invader creep
     orderDefenses: invaderCreep => {
         let invaderId = invaderCreep.id;
         let remainingThreat = invaderCreep.threat;
@@ -112,10 +121,10 @@ module.exports = {
             });
         }
     },
+    // define action assignment for defender creeps
     nextAction: creep => {
         // override behaviours nextAction function
         // this could be a global approach to manipulate creep behaviour
-        // change behaviour files to pull this
 
         // if spawning room is under attack defend there (=> defending)
         // if all invader gone, try to find original invaderById and travel there (=> travelling, defending)
