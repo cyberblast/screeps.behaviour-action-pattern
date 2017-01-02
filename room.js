@@ -577,7 +577,7 @@ var mod = {
                         // TODO: add towers when in foreign room
                         this._hostileThreatLevel = 0;
                         let evaluateBody = creep => {
-                            this._hostileThreatLevel += Creep.bodyThreat(creep.body);
+                            this._hostileThreatLevel += creep.threat;
                         };
                         this.hostiles.forEach(evaluateBody);
                     }
@@ -594,7 +594,7 @@ var mod = {
                             sum: 0
                         }
                         let evaluate = creep => {
-                            this._defenseLevel.creeps += Creep.bodyThreat(creep.body);
+                            this._defenseLevel.creeps += creep.threat;
                         };
                         this.combatCreeps.forEach(evaluate);
                         this._defenseLevel.towers = this.structures.towers.length;
@@ -716,8 +716,8 @@ var mod = {
             }
         });
 
-        Room.bestSpawnRoomFor = function(flag) {
-            var range = spawn => routeRange(spawn.pos.roomName, flag.pos.roomName);
+        Room.bestSpawnRoomFor = function(targetRoomName) {
+            var range = spawn => routeRange(spawn.pos.roomName, targetRoomName);
             let spawn = _.min(Game.spawns, range);
 
             return spawn.pos.roomName;
@@ -1141,19 +1141,6 @@ var mod = {
                 }
             }
         };
-        Room.prototype.springGun = function(){
-            if( this.my && this.situation.invasion ){
-                let idleSpawns = this.structures.spawns.filter( s => !s.spawning );
-                for( let iSpawn = 0; iSpawn < idleSpawns.length && this.defenseLevel.sum < this.hostileThreatLevel; iSpawn++ ) {
-                    if( DEBUG ) logSystem(this.name, 'Spring Gun System activated! Trying to spawn an additional melee creep.');
-                    let creepParams = idleSpawns[iSpawn].createCreepBySetup(Creep.setup.melee);
-                    if( creepParams ){
-                        // add to defenseLevel
-                        this._defenseLevel.creeps += Creep.bodyThreat(creepParams.parts);
-                    }
-                }
-            }
-        };
         Room.prototype.processInvaders = function(){
             let that = this;
             if( this.memory.hostileIds === undefined )
@@ -1273,7 +1260,6 @@ var mod = {
                     this.terminalBroker();
                 }
                 this.roadConstruction();
-                this.springGun();
                 this.linkDispatcher();
                 this.processInvaders();
             }

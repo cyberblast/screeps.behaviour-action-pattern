@@ -30,7 +30,7 @@ var mod = {
         // if creep count below requirement spawn a new creep creep
         if( count < 1 ) {
             // get nearest room
-            let room = Game.rooms[Room.bestSpawnRoomFor(flag)];
+            let room = Game.rooms[Room.bestSpawnRoomFor(flag.pos.roomName)];
             // define new creep
             let fixedBody = [RANGED_ATTACK, MOVE];
             let multiBody = [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE];

@@ -200,20 +200,20 @@ Setup.partsComparator = function (a, b) {
     return indexOfA - indexOfB;
 };
 Setup.compileBody = function (room, fixedBody, multiBody, sort = false) {
-        var parts = [];
-        let multi = Creep.Setup.multi(room, fixedBody, multiBody);
-        for (let iMulti = 0; iMulti < multi; iMulti++) {
-            parts = parts.concat(multiBody);
-        }
-        for (let iPart = 0; iPart < fixedBody.length; iPart++) {
-            parts[parts.length] = fixedBody[iPart];
-        }
-        if( sort ) parts.sort(Creep.Setup.partsComparator);            
-        if( parts.includes(HEAL) ) {
-            let index = parts.indexOf(HEAL);
-            parts.splice(index, 1);
-            parts.push(HEAL);
-        }
-        return parts;
-    },
+    var parts = [];
+    let multi = Creep.Setup.multi(room, fixedBody, multiBody);
+    for (let iMulti = 0; iMulti < multi; iMulti++) {
+        parts = parts.concat(multiBody);
+    }
+    for (let iPart = 0; iPart < fixedBody.length; iPart++) {
+        parts[parts.length] = fixedBody[iPart];
+    }
+    if( sort ) parts.sort(Creep.Setup.partsComparator);            
+    if( parts.includes(HEAL) ) {
+        let index = parts.indexOf(HEAL);
+        parts.splice(index, 1);
+        parts.push(HEAL);
+    }
+    return parts;
+};
 module.exports = Setup;
