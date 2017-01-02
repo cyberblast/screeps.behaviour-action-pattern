@@ -1,10 +1,12 @@
 var mod = {
     // load all task modules
     guard: load("task.guard"),
+    defense: load("task.defense"),
     // register tasks (hook up into events)
     register: function () {
         let tasks = [
-            Task.guard
+            Task.guard, 
+            Task.defense
         ];
         var loop = task => {
             task.register();
@@ -16,6 +18,10 @@ var mod = {
         if( !Memory.tasks[task] ) Memory.tasks[task] = {};
         if( !Memory.tasks[task][s] ) Memory.tasks[task][s] = {};
         return Memory.tasks[task][s];
+    },
+    clearMemory: (task, s) => {
+        if( Memory.tasks[task] && Memory.tasks[task][s] )
+            delete Memory.tasks[task][s];
     }
 };
 module.exports = mod;

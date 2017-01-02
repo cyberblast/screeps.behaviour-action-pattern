@@ -3,11 +3,11 @@ module.exports = {
     // hook into events
     register: () => {
         // When a new invader has been spotted
-        Room.newInvader.on( flag => Task.defense.handleNewInvader(invaderCreep) );
+        Room.newInvader.on( invaderCreep => Task.defense.handleNewInvader(invaderCreep) );
         // When an invader leaves a room
-        Room.goneInvader.on( flag => Task.defense.handleGoneInvader(invaderId) );
+        Room.goneInvader.on( invaderId => Task.defense.handleGoneInvader(invaderId) );
         // a creep died
-        Creep.died.on( params => Task.defense.handleCreepDied(creepName) );
+        Creep.died.on( creepName => Task.defense.handleCreepDied(creepName) );
     },
     // When a new invader has been spotted
     handleNewInvader: invaderCreep => {
@@ -22,13 +22,15 @@ module.exports = {
     },
     // When an invader leaves a room
     handleGoneInvader: invaderId => {
+        console.log('Invader gone');
         // check if invader died or in an other room (requires vision)
         let invader = Game.getObjectById(invaderId);
         if( !invader ) { 
+            console.log('Invader completely gone');
             // Invader not found anymore
             // remove queued creeps
-            let taskMemory = Task.memory['defense'][invaderId];
-            if( taskMemory.defender ){
+            let taskMemory = Task.defense.memory(invaderId);
+            if( taskMemory && taskMemory.defender ){
                 let defender = [];
                 let removeQueued = entry => {
                     let roomMemory = Memory.rooms[entry.spawnRoom];
@@ -42,14 +44,14 @@ module.exports = {
             }
 
             // cleanup task memory
-            delete taskMemory;
+            Task.clearMemory('defense', invaderId);
             // other existing creeps will recycle themself via nextAction (see below)
         }
     },
     // when a creep died
     handleCreepDied: creepName => {        
         // check if its our creep
-        let creepMemory = Memory.population[name];
+        let creepMemory = Memory.population[creepName];
         if (!creepMemory || !creepMemory.destiny || !creepMemory.destiny.task || creepMemory.destiny.task != 'defense' || !creepMemory.destiny.invaderId )
             return;
         // check if the invader is still there
@@ -58,7 +60,7 @@ module.exports = {
             return;
 
         // remove died creep from mem
-        let taskMemory = Task.memory['defense'][creepMemory.destiny.invaderId];
+        let taskMemory = Task.defense.memory(creepMemory.destiny.invaderId);
         if( taskMemory.defender ) {
             let thisEntry = e => e.order === creepMemory.destiny.order;
             let index = taskMemory.defender.findIndex(thisEntry);
@@ -69,23 +71,21 @@ module.exports = {
     },
     // get task memory
     memory: invaderId => {
-        return Task.memory['defense'][invaderId];
+        return Task.memory('defense', invaderId);
     },
     // spawn defenses against an invader creep
     orderDefenses: invaderCreep => {
         let invaderId = invaderCreep.id;
         let remainingThreat = invaderCreep.threat;
         // check if an order has been made already
-        let mem = Task.memory['defense'][invaderId];
-        if( mem.defender ) {
+        let taskMemory = Task.defense.memory(invaderId);
+        if( taskMemory.defender ) {
             // defender creeps found. get defender threat
             let getThreat = entry => remainingThreat -= entry.threat;
-            mem.defender.forEach(getThreat);
+            taskMemory.defender.forEach(getThreat);
         } else {
             // No defender found.
-            mem = {
-                defender: []
-            };
+            taskMemory.defender = [];
         }
 
         // analyze invader threat and create something bigger
@@ -94,7 +94,7 @@ module.exports = {
             let room = Game.rooms[Room.bestSpawnRoomFor(invaderCreep.pos.roomName)];
             let fixedBody = [RANGED_ATTACK, MOVE];
             let multiBody = [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE];
-            let name = 'ranger-def-';
+            let name = 'ranger-def';
             // TODO: Compile smaller body (only slightly bigger than remainingThreat)
             let body = Creep.Setup.compileBody(room, fixedBody, multiBody, true);
             let bodyThreat = Creep.bodyThreat(body);
@@ -114,11 +114,12 @@ module.exports = {
             };
 
             room.spawnQueueHigh.push(creep);
-            memory.defender.push({
+            taskMemory.defender.push({
                 spawnRoom: room.name,
                 threat: bodyThreat, 
                 order: orderId
             });
+            global.logSystem(room.name, `Defender queued for hostile creep ${invaderId}`);
         }
     },
     // define action assignment for defender creeps

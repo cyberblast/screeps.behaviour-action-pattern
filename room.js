@@ -1153,10 +1153,10 @@ var mod = {
                 if( !that.memory.hostileIds.includes(creep.id) ){
                     // handle new invader
                     // register 
-                    this.memory.hostileIds.push(creep.id);
+                    that.memory.hostileIds.push(creep.id);
                     // create notification
                     let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-                    if( DEBUG || NOTIFICATE_INVADER ) logSystem(this.name, `Hostile intruder (${bodyCount}) from "${creep.owner.username}.`);
+                    if( DEBUG || NOTIFICATE_INVADER ) logSystem(that.name, `Hostile intruder (${bodyCount}) from "${creep.owner.username}.`);
                     if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
                         Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${that.name} at ${toDateTimeString(toLocalDate(new Date()))}`);
                     }
@@ -1265,7 +1265,7 @@ var mod = {
             }
             catch(err) {
                 Game.notify('Error in room.js (Room.prototype.loop) for "' + this.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
-                console.log( dye(CRAYON.error, 'Error in room.js (Room.prototype.loop) for "' + this.name + '": <br/>' + JSON.stringify(err)));
+                console.log( dye(CRAYON.error, 'Error in room.js (Room.prototype.loop) for "' + this.name + '": <br/>' + err.toString()+ '<br/>' + err.stack));
             }
         };
     }
