@@ -1141,19 +1141,6 @@ var mod = {
                 }
             }
         };
-        Room.prototype.springGun = function(){
-            if( this.my && this.situation.invasion ){
-                let idleSpawns = this.structures.spawns.filter( s => !s.spawning );
-                for( let iSpawn = 0; iSpawn < idleSpawns.length && this.defenseLevel.sum < this.hostileThreatLevel; iSpawn++ ) {
-                    if( DEBUG ) logSystem(this.name, 'Spring Gun System activated! Trying to spawn an additional melee creep.');
-                    let creepParams = idleSpawns[iSpawn].createCreepBySetup(Creep.setup.melee);
-                    if( creepParams ){
-                        // add to defenseLevel
-                        this._defenseLevel.creeps += Creep.bodyThreat(creepParams.parts);
-                    }
-                }
-            }
-        };
         Room.prototype.processInvaders = function(){
             let that = this;
             if( this.memory.hostileIds === undefined )
@@ -1273,7 +1260,6 @@ var mod = {
                     this.terminalBroker();
                 }
                 this.roadConstruction();
-                this.springGun();
                 this.linkDispatcher();
                 this.processInvaders();
             }
