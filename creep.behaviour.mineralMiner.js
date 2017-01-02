@@ -1,7 +1,7 @@
 module.exports = {
     name: 'mineralMiner',
     approach: function(creep){
-        let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.pos.roomName);
+        let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.homeRoom);
         let range = creep.pos.getRangeTo(targetPos);
         if( range > 0 )
             creep.drive( targetPos, 0, 0, range );

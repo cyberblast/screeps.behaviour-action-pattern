@@ -105,7 +105,8 @@ var mod = {
             if( !this.spawning ){
                 if(!behaviour && this.data && this.data.creepType) {
                     behaviour = Creep.behaviour[this.data.creepType];
-                }
+                }                
+                this.repairNearby();
                 if( behaviour ) behaviour.run(this);
                 else if(!this.data){
                     let type = this.memory.setup;

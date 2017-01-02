@@ -25,7 +25,7 @@ setup.maxWeight = function(room){
     return setup.maxCount(room) * 2000;
 };
 setup.default = {
-    fixedBody: [],
+    fixedBody: [WORK],
     multiBody: [CARRY, CARRY, MOVE],
     minAbsEnergyAvailable: 150,
     minEnergyAvailable: 0.4,

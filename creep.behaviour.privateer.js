@@ -11,7 +11,6 @@ module.exports = {
         }
         // Do some work
         if( creep.action && creep.target ) {
-            creep.repairNearby();
             creep.action.step(creep);
         } else {
             logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
