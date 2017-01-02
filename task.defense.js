@@ -22,11 +22,9 @@ module.exports = {
     },
     // When an invader leaves a room
     handleGoneInvader: invaderId => {
-        console.log('Invader gone');
         // check if invader died or in an other room (requires vision)
         let invader = Game.getObjectById(invaderId);
         if( !invader ) { 
-            console.log('Invader completely gone');
             // Invader not found anymore
             // remove queued creeps
             let taskMemory = Task.defense.memory(invaderId);
