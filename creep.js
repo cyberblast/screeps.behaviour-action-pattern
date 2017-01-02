@@ -265,7 +265,9 @@ var mod = {
                 return path.substr(4);
             else return null;
         };
-        Creep.prototype.fleeMove = function( ) {
+        Creep.prototype.fleeMove = function() {
+            let drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
+            _.forEach(Object.keys(creep.carry), drop);
             if( this.fatigue > 0 ) return;
             let path;
             if( !this.data.fleePath || this.data.fleePath.length < 2 || this.data.fleePath[0].x != this.pos.x || this.data.fleePath[0].y != this.pos.y || this.data.fleePath[0].roomName != this.pos.roomName ) {
