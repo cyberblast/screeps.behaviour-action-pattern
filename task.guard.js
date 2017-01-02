@@ -1,25 +1,68 @@
+// This task will react on yellow/yellow flags, sending a guarding creep to the flags position.
 var mod = {
+    // hook into events
     register: () => {
+        // when a new flag has been found (occurs every tick, for each flag)
         Flag.found.on( flag => Task.guard.handleFlagFound(flag) );
+        // a creep starts spawning
         Creep.spawningStarted.on( params => Task.guard.handleSpawningStarted(params) );
+        // a creep completed spawning
         Creep.spawningCompleted.on( creep => Task.guard.handleSpawningCompleted(creep) );
+        // a creep will die soon
         Creep.predictedRenewal.on( creep => Task.guard.handleCreepDied(creep.name) );
+        // a creep died
         Creep.died.on( name => Task.guard.handleCreepDied(name) );
     },
+    // for each flag
     handleFlagFound: flag => {
+        // if it is a yellow/yellow flag
         if( flag.color == FLAG_COLOR.defense.color && flag.secondaryColor == FLAG_COLOR.defense.secondaryColor ){
+            // check if a new creep has to be spawned
             Task.guard.checkForRequiredCreeps(flag);
         }
     },
+    // check if a new creep has to be spawned
+    checkForRequiredCreeps: (flag) => {
+        // get task memory
+        let memory = Task.guard.memory(flag);
+        // count creeps assigned to task
+        let count = memory.queued.length + memory.spawning.length + memory.running.length;
+        // if creep count below requirement spawn a new creep creep
+        if( count < 1 ) {
+            // get nearest room
+            let room = Game.rooms[Room.bestSpawnRoomFor(flag)];
+            // define new creep
+            let fixedBody = [RANGED_ATTACK, MOVE];
+            let multiBody = [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE];
+            let name = 'ranger-' + flag.name;
+            let creep = {
+                parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
+                name: name,
+                setup: 'ranger',
+                destiny: { task: "guard", flagName: flag.name }
+            };
+            // queue creep for spawning
+            room.spawnQueueMedium.push(creep);
+            // save queued creep to task memory
+            memory.queued.push({
+                room: room.name,
+                name: name
+            });
+        }
+    },
+    // when a creep starts spawning
     handleSpawningStarted: params => { // params: {spawn: spawn.name, name: creep.name, destiny: creep.destiny}
+        // ensure it is a creep which has been queued by this task (else return)
         if ( !params.destiny || !params.destiny.task || params.destiny.task != 'guard' )
             return;
+        // get flag which caused queueing of that creep
         let flag = Game.flags[params.destiny.flagName];
         if (flag) {
+            // get task memory
             let memory = Task.guard.memory(flag);
-            // add to spawning creeps
+            // save spawning creep to task memory
             memory.spawning.push(params);
-            // validate queued creeps
+            // clean/validate task memory queued creeps
             let queued = []
             let validateQueued = o => {
                 let room = Game.rooms[o.room];
@@ -31,18 +74,23 @@ var mod = {
             memory.queued = queued;
         }
     },
+    // when a creep completed spawning
     handleSpawningCompleted: creep => {
+        // ensure it is a creep which has been requested by this task (else return)
         if (!creep.data || !creep.data.destiny || !creep.data.destiny.task || creep.data.destiny.task != 'guard')
             return;
+        // get flag which caused request of that creep
         let flag = Game.flags[creep.data.destiny.flagName];
         if (flag) {
+            // calculate & set time required to spawn and send next substitute creep
             // TODO: implement better distance calculation
             creep.data.predictedRenewal = creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*50);
 
+            // get task memory
             let memory = Task.guard.memory(flag);
-            // add to running creeps
+            // save running creep to task memory
             memory.running.push(creep.name);
-            // validate spawning creeps
+            // clean/validate task memory spawning creeps
             let spawning = []
             let validateSpawning = o => {
                 let spawn = Game.spawns[o.spawn];
@@ -55,14 +103,19 @@ var mod = {
             memory.spawning = spawning;
         }
     },
+    // when a creep died (or will die soon)
     handleCreepDied: name => {
+        // get creep memory
         let mem = Memory.population[name];
+        // ensure it is a creep which has been requested by this task (else return)
         if (!mem || !mem.destiny || !mem.destiny.task || mem.destiny.task != 'guard')
             return;
+        // get flag which caused request of that creep
         let flag = Game.flags[mem.destiny.flagName];
         if (flag) {
+            // get task memory
             let memory = Task.guard.memory(flag);
-            // validate running creeps
+            // clean/validate task memory running creeps
             let running = []
             let validateRunning = o => {
                 let creep = Game.creeps[o];
@@ -76,6 +129,7 @@ var mod = {
             memory.running = running;
         }
     },
+    // get task memory
     memory: (flag) => {
         if( !flag.memory.tasks ) 
             flag.memory.tasks = {};
@@ -87,32 +141,6 @@ var mod = {
             }
         }
         return flag.memory.tasks.guard;
-    },
-    checkForRequiredCreeps: (flag) => {
-        let memory = Task.guard.memory(flag);
-        // count creeps
-        let count = memory.queued.length + memory.spawning.length + memory.running.length;
-        // if creeps below requirement
-        if( count < 1 ) {
-            // add creep
-            let room = Game.rooms[Room.bestSpawnRoomFor(flag)];
-            let fixedBody = [RANGED_ATTACK, MOVE];
-            let multiBody = [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE];
-            let name = 'ranger-' + flag.name;
-
-            let creep = {
-                parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
-                name: name,
-                setup: 'ranger',
-                destiny: { task: "guard", flagName: flag.name }
-            };
-
-            room.spawnQueueMedium.push(creep);
-            memory.queued.push({
-                room: room.name,
-                name: name
-            });
-        }
     }
 };
 
