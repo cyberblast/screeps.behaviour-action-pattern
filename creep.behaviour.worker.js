@@ -42,10 +42,10 @@ module.exports = {
             } else {
                 priority = [
                     Creep.action.repairing,
+                    Creep.action.feeding,
                     Creep.action.building,
                     Creep.action.fueling,
                     Creep.action.fortifying,
-                    Creep.action.feeding,
                     Creep.action.upgrading,
                     Creep.action.charging,
                     Creep.action.storing,
