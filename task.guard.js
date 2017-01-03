@@ -121,7 +121,7 @@ var mod = {
                 let creep = Game.creeps[o];
                 // invalidate old creeps for predicted spawning
                 // TODO: better distance calculation
-                if( creep && creep.name != name && && creep.data !== undefined && creep.data.spawningTime !== undefined && creep.ticksToLive > (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*50) ) ) {
+                if( creep && creep.name != name && creep.data !== undefined && creep.data.spawningTime !== undefined && creep.ticksToLive > (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*50) ) ) {
                     running.push(o);
                 }
             };
