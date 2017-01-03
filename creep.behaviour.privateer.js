@@ -22,9 +22,14 @@ module.exports = {
         if( creep.pos.roomName == creep.data.homeRoom ){
             // carrier filled
             if( carrySum > 0 ){
-                let deposit = [];
+                let deposit = []; // deposit energy in...
+                // links?
                 if( creep.carry.energy == carrySum ) deposit = creep.room.structures.links.privateers;
+                // storage?
                 if( creep.room.storage ) deposit.push(creep.room.storage);
+                // containers?
+                if( creep.room.structures.container ) deposit = deposit.concat( creep.room.structures.container.privateers );
+                // Choose the closest
                 if( deposit.length > 0 ){
                     let target = creep.pos.findClosestByRange(deposit);
                     if( target.structureType == STRUCTURE_STORAGE && Creep.action.storing.assign(creep, target) ) return;
