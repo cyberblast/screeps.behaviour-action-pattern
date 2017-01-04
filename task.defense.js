@@ -33,7 +33,7 @@ module.exports = {
                 let removeQueued = entry => {
                     let roomMemory = Memory.rooms[entry.spawnRoom];
                     if( roomMemory && roomMemory.spawnQueueHigh ){
-                        let thisEntry = queued => queued.destiny.task === 'defense' && queued.destiny.invaderId === invaderId;
+                        let thisEntry = queued => queued.destiny && queued.destiny.task === 'defense' && queued.destiny.invaderId === invaderId;
                         let index = roomMemory.spawnQueueHigh.findIndex(thisEntry);
                         if( index > -1 ) roomMemory.spawnQueueHigh.splice(index, 1);
                     }
