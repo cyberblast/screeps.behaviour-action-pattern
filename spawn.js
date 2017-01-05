@@ -45,10 +45,15 @@ var mod = {
             params.parts.forEach(function(part){
                 cost += BODYPART_COST[part];
             });
-            // wait with spawn until enough resources are available
+            // no parts
+            if( cost === 0 ) {
+                global.logSystem(this.pos.roomName, dye(CRAYON.error, 'Zero parts body creep queued. Removed.' ));
+                return false;
+            }
+            // wait with spawning until enough resources are available
             if (cost > this.room.remainingEnergyAvailable) {
                 if (cost > this.room.energyCapacityAvailable) {
-                    console.log( dye(CRAYON.system, this.pos.roomName + ' &gt; ') + dye(CRAYON.error, 'Queued creep too big for room: ' + JSON.stringify(params) ) );
+                    global.logSystem(this.pos.roomName, dye(CRAYON.error, 'Queued creep too big for room: ' + JSON.stringify(params) ));
                     return false;
                 }
                 queue.unshift(params);

@@ -110,6 +110,11 @@ module.exports = {
                     order: orderId
                 }
             };
+            if( creep.parts.length === 0 ) {
+                // creep has no body. 
+                global.logSystem(invaderCreep.pos.roomName, dye(CRAYON.error, 'Invader Defense Task tried to queue a zero parts body creep. Aborted.' ));
+                return;
+            }
 
             room.spawnQueueHigh.push(creep);
             taskMemory.defender.push({
@@ -117,7 +122,7 @@ module.exports = {
                 threat: bodyThreat, 
                 order: orderId
             });
-            global.logSystem(room.name, `Defender queued for hostile creep ${invaderId}`);
+            if( DEBUG ) global.logSystem(room.name, `Defender queued for hostile creep ${invaderId}`);
         }
     },
     // define action assignment for defender creeps

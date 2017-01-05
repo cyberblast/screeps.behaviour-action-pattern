@@ -41,6 +41,11 @@ var mod = {
                 setup: 'ranger',
                 destiny: { task: "guard", flagName: flag.name }
             };
+            if( creep.parts.length === 0 ) {
+                // creep has no body. 
+                global.logSystem(flag.pos.roomName, dye(CRAYON.error, 'Guard Flag tried to queue a zero parts body creep. Aborted.' ));
+                return;
+            }
             // queue creep for spawning
             room.spawnQueueMedium.push(creep);
             // save queued creep to task memory
