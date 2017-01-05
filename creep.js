@@ -59,6 +59,36 @@ var mod = {
             _.forEach(Game.creeps, run);
         };
 
+        Creep.prototype.findGroupMemberByType = function(creepType, flagName) {
+            let creep;
+
+            if(creepType && flagName) {
+                for(let i in Memory.population) {
+                    creep = Memory.population[i];
+
+                    if(creep.creepType === creepType && creep.flagName === flagName) {
+                        return i;
+                    }
+                }
+            } else {
+                logError("Invalid arguments for Creep.findGroupMemberByType");
+            }
+
+            return null;
+        };
+
+        Creep.prototype.findByType = function(creepType) {
+            let creep;
+
+            for(let i in Memory.population) {
+                creep = Memory.population[i];
+
+                if(creep.creepType === creepType) {
+                    return i;
+                }
+            }
+        }
+
         Creep.partThreat = {
             'move': { common: 0, boosted: 0 },
             'work': { common: 1, boosted: 3 },
