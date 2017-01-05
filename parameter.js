@@ -59,7 +59,7 @@ var mod = {
     MAX_FORTIFY_CONTAINER: 50000,
     LIMIT_URGENT_REPAIRING: 750, // urgent repair when hits below
     GAP_REPAIR_DECAYABLE: 800, // decayables (e.g. roads) only get repaired when that much hits are missing
-    MEMORY_RESYNC_INTERVAL: 100, // interval to reload spawns & towers present in a room
+    MEMORY_RESYNC_INTERVAL: 500, // interval to reload spawns & towers present in a room
     TIME_REPORT: 28000, // ticks between room reports
     REPORT_MAX_LENGTH: 500,
     REPORTS_PER_LOOP: 18,

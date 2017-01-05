@@ -206,7 +206,7 @@ var mod = {
                                 that.all.filter(
                                     structure => (
                                         structure.hits < structure.hitsMax &&
-                                        ( !that.room.my || structure.hits < MAX_REPAIR_LIMIT[that.room.controller.level] || structure.hits < (LIMIT_URGENT_REPAIRING + (3*(DECAY_AMOUNT[structure.structureType] || 0)))) &&
+                                        ( !that.room.my || structure.hits < MAX_REPAIR_LIMIT[that.room.controller.level] || structure.hits < (LIMIT_URGENT_REPAIRING + (5*(DECAY_AMOUNT[structure.structureType] || 0)))) &&
                                         ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) &&
                                         ( structure.towers === undefined || structure.towers.length == 0) &&
                                         ( Memory.pavementArt[that.room.name] === undefined || Memory.pavementArt[that.room.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y+'x') < 0 ) && 
@@ -1209,31 +1209,37 @@ var mod = {
             this.memory.hostileIds = this.hostileIds;
         };
         Room.prototype.init = function(){
-            // required. otherwise the objects will keep the values. Which would be ok if reliable.
-            // but will be empty or "old" when redirected to an other server (load balancing), because it has its own cache
-            delete this._structures;
             delete this._sourceEnergyAvailable;
             delete this._droppedResources;
             delete this._ticksToNextRegeneration;
             delete this._relativeEnergyAvailable;
             delete this._towerFreeCapacity;
-            delete this._constructionSites;
             delete this._hostiles;
             delete this._hostileIds;
             delete this._situation;
-            delete this._maxPerJob;
-            delete this._creeps
             delete this._casualties;
+            delete this._currentCostMatrix;
+            delete this._isReceivingEnergy;
+            delete this._reservedSpawnEnergy;
+            delete this._creeps
             delete this._privateerMaxWeight;
             delete this._claimerMaxWeight;
             delete this._combatCreeps;
             delete this._defenseLevel;
             delete this._hostileThreatLevel;
-            delete this._minerals;
-            delete this._currentCostMatrix;
-            delete this._my;
-            delete this._isReceivingEnergy;
-            delete this._reservedSpawnEnergy;
+            if( Game.cacheTime !== Game.time-1 || Game.time - Game.lastServerSwitch > 50 ) {
+                delete this._my;
+                delete this._constructionSites;
+                delete this._maxPerJob;
+                delete this._minerals;
+                delete this._structures;
+                Game.lastServerSwitch = Game.time;
+            } else {
+                delete this.structures._repairable;
+                delete this.structures._urgentRepairableSites;
+                delete this.structures._fortifyableSites;
+                delete this.structures._fuelables;
+            }
         };
 
         Room.processSightlessRoom = function(roomName, memory){

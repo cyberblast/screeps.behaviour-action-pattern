@@ -124,4 +124,5 @@ module.exports.loop = function () {
     if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
         load("statistics").loop();
     processReports();
+    Game.cacheTime = Game.time;
 };
