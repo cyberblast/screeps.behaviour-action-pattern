@@ -1,11 +1,10 @@
 var action = new Creep.Action('reserving');
-action.isValidAction = function(creep){ return true; }; // TODO: check if it is a flag or a controller and reservation < 4999
-action.isValidTarget = function(target){ return target && (
-    target instanceof Flag || (
-        target.reservation && target.reservation.ticksToEnd < 4999
-)) ; };
+action.isValidAction = function(creep){ return true; }; 
+action.isValidTarget = function(target){  return target && (!target.reservation || target.reservation.ticksToEnd < 4999 ) };
 action.isAddableAction = function(){ return true; };
-action.isAddableTarget = function(){ return true; };
+action.isAddableTarget = function(){ return target &&
+    ( target instanceof Flag || ( target.structureType === 'controller' && !target.owner ) ); 
+};
 action.newTarget = function(creep){
     let validColor = flagEntry => (
         (flagEntry.color == FLAG_COLOR.claim.reserve.color && flagEntry.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor) ||
