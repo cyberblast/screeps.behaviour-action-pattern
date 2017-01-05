@@ -1,7 +1,7 @@
 var action = new Creep.Action('upgrading');
 action.targetRange = 3;
 action.isAddableAction = function(creep){
-    return !creep.room.storage;
+    return !creep.room.storage || (creep.room.storage.store.energy > MAX_STORAGE_ENERGY[creep.room.controller.level]);
 };
 action.isAddableTarget = function(target){ return true; };
 action.isValidAction = function(creep){

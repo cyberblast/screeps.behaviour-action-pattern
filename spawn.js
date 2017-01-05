@@ -1,9 +1,9 @@
 var mod = {
     extend: function(){
         Spawn.priorityHigh = [
+            Creep.setup.worker,
             Creep.setup.miner,
             Creep.setup.mineralMiner,
-            Creep.setup.worker,
             Creep.setup.hauler,
             Creep.setup.upgrader];
         Spawn.priorityLow = [
