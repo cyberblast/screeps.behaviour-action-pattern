@@ -144,8 +144,10 @@ module.exports = {
         }
         // travel to invader
         let invader = Game.getObjectById(creep.data.destiny.invaderId);
-        if( invader )
+        if( invader ) {
             Creep.action.travelling.assign(creep, invader);
+            return;
+        }
         // travel to initial calling room
         let callingRoom = Game.rooms[creep.data.destiny.spottedIn];
         if( !callingRoom || callingRoom.hostiles.length > 0 ) {
