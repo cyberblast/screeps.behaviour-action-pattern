@@ -204,11 +204,15 @@ var mod = {
                             this._repairable = _.sortBy(
                                 that.all.filter(
                                     structure => (
+                                        // is not at 100%
                                         structure.hits < structure.hitsMax &&
-                                        ( !that.room.my || structure.hits < MAX_REPAIR_LIMIT[that.room.controller.level] || structure.hits < (LIMIT_URGENT_REPAIRING + (5*(DECAY_AMOUNT[structure.structureType] || 0)))) &&
+                                        // not owned room or hits below RCL repair limit
+                                        ( !that.room.my || structure.hits < MAX_REPAIR_LIMIT[that.room.controller.level] || structure.hits < (LIMIT_URGENT_REPAIRING + (2*DECAY_AMOUNT[structure.structureType] || 0))) &&
+                                        // not decayable or below threshold
                                         ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) &&
-                                        ( structure.towers === undefined || structure.towers.length == 0) &&
+                                        // not pavement art
                                         ( Memory.pavementArt[that.room.name] === undefined || Memory.pavementArt[that.room.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y+'x') < 0 ) && 
+                                        // not flagged for removal
                                         ( !FlagDir.list.some(f => f.roomName == structure.pos.roomName && f.color == COLOR_ORANGE && f.x == structure.pos.x && f.y == structure.pos.y) )
                                     )
                                 ),
@@ -222,7 +226,7 @@ var mod = {
                     configurable: true,
                     get: function() {
                         if( _.isUndefined(this._urgentRepairableSites) ){
-                            var isUrgent = site => (site.hits < (LIMIT_URGENT_REPAIRING + (2*(DECAY_AMOUNT[site.structureType] || 0))));
+                            var isUrgent = site => (site.hits < (LIMIT_URGENT_REPAIRING + (DECAY_AMOUNT[site.structureType] || 0)));
                             this._urgentRepairableSites = _.filter(this.repairable, isUrgent);
                         }
                         return this._urgentRepairableSites;

@@ -32,6 +32,7 @@ var mod = {
                 // Attack
                 tower.attack(closestHostile);
             }
+            /*
             else if( (tower.room.structures.repairable.length > 0) && (tower.energy > (tower.energyCapacity * 0.8)) ) {
                 // Repair
                 var isAddable = target => (target.towers === undefined || target.towers.length == 0);
@@ -43,6 +44,7 @@ var mod = {
                     target.towers.push(tower.id);
                 }
             }
+            */
         }
     }
 }
