@@ -12,7 +12,10 @@ module.exports = {
     // When a new invader has been spotted
     handleNewInvader: invaderCreep => {
         // check room threat balance
-        if( invaderCreep.room.defenseLevel.sum > invaderCreep.room.hostileThreatLevel ) {
+        if( !invaderCreep.room.controller ) {
+            // not buildable room, don't defend it automatically
+            return;
+        } else if( invaderCreep.room.defenseLevel.sum > invaderCreep.room.hostileThreatLevel ) {
             // room can handle that
             return;
         } else {

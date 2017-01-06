@@ -1,6 +1,5 @@
 var mod = {
     extend: function(){
-
         let Container = function(room){
             this.room = room;
 
@@ -468,7 +467,6 @@ var mod = {
                     return this._casualties;
                 }
             },
-
             'situation': {
                 configurable: true,
                 get: function() {
@@ -687,6 +685,64 @@ var mod = {
                     }
                     return this._my;
                 }
+            },
+            'reserved': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._reserved) ) {
+                        if (this.controller) {
+                            const myName = _.find(Game.spawns).owner.username;
+                            this._reserved = this.controller.my || (this.controller.reservation
+                                && this.controller.reservation.username === myName);
+                        } else {
+                            this._reserved = false;
+                        }
+                    }
+                    return this._reserved;
+                },
+            },
+            'owner': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._owner)) {
+                        if (this.controller && this.controller.owner) {
+                            this._owner = this.controller.owner.username;
+                        } else {
+                            this._owner = false;
+                        }
+                    }
+                    return this._owner;
+                },
+            },
+            'reservation': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._reservation)) {
+                        if (this.controller && this.controller.reservation) {
+                            this._reservation = this.controller.reservation.username;
+                        } else {
+                            this._reservation = false;
+                        }
+                    }
+                    return this._reservation;
+                },
+            },
+            'ally': {
+                configurable: true,
+                get: function () {
+                    if (_.isUndefined(this._ally)) {
+                        if (this.controller) {
+                            const owner = this.owner;
+                            const reservation = this.reservation;
+                            this._ally = _.some(PLAYER_WHITELIST, function(player) {
+                                return player === owner || player === reservation;
+                            });
+                        } else {
+                            this._ally = false;
+                        }
+                    }
+                    return this._ally;
+                },
             },
             'spawnQueueHigh': {
                 configurable: true,
