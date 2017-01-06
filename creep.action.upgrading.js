@@ -1,7 +1,12 @@
 var action = new Creep.Action('upgrading');
 action.targetRange = 3;
 action.isAddableAction = function(creep){
-    return !creep.room.storage || (creep.room.storage.store.energy > MAX_STORAGE_ENERGY[creep.room.controller.level]);
+    // no storage
+    return !creep.room.storage 
+    // storage has surplus
+    || (creep.room.storage.store.energy > MAX_STORAGE_ENERGY[creep.room.controller.level])
+    // storage is leftover from invasion and has usable energy
+    || (!creep.room.storage.my && creep.room.storage.store.energy > 0);
 };
 action.isAddableTarget = function(target){ return true; };
 action.isValidAction = function(creep){
