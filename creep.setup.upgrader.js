@@ -20,8 +20,30 @@ setup.maxCount = function(room){
         room.conserveForDefense ||
         (room.structures.container.controller.length + room.structures.links.controller.length) == 0 )
         return 0;
+    // if there is no energy for the upgrader return 0
+    let upgraderEnergy = 0;
+    let sumCont = cont => upgraderEnergy += cont.store.energy;
+    room.structures.container.controller.forEach(sumCont);
+    let sumLink = link => upgraderEnergy += link.energy;
+    room.structures.links.controller.forEach(sumLink);
+    if( upgraderEnergy === 0 ) return 0;
     if( room.controller.level == 8 ) return 1;
-    return room.storage ? Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000)) : 1;
+    if( room.storage ) return Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000));
+    // dont spawn a new upgrader while there are construction sites (and no storage)
+    if( room.constructionSites.length > 0 ) return 0;
+    // if energy on the ground next to source > 700 return 3
+    if( room.droppedResources ) {
+        let dropped = 0;
+        let isSource = pos => room.sources.some(s => s.pos.x === pos.x && s.pos.y === pos.y);
+        let countNearSource = resource => {
+            if( resource.resourceType === RESOURCE_ENERGY ) {
+                if( resource.pos.adjacent.some(isSource) ) dropped += resource.amount;
+            }
+        };
+        room.droppedResources.forEach(countNearSource);
+        if(dropped > 700) return 3;
+    }
+    return 2;
 };
 setup.default = {
     fixedBody: [WORK, WORK, CARRY, MOVE],
