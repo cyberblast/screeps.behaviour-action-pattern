@@ -55,9 +55,16 @@ module.exports = {
                         );
                     }})
                     if( !spot ) spot = creep.pos.findClosestByPath(spots) || spots[0];
-                    if( spot ) creep.data.determinatedSpot = {
-                        x: spot.x,
-                        y: spot.y
+                    if( spot ) {
+                        creep.data.determinatedSpot = {
+                            x: spot.x,
+                            y: spot.y
+                        }
+                        let spawn = Game.spawns[creep.data.motherSpawn];
+                        if( spawn ) {
+                            let path = spot.findPathTo(spawn, {ignoreCreeps: true});
+                            if( path ) creep.data.predictedRenewal = creep.data.spawningTime + path.length; // road assumed
+                        }
                     }
                 }
                 if( !creep.data.determinatedSpot ) logError('Unable to determine working location for mineralMiner in room ' + creep.pos.roomName);

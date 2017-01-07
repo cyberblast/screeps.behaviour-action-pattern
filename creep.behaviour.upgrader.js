@@ -49,6 +49,11 @@ module.exports = {
                 args.where = pos => { return !_.some(taken,{x:pos.x,y:pos.y}); };
                 spots = Room.fieldsInRange(args);
             }
+            if( spots.length == 0 ){ 
+                // no position found. allow any
+                delete args.where;
+                spots = Room.fieldsInRange(args);
+            }
             if( spots.length > 0 ){
                 let spot = creep.pos.findClosestByPath(spots, {filter: pos => {
                     return !_.some(
@@ -57,9 +62,16 @@ module.exports = {
                     );
                 }})
                 if( !spot ) spot = creep.pos.findClosestByPath(spots) || spots[0];
-                if( spot ) creep.data.determinatedSpot = {
-                    x: spot.x,
-                    y: spot.y
+                if( spot ) {
+                    creep.data.determinatedSpot = {
+                        x: spot.x,
+                        y: spot.y
+                    }
+                    let spawn = Game.spawns[creep.data.motherSpawn];
+                    if( spawn ) {
+                        let path = spot.findPathTo(spawn, {ignoreCreeps: true});
+                        if( path ) creep.data.predictedRenewal = creep.data.spawningTime + path.length; // road assumed
+                    }
                 }
             }
             if( !creep.data.determinatedSpot ) logError('Unable to determine working location for upgrader in room ' + creep.pos.roomName);
