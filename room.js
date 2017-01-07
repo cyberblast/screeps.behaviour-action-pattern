@@ -735,7 +735,9 @@ var mod = {
                 configurable: true,
                 get: function () {
                     if (_.isUndefined(this._ally)) {
-                        if (this.controller) {
+                        if (this.reserved) {
+                            this._ally = true;
+                        } else if (this.controller) {
                             const owner = this.owner;
                             const reservation = this.reservation;
                             this._ally = _.some(PLAYER_WHITELIST, function(player) {
