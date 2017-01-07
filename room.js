@@ -939,8 +939,9 @@ var mod = {
             let siteOrder = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_LINK,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_WALL,STRUCTURE_RAMPART];
             let rangeOrder = site => {
                 let order = siteOrder.indexOf(site.structureType); 
-                if( order < 0 ) return 100000 + pos.getRangeTo(site);
-                return ((order - (site.progress / site.progressTotal)) * 100) + pos.getRangeTo(site);
+                return pos.getRangeTo(site) + ( order < 0 ? 100000 : (order * 100) );
+                //if( order < 0 ) return 100000 + pos.getRangeTo(site);
+                //return ((order - (site.progress / site.progressTotal)) * 100) + pos.getRangeTo(site);
             };
             return _.min(sites, rangeOrder);
         };

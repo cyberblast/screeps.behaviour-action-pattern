@@ -238,6 +238,7 @@ var mod = {
             // respecting environmental walls
             // uses memory to cache for ever
             routeRange: function(fromRoom, toRoom){
+                if( fromRoom === toRoom ) return 0;
                 if( _.isUndefined(Memory.routeRange) ){
                     Memory.routeRange = {};
                 }

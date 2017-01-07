@@ -36,8 +36,8 @@ var mod = {
 
         // some flags found - find nearest
         if( pos && pos.roomName ){
-            var range = flag => {
-                var r = 0;
+            let range = flag => {
+                let r = 0;
                 let roomDist = routeRange(pos.roomName, flag.roomName);
                 if( roomDist == 0 )
                     r = _.max([Math.abs(flag.x-pos.x), Math.abs(flag.y-pos.y)]);
@@ -147,22 +147,34 @@ var mod = {
         return range;
     },
     reserveMod: function(range, flagItem, creepName){
+        //console.log(" -- " + creepName + ": Claimer controller distance estimation for " + flagItem.roomName + " --");
         if( range > 200 ) return Infinity;
         if( range > 100 ) range = range * 3;
-        var flag = Game.flags[flagItem.name];
+        let flag = Game.flags[flagItem.name];
+        //console.log("Range: " + range);
 
         let assigned = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepType != 'claimer' || t.creepName == creepName ? 0 : t.weight )) : 0;
+        //console.log("Assigned claimer weight: " + assigned);
         if( assigned > 3500 ) return Infinity;
         if( assigned > 2000 ) assigned += 1000;
 
-        if (flag.room && flag.room.controller) var accessibleFields = flag.room.controller.accessibleFields; 
-        if (accessibleFields && _.countBy(flag.targetOf, 'creepType')['claimer'] >= accessibleFields) return Infinity;
+        let accessibleFields = 1;
+        if (flag.room && flag.room.controller) accessibleFields = flag.room.controller.accessibleFields;
+        //console.log("Controller accessibleFields: " + accessibleFields);
+        let claimers = flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepType != 'claimer' || t.creepName == creepName ? 0 : 1 )) : 0;
+        //console.log("Claimers at Controller: " + claimers);
+        if (accessibleFields && claimers >= accessibleFields) { 
+            //console.log("INVALID!"); 
+            return Infinity; 
+        }
 
         let reservation = 0;
         if( flag.room && flag.room.controller && flag.room.controller.reservation ) {
             reservation = flag.room.controller.reservation.ticksToEnd;
         }
+        //console.log("Reservation: " + reservation);
 
+        //console.log("Combined distance: " + (assigned + reservation + (range*10)));
         return assigned + reservation + (range*10);
     },
     exploitMod: function(range, flagItem, creepName){

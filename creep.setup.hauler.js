@@ -17,6 +17,17 @@ setup.maxCount = function(room){
         if( room.structures.links.all.length < 3 ||
            (room.storage && room.storage.store.energy > MAX_STORAGE_ENERGY[room.controller.level] &&
             room.structures.container.controller && _.sum(room.structures.container.controller, 'store.energy') == 0 )) count++;
+        /* Add hauler when there is energy on the ground
+        let dropped = 0;
+        let isSource = pos => room.sources.some(s => s.pos.x === pos.x && s.pos.y === pos.y);
+        let countNearSource = resource => {
+            if( resource.resourceType === RESOURCE_ENERGY ) {
+                if( resource.pos.adjacent.some(isSource) ) dropped += resource.amount;
+            }
+        };
+        room.droppedResources.forEach(countNearSource);
+        if(room.storage && dropped > 1000) count++;
+        */
         if( count == 0 ) count = 1;
     }
     return count;
