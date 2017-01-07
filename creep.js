@@ -210,6 +210,9 @@ var mod = {
         Creep.prototype.honkEvade = function(){
             if( HONK ) this.say('\u{1F500}\u{FE0E}', SAY_PUBLIC);
         },
+        // intentionRange: how near should the creep approach?
+        // enoughRange: range at wich the creep may calm down and interact with the target (may be higher than intentionRange)
+        // range: current distance (optional)
         Creep.prototype.drive = function( targetPos, intentionRange, enoughRange, range ) {
             if( !targetPos || this.fatigue > 0 || range <= intentionRange ) return;
             if( !range ) range = this.pos.getRangeTo(targetPos);

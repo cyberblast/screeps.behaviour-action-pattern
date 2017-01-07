@@ -15,6 +15,11 @@ module.exports = {
         } else {
             logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
         }
+        if( creep.hits < creep.hitsMax ) { // creep injured. move to next owned room
+            let nextHome = Room.bestSpawnRoomFor(creep.pos.roomName);
+            if( nextHome )
+                creep.drive( nextHome.controller.pos, 3, 5);
+        }
     },
     nextAction: function(creep){
         let priority = [

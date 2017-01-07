@@ -103,7 +103,7 @@ module.exports = {
         // analyze invader threat and create something bigger
         while( remainingThreat > 0 ){
             // get spawning room and calculate defense creep
-            let room = Game.rooms[Room.bestSpawnRoomFor(invaderCreep.pos.roomName)];
+            let room = Room.bestSpawnRoomFor(invaderCreep.pos.roomName);
             let fixedBody = [RANGED_ATTACK, MOVE];
             let multiBody = [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE];
             let name = 'ranger-def';
