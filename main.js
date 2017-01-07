@@ -66,12 +66,29 @@ module.exports.loop = function () {
             // get module from stored viral override path
             let viralOverride = tryRequire(`./${namespace}.${modName}`);
             // override
-            if( viralOverride ) _.assign(mod, viralOverride);
+            if( viralOverride ) {
+                let keys = _.keys(viralOverride);
+                for (const key of keys) {
+                    if (typeof viralOverride[key] === "function") {
+                        let original = mod[key];
+                        // will result in callstack exceed :/
+                        // if( !mod[key].original ) mod[key].original = original;
+                        if( !mod.baseOf ) mod.baseOf = {};
+                        // namespace will allow to extend multiple times.
+                        if( !mod.baseOf[namespace] ) mod.baseOf[namespace] = {};
+                        if( !mod.baseOf[namespace][key] ) mod.baseOf[namespace][key] = original;
+                        
+                        mod[key] = viralOverride[key].bind(mod);
+                    } else {
+                        mod[key] = viralOverride[key]
+                    }
+                }
+            }
             // cleanup
             else delete Memory.modules[namespace][modName];
         }
         return mod;
-    }
+    };
     // loads (require) a module. use this function anywhere you want to load a module.
     // respects custom and viral overrides
     global.load = (modName) => {
