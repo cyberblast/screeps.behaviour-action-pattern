@@ -80,7 +80,7 @@ var mod = {
 
                 // set statistics
                 var present = invader => invader.leave === undefined;
-                var invaders = _.filter(room.memory.statistics.invader, present);
+                var invaders = room.memory.statistics ? _.filter(room.memory.statistics.invader, present) : [];
                 room.memory.statistics = {
                     tick: Game.time,
                     time: Date.now(),
