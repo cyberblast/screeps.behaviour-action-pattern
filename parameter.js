@@ -8,14 +8,20 @@ var mod = {
     CENSUS_ANNOUNCEMENTS: true, // log birth and death
     SELL_NOTIFICATION: true, // send mail when selling minerals
     SPAWN_INTERVAL: 5, // loops between regular spawn probe
-    MAX_STORAGE_ENERGY: { // stop storing energy when reached
+    MAX_STORAGE_ENERGY: { // get rid of energy when reached
+        1: 2000,
+        2: 2000,
+        3: 2000,
         4: 5000,
-        5: 50000,
-        6: 100000,
-        7: 200000,
+        5: 10000,
+        6: 25000,
+        7: 50000,
         8: 300000
     },
     MIN_STORAGE_ENERGY: { // prefer storing energy until reached
+        1: 1000,
+        2: 1000,
+        3: 1000,
         4: 1000,
         5: 5000,
         6: 10000,
