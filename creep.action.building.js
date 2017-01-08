@@ -9,7 +9,7 @@ action.isAddableAction = function(creep){
     return ( !creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
 };
 action.isValidTarget = function(target){
-    return (target != null && target.progress && target.progress < target.progressTotal);
+    return (target != null && target.my && target.progress && target.progress < target.progressTotal);
 };  
 action.isAddableTarget = function(target) {
     //  our site?

@@ -104,7 +104,7 @@ module.exports = {
                 }
                 // carrier full
                 else {
-                    var actions = [Creep.action.repairing, Creep.action.building];
+                    var actions = [Creep.action.building];
                     for(var iAction = 0; iAction < actions.length; iAction++) {
                         var action = actions[iAction];
                         if(action.isValidAction(creep) &&
