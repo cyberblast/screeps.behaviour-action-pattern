@@ -3,14 +3,13 @@ var mod = {
         Spawn.priorityHigh = [
             Creep.setup.worker,
             Creep.setup.miner,
-            Creep.setup.mineralMiner,
             Creep.setup.hauler,
             Creep.setup.upgrader];
         Spawn.priorityLow = [
-            Creep.setup.healer,
+            Creep.setup.mineralMiner,
             Creep.setup.pioneer,
-            Creep.setup.privateer,
-            Creep.setup.claimer];
+            Creep.setup.claimer,
+            Creep.setup.privateer];
         Spawn.prototype.loop = function(){
             if( this.spawning ) return;
             let room = this.room;

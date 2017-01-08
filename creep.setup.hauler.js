@@ -11,8 +11,12 @@ setup.maxMulti = function(room) {
     return Math.min(max, 16);
 };
 setup.maxCount = function(room){
+    if( !room.population ) return 0;
     let count = 0;
-    if(room.population && room.population.typeCount['miner'] > 0) {
+    let miners = (room.population.typeCount['miner']||0);
+    let workers = (room.population.typeCount['worker']||0);
+    let cont = room.structures.container.in.length + room.structures.links.storage.length;
+    if( miners > 0  || ( cont > 0 && workers > 2 )) {
         count += Creep.setup.upgrader.maxCount(room);
         if( room.structures.links.all.length < 3 ||
            (room.storage && room.storage.store.energy > MAX_STORAGE_ENERGY[room.controller.level] &&
