@@ -54,7 +54,26 @@ var mod = {
                 //COLOR_PURPLE,
                 //COLOR_BLUE,
                 //COLOR_CYAN,
-                // COLOR_GREEN
+                claim: { // claim this room, then build spawn at flag
+                    color: COLOR_GREEN,
+                    secondaryColor: COLOR_GREEN,
+                    filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_GREEN },
+                    spawn: { // send pioneers & build spawn here
+                        color: COLOR_GREEN,
+                        secondaryColor: COLOR_WHITE,
+                        filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_WHITE }
+                    },
+                    pioneer: { // send additional pioneers
+                        color: COLOR_GREEN,
+                        secondaryColor: COLOR_RED,
+                        filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_RED }
+                    },
+                    reserve: { // reserve this room
+                        color: COLOR_GREEN,
+                        secondaryColor: COLOR_GREY,
+                        filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_GREY },
+                    }
+                },
                 defense: { // point to gather troops
                     color: COLOR_YELLOW,
                     secondaryColor: COLOR_YELLOW,
@@ -76,26 +95,7 @@ var mod = {
                     filter: {'color': COLOR_BROWN, 'secondaryColor': COLOR_BROWN },
                 },
                 // COLOR_GREY
-                claim: { // claim this room
-                    color: COLOR_WHITE,
-                    secondaryColor: COLOR_WHITE,
-                    filter: {'color': COLOR_WHITE, 'secondaryColor': COLOR_WHITE },
-                    spawn: { // send pioneers & build spawn here
-                        color: COLOR_WHITE,
-                        secondaryColor: COLOR_GREEN,
-                        filter: {'color': COLOR_WHITE, 'secondaryColor': COLOR_GREEN }
-                    },
-                    pioneer: { // send additional pioneers
-                        color: COLOR_WHITE,
-                        secondaryColor: COLOR_RED,
-                        filter: {'color': COLOR_WHITE, 'secondaryColor': COLOR_RED }
-                    },
-                    reserve: { // reserve this room
-                        color: COLOR_WHITE,
-                        secondaryColor: COLOR_GREY,
-                        filter: {'color': COLOR_WHITE, 'secondaryColor': COLOR_GREY },
-                    }
-                }
+                // COLOR_WHITE reserved for memory-based command api
             },
             DECAY_AMOUNT: {
                 'rampart': RAMPART_DECAY_AMOUNT, // 300
