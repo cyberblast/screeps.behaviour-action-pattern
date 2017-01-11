@@ -17,8 +17,13 @@ var mod = {
             return null;
         let filter;
         if (typeof flagColor === 'function' ) {
-            filter = flagEntry => ( flagColor(flagEntry) && flagEntry.cloaking == 0 &&
-                (!local || !pos || !pos.roomName || flagEntry.roomName == pos.roomName));
+            filter = function(flagEntry) {
+                if ( flagColor(flagEntry) && flagEntry.cloaking === 0 ) {
+                    if ( !local ) return true;
+                    if ( pos && pos.roomName && flagEntry.roomName == pos.roomName ) return true;
+                }
+                return false;
+            }
         }
         else {
             filter = _.clone(flagColor.filter);
