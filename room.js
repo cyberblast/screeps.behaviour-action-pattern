@@ -905,6 +905,9 @@ var mod = {
 
             return Game.map.findRoute(this, targetRoomName, {
                 routeCallback(roomName) {
+                    if( roomName !== targetRoomName && ROUTE_ROOM_COST[roomName]) {
+                        return ROUTE_ROOM_COST[roomName];
+                    }
                     let isHighway = false;
                     if( preferHighway ){
                         let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
@@ -928,7 +931,6 @@ var mod = {
                     return Infinity;
                 }
             });
-
         };
 
         Room.prototype.getBestConstructionSiteFor = function(pos, filter = null) {
