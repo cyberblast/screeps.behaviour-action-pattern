@@ -8,7 +8,7 @@ var mod = {
         Spawn.priorityLow = [
             Creep.setup.mineralMiner,
             Creep.setup.pioneer,
-            Creep.setup.claimer,
+          //  Creep.setup.claimer,
             Creep.setup.privateer];
         Spawn.prototype.loop = function(){
             if( this.spawning ) return;

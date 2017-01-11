@@ -4,7 +4,11 @@ action.isValidTarget = function(target){ return !target.room || !target.owner; }
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){
-    let flag = FlagDir.find(FLAG_COLOR.claim, creep.pos, false, FlagDir.claimMod, creep.name);
+    
+ var flag;
+    if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.flagName];
+    if ( !flag ) flag = FlagDir.find(FLAG_COLOR.claim, creep.pos, false, FlagDir.claimMod, creep.name); 
+
     if( flag ) {
         Population.registerCreepFlag(creep, flag);
     }

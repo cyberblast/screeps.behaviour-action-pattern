@@ -10,7 +10,11 @@ action.newTarget = function(creep){
         (flagEntry.color == FLAG_COLOR.claim.reserve.color && flagEntry.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor) ||
         (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor)
     );
-    let flag = FlagDir.find(validColor, creep.pos, false, FlagDir.reserveMod, creep.name);
+
+    var flag;
+    if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.flagName];
+    if ( !flag ) flag = FlagDir.find(validColor, creep.pos, false, FlagDir.reserveMod, creep.name);
+
     if( flag ) {
         Population.registerCreepFlag(creep, flag);
     }

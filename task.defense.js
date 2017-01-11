@@ -14,6 +14,7 @@ module.exports = {
         // ignore if on blacklist
         if( DEFENSE_BLACKLIST.includes(invaderCreep.pos.roomName) ) return;
         // if not our room and not our reservation
+       
         if( !invaderCreep.room.my && !invaderCreep.room.reserved ) {
             // if it is not our exploiting target
             let validColor = flagEntry => (
@@ -22,6 +23,7 @@ module.exports = {
                 (flagEntry.color == FLAG_COLOR.claim.reserve.color && flagEntry.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor) 
             );
             let flag = FlagDir.find(validColor, invaderCreep.pos, true);
+            
             if( !flag )
                 return; // ignore invader
         } 
@@ -32,6 +34,7 @@ module.exports = {
         } else {
             // order a defender for each invader (if not happened yet)
             invaderCreep.room.hostiles.forEach(Task.defense.orderDefenses);
+             
         }
     },
     // When an invader leaves a room
