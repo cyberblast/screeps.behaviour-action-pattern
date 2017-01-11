@@ -22,7 +22,7 @@ module.exports = {
             return;
         }
         let priority;
-        if( creep.sum < creep.carryCapacity*0.5 ) {
+        if( creep.sum < (creep.carryCapacity*0.5) ) {
             priority = [
                 Creep.action.picking,
                 Creep.action.dismantling,
