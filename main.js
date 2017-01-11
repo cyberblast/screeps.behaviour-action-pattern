@@ -15,6 +15,10 @@ module.exports.loop = function () {
             mod = require(path);
         }
         catch (e) {
+            if (global.DEBUG !== false && !(e.message && e.message.startsWith('Unknown module'))) {
+                console.log('<font style="color:FireBrick">Error loading ' + path
+                    + ' caused by ' + e.toString() + '</font>');
+            }
             mod = null;
         }
         return mod != null;
