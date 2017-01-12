@@ -18,7 +18,7 @@ var mod = {
         let filter;
         if (typeof flagColor === 'function' ) {
             filter = function(flagEntry) {
-                if ( flagColor(flagEntry) && flagEntry.cloaking === 0 ) {
+                if ( flagColor(flagEntry) && flagEntry.cloaking == 0 ) {
                     if ( !local ) return true;
                     if ( pos && pos.roomName && flagEntry.roomName == pos.roomName ) return true;
                 }
