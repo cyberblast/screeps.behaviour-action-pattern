@@ -64,9 +64,13 @@ module.exports = {
         }
         for(var iAction = 0; iAction < priority.length; iAction++) {
             var action = priority[iAction];
-            if(action.isValidAction(creep) &&
-                action.isAddableAction(creep) &&
+            const valid = action.isValidAction(creep);
+            if( TRACE ) trace('action',{actionName:action.name,creepName:creep.name,action:'valid'}, valid);
+            const addable = action.isAddableAction(creep);
+            if( TRACE ) trace('action',{actionName:action.name,creepName:creep.name,action:'addable'}, addable);
+            if( valid && addable &&
                 action.assign(creep)) {
+                    if( TRACE ) trace('behaviour',{behaviourName:this.name,creepName:creep.name,behaviour:'action'}, action.name);
                     return;
             }
         }

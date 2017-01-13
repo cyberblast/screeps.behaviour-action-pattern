@@ -32,6 +32,7 @@ var mod = {
             return busy;
         };
         Spawn.prototype.createCreepBySetup = function(setup){
+            if( TRACE ) trace('setup',{setupType:this.type,setup:'run'}, 'creating for rc:', this.room.controller.level, 'energy:', this.room.energyAvailable);
             var params = setup.buildParams(this);
             if( this.create(params.parts, params.name, params.setup) )
                 return params;

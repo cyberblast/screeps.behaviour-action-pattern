@@ -62,8 +62,8 @@ var Setup = function(typeName){
     };
     this.isValidSetup = function(room){
         if( room.controller.level < this.minControllerLevel ) {
+            if( TRACE ) trace('setup',{setupType:this.type,room:room.name,setup:'valid'}, 'low RCL');
             return false;
-            if (DEBUG && this.type === Creep.Setup.debugType) console.log(room.name, Creep.Setup.debugType, 'low RCL');
         }
 
         let rcl = this.RCL[room.controller.level];
@@ -71,14 +71,14 @@ var Setup = function(typeName){
         let minEnergyAvailable = this.SelfOrCall(rcl.minEnergyAvailable, room);
         if( room.remainingEnergyAvailable < minAbsEnergyAvailable ||
             room.relativeRemainingEnergyAvailable < minEnergyAvailable ) {
-            if (DEBUG && this.type === Creep.Setup.debugType) console.log(room.name, Creep.Setup.debugType, 'not enough energy');
+            if( TRACE ) trace('setup',{setupType:this.type,room:room.name,setup:'valid'}, 'not enough energy');
             return false;
         }
 
         let maxCount = this.SelfOrCall(rcl.maxCount, room);
         let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
         if( maxCount == 0 || maxWeight == 0 ) {
-            if (DEBUG && this.type === Creep.Setup.debugType) console.log(room.name, Creep.Setup.debugType, 'zero count || weight');
+            if( TRACE ) trace('setup',{setupType:this.type,room:room.name,setup:'valid'}, 'zero count || weight');
             return false;
         }
         if( maxCount == null )
@@ -104,8 +104,8 @@ var Setup = function(typeName){
             existingCount = population.typeCount[this.type] || 0;
             existingWeight = population.typeWeight[this.type] || 0;
         }
-        if (DEBUG && this.type === Creep.Setup.debugType) console.log(room.name, Creep.Setup.debugType, 'count:',
-            existingCount, '<', maxCount, 'weight:', existingWeight, '<', maxWeight);
+        if( TRACE ) trace('setup',{setupType:this.type,room:room.name,setup:'valid'}, 'count:', existingCount, '<', maxCount,
+            'weight:', existingWeight, '<', maxWeight);
         return existingCount < maxCount && existingWeight < maxWeight;
     };
     this.existingWeight = function(room){
@@ -225,10 +225,13 @@ Setup.compileBody = function (room, fixedBody, multiBody, sort = false) {
     }
     return parts;
 };
-Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
+Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome, applyRoomMatchingFlag) {
     if( !flagFilter ) {
         throw new Error("undefined flagFilter");
     }
+    if( !applyRoomMatchingFlag ) applyRoomMatchingFlag = function(flagMax, creep, index) {
+        return flagMax + 1;
+    };
     return function(room){
         let max = 0;
         let distance, flag;
@@ -244,8 +247,10 @@ Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
             flag = Game.flags[flagEntry.name];
             if( !flag.targetOf || flag.targetOf.length == 0 ) {
                 max++;
-            } else if( _.some(flag.targetOf, 'homeRoom', room.name) ) {
-                max++;
+            } else {
+                max = _.chain(flag.targetOf)
+                    .filter('homeRoom', room.name)
+                    .inject(applyRoomMatchingFlag, 0).value();
             }
         };
         let flagEntries = FlagDir.filter(flagFilter);

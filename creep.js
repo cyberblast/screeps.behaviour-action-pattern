@@ -153,10 +153,12 @@ var mod = {
             if( !this.spawning ){
                 if(!behaviour && this.data && this.data.creepType) {
                     behaviour = Creep.behaviour[this.data.creepType];
-                }                
+                }
                 this.repairNearby();
+                if( TRACE ) trace('creep',{creepName:this.name,creep:'behaviour'}, behaviour && behaviour.name);
                 if( behaviour ) behaviour.run(this);
                 else if(!this.data){
+                    if( TRACE ) trace('creep',{creepName:this.name,creep:'data'}, 'memory init');
                     let type = this.memory.setup;
                     let weight = this.memory.cost;
                     let home = this.memory.home;
@@ -317,6 +319,7 @@ var mod = {
             else return null;
         };
         Creep.prototype.fleeMove = function() {
+            if( TRACE ) trace('creep',{creep:'run',creepName:this.name,action:'fleeMove'});
             let drop = r => { if(this.carry[r] > 0 ) this.drop(r); };
             _.forEach(Object.keys(this.carry), drop);
             if( this.fatigue > 0 ) return;
@@ -392,8 +395,13 @@ var mod = {
             if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
                 let nearby = this.pos.findInRange(this.room.structures.repairable, 3);
                 if( nearby && nearby.length > 0 ){
+                    if( TRACE ) trace('creep',{creep:'run',creepName:this.name,action:'repairing'}, nearby[0].pos);
                     this.repair(nearby[0]);
+                } else {
+                    if( TRACE ) trace('creep', {creep:'run',creepName:this.name,action:'repairing'}, 'none');
                 }
+            } else {
+                if( TRACE ) trace('creep', {creep:'run',creepName:this.name,action:'repairing'}, 'no WORK');
             }
         };
         

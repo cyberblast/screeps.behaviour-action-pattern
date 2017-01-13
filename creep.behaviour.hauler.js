@@ -28,6 +28,7 @@ module.exports = {
                 Creep.action.picking,
                 Creep.action.reallocating,
                 Creep.action.withdrawing,
+                Creep.action.robbing,
                 Creep.action.idle];
         }
         else {
@@ -36,6 +37,8 @@ module.exports = {
                 Creep.action.charging,
                 Creep.action.fueling,
                 Creep.action.storing,
+                Creep.action.picking,
+                Creep.action.robbing,
                 Creep.action.idle];
 
             if ( creep.sum > creep.carry.energy ||
