@@ -129,6 +129,8 @@ module.exports.loop = function () {
     // use a viral.global.js module to implement your own custom function
     if( glob.custom ) glob.custom();
 
+    // Register setup / behaviour / action hooks.
+    Creep.register();
     // Register task hooks
     Task.register();
 

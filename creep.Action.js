@@ -53,11 +53,11 @@ var Action = function(actionName){
         if( range <= this.targetRange ) {
             var workResult = this.work(creep);
             if( workResult != OK ) {
-                if( DEBUG ) logErrorCode(creep, workResult);
-                delete creep.data.actionName;
-                delete creep.data.targetId;
+                const tryAction = creep.action;
+                const tryTarget = creep.target;
                 creep.action = null;
                 creep.target = null;
+                creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
                 return;
             }
         }

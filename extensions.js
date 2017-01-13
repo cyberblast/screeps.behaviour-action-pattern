@@ -26,6 +26,10 @@ var mod = {
         // param: creep name
         Creep.died = new LiteEvent();
 
+        // after a creep error
+        // param: {creep, tryAction, tryTarget, workResult}
+        Creep.error = new LiteEvent();
+
         // ocurrs when a new invader has been spotted for the first time
         // param: invader creep
         Room.newInvader = new LiteEvent();

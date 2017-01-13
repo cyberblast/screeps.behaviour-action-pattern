@@ -109,6 +109,18 @@ var mod = {
             return threat;
         }
 
+        Creep.register = function() {
+            for (const action in Creep.action) {
+                if (Creep.action[action].register) Creep.action[action].register(this);
+            }
+            for (const behaviour in Creep.behaviour) {
+                if (Creep.behaviour[behaviour].register) Creep.behaviour[behaviour].register(this);
+            }
+            for (const setup in Creep.setup) {
+                if (Creep.setup[setup].register) Creep.setup[setup].register(this);
+            }
+        };
+
         // Check if a creep has body parts of a certain type anf if it is still active. 
         // Accepts a single part type (like RANGED_ATTACK) or an array of part types. 
         // Returns true, if there is at least any one part with a matching type present and active.
@@ -422,6 +434,25 @@ var mod = {
                 }
             }
         });
+
+        // errorData = {errorCode, action, target, ...}
+        Creep.prototype.handleError = function(errorData) {
+            if (Creep.resolvingError) return;
+
+            this.resolvingError = errorData;
+            errorData.preventDefault = function() {
+                Creep.resolvingError = null;
+            };
+
+            Creep.error.trigger(errorData);
+
+            if (Creep.resolvingError) {
+                if (DEBUG) logErrorCode(this, errorData.errorCode);
+                delete this.data.actionName;
+                delete this.data.targetId;
+                Creep.resolvingError = null;
+            }
+        };
     }
 }
 
