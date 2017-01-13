@@ -17,15 +17,16 @@ module.exports = {
     handleFlagFound: flag => {
         // if it is a reserve, exploit or remote mine flag
         if( flag.color == FLAG_COLOR.claim.reserve.color && flag.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor ||
-            flag.color == FLAG_COLOR.invade.exploit.color && flag.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor){
+            flag.color == FLAG_COLOR.invade.exploit.color && flag.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor ||
+            flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor){
             // check if a new creep has to be spawned
             Task.reserve.checkForRequiredCreeps(flag);
         }
     },
     // check if a new creep has to be spawned
     checkForRequiredCreeps: (flag) => {
-        //only when controller is under 2500 ticks
-        if( !flag || (flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)) return;
+        //only when controller is under 2500 ticks or has no controller (requires vision)
+        if( !flag || (flag.room && !flag.room.controller) || (flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)) return;
         
         // get task memory
         let memory = Task.reserve.memory(flag);
