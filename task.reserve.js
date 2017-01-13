@@ -40,7 +40,7 @@ module.exports = {
             let room = Room.bestSpawnRoomFor(flag.pos.roomName);
             // define new creep
             let fixedBody = [CLAIM, MOVE, CLAIM, MOVE];
-            let multiBody = [CLAIM, MOVE];
+            let multiBody = [];
             let name = 'reserve-' + flag.pos.roomName;
             let creep = {
                 parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
