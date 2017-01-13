@@ -2,6 +2,7 @@ var mod = {
     // load all task modules
     guard: load("task.guard"),
     defense: load("task.defense"),
+    mining: load("task.mining"),
     claim: load("task.claim"),
     reserve: load("task.reserve"),
 
@@ -11,7 +12,8 @@ var mod = {
             Task.guard, 
             Task.defense,
             Task.claim,
-            Task.reserve
+            Task.reserve,
+            Task.mining
         ];
         var loop = task => {
             task.register();

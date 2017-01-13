@@ -63,6 +63,11 @@ var mod = {
                         color: COLOR_GREEN,
                         secondaryColor: COLOR_GREY,
                         filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_GREY },
+                    },
+                    mining: {
+                        color: COLOR_GREEN,
+                        secondaryColor: COLOR_BROWN,
+                        filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_BROWN}
                     }
                 },
                 defense: { // point to gather troops
