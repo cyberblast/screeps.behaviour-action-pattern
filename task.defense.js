@@ -88,6 +88,9 @@ module.exports = {
     memory: invaderId => {
         return Task.memory('defense', invaderId);
     },
+    defenderFixedBody: [RANGED_ATTACK, MOVE],
+    defenderMultiBody: [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE],
+    defenderName: 'ranger-def',
     // spawn defenses against an invader creep
     orderDefenses: invaderCreep => {
         let invaderId = invaderCreep.id;
@@ -107,18 +110,15 @@ module.exports = {
         while( remainingThreat > 0 ){
             // get spawning room and calculate defense creep
             let room = Room.bestSpawnRoomFor(invaderCreep.pos.roomName);
-            let fixedBody = [RANGED_ATTACK, MOVE];
-            let multiBody = [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE];
-            let name = 'ranger-def';
             // TODO: Compile smaller body (only slightly bigger than remainingThreat)
-            let body = Creep.Setup.compileBody(room, fixedBody, multiBody, true);
+            let body = Creep.Setup.compileBody(room, Task.defense.defenderFixedBody, Task.defense.defenderMultiBody, true);
             let bodyThreat = Creep.bodyThreat(body);
             let orderId = global.guid();
             remainingThreat -= bodyThreat;
 
             let creep = {
                 parts: body,
-                name: name,
+                name: Task.defense.defenderName,
                 behaviour: 'ranger',
                 destiny: { 
                     task: "defense", 
