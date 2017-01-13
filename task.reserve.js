@@ -18,22 +18,20 @@ module.exports = {
         // if it is a reserve, exploit or remote mine flag
         if( flag.color == FLAG_COLOR.claim.reserve.color && flag.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor ||
             flag.color == FLAG_COLOR.invade.exploit.color && flag.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor){
-            // flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor
-
             // check if a new creep has to be spawned
-            
             Task.reserve.checkForRequiredCreeps(flag);
         }
     },
     // check if a new creep has to be spawned
     checkForRequiredCreeps: (flag) => {
         //only when controller is under 2500 ticks
-        if( flag && flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500) return;
+        if( !flag || (flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)) return;
+        
         // get task memory
         let memory = Task.reserve.memory(flag);
         // count creeps assigned to task
-        //TODO - Only spawn if controller is below 2000 ticks (target.reservation.ticksToEnd < 4999)
-        let count = memory.queued.length + memory.spawning.length + memory.running.length;// + ((flag) => ( flag.room.controller.reservation.ticksToEnd < 2000 ) ? 0 : 1);
+ 
+        let count = memory.queued.length + memory.spawning.length + memory.running.length;
         // if creep count below requirement spawn a new creep creep 
         if( count < 1 ) {
             // get nearest room
@@ -54,8 +52,17 @@ module.exports = {
                 global.logSystem(flag.pos.roomName, dye(CRAYON.error, 'reserve Flag tried to queue a zero parts body creep. Aborted.' ));
                 return;
             }
+            
             // queue creep for spawning
-            room.spawnQueueLow.push(creep);
+            // if no sight or no reservation or reservation below 500 => medium
+            if( !flag.room ||
+                (flag.room.controller && !flag.room.controller.reservation) ||
+                (flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd < 500)) {
+            	room.spawnQueueMedium.push(creep);
+            } else { // else low
+            	room.spawnQueueLow.push(creep);
+            }
+
             // save queued creep to task memory
             memory.queued.push({
                 room: room.name,
@@ -79,7 +86,7 @@ module.exports = {
             let queued = []
             let validateQueued = o => {
                 let room = Game.rooms[o.room];
-                if(room.spawnQueueLow.some( c => c.name == o.name)){
+                if( (room.spawnQueueMedium.some( c => c.name == o.name)) || (room.spawnQueueLow.some( c => c.name == o.name)) ){
                     queued.push(o);
                 }
             };
