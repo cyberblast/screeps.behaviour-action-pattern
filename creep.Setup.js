@@ -61,20 +61,26 @@ var Setup = function(typeName){
         return memory;
     };
     this.isValidSetup = function(room){
-        if( room.controller.level < this.minControllerLevel )
+        if( room.controller.level < this.minControllerLevel ) {
             return false;
+            if (DEBUG && this.type === Creep.Setup.debugType) console.log(room.name, Creep.Setup.debugType, 'low RCL');
+        }
 
         let rcl = this.RCL[room.controller.level];
         let minAbsEnergyAvailable = this.SelfOrCall(rcl.minAbsEnergyAvailable, room);
         let minEnergyAvailable = this.SelfOrCall(rcl.minEnergyAvailable, room);
         if( room.remainingEnergyAvailable < minAbsEnergyAvailable ||
-            room.relativeRemainingEnergyAvailable < minEnergyAvailable )
+            room.relativeRemainingEnergyAvailable < minEnergyAvailable ) {
+            if (DEBUG && this.type === Creep.Setup.debugType) console.log(room.name, Creep.Setup.debugType, 'not enough energy');
             return false;
+        }
 
         let maxCount = this.SelfOrCall(rcl.maxCount, room);
         let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
-        if( maxCount == 0 || maxWeight == 0 )
+        if( maxCount == 0 || maxWeight == 0 ) {
+            if (DEBUG && this.type === Creep.Setup.debugType) console.log(room.name, Creep.Setup.debugType, 'zero count || weight');
             return false;
+        }
         if( maxCount == null )
             maxCount = Infinity;
         if( maxWeight == null )
@@ -98,6 +104,8 @@ var Setup = function(typeName){
             existingCount = population.typeCount[this.type] || 0;
             existingWeight = population.typeWeight[this.type] || 0;
         }
+        if (DEBUG && this.type === Creep.Setup.debugType) console.log(room.name, Creep.Setup.debugType, 'count:',
+            existingCount, '<', maxCount, 'weight:', existingWeight, '<', maxWeight);
         return existingCount < maxCount && existingWeight < maxWeight;
     };
     this.existingWeight = function(room){
@@ -216,5 +224,33 @@ Setup.compileBody = function (room, fixedBody, multiBody, sort = false) {
         parts.push(HEAL);
     }
     return parts;
+};
+Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
+    if( !flagFilter ) {
+        throw new Error("undefined flagFilter");
+    }
+    return function(room){
+        let max = 0;
+        let distance, flag;
+        let calcMax = flagEntry => {
+            distance = routeRange(room.name, flagEntry.roomName);
+            if( distance > maxRoomRange ) {
+                return;
+            }
+            if( !measureByHome ) {
+                max++;
+                return;
+            }
+            flag = Game.flags[flagEntry.name];
+            if( !flag.targetOf || flag.targetOf.length == 0 ) {
+                max++;
+            } else if( _.some(flag.targetOf, 'homeRoom', room.name) ) {
+                max++;
+            }
+        };
+        let flagEntries = FlagDir.filter(flagFilter);
+        flagEntries.forEach(calcMax);
+        return max;
+    };
 };
 module.exports = Setup;

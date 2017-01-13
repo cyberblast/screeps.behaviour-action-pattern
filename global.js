@@ -3,10 +3,7 @@ var mod = {
         //console.log('base');
     },
     init: function(params){
-        // Load extension functions
-        Creep.extend = load("creep").extend;
-        Room.extend = load("room").extend;
-        Spawn.extend = load("spawn").extend;
+        // START LOCAL REFERENCES ONLY
         // make params available globally
         _.assign(global, params);
         // Add more stuff to global
@@ -28,12 +25,6 @@ var mod = {
                     this.handlers.slice(0).forEach(h => h(data)); 
                 }
             },
-            // load modules
-            Extensions: load("extensions"),
-            Population: load("population"),
-            FlagDir: load("flagDir"),
-            Task: load("task"),
-            Tower: load("tower"),
             // Flag colors, used throughout the code
             FLAG_COLOR: {
                 invade: { // destroy everything enemy in the room
@@ -284,6 +275,21 @@ var mod = {
                     return v.toString(16);
                 });
             }
+        });
+        // END LOCAL REFERENCES ONLY
+
+        // Load extension functions
+        Creep.extend = load("creep").extend;
+        Room.extend = load("room").extend;
+        Spawn.extend = load("spawn").extend;
+
+        _.assign(global, {
+            // load modules
+            Extensions: load("extensions"),
+            Population: load("population"),
+            FlagDir: load("flagDir"),
+            Task: load("task"),
+            Tower: load("tower"),
         });
     }
 }
