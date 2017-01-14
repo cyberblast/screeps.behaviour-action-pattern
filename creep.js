@@ -156,7 +156,8 @@ var mod = {
                 }
                 this.repairNearby();
                 if( TRACE ) trace('creep',{creepName:this.name,creep:'behaviour'}, behaviour && behaviour.name);
-                if( behaviour ) behaviour.run(this);
+                if( this.leaveBorder(true) ) this.honkEvade();
+                else if( behaviour ) behaviour.run(this);
                 else if(!this.data){
                     if( TRACE ) trace('creep',{creepName:this.name,creep:'data'}, 'memory init');
                     let type = this.memory.setup;
@@ -210,19 +211,36 @@ var mod = {
                 }
             }
         };
-        Creep.prototype.leaveBorder = function() {
-            // if on border move away
-            // for emergency case, Path not found
+        Creep.prototype.leaveBorder = function(lazy) {
+            // lazy: if on border check moving away
+            // !lazy: emergency case, Path not found
+            let dir = 0;
             if( this.pos.y == 0 ){
-                this.move(BOTTOM);
+                dir = BOTTOM;
             } else if( this.pos.x == 0  ){
-                this.move(RIGHT);
+                dir = RIGHT;
             } else if( this.pos.y == 49  ){
-                this.move(TOP);
+                dir = TOP;
             } else if( this.pos.x == 49  ){
-                this.move(LEFT);
+                dir = LEFT;
             }
             // TODO: CORNER cases
+            if( dir === 0) {
+                return false;
+            }
+
+            const pathDir = this.data.path && this.data.path.length ? +this.data.path[0] : dir;
+
+            if( !(this.data.path && this.data.path.length)) {
+                console.log(this.name, this.pos, 'path terminated at border');
+            } else if( lazy && dir === pathDir ) {
+                // console.log(this.name, this.pos, 'proceeding as planned');
+                return false;
+            }
+
+            this.data.path = this.data.path ? this.data.path.substr(1) : null;
+            this.move(pathDir);
+            return true;
         };
         Creep.prototype.honk = function(){
             if( HONK ) this.say('\u{26D4}\u{FE0E}', SAY_PUBLIC);
@@ -260,7 +278,7 @@ var mod = {
                     } else logErrorCode(this, moveResult);
                     if( moveResult == ERR_NOT_FOUND ) delete this.data.path;
                 } else if( range > enoughRange ) {
-                    this.say('NO PATH!');
+                    this.say('NO PATH1');
                     this.data.targetId = null;
                     this.leaveBorder();
                 }
@@ -278,7 +296,7 @@ var mod = {
                     if( moveResult != OK ) logErrorCode(this, moveResult);
                     if( moveResult == ERR_NOT_FOUND ) delete this.data.path;
                 } else if( range > enoughRange ) {
-                    this.say('NO PATH!');
+                    this.say('NO PATH2');
                     this.data.targetId = null;
                     this.leaveBorder();
                 }
@@ -296,7 +314,7 @@ var mod = {
                     let moveResult = this.move(this.data.path.charAt(0));
                     if( moveResult != OK ) logErrorCode(this, moveResult);
                 } else if( range > enoughRange ){
-                    this.say('NO PATH!');
+                    this.say('NO PATH3');
                     this.data.targetId = null;
                     this.leaveBorder();
                 }
