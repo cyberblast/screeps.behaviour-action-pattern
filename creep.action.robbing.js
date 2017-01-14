@@ -1,8 +1,8 @@
 var action = new Creep.Action('robbing');
 action.maxPerTarget = 2;
 action.maxPerAction = 10;
-action.isValidAction = function(creep){
-    return ( creep.sum < creep.carryCapacity && (FlagDir.find(FLAG_COLOR.invade.robbing, creep.pos, true) != null) );
+action.isValidAction = function(creep){ 
+    return ( creep.sum < creep.carryCapacity && !creep.room.my);
 };
 action.isValidTarget = function(target){
     return ( target.store && _.sum(target.store) > 20 ) || ( target.energy && target.energy > 20 ) || ( target.mineralAmount && target.mineralAmount > 20 );
