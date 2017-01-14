@@ -1,5 +1,11 @@
-const memoryWhere = e => Memory.debugTrace[e[0]] === e[1];
-const noMemoryWhere = e => Memory.debugTrace.no[e[0]] === e[1];
+const memoryWhere = function(e) {
+    const setting = Memory.debugTrace[e[0]];
+    return setting === undefined || setting === e[1];
+};
+const noMemoryWhere = function(e) {
+    const setting = Memory.debugTrace.no[e[0]];
+    return setting === true || setting === e[1];
+};
 
 var mod = {
     custom: function(){
@@ -173,7 +179,7 @@ var mod = {
             },
             trace: function(category, entityWhere, ...message) {
                 if( DEBUG
-                    && ( Memory.debugTrace[category] === true || _(entityWhere).pairs().some(memoryWhere) )
+                    && ( Memory.debugTrace[category] === true || _(entityWhere).pairs().all(memoryWhere) )
                     && !( Memory.debugTrace.no && _(entityWhere).pairs().some(noMemoryWhere) )
                 ) {
                     console.log(Game.time, dye(CRAYON.error, category), dye(CRAYON.birth, JSON.stringify(entityWhere)), ...message);
