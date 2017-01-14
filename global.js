@@ -1,3 +1,6 @@
+const memoryWhere = e => Memory.debugTrace[e[0]] === e[1];
+const noMemoryWhere = e => Memory.debugTrace.no[e[0]] === e[1];
+
 var mod = {
     custom: function(){
         //console.log('base');
@@ -168,6 +171,14 @@ var mod = {
                 let text = dye(CRAYON.system, roomName);
                 console.log( dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt; `) + message );
             },
+            trace: function(category, entityWhere, ...message) {
+                if( DEBUG
+                    && ( Memory.debugTrace[category] === true || _(entityWhere).pairs().some(memoryWhere) )
+                    && !( Memory.debugTrace.no && _(entityWhere).pairs().some(noMemoryWhere) )
+                ) {
+                    console.log(Game.time, dye(CRAYON.error, category), dye(CRAYON.birth, JSON.stringify(entityWhere)), ...message);
+                }
+            },
             isObj: function(val){
                 if (val === null) { return false;}
                 return ( (typeof val === 'function') || (typeof val === 'object') );
@@ -283,6 +294,8 @@ var mod = {
         });
         // END LOCAL REFERENCES ONLY
 
+        if( !Memory.debugTrace ) Memory.debugTrace = {};
+
         // Load extension functions
         Creep.extend = load("creep").extend;
         Room.extend = load("room").extend;
@@ -298,4 +311,5 @@ var mod = {
         });
     }
 }
+
 module.exports = _.bindAll(mod);
