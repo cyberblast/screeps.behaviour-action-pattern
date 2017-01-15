@@ -40,37 +40,19 @@ module.exports = {
 
         // if creep count below requirement spawn a new creep creep 
         if( count < 1 || lowReservation) {
-            // get nearest room
-            let room = Room.bestSpawnRoomFor(flag.pos.roomName);
-            // define new creep
-            let fixedBody = [CLAIM, MOVE, CLAIM, MOVE];
-            let multiBody = [];
-            let name = 'reserve-' + flag.pos.roomName;
-            let creep = {
-                parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
-                name: name,
-                behaviour: 'claimer',
-                setup: 'claimer',
-                destiny: { task: "reserve", flagName: flag.name }
-            };
-            if( creep.parts.length === 0 ) {
-                // creep has no body. 
-                global.logSystem(flag.pos.roomName, dye(CRAYON.error, 'reserve Flag tried to queue a zero parts body creep. Aborted.' ));
-                return;
-            }
-            
-            // queue creep for spawning
-            // if no sight or no reservation or reservation below 500 => medium
-            if( lowReservation ) {
-            	room.spawnQueueMedium.push(creep);
-            } else { // else low
-            	room.spawnQueueLow.push(creep);
-            }
-
-            // save queued creep to task memory
-            memory.queued.push({
-                room: room.name,
-                name: name
+            Task.spawn(
+                lowReservation ? 'Medium' : 'Low', // queue
+                'reserve', // taskname
+                flag.pos.roomName, // targetRoom
+                flag.name, // targetName
+                Task.reserve.creep.reserver, // creepDefinition
+                null, // custom destiny attributes
+                creepSetup => { // callback onQueued
+                    let memory = Task.reserve.memory(Game.flags[creepSetup.destiny.targetName]);
+                    memory.queued.push({
+                        room: creepSetup.queueRoom,
+                        name: creepSetup.name
+                });
             });
         }
     },
@@ -80,7 +62,8 @@ module.exports = {
         if ( !params.destiny || !params.destiny.task || params.destiny.task != 'reserve' )
             return;
         // get flag which caused queueing of that creep
-        let flag = Game.flags[params.destiny.flagName];
+        // TODO: remove  || creep.data.destiny.flagName (temporary backward compatibility)
+        let flag = Game.flags[params.destiny.targetName || params.destiny.flagName];
         if (flag) {
             // get task memory
             let memory = Task.reserve.memory(flag);
@@ -104,7 +87,8 @@ module.exports = {
         if (!creep.data || !creep.data.destiny || !creep.data.destiny.task || creep.data.destiny.task != 'reserve')
             return;
         // get flag which caused request of that creep
-        let flag = Game.flags[creep.data.destiny.flagName];
+        // TODO: remove  || creep.data.destiny.flagName (temporary backward compatibility)
+        let flag = Game.flags[creep.data.destiny.targetName || creep.data.destiny.flagName];
         if (flag) {
             // calculate & set time required to spawn and send next substitute creep
             // TODO: implement better distance calculation
@@ -135,7 +119,8 @@ module.exports = {
         if (!mem || !mem.destiny || !mem.destiny.task || mem.destiny.task != 'reserve')
             return;
         // get flag which caused request of that creep
-        let flag = Game.flags[mem.destiny.flagName];
+        // TODO: remove  || creep.data.destiny.flagName (temporary backward compatibility)
+        let flag = Game.flags[mem.destiny.targetName || mem.destiny.flagName];
         if (flag) {
             // get task memory
             let memory = Task.reserve.memory(flag);
@@ -166,7 +151,6 @@ module.exports = {
         }
         return flag.memory.tasks.reserve;
     },
-
     nextAction: creep => {
         // override behaviours nextAction function
         // this could be a global approach to manipulate creep behaviour
@@ -185,9 +169,15 @@ module.exports = {
                     return;
             }
         }
+    },
+    creep: {
+        reserver: {
+            fixedBody: [CLAIM, CLAIM, MOVE, MOVE],
+            multiBody: [],
+            name: "reserver", 
+            behaviour: "claimer"
+        },
     }
- 
-
 };
 
 

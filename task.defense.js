@@ -87,9 +87,14 @@ module.exports = {
     memory: invaderId => {
         return Task.memory('defense', invaderId);
     },
-    defenderFixedBody: [RANGED_ATTACK, MOVE],
-    defenderMultiBody: [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE],
-    defenderName: 'ranger-def',
+    creep: {
+        defender: {
+            fixedBody: [RANGED_ATTACK, MOVE],
+            multiBody: [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE],
+            name: "defender", 
+            behaviour: "ranger"
+        },
+    },
     // spawn defenses against an invader creep
     orderDefenses: invaderCreep => {
         let invaderId = invaderCreep.id;
@@ -110,15 +115,15 @@ module.exports = {
             // get spawning room and calculate defense creep
             let room = Room.bestSpawnRoomFor(invaderCreep.pos.roomName);
             // TODO: Compile smaller body (only slightly bigger than remainingThreat)
-            let body = Creep.Setup.compileBody(room, Task.defense.defenderFixedBody, Task.defense.defenderMultiBody, true);
+            let body = Creep.Setup.compileBody(room, Task.defense.creep.defender.fixedBody, Task.defense.creep.defender.multiBody, true);
             let bodyThreat = Creep.bodyThreat(body);
             let orderId = global.guid();
             remainingThreat -= bodyThreat;
 
             let creep = {
                 parts: body,
-                name: Task.defense.defenderName,
-                behaviour: 'ranger',
+                name: Task.defense.creep.defender.name,
+                behaviour: Task.defense.creep.defender.behaviour,
                 destiny: { 
                     task: "defense", 
                     invaderId: invaderId, 
@@ -128,7 +133,7 @@ module.exports = {
             };
             if( creep.parts.length === 0 ) {
                 // creep has no body. 
-                global.logSystem(invaderCreep.pos.roomName, dye(CRAYON.error, 'Invader Defense Task tried to queue a zero parts body creep. Aborted.' ));
+                global.logSystem(invaderCreep.pos.roomName, dye(CRAYON.error, 'Defense Task tried to queue a zero parts body defender. Aborted.' ));
                 return;
             }
 

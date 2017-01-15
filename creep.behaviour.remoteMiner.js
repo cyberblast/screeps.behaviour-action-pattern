@@ -9,7 +9,8 @@ module.exports = {
             return;
         } else {
             // else go there
-            Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.flagName]);
+            // TODO: remove  || creep.data.destiny.flagName (temporary backwards compatibility)
+            Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.targetName || creep.data.destiny.flagName]);
         }
 
         if( creep.data.targetId != oldTargetId ) {

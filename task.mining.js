@@ -78,7 +78,21 @@ var mod = {
 
         if(minerCount < sourceCount) {
             for(let i = minerCount; i < sourceCount; i++) {
-                Task.mining.spawn(flag, 'remoteMiner', Task.mining.creepBodies.miner.fixed, Task.mining.creepBodies.miner.multi );
+                Task.spawn(
+                    'Low', // queue
+                    'mining', // taskName
+                    flag.pos.roomName, // targetRoom
+                    flag.name, // targetName
+                    Task.mining.creep.miner, // creepDefinition
+                    { type: Task.mining.creep.miner.behaviour }, // custom destiny attributes
+                    creepSetup => { // onQueued callback
+                        let memory = Task.mining.memory(creepSetup.destiny.room);
+                        memory.queued[creepSetup.behaviour].push({
+                            room: creepSetup.queueRoom,
+                            name: creepSetup.name
+                        });
+                    }
+                );
             }
         }
         // only spawn haulers for sources a miner has been spawned for
@@ -86,13 +100,24 @@ var mod = {
         let maxHaulers = Math.ceil(runningMiners.length * REMOTE_HAULER_MULTIPLIER);
         if(haulerCount < maxHaulers) {
             for(let i = haulerCount; i < maxHaulers; i++) {
-                Task.mining.spawn(flag, 'remoteHauler', Task.mining.creepBodies.hauler.fixed, Task.mining.creepBodies.hauler.multi );
+                Task.spawn('Low', 'mining', flag.pos.roomName, flag.name, Task.mining.creep.hauler, {type: Task.mining.creep.hauler.behaviour}, creepSetup => {                    
+                    let memory = Task.mining.memory(creepSetup.destiny.room);
+                    memory.queued[creepSetup.behaviour].push({
+                        room: creepSetup.queueRoom,
+                        name: creepSetup.name
+                    });
+                });
             }
         }
-
         if( room && room.constructionSites.length > 0 && workerCount < REMOTE_WORKER_MULTIPLIER) {
             for(let i = workerCount; i < REMOTE_WORKER_MULTIPLIER; i++) {
-                Task.mining.spawn(flag, 'remoteWorker', Task.mining.creepBodies.worker.fixed, Task.mining.creepBodies.worker.multi );
+                Task.spawn('Low', 'mining', flag.pos.roomName, flag.name, Task.mining.creep.worker, {type: Task.mining.creep.worker.behaviour}, creepSetup => {                    
+                    let memory = Task.mining.memory(creepSetup.destiny.room);
+                    memory.queued[creepSetup.behaviour].push({
+                        room: creepSetup.queueRoom,
+                        name: creepSetup.name
+                    });
+                });
             }
         }
     },
@@ -121,45 +146,22 @@ var mod = {
         }
 
         return memory;
-    }, 
-    spawn: (flag, type, fixedBody, multiBody) => {  
-        // get nearest room
-        let room = Room.bestSpawnRoomFor(flag.pos.roomName);
-        if( room.controller.level < Task.mining.minControllerLevel ) return;
-        // define new creep
-        let name = `${type}-${flag.name}`;
-        let creep = {
-            parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
-            name: name,
-            setup: type,
-            destiny: { task: "mining", type: type, flagName: flag.name, room: flag.pos.roomName }
-        };
-        if( creep.parts.length === 0 ) {
-            // creep has no body. 
-            global.logSystem(flag.pos.roomName, dye(CRAYON.error, `Mining Flag tried to queue a zero parts body ${type}. Aborted.` ));
-            return;
-        }
-        // queue creep for spawning
-        room.spawnQueueLow.push(creep);
-        // save queued creep to task memory
-        let memory = Task.mining.memory(flag.pos.roomName);
-        memory.queued[type].push({
-            room: room.name,
-            name: name
-        });
     },
-    creepBodies: {
+    creep: {
         miner: {
-            fixed: [MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, CARRY],
-            multi: []
+            fixedBody: [MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, CARRY],
+            multiBody: [],
+            behaviour: 'remoteMiner'
         },
         hauler: {
-            fixed: [CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, WORK],
-            multi: [CARRY, CARRY, MOVE]
+            fixedBody: [CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, WORK],
+            multiBody: [CARRY, CARRY, MOVE], 
+            behaviour: 'remoteHauler'
         },
         worker: {
-            fixed: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, WORK, WORK, WORK],
-            multi: []
+            fixedBody: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, WORK, WORK, WORK],
+            multiBody: [], 
+            behaviour: 'remoteWorker'
         }
     },
     minControllerLevel: 4

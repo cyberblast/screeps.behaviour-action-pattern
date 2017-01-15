@@ -11,8 +11,9 @@ action.newTarget = function(creep){
         (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor)
     );
 
-    var flag;
-    if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.flagName];
+    let flag;
+    // TODO: remove  || creep.data.destiny.flagName (temporary backward compatibility)
+    if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.targetName || creep.data.destiny.flagName];
     if ( !flag ) flag = FlagDir.find(validColor, creep.pos, false, FlagDir.reserveMod, creep.name);
 
     if( flag ) {

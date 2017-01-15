@@ -78,7 +78,8 @@ module.exports = {
         return (action.isValidAction(creep) && action.isAddableAction(creep) && action.assign(creep, target));
     },
     gotoTargetRoom: function(creep){
-        return Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.flagName]);
+        // TODO: remove  || creep.data.destiny.flagName (temporary backward compatibility)
+        return Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.targetName || creep.data.destiny.flagName]);
     },
     goHome: function(creep){
         return Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);

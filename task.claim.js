@@ -32,19 +32,18 @@ var mod = {
             // get nearest room
             let room = Room.bestSpawnRoomFor(flag.pos.roomName);
             // define new creep
-            let fixedBody = [CLAIM, MOVE];
-            let multiBody = [];
-            let name = 'Claim-' + flag.name;
+            let fixedBody = Task.claim.creep.claimer.fixedBody;
+            let multiBody = Task.claim.creep.claimer.multiBody;
+            let name = Task.claim.creep.claimer.name + '-' + flag.name;
             let creep = {
                 parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
                 name: name,
-                behaviour: 'claimer',
-                setup: 'claimer',
+                behaviour: Task.claim.creep.claimer.behaviour,
                 destiny: { task: "claim", flagName: flag.name }
             };
             if( creep.parts.length === 0 ) {
                 // creep has no body. 
-                global.logSystem(flag.pos.roomName, dye(CRAYON.error, 'claim Flag tried to queue a zero parts body creep. Aborted.' ));
+                global.logSystem(flag.pos.roomName, dye(CRAYON.error, 'Claim Flag tried to queue a zero parts body creep. Aborted.' ));
                 return;
             }
             // queue creep for spawning
@@ -148,7 +147,6 @@ var mod = {
         }
         return flag.memory.tasks.claim;
     },
-
     nextAction: creep => {
         // override behaviours nextAction function
         // this could be a global approach to manipulate creep behaviour
@@ -166,8 +164,15 @@ var mod = {
                     return;
             }
         }
+    },
+    creep: {
+        claimer: {
+            fixedBody: [CLAIM, MOVE],
+            multiBody: [],
+            name: "claimer", 
+            behaviour: "claimer"
+        },
     }
-
 };
 
 module.exports = mod; 

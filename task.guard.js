@@ -21,6 +21,14 @@ var mod = {
             Task.guard.checkForRequiredCreeps(flag);
         }
     },
+    creep: {
+        guard: {
+            fixedBody: [RANGED_ATTACK, MOVE],
+            multiBody: [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE],
+            name: "guard", 
+            behaviour: "ranger"
+        },
+    },
     // check if a new creep has to be spawned
     checkForRequiredCreeps: (flag) => {
         // get task memory
@@ -32,13 +40,13 @@ var mod = {
             // get nearest room
             let room = Room.bestSpawnRoomFor(flag.pos.roomName);
             // define new creep
-            let fixedBody = [RANGED_ATTACK, MOVE];
-            let multiBody = [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE];
-            let name = 'ranger-' + flag.name;
+            let fixedBody = Task.guard.creep.guard.fixedBody;
+            let multiBody = Task.guard.creep.guard.multiBody;
+            let name = Task.guard.creep.guard.name + '-' + flag.name;
             let creep = {
                 parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
                 name: name,
-                setup: 'ranger',
+                behaviour: Task.guard.creep.guard.behaviour,
                 destiny: { task: "guard", flagName: flag.name }
             };
             if( creep.parts.length === 0 ) {

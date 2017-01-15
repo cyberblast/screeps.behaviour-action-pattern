@@ -43,14 +43,14 @@ module.exports = {
             // get nearest room
             let room = Room.bestSpawnRoomFor(flag.pos.roomName);
             // define new creep
-            let fixedBody = [WORK, WORK, MOVE, MOVE, CARRY, CARRY];
-            let multiBody = [WORK, MOVE, CARRY];
-            let name = 'pioneer-' + flag.pos.roomName;
+            let fixedBody = Task.pioneer.creep.pioneer.fixedBody;
+            let multiBody = Task.pioneer.creep.pioneer.multiBody;
+            let name = Task.pioneer.creep.pioneer.name + '-' + flag.pos.roomName;
             let creep = {
                 parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
                 name: name,
                 maxMulti: 4,
-                behaviour: 'pioneer',
+                behaviour: Task.pioneer.creep.pioneer.behaviour,
                 destiny: { task: "pioneer", flagName: flag.name }
             };
             if( creep.parts.length === 0 ) {
@@ -163,9 +163,15 @@ module.exports = {
             }
         }
         return flag.memory.tasks.pioneer;
+    },
+    creep: {
+        pioneer: {
+            fixedBody: [WORK, WORK, MOVE, MOVE, CARRY, CARRY],
+            multiBody: [WORK, MOVE, CARRY],
+            name: "pioneer", 
+            behaviour: "pioneer"
+        },
     }
-
-    
 };
 
 
