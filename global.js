@@ -178,12 +178,11 @@ var mod = {
                 console.log( dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt; `) + message );
             },
             trace: function(category, entityWhere, ...message) {
-                if( DEBUG
-                    && ( Memory.debugTrace[category] === true || _(entityWhere).pairs().all(memoryWhere) )
-                    && !( Memory.debugTrace.no && _(entityWhere).pairs().some(noMemoryWhere) )
-                ) {
-                    console.log(Game.time, dye(CRAYON.error, category), dye(CRAYON.birth, JSON.stringify(entityWhere)), ...message);
-                }
+                if(! DEBUG) return;
+                if(! ( Memory.debugTrace[category] === true || _(entityWhere).pairs().all(memoryWhere) )) return;
+                if( Memory.debugTrace.no && _(entityWhere).pairs().some(noMemoryWhere) ) return;
+
+                console.log(Game.time, dye(CRAYON.error, category), dye(CRAYON.birth, JSON.stringify(entityWhere)), ...message);
             },
             isObj: function(val){
                 if (val === null) { return false;}
