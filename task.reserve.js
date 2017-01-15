@@ -33,8 +33,13 @@ module.exports = {
         // count creeps assigned to task
  
         let count = memory.queued.length + memory.spawning.length + memory.running.length;
+        // Allow a second claimer in medium queue if reservation low
+        let lowReservation = ( !flag.room ||
+                (flag.room.controller && !flag.room.controller.reservation) ||
+                (flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd < 250)) && count == 1; // always let it queue one in low as well
+
         // if creep count below requirement spawn a new creep creep 
-        if( count < 1 ) {
+        if( count < 1 || lowReservation) {
             // get nearest room
             let room = Room.bestSpawnRoomFor(flag.pos.roomName);
             // define new creep
@@ -56,9 +61,7 @@ module.exports = {
             
             // queue creep for spawning
             // if no sight or no reservation or reservation below 500 => medium
-            if( !flag.room ||
-                (flag.room.controller && !flag.room.controller.reservation) ||
-                (flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd < 500)) {
+            if( lowReservation ) {
             	room.spawnQueueMedium.push(creep);
             } else { // else low
             	room.spawnQueueLow.push(creep);
