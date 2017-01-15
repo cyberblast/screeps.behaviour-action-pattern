@@ -3,8 +3,10 @@ module.exports = {
     run: function(creep) {
         // Assign next Action
         let oldTargetId = creep.data.targetId;
-        if( creep.action == null  || creep.action.name == 'idle' ) {
-            this.nextAction(creep);
+        if( creep.action == null || creep.action.name == 'idle') {
+          if( creep.data.destiny && creep.data.destiny.task && Task[creep.data.destiny.task] && Task[creep.data.destiny.task].nextAction ) 
+                Task[creep.data.destiny.task].nextAction(creep);
+            else this.nextAction(creep);
         }
         if( creep.data.targetId != oldTargetId ) {
             delete creep.data.path;
@@ -17,7 +19,10 @@ module.exports = {
         }
     },
     nextAction: function(creep) {
-        let flag = FlagDir.find(FLAG_COLOR.claim.spawn, creep.pos, false, FlagDir.rangeMod);
+        var flag;
+        if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.flagName];
+            if ( !flag ) flag = FlagDir.find(FLAG_COLOR.claim.spawn, creep.pos, false, FlagDir.rangeMod);
+
         if( flag ) {
             if( !flag.room || flag.pos.roomName != creep.pos.roomName ){
                 if( Creep.action.travelling.assign(creep, flag)) {
@@ -40,7 +45,6 @@ module.exports = {
                 }
             }
         } else {
-            flag = FlagDir.find(FLAG_COLOR.claim.pioneer, creep.pos, false, FlagDir.rangeMod);
             if( flag && ( !flag.room || flag.pos.roomName != creep.pos.roomName) ){
                 if( Creep.action.travelling.assign(creep, flag)) {
                     Population.registerCreepFlag(creep, flag);

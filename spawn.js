@@ -7,7 +7,6 @@ var mod = {
             Creep.setup.upgrader];
         Spawn.priorityLow = [
             Creep.setup.mineralMiner,
-            Creep.setup.pioneer,
             Creep.setup.privateer];
         Spawn.prototype.loop = function(){
             if( this.spawning ) return;

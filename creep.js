@@ -49,7 +49,6 @@ var mod = {
             healer: load("creep.setup.healer"),
             miner: load("creep.setup.miner"),
             mineralMiner: load("creep.setup.mineralMiner"),
-            pioneer: load("creep.setup.pioneer"),
             privateer: load("creep.setup.privateer"),
             upgrader: load("creep.setup.upgrader"),
             worker: load("creep.setup.worker")
