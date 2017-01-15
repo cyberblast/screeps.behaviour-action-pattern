@@ -17,49 +17,44 @@ module.exports = {
         }
     },
     nextAction: function(creep){
-        let carrySum = creep.sum;
-        // at home
-        if( creep.pos.roomName != creep.data.destiny.room ){
-            this.gotoTargetRoom(creep);
-        }
-        // not at home
-        else {
-            // at target room
-            if( creep.data.destiny.room == creep.pos.roomName ){
-                let priority;
-                // get some energy
-                if( creep.sum < creep.carryCapacity * 0.8 ) {
-                    priority = [
-                        Creep.action.picking,
-                        Creep.action.uncharging,
-                        Creep.action.reallocating,
-                        Creep.action.withdrawing,
-                        Creep.action.idle];
-                } else {
-                    priority = [
-                        Creep.action.repairing,
-                        Creep.action.building,
-                        Creep.action.idle
-                    ];
-                }
+        // at target room
+        if( creep.data.destiny.room == creep.pos.roomName ){
+            let priority;
+            // get some energy
+            if( creep.sum < creep.carryCapacity * 0.8 ) {
+                priority = [
+                    Creep.action.picking,
+                    Creep.action.uncharging,
+                    Creep.action.withdrawing,
+                    Creep.action.idle];
+            } else {
+                priority = [
+                    Creep.action.repairing,
+                    Creep.action.building,
+                    Creep.action.recycling
+                ];
+            }
 
-                for(var iAction = 0; iAction < priority.length; iAction++) {
-                    var action = priority[iAction];
-                    if(action.isValidAction(creep) &&
-                        action.isAddableAction(creep) &&
-                        action.assign(creep)) {
-                        return;
-                    }
+            for(var iAction = 0; iAction < priority.length; iAction++) {
+                var action = priority[iAction];
+                if(action.isValidAction(creep) &&
+                    action.isAddableAction(creep) &&
+                    action.assign(creep)) {
+                    return;
                 }
             }
-            // not at target room
-            else {
-                this.gotoTargetRoom(creep);
-                return;
-            }
+        }
+        // not at target room
+        else {
+            this.gotoTargetRoom(creep);
+            return;
         }
         // fallback
-        Task.mining.nextAction(creep);
+        // recycle self
+        let mother = Game.spawns[creep.data.motherSpawn];
+        if( mother ) {
+            Creep.action.recycling.assign(creep, mother);
+        }
     },
     gotoTargetRoom: function(creep){
         Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.flagName]);

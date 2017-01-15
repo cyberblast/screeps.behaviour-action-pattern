@@ -17,14 +17,13 @@ module.exports = {
         }
     },
     nextAction: function(creep){
-        let carrySum = creep.sum;
         // at home
         if( creep.pos.roomName == creep.data.homeRoom ){
             // carrier filled
-            if( carrySum > 0 ){
+            if( creep.sum > 0 ){
                 let deposit = []; // deposit energy in...
                 // links?
-                if( creep.carry.energy == carrySum ) deposit = creep.room.structures.links.privateers;
+                if( creep.carry.energy == creep.sum ) deposit = creep.room.structures.links.privateers;
                 // storage?
                 if( creep.room.storage ) deposit.push(creep.room.storage);
                 // containers?
@@ -32,64 +31,56 @@ module.exports = {
                 // Choose the closest
                 if( deposit.length > 0 ){
                     let target = creep.pos.findClosestByRange(deposit);
-                    if( target.structureType == STRUCTURE_STORAGE && Creep.action.storing.assign(creep, target) ) return;
-                    else if(Creep.action.charging.assign(creep, target) ) return;
+                    if( target.structureType == STRUCTURE_STORAGE && this.assign(creep, Creep.action.storing) ) return;
+                    else if( this.assign(creep, Creep.action.charging, target) ) return;
                 }
-                //if( Creep.action.storing.assign(creep) ) return;
-                if( Creep.action.charging.assign(creep) ) return;
+                if( this.assign(creep, Creep.action.charging) ) return;
+                // no deposit :/ 
+                // try spawn & extensions
+                if( this.assign(creep, Creep.action.feeding) ) return;
+                // TODO: hauler shouldn't work. drop at spawn instead of calling worker behaviour
                 Creep.behaviour.worker.nextAction(creep);
                 return;
             }
             // empty
             // travelling
             this.gotoTargetRoom(creep);
+            return;
         }
-        // not at home
-        else {
-            // at target room
-            if( creep.data.destiny.room == creep.pos.roomName ){
-
+        // at target room
+        else if( creep.data.destiny.room == creep.pos.roomName ){
+            // if it's not full
+            if( creep.sum < (creep.carryCapacity*0.8) ) {
                 // get some energy
-                if( creep.sum < creep.carryCapacity*0.8 ) {
-
-                    let priority;
-                        priority = [
-                            Creep.action.picking,
-                            Creep.action.uncharging,
-                            Creep.action.reallocating,
-                            Creep.action.withdrawing,
-                            Creep.action.idle];
-
-                    for(var iAction = 0; iAction < priority.length; iAction++) {
-                        var action = priority[iAction];
-                        if(action.isValidAction(creep) &&
-                            action.isAddableAction(creep) &&
-                            action.assign(creep)) {
-                                return;
-                        }
-                    }
-
-                // carrier full
-                }else {
-                    this.goHome(creep);
-                    return;
-                }
+                if( this.assign(creep, Creep.action.picking) ) return;
+                if( this.assign(creep, Creep.action.uncharging) ) return;
             }
-            // not at target room
-            else {
+            // carrier full or everything picked
+            this.goHome(creep);
+            return;
+        }
+        // somewhere
+        else {
+            if( creep.sum > 0 )
+                this.goHome(creep);
+            else
                 this.gotoTargetRoom(creep);
-                return;
-            }
+            return;
         }
         // fallback
-        Task.mining.nextAction(creep);
+        // recycle self
+        let mother = Game.spawns[creep.data.motherSpawn];
+        if( mother ) {
+            this.assign(creep, Creep.action.recycling, mother);
+        }
+    },
+    assign: function(creep, action, target){        
+        return (action.isValidAction(creep) && action.isAddableAction(creep) && action.assign(creep, target));
     },
     gotoTargetRoom: function(creep){
-        Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.flagName]);
-        return;
+        return Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.flagName]);
     },
     goHome: function(creep){
-        Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
-        return;
+        return Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
     }
 }

@@ -94,6 +94,7 @@ var mod = {
         }
         creep.action = action;
         creep.target = target;
+        creep.data = entry;
     },
     registerCreepFlag: function(creep, flag) {
         if( flag && creep.data && creep.data.flagName && creep.data.flagName == flag.name && creep.flag.name == flag.name )
@@ -199,7 +200,6 @@ var mod = {
                         creep.flag = flag;
                     }
                 }
-
                 let action = ( entry.actionName && Creep.action[entry.actionName] ) ? Creep.action[entry.actionName] : null;
                 let target = action && entry.targetId ? Game.getObjectById(entry.targetId) || Game.spawns[entry.targetId] || Game.flags[entry.targetId] : null;
                 if( action && target ) this.registerAction( creep, action, target, entry );

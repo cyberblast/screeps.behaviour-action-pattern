@@ -71,7 +71,7 @@ var mod = {
     loop: function(){
         this.list = [];
         delete this._hasInvasionFlag;
-        var register = flag => {
+        let register = flag => {
             flag.creeps = {};
             if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
             this.list.push({
@@ -83,10 +83,11 @@ var mod = {
                 y: flag.pos.y,
                 cloaking: flag.cloaking
             });
-            Flag.found.trigger(flag);
         };
         _.forEach(Game.flags, register);
-        var clearStaleFlags = (flag,flagName) => {
+        let trigger = flag => Flag.found.trigger(flag);
+        _.forEach(Game.flags, trigger);
+        let clearStaleFlags = (flag,flagName) => {
             if(!Game.flags[flagName]) {
                 Flag.FlagRemoved.trigger(flagName);
                 delete(Memory.flags[flagName]);

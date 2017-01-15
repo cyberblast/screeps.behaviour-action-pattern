@@ -28,7 +28,7 @@ var Action = function(actionName){
     };
     // determines, if a target is (still) valid. Gets validated each tick. 
     // check possible override in derived action
-    this.isValidTarget = function(target){
+    this.isValidTarget = function(target, creep){
         return (target != null);
     };
     // determines, if an action is valid. Gets validated only once upon assignment. 
@@ -38,7 +38,7 @@ var Action = function(actionName){
     };
     // determines, if a target is valid. Gets validated only once upon assignment. 
     // check possible override in derived action
-    this.isAddableTarget = function(target){ // target is valid to be given to an additional creep
+    this.isAddableTarget = function(target, creep){ // target is valid to be given to an additional creep
         return (this.maxPerTarget === Infinity || !target.targetOf || target.targetOf.length < this.maxPerTarget);
     };
     // find a new target for that action
@@ -72,7 +72,7 @@ var Action = function(actionName){
     // returns the target (could be a ne one) if valid or null
     this.validateActionTarget = function(creep, target){
         if( this.isValidAction(creep) ){ // validate target or new
-            if( !this.isValidTarget(target)){
+            if( !this.isValidTarget(target, creep)){
                 if( this.renewTarget ){ // invalid. try to find a new one...
                     delete creep.data.path;
                     return this.newTarget(creep);

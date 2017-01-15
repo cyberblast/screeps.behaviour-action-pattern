@@ -1,22 +1,15 @@
 module.exports = {
     name: 'remoteMiner',
-    approach: function(creep){
-        let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.destiny.room);
-        let range = creep.pos.getRangeTo(targetPos);
-        if( range > 0 )
-            creep.drive( targetPos, 0, 0, range );
-        return range;
-    },
     run: function(creep) {
-        // if we're there, be a miner.
+        let oldTargetId = creep.data.targetId;
+        // assign Action
         if( creep.room.name == creep.data.destiny.room ){
+            // if we're there, be a miner.
             this.mine(creep);
             return;
-        }
-        // Assign next Action
-        let oldTargetId = creep.data.targetId;
-        if( creep.action == null  || creep.action.name == 'idle' ) {
-            Task.mining.nextAction(creep);
+        } else {
+            // else go there
+            Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.flagName]);
         }
 
         if( creep.data.targetId != oldTargetId ) {
@@ -28,7 +21,7 @@ module.exports = {
         } else {
             logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
         }
-    },
+    },    
     mine: function(creep) {
         let source;
         if( !creep.data.determinatedTarget ) { // select source
@@ -126,5 +119,12 @@ module.exports = {
                 }
             }
         }
+    },     
+    approach: function(creep){
+        let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.destiny.room);
+        let range = creep.pos.getRangeTo(targetPos);
+        if( range > 0 )
+            creep.drive( targetPos, 0, 0, range );
+        return range;
     }
 }

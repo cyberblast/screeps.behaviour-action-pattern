@@ -4,8 +4,7 @@ action.isValidAction = function(creep){
         creep.room.storage != null &&
         creep.sum > 0 &&
         (
-            creep.data.creepType == 'hauler' ||
-            creep.data.creepType == 'privateer' ||
+            creep.data.creepType != 'worker' ||
             (
                 creep.sum > creep.carry.energy ||
                 (

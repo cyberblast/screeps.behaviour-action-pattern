@@ -2,184 +2,167 @@ var mod = {
     register: () => {
         // when a new flag has been found (occurs every tick, for each flag)
         Flag.found.on( flag => Task.mining.handleFlagFound(flag) );
+        // when a flag has been removed
+        Flag.FlagRemoved.on( flagName => Task.mining.handleFlagRemoved(flagName) );
         // a creep starts spawning
         Creep.spawningStarted.on( params => Task.mining.handleSpawningStarted(params) );
-        // a creep completed spawning
-        Creep.spawningCompleted.on( creep => Task.mining.handleSpawningCompleted(creep) );
-        // a creep will die soon
-        Creep.predictedRenewal.on( creep => Task.mining.handleCreepDied(creep.name) );
-        // a creep died
-        Creep.died.on( name => Task.mining.handleCreepDied(name) );
-
-        // remove dead flags
-        // Task.mining.removeDeadFlags();
     },
     checkFlag: (flag) => {
-        if( flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor )
+        if( flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor ) {
+            flag.memory.roomName = flag.pos.roomName;
+            flag.memory.task = 'mining';
             return true;
+        }
         return false;
     },
-    // removeDeadFlags: () => {
-    //     flagMemory = Task.mining.memory("flags");
-
-    //     let validFlag = f => { Game.flags[f] && Game.flags[f].pos.roomName == flagMemory.names[f].pos.roomName }
-    //     let keepOrDelete = f => {
-    //         if( validFlag(f) )
-    //             return;
-    //         Task.clearMemory("mining", flagMemory.names[f].pos.roomName);
-    //         delete flagMemory.names[f];
-    //     }
-    //     _.forEach(Object.keys(flagMemory.names), keepOrDelete)
-    // },
+    handleFlagRemoved: flagName => {
+        // check flag
+        let flagMem = Memory.flags[flagName];
+        if( flagMem && flagMem.task === 'mining' && flagMem.roomName ){
+            // if there is still a mining flag in that room ignore. 
+            let flags = FlagDir.filter(FLAG_COLOR.claim.mining, new RoomPosition(25,25,flagMem.roomName), true);
+            if( flags && flags.length > 0 ) 
+                return;
+            else {
+                // no more mining in that room. 
+                // clear memory
+                Task.clearMemory('mining', flagMem.roomName);
+            }
+        }
+    },
     handleFlagFound: flag => {
+        // Analyze Flag
         if( Task.mining.checkFlag(flag) ){
             // check if a new creep has to be spawned
             Task.mining.checkForRequiredCreeps(flag);
-            // add flags into memory
-            // flagMemory = Task.mining.memory("flags");
-            // if(!flagMemory.names) flagMemory.names = {};
-            // if(!flagMemory.names[flag.name])
-            //     flagMemory.names[flag.name] = flag;
         }
-
     },
+    // remove creep from task memory of queued creeps
     handleSpawningStarted: params => {
         if ( !params.destiny || !params.destiny.task || params.destiny.task != 'mining' )
             return;
         let memory = Task.mining.memory(params.destiny.room);
-        // memory.creeps[params.destiny.role][params.name] = Game.creeps[params.name];
-        memory.queued[params.destiny.role].pop();
+        if( memory.queued[params.destiny.type] ) memory.queued[params.destiny.type].pop();
+        else if( params.destiny.role ) {
+            // temporary migration
+            if( params.destiny.role == "hauler" ) params.destiny.type = 'remoteHauler';
+            else if( params.destiny.role == "miner" ) params.destiny.type = 'remoteMiner';
+            else if( params.destiny.role == "worker" ) params.destiny.type = 'remoteWorker';
+            memory.queued[params.destiny.type].pop();
+        }
     },
-    handleSpawningCompleted: creep => {
-        let creepMemory = Memory.population[creep.name];
-        if (!creepMemory || !creepMemory.destiny || !creepMemory.destiny.task || creepMemory.destiny.task != 'mining' )
-            return;
-        Task.mining.nextAction(creep);
-    },
-    handleCreepDied: creepName => {
-        // let creepMemory = Memory.population[creepName];
-        // if (!creepMemory || !creepMemory.destiny || !creepMemory.destiny.task || creepMemory.destiny.task != 'mining' )
-        //     return;
-        // let memory = Task.mining.memory(creepMemory.destiny.room);
-        // if( !Game.creeps[creepName] ) {
-        //     delete memory.creeps[creepMemory.destiny.role][creepName];
-        // }
-    },
-
     // check if a new creep has to be spawned
     checkForRequiredCreeps: (flag) => {
         let spawnRoom = Room.bestSpawnRoomFor(flag.pos.roomName);
         const roomName = flag.pos.roomName;
         const room = Game.rooms[roomName];
-
         // Use the roomName as key in Task.memory?
         // Prevents accidentally processing same room multiple times if flags > 1
         let memory = Task.mining.memory(roomName);
 
-        // if( !memory.hasOwnProperty('creeps') ){
-        //     memory.creeps = {miner:{},hauler:{}};
-        // }
+        // get number of sources
+        let sourceCount;
+        // has visibility. get cached property.
+        if( room ) sourceCount = room.sources.length;
+        // no visibility, but been there before
+        else if( Memory.rooms[roomName] && Memory.rooms[roomName].sources ) sourceCount = Memory.rooms[roomName].sources.length
+        // never been there
+        else sourceCount = 1;
 
-        if( !memory.hasOwnProperty('queued') )
-            memory.queued = {miner:[], hauler:[], worker:[]};
-
-        if( !memory.queued.hasOwnProperty('miner') )
-            memory.queued.miner = [];
-        if( !memory.queued.hasOwnProperty('hauler') )
-            memory.queued.hauler = [];
-        if( !memory.queued.hasOwnProperty('worker') )
-            memory.queued.worker = [];
-
-        if( room && !memory.hasOwnProperty('sources') ){
-            memory.sources = [];
-            let sources = room.find(FIND_SOURCES);
-            for(x=0; x<sources.length;x++)
-                memory.sources.push(sources[x].id);
-        }
-
-        const sourceCount = memory.sources ? memory.sources.length : 1;
-
-        // todo count creeps by type needed per source / mineral
-        let haulerCount = memory.queued.hauler.length + _.filter(Game.creeps, function(c){return c.data && c.data.creepType=='remoteHauler' && c.data.destiny.room==roomName;}).length;
-        let minerCount = memory.queued.miner.length + _.filter(Game.creeps, function(c){return c.data && c.data.creepType=='remoteMiner' && c.data.destiny.room==roomName;}).length;
-        let workerCount = memory.queued.worker.length + _.filter(Game.creeps, function(c){return c.data && c.data.creepType=='remoteWorker' && c.data.destiny.room==roomName;}).length;
+        // TODO: don't iterate/filter all creeps (3 times) each tick. store numbers into memory (see guard tasks)
+        let haulerCount = memory.queued.remoteHauler.length + _.filter(Game.creeps, function(c){return c.data && c.data.creepType=='remoteHauler' && c.data.destiny.room==roomName;}).length;
+        let existingMiners = _.filter(Game.creeps, function(c){return c.data && c.data.creepType=='remoteMiner' && c.data.destiny.room==roomName;});
+        let minerCount = memory.queued.remoteMiner.length + existingMiners.length;
+        let workerCount = memory.queued.remoteWorker.length + _.filter(Game.creeps, function(c){return c.data && c.data.creepType=='remoteWorker' && c.data.destiny.room==roomName;}).length;
+        // TODO: calculate creeps by type needed per source / mineral
 
         if(minerCount < sourceCount) {
-            for(var i = 0; i < sourceCount; i++) {
-                let name = 'remoteMiner-' + flag.name;
-                let creep = Creep.setup.remoteMiner.buildParams(spawnRoom.structures.spawns[0]);
-                creep.name = name;
-                creep.destiny = { task: "mining", role: "miner", flagName: flag.name, room: flag.pos.roomName };
-                if( creep.parts.length === 0 ) {
-                    // creep has no body.
-                    global.logSystem(spawnRoom.name, dye(CRAYON.error, 'Mining Flag tried to queue a zero parts body miner. Aborted.' ));
-                    return;
-                }
-                // queue creep for spawning
-                spawnRoom.spawnQueueLow.push(creep);
-
-                // save queued creep to task memory
-                memory.queued.miner.push({
-                    room: roomName,
-                    name: name
-                });
+            for(let i = minerCount; i < sourceCount; i++) {
+                Task.mining.spawn(flag, 'remoteMiner', Task.mining.creepBodies.miner.fixed, Task.mining.creepBodies.miner.multi );
+            }
+        }
+        // only spawn haulers for sources a miner has been spawned for
+        let runningMiners = _.filter(existingMiners, creep => creep.spawning === false);
+        let maxHaulers = Math.ceil(runningMiners.length * REMOTE_HAULER_MULTIPLIER);
+        if(haulerCount < maxHaulers) {
+            for(let i = haulerCount; i < maxHaulers; i++) {
+                Task.mining.spawn(flag, 'remoteHauler', Task.mining.creepBodies.hauler.fixed, Task.mining.creepBodies.hauler.multi );
             }
         }
 
-        if(haulerCount < (sourceCount * REMOTE_HAULER_MULTIPLIER ) ) {
-            for(var i = 0; i < sourceCount * REMOTE_HAULER_MULTIPLIER; i++) {
-                let creep = Creep.setup.remoteHauler.buildParams(spawnRoom.structures.spawns[0]);
-                let name = 'remoteHauler-' + flag.name;
-                creep.name = name;
-                creep.destiny = { task: "mining", role: "hauler", flagName: flag.name, room: flag.pos.roomName };
-                if( creep.parts.length === 0 ) {
-                    // creep has no body.
-                    global.logSystem(spawnRoom.name, dye(CRAYON.error, 'Mining Flag tried to queue a zero parts body hauler. Aborted.' ));
-                    return;
-                }
-                // queue creep for spawning
-                spawnRoom.spawnQueueLow.push(creep);
-
-                // save queued creep to task memory
-                memory.queued.hauler.push({
-                    room: roomName,
-                    name: name
-                });
+        if( room && room.constructionSites.length > 0 && workerCount < REMOTE_WORKER_MULTIPLIER) {
+            for(let i = workerCount; i < REMOTE_WORKER_MULTIPLIER; i++) {
+                Task.mining.spawn(flag, 'remoteWorker', Task.mining.creepBodies.worker.fixed, Task.mining.creepBodies.worker.multi );
             }
-        }
-
-        if(workerCount < REMOTE_WORKER_MULTIPLIER) {
-            let creep = Creep.setup.remoteWorker.buildParams(spawnRoom.structures.spawns[0]);
-            let name = 'remoteWorker-' + flag.name;
-            creep.name = name;
-            creep.destiny = { task: "mining", role: "worker", flagName: flag.name, room: flag.pos.roomName };
-            if( creep.parts.length === 0 ) {
-                // creep has no body.
-                global.logSystem(spawnRoom.name, dye(CRAYON.error, 'Mining Flag tried to queue a zero parts body worker. Aborted.' ));
-                return;
-            }
-
-            // queue creep for spawning
-            spawnRoom.spawnQueueLow.push(creep);
-
-            // save queued creep to task memory
-            memory.queued.worker.push({
-                room: roomName,
-                name: name
-            });
         }
     },
     memory: key => {
-        return Task.memory('mining', key);
-    },
-    // define action assignment for creeps
-
-    nextAction: creep => {
-        // if not in the target room, travel there
-        if( creep.room.name != creep.data.destiny.room ){
-            Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.flagName]);
+        let memory = Task.memory('mining', key);
+        if( !memory.hasOwnProperty('queued') ){
+            memory.queued = {
+                remoteMiner:[], 
+                remoteHauler:[], 
+                remoteWorker:[]
+            };
         }
-    }
+
+        // temporary migration
+        if( memory.queued.miner ){
+            memory.queued.remoteMiner = memory.queued.miner;
+            delete memory.queued.miner;
+        }
+        if( memory.queued.hauler ){
+            memory.queued.remoteHauler = memory.queued.hauler;
+            delete memory.queued.hauler;
+        }
+        if( memory.queued.worker ){
+            memory.queued.remoteWorker = memory.queued.worker;
+            delete memory.queued.worker;
+        }
+
+        return memory;
+    }, 
+    spawn: (flag, type, fixedBody, multiBody) => {  
+        // get nearest room
+        let room = Room.bestSpawnRoomFor(flag.pos.roomName);
+        if( room.controller.level < Task.mining.minControllerLevel ) return;
+        // define new creep
+        let name = `${type}-${flag.name}`;
+        let creep = {
+            parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
+            name: name,
+            setup: type,
+            destiny: { task: "mining", type: type, flagName: flag.name, room: flag.pos.roomName }
+        };
+        if( creep.parts.length === 0 ) {
+            // creep has no body. 
+            global.logSystem(flag.pos.roomName, dye(CRAYON.error, `Mining Flag tried to queue a zero parts body ${type}. Aborted.` ));
+            return;
+        }
+        // queue creep for spawning
+        room.spawnQueueLow.push(creep);
+        // save queued creep to task memory
+        let memory = Task.mining.memory(flag.pos.roomName);
+        memory.queued[type].push({
+            room: room.name,
+            name: name
+        });
+    },
+    creepBodies: {
+        miner: {
+            fixed: [MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, CARRY],
+            multi: []
+        },
+        hauler: {
+            fixed: [CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, WORK],
+            multi: [CARRY, CARRY, MOVE]
+        },
+        worker: {
+            fixed: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, WORK, WORK, WORK],
+            multi: []
+        }
+    },
+    minControllerLevel: 4
 };
 
 module.exports = mod;

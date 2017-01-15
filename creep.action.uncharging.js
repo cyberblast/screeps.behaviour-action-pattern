@@ -3,9 +3,12 @@ action.renewTarget = false;
 action.isAddableAction = function(creep){ return true; }
 action.isAddableTarget = function(target){ return true;}
 action.isValidAction = function(creep){ return creep.sum < creep.carryCapacity; }
-action.isValidTarget = function(target){
+action.isValidTarget = function(target, creep){
+    let min;
+    if( creep.data.creepType.indexOf('remote') > 0 ) min = 250;
+    else min = 500;
     return ( target &&
-        (( target.structureType == 'container' && target.sum > 500 ) ||
+        (( target.structureType == 'container' && target.sum > min ) ||
         ( target.structureType == 'link' && target.energy > 0 )));
 };
 action.newTarget = function(creep){
@@ -20,8 +23,10 @@ action.newTarget = function(creep){
     }
 
     var that = this;
-    let isAddable = target => that.isValidTarget(target);
     if( creep.room.structures.container.in.length > 0 ) {
+        let min;
+        if( creep.data.creepType.indexOf('remote') > 0 ) min = 250;
+        else min = 500;
         // take from fullest IN container having energy
         let target = null;
         let filling = 0;
@@ -29,7 +34,7 @@ action.newTarget = function(creep){
             let contFilling = cont.sum;
             if( cont.targetOf )
                 contFilling -= _.sum( cont.targetOf.map( t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 )));
-            if( contFilling < Math.min(creep.carryCapacity - creep.sum, 500) ) return;
+            if( contFilling < Math.min(creep.carryCapacity - creep.sum, min) ) return;
             if( contFilling > filling ){
                 filling = contFilling ;
                 target = cont;

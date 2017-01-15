@@ -45,18 +45,12 @@ var mod = {
             worker: load("creep.behaviour.worker")
         };
         Creep.setup = {
-            claimer: load("creep.setup.claimer"),
             hauler: load("creep.setup.hauler"),
             healer: load("creep.setup.healer"),
-            melee: load("creep.setup.melee"),
             miner: load("creep.setup.miner"),
             mineralMiner: load("creep.setup.mineralMiner"),
-            remoteMiner: load("creep.setup.remoteMiner"),
-            remoteHauler: load("creep.setup.remoteHauler"),
-            remoteWorker: load("creep.setup.remoteWorker"),
             pioneer: load("creep.setup.pioneer"),
             privateer: load("creep.setup.privateer"),
-            ranger: load("creep.setup.ranger"),
             upgrader: load("creep.setup.upgrader"),
             worker: load("creep.setup.worker")
         };
