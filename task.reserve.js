@@ -1,5 +1,6 @@
 // This task will react on exploit, reserve and remotemine flags, sending a reserving creep to the flags position.
 module.exports = {
+    minControllerLevel: 4,
     // hook into events
     register: () => {
         // when a new flag has been found (occurs every tick, for each flag)
@@ -179,5 +180,3 @@ module.exports = {
         },
     }
 };
-
-

@@ -1,5 +1,6 @@
 // This task will react on claim flags (Green/Green), sending a claiming creep to the flags position.
 var mod = {
+    minControllerLevel: 3,
     // hook into events
     register: () => {
         // when a new flag has been found (occurs every tick, for each flag)

@@ -1,5 +1,6 @@
 // Defense task handles spotted invaders. Spawns defenders and gives them special behaviour.
 module.exports = {
+    minControllerLevel: 3,
     // hook into events
     register: () => {
         // When a new invader has been spotted

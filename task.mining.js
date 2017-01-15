@@ -1,4 +1,5 @@
 var mod = {
+    minControllerLevel: 4,
     register: () => {
         // when a new flag has been found (occurs every tick, for each flag)
         Flag.found.on( flag => Task.mining.handleFlagFound(flag) );
@@ -163,8 +164,7 @@ var mod = {
             multiBody: [], 
             behaviour: 'remoteWorker'
         }
-    },
-    minControllerLevel: 4
+    }
 };
 
 module.exports = mod;

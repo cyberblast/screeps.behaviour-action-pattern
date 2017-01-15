@@ -1,5 +1,6 @@
 // This task will react on pioneer flags - 4 for Green/White, 1 for Green/Red
 module.exports = {
+    minControllerLevel: 4,
     // hook into events
     register: () => {
         // when a new flag has been found (occurs every tick, for each flag)
@@ -173,5 +174,3 @@ module.exports = {
         },
     }
 };
-
-
