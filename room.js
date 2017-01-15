@@ -1,3 +1,6 @@
+// save original API functions
+let find = Room.prototype.find;
+
 var mod = {
     extend: function(){
         let Container = function(room){
@@ -889,7 +892,6 @@ var mod = {
             return Room.validFields(args.roomName, minX, maxX, minY, maxY, args.checkWalkable, args.where);
         };
 
-        let find = Room.prototype.find;
         Room.prototype.find = function (c, opt) {
             if (_.isArray(c)) {
                 return _(c)
