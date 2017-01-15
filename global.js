@@ -40,6 +40,11 @@ var mod = {
                         color: COLOR_RED,
                         secondaryColor: COLOR_YELLOW,
                         filter: {'color': COLOR_RED, 'secondaryColor': COLOR_YELLOW }
+                    },
+                    attackController: { // attack enemy controller and then claim
+                        color: COLOR_RED,
+                        secondaryColor: COLOR_CYAN,
+                        filter: {'color': COLOR_RED, 'secondaryColor': COLOR_CYAN },
                     }
                 },
                 //COLOR_PURPLE,
@@ -69,6 +74,7 @@ var mod = {
                         secondaryColor: COLOR_BROWN,
                         filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_BROWN}
                     }
+                    
                 },
                 defense: { // point to gather troops
                     color: COLOR_YELLOW,

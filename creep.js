@@ -26,7 +26,8 @@ var mod = {
             withdrawing: load("creep.action.withdrawing"),
             robbing:load("creep.action.robbing"),
             reallocating:load("creep.action.reallocating"),
-            recycling:load("creep.action.recycling")
+            recycling:load("creep.action.recycling"),
+            attackController:load("creep.action.attackController")
         };
         Creep.behaviour = {
             claimer: load("creep.behaviour.claimer"),
