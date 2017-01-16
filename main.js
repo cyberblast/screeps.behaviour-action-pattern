@@ -137,9 +137,9 @@ _.assign(global.Task, {
     pioneer: load("task.pioneer"),
     attackController: load("task.attackController")
 });
+Creep.Action = load("creep.Action");
+Creep.Setup = load("creep.Setup");
 _.assign(Creep, {
-    Action: load("creep.Action"),
-    Setup: load("creep.Setup"),
     action: {
         building: load("creep.action.building"), 
         charging: load("creep.action.charging"),

@@ -174,8 +174,8 @@ mod.analyze = function(){
             else if(creep.ticksToLive == ( entry.predictedRenewal ? entry.predictedRenewal : entry.spawningTime)) { // will die in ticks equal to spawning time or custom
                 if(CENSUS_ANNOUNCEMENTS) console.log(dye(CRAYON.system, entry.creepName + ' &gt; ') + dye(CRAYON.death, 'Farewell!') );
                 this.predictedRenewal.push(creep.name);
-                if( !spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' ) {
-                    spawnsToProbe.push(entry.motherSpawn);
+                if( !this.spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' ) {
+                    this.spawnsToProbe.push(entry.motherSpawn);
                 }
             } 
             entry.ttl = creep.ticksToLive;
@@ -213,7 +213,7 @@ mod.analyze = function(){
 
     let validateAssignment = entry => {
         let creep = Game.creeps[entry.creepName];
-        if( creep.action && creep.target) {
+        if( creep && creep.action && creep.target) {
             let oldId = creep.target.id || creep.target.name;
             let target = creep.action.validateActionTarget(creep, creep.target);
             if( !target ) {
