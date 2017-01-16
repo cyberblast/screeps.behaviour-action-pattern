@@ -116,7 +116,7 @@ module.exports = {
             // get spawning room and calculate defense creep
             let room = Room.bestSpawnRoomFor(invaderCreep.pos.roomName);
             // TODO: Compile smaller body (only slightly bigger than remainingThreat)
-            let body = Creep.Setup.compileBody(room, Task.defense.creep.defender.fixedBody, Task.defense.creep.defender.multiBody, true);
+            let body = Creep.compileBody(room, Task.defense.creep.defender.fixedBody, Task.defense.creep.defender.multiBody, true);
             let bodyThreat = Creep.bodyThreat(body);
             let orderId = global.guid();
             remainingThreat -= bodyThreat;

@@ -37,7 +37,7 @@ var mod = {
             let multiBody = Task.claim.creep.claimer.multiBody;
             let name = Task.claim.creep.claimer.name + '-' + flag.name;
             let creep = {
-                parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
+                parts: Creep.compileBody(room, fixedBody, multiBody, true),
                 name: name,
                 behaviour: Task.claim.creep.claimer.behaviour,
                 destiny: { task: "claim", flagName: flag.name }
