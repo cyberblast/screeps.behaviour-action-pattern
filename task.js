@@ -7,6 +7,7 @@ var mod = {
     reserve: load("task.reserve"),
     pioneer: load("task.pioneer"),
     attackController: load("task.attackController"),
+    robbing: load("task.robbing"),
 
     // register tasks (hook up into events)
     register: function () {
@@ -17,7 +18,8 @@ var mod = {
             Task.reserve,
             Task.mining,
             Task.pioneer,
-            Task.attackController
+            Task.attackController,
+            Task.robbing
         ];
         var loop = task => {
             task.register();
