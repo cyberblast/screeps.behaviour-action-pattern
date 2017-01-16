@@ -124,10 +124,15 @@ var mod = {
             // clean/validate task memory running creeps
             let running = []
             let validateRunning = o => {
+                // invalidate dead or old creeps for predicted spawning
                 let creep = Game.creeps[o];
-                // invalidate old creeps for predicted spawning
+                if( !creep || !creep.data ) return
                 // TODO: better distance calculation
-                if( creep && creep.name != name && creep.data !== undefined && creep.data.spawningTime !== undefined && creep.ticksToLive > (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*50) ) ) {
+                let prediction;
+                if( creep.data.predictedRenewal ) prediction = creep.data.predictedRenewal;
+                else if( creep.data.spawningTime ) prediction = (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*50));
+                else prediction = (routeRange(creep.data.homeRoom, flag.pos.roomName)+1) * 50;
+                if( creep.name != name && creep.ticksToLive > prediction ) {
                     running.push(o);
                 }
             };
