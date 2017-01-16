@@ -21,9 +21,6 @@ delete Memory.modules;
 
 // create market order (replace [roomName] with target room or remove it for subscription tokens)
 Game.market.createOrder(type, resourceType, price, totalAmount, roomName);
-//these should work as well
-Game.market.createBuyOrder(resourceType, price, totalAmount, roomName);
-Game.market.createSellOrder(resourceType, price, totalAmount, roomName);
 
 //accept market sell or buy order
 Game.market.deal(orderId, amount, roomName);

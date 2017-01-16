@@ -48,7 +48,7 @@ module.exports = {
             let multiBody = Task.pioneer.creep.pioneer.multiBody;
             let name = Task.pioneer.creep.pioneer.name + '-' + flag.pos.roomName;
             let creep = {
-                parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
+                parts: Creep.compileBody(room, fixedBody, multiBody, true),
                 name: name,
                 maxMulti: 4,
                 behaviour: Task.pioneer.creep.pioneer.behaviour,

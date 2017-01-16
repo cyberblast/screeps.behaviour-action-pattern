@@ -45,7 +45,7 @@ var mod = {
             let multiBody = Task.guard.creep.guard.multiBody;
             let name = Task.guard.creep.guard.name + '-' + flag.name;
             let creep = {
-                parts: Creep.Setup.compileBody(room, fixedBody, multiBody, true),
+                parts: Creep.compileBody(room, fixedBody, multiBody, true),
                 name: name,
                 behaviour: Task.guard.creep.guard.behaviour,
                 destiny: { task: "guard", flagName: flag.name }
