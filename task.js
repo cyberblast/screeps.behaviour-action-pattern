@@ -45,7 +45,7 @@ var mod = {
         destiny.targetName = targetName;
         let name = `${creepDefinition.name || creepDefinition.behaviour}-${targetName}`;
         let creepSetup = {
-            parts: Creep.Setup.compileBody(room, creepDefinition.fixedBody, creepDefinition.multiBody, true),
+            parts: Creep.compileBody(room, creepDefinition.fixedBody, creepDefinition.multiBody, true),
             name: name,
             behaviour: creepDefinition.behaviour,
             destiny: destiny, 

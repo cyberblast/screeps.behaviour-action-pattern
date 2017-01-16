@@ -87,7 +87,48 @@ var mod = {
                     return i;
                 }
             }
-        }
+        };
+        
+        Creep.bodyCosts = function(body){
+            let costs = 0;
+            if( body ){
+                body.forEach(function(part){
+                    costs += BODYPART_COST[part];
+                });
+            }
+            return costs;
+        };
+        Creep.multi = function (room, fixedBody, multiBody) {
+            let fixedCosts = Creep.bodyCosts(fixedBody);
+            let multiCosts = Creep.bodyCosts(multiBody);
+            if(multiCosts === 0) return 0; // prevent divide-by-zero
+            let maxParts = Math.floor((50 - fixedBody.length) / multiBody.length);
+            let maxAffordable = Math.floor((room.energyCapacityAvailable - fixedCosts) / multiCosts);
+            return _.min([maxParts, maxAffordable]);
+        };
+        Creep.partsComparator = function (a, b) {
+            let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, HEAL, MOVE];
+            let indexOfA = partsOrder.indexOf(a);
+            let indexOfB = partsOrder.indexOf(b);
+            return indexOfA - indexOfB;
+        };
+        Creep.compileBody = function (room, fixedBody, multiBody, sort = false) {
+            var parts = [];
+            let multi = Creep.multi(room, fixedBody, multiBody);
+            for (let iMulti = 0; iMulti < multi; iMulti++) {
+                parts = parts.concat(multiBody);
+            }
+            for (let iPart = 0; iPart < fixedBody.length; iPart++) {
+                parts[parts.length] = fixedBody[iPart];
+            }
+            if( sort ) parts.sort(Creep.partsComparator);            
+            if( parts.includes(HEAL) ) {
+                let index = parts.indexOf(HEAL);
+                parts.splice(index, 1);
+                parts.push(HEAL);
+            }
+            return parts;
+        };
 
         Creep.partThreat = {
             'move': { common: 0, boosted: 0 },
@@ -99,7 +140,7 @@ var mod = {
             'claim': { common: 1, boosted: 3 },
             'tough': { common: 1, boosted: 3 },
             tower: 25
-        }
+        };
         Creep.bodyThreat = function(body) {
             let threat = 0;
             let evaluatePart = part => {
@@ -107,7 +148,7 @@ var mod = {
             };
             body.forEach(evaluatePart);
             return threat;
-        }
+        };
 
         Creep.register = function() {
             for (const action in Creep.action) {
@@ -129,20 +170,6 @@ var mod = {
                 return (this.body.some((part) => ( partTypes.includes(part.type) && part.hits > 0 )));
             else return (this.body.some((part) => ( part.type == partTypes && part.hits > 0 )));
         } 
-        // TODO: reduce obsolete functions (check usage & update to use hasActiveBodyparts)
-        // obsolete
-        Creep.prototype.hasActiveOffensivePart = function(){
-            return this.hasActiveBodyparts([ATTACK, RANGED_ATTACK]);
-        }
-        // obsolete
-        Creep.prototype.hasActiveAttackPart = function(){
-            return this.hasActiveBodyparts(ATTACK);
-        }
-        // obsolete
-        Creep.prototype.hasActiveRangedAttackPart = function(){
-            return this.hasActiveBodyparts(RANGED_ATTACK);
-        }
-
         Creep.prototype.run = function(behaviour){
             if( !this.spawning ){
                 if(!behaviour && this.data && this.data.creepType) {

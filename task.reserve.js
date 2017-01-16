@@ -60,6 +60,7 @@ module.exports = {
     // when a creep starts spawning
     handleSpawningStarted: params => { // params: {spawn: spawn.name, name: creep.name, destiny: creep.destiny}
         // ensure it is a creep which has been queued by this task (else return)
+        
         if ( !params.destiny || !params.destiny.task || params.destiny.task != 'reserve' )
             return;
         // get flag which caused queueing of that creep
@@ -104,7 +105,6 @@ module.exports = {
             let validateSpawning = o => {
                 let spawn = Game.spawns[o.spawn];
                 if( spawn && ((spawn.spawning && spawn.spawning.name == o.name) || (spawn.newSpawn && spawn.newSpawn.name == o.name))) {
-                    count++;
                     spawning.push(o);
                 }
             };
@@ -128,10 +128,15 @@ module.exports = {
             // clean/validate task memory running creeps
             let running = []
             let validateRunning = o => {
+                // invalidate dead or old creeps for predicted spawning
                 let creep = Game.creeps[o];
-                // invalidate old creeps for predicted spawning
+                if( !creep || !creep.data ) return
                 // TODO: better distance calculation
-                if( creep && creep.name != name && creep.data !== undefined && creep.data.spawningTime !== undefined && creep.ticksToLive > (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*25) ) ) {
+                let prediction;
+                if( creep.data.predictedRenewal ) prediction = creep.data.predictedRenewal;
+                else if( creep.data.spawningTime ) prediction = (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*50));
+                else prediction = (routeRange(creep.data.homeRoom, flag.pos.roomName) + 1) * 50;
+                if( creep.name != name && creep.ticksToLive > prediction ) {
                     running.push(o);
                 }
             };

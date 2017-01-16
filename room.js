@@ -156,7 +156,7 @@ var mod = {
                     }
                 }
             });
-        }
+        };
 
         let Structures = function(room){
             this.room = room;
@@ -794,7 +794,33 @@ var mod = {
         Room.bestSpawnRoomFor = function(targetRoomName) {
             var range = room => room.my ? routeRange(room.name, targetRoomName) : Infinity;
             return _.min(Game.rooms, range);
-        }
+        };
+        // find a room to spawn
+        // params: { targetRoom, minRCL = 0, maxRange = Infinity, minEnergyAvailable = 0, minEnergyCapacity = 0, callBack = null, allowTargetRoom = false, rangeRclRatio = 3, rangeQueueRatio = 51 }
+        // requiredParams: targetRoom
+        Room.findSpawnRoom = function(params){
+            if( !params || !params.targetRoom ) return null;
+            // filter validRooms
+            let isValidRoom = room => (
+                room.my && 
+                (params.minEnergyCapacity === undefined || params.minEnergyCapacity >= room.energyCapacityAvailable) &&
+                (params.minEnergyAvailable === undefined || params.minEnergyAvailable >= room.energyAvailable) &&
+                (room.name != params.targetRoom || allowTargetRoom === true) && 
+                (params.minRCL === undefined || room.controller.level >= params.minRCL) && 
+                (params.callBack === undefined || params.callBack(room)) 
+            );
+            let validRooms = _.filter(Game.rooms, isValidRoom);
+            if( validRooms.length == 0 ) return null;
+            // select "best"
+            // range + roomLevelsUntil8/rangeRclRatio + spawnQueueDuration/rangeQueueRatio
+            let queueTime = queue => _.sum(queue, parts.length*3);
+            let roomTime = room => ((queueTime(room.spawnQueueLow)*0.9) + queueTime(room.spawnQueueMedium) + (queueTime(room.spawnQueueHigh)*1.1) ) / room.structures.spawns.length;
+            let evaluation = room => { return routeRange(room.name, targetRoomName) + 
+                ( (8-room.controller.level) / (params.rangeRclRatio||3) ) + 
+                ( roomTime(room) / (params.rangeQueueRatio||51) );
+            }
+            let best = _.min(validRooms, evaluation);
+        };
         Room.getCostMatrix = function(roomName) {
             var room = Game.rooms[roomName];
             if(!room) return;
@@ -900,7 +926,7 @@ var mod = {
                     .value();
             } else
                 return find.apply(this, arguments);
-        }
+        };
 
         Room.prototype.findRoute = function(targetRoomName, checkOwner = true, preferHighway = true){
             if (this.name == targetRoomName)  return [];
