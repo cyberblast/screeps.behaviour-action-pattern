@@ -1,59 +1,5 @@
 var mod = {
     extend: function(){
-        Creep.Action = load("creep.Action"),
-        Creep.Setup = load("creep.Setup"),
-        Creep.action = {
-            building: load("creep.action.building"), 
-            charging: load("creep.action.charging"),
-            claiming: load("creep.action.claiming"),
-            defending: load("creep.action.defending"),
-            dismantling: load("creep.action.dismantling"),
-            feeding: load("creep.action.feeding"), 
-            fortifying: load("creep.action.fortifying"), 
-            fueling: load("creep.action.fueling"), 
-            guarding: load("creep.action.guarding"), 
-            harvesting: load("creep.action.harvesting"),
-            healing: load("creep.action.healing"),
-            idle: load("creep.action.idle"),
-            invading: load("creep.action.invading"),
-            picking: load("creep.action.picking"), 
-            repairing: load("creep.action.repairing"), 
-            reserving: load("creep.action.reserving"),
-            travelling: load("creep.action.travelling"), 
-            storing: load("creep.action.storing"), 
-            uncharging: load("creep.action.uncharging"),
-            upgrading: load("creep.action.upgrading"), 
-            withdrawing: load("creep.action.withdrawing"),
-            robbing:load("creep.action.robbing"),
-            reallocating:load("creep.action.reallocating"),
-            recycling:load("creep.action.recycling"),
-            attackController:load("creep.action.attackController")
-        };
-        Creep.behaviour = {
-            claimer: load("creep.behaviour.claimer"),
-            hauler: load("creep.behaviour.hauler"),
-            healer: load("creep.behaviour.healer"),
-            melee: load("creep.behaviour.melee"),
-            miner: load("creep.behaviour.miner"),
-            mineralMiner: load("creep.behaviour.mineralMiner"),
-            remoteMiner: load("creep.behaviour.remoteMiner"),
-            remoteHauler: load("creep.behaviour.remoteHauler"),
-            remoteWorker: load("creep.behaviour.remoteWorker"),
-            pioneer: load("creep.behaviour.pioneer"),
-            privateer: load("creep.behaviour.privateer"),
-            ranger: load("creep.behaviour.ranger"),
-            upgrader: load("creep.behaviour.upgrader"),
-            worker: load("creep.behaviour.worker")
-        };
-        Creep.setup = {
-            hauler: load("creep.setup.hauler"),
-            healer: load("creep.setup.healer"),
-            miner: load("creep.setup.miner"),
-            mineralMiner: load("creep.setup.mineralMiner"),
-            privateer: load("creep.setup.privateer"),
-            upgrader: load("creep.setup.upgrader"),
-            worker: load("creep.setup.worker")
-        };
         Creep.loop = function(){
             var run = creep => creep.run();
             _.forEach(Game.creeps, run);

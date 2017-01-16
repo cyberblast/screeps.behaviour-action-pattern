@@ -1,9 +1,5 @@
 var mod = {
-    custom: function(){
-        //console.log('base');
-    },
     init: function(params){
-        // START LOCAL REFERENCES ONLY
         // make params available globally
         _.assign(global, params);
         // Add more stuff to global
@@ -286,21 +282,6 @@ var mod = {
                     return v.toString(16);
                 });
             }
-        });
-        // END LOCAL REFERENCES ONLY
-
-        // Load extension functions
-        Creep.extend = load("creep").extend;
-        Room.extend = load("room").extend;
-        Spawn.extend = load("spawn").extend;
-
-        _.assign(global, {
-            // load modules
-            Extensions: load("extensions"),
-            Population: load("population"),
-            FlagDir: load("flagDir"),
-            Task: load("task"),
-            Tower: load("tower"),
         });
     }
 }
