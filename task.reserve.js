@@ -60,6 +60,7 @@ module.exports = {
     // when a creep starts spawning
     handleSpawningStarted: params => { // params: {spawn: spawn.name, name: creep.name, destiny: creep.destiny}
         // ensure it is a creep which has been queued by this task (else return)
+        
         if ( !params.destiny || !params.destiny.task || params.destiny.task != 'reserve' )
             return;
         // get flag which caused queueing of that creep
@@ -104,7 +105,6 @@ module.exports = {
             let validateSpawning = o => {
                 let spawn = Game.spawns[o.spawn];
                 if( spawn && ((spawn.spawning && spawn.spawning.name == o.name) || (spawn.newSpawn && spawn.newSpawn.name == o.name))) {
-                    count++;
                     spawning.push(o);
                 }
             };
