@@ -16,7 +16,7 @@ module.exports = {
     },
     // for each flag
     handleFlagFound: flag => {
-        // if it is a pioneer, exploit or remote mine flag
+        // if it is a pioneer single or spawn
         if( flag.color == FLAG_COLOR.claim.pioneer.color && flag.secondaryColor == FLAG_COLOR.claim.pioneer.secondaryColor ||
             flag.color == FLAG_COLOR.claim.spawn.color && flag.secondaryColor == FLAG_COLOR.claim.spawn.secondaryColor){
             // check if a new creep has to be spawned
@@ -35,11 +35,9 @@ module.exports = {
         let count = memory.queued.length + memory.spawning.length + memory.running.length;
         var pNeed = 1;
         if(flag.color == FLAG_COLOR.claim.spawn.color && flag.secondaryColor == FLAG_COLOR.claim.spawn.secondaryColor) pNeed = 4;
-       // console.log("pionner's requested: " + count + " of " + pNeed + " for " + flag.pos.roomName)
-    
+         
         // count creeps assigned to task
- 	    
-        // if creep count below requirement spawn a new creep creep 
+ 	    // if creep count below requirement spawn a new creep creep 
         if( count < pNeed ) {
             // get nearest room
             let room = Room.bestSpawnRoomFor(flag.pos.roomName);
@@ -139,6 +137,7 @@ module.exports = {
             let validateRunning = o => {
                 // invalidate dead or old creeps for predicted spawning
                 let creep = Game.creeps[o];
+                // invalidate old creeps for predicted spawning
                 if( !creep || !creep.data ) return
                 // TODO: better distance calculation
                 let prediction;
