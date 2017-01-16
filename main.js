@@ -64,6 +64,23 @@ global.tryRequire = (path, silent = false) => {
     }
     return mod;
 };
+// inject members of alien class into base class. specify a namespace to call originals from baseObject.baseOf[namespace]['<functionName>'] later
+global.inject = (base, alien, namespace) => {
+    let keys = _.keys(alien);
+    for (const key of keys) {
+        if (typeof alien[key] === "function") {
+            if( namespace ){
+                let original = base[key];
+                if( !base.baseOf ) base.baseOf = {};
+                if( !base.baseOf[namespace] ) base.baseOf[namespace] = {};
+                if( !base.baseOf[namespace][key] ) base.baseOf[namespace][key] = original;
+            }
+            base[key] = alien[key].bind(base);
+        } else {
+            base[key] = alien[key]
+        }
+    }
+};
 // partially override a module using a registered viral file
 global.infect = (mod, namespace, modName) => {
     if( Memory.modules[namespace][modName] ) {
@@ -71,22 +88,7 @@ global.infect = (mod, namespace, modName) => {
         let viralOverride = tryRequire(`./${namespace}.${modName}`);
         // override
         if( viralOverride ) {
-            let keys = _.keys(viralOverride);
-            for (const key of keys) {
-                if (typeof viralOverride[key] === "function") {
-                    let original = mod[key];
-                    // will result in callstack exceed :/
-                    // if( !mod[key].original ) mod[key].original = original;
-                    if( !mod.baseOf ) mod.baseOf = {};
-                    // namespace will allow to extend multiple times.
-                    if( !mod.baseOf[namespace] ) mod.baseOf[namespace] = {};
-                    if( !mod.baseOf[namespace][key] ) mod.baseOf[namespace][key] = original;
-                    
-                    mod[key] = viralOverride[key].bind(mod);
-                } else {
-                    mod[key] = viralOverride[key]
-                }
-            }
+            global.inject(mod, viralOverride, namespace);
         }
         // cleanup
         else delete Memory.modules[namespace][modName];
@@ -115,9 +117,10 @@ global.load = (modName) => {
 };
 
 // Initialize global & parameters
-let params = load("parameter");
-let glob = load("global");
-glob.init(params);
+//let glob = load("global");
+global.inject(global, load("global"));
+_.assign(global, load("parameter"));
+global.mainInjection = load("mainInjection");
 
 // Load modules
 _.assign(global, {
@@ -191,55 +194,59 @@ _.assign(Creep, {
         privateer: load("creep.setup.privateer"),
         upgrader: load("creep.setup.upgrader"),
         worker: load("creep.setup.worker")
-    },
-    extend: load("creep").extend
+    }
 });
-Room.extend = load("room").extend;
-Spawn.extend = load("spawn").extend;
-// custom load injection
-if( glob.load ) glob.load();
+global.inject(Creep, load("creep"));
+global.inject(Room, load("room"));
+global.inject(Spawn, load("spawn"));
+// custom boot
+if( global.mainInjection.boot ) global.mainInjection.boot();
 
 // Extend server objects
+global.extend();
 Extensions.extend();
 Creep.extend();
 Room.extend();
 Spawn.extend();
 FlagDir.extend();
-// custom extend injection
-if( glob.extend ) glob.extend();
+// custom extend
+if( global.mainInjection.extend ) global.mainInjection.extend();
 
 module.exports.loop = function () {
     // ensure up to date parameters
     _.assign(global, load("parameter"));
+    global.isNewServer = Game.cacheTime !== Game.time-1 || Game.time - Game.lastServerSwitch > 50; // enforce reload after 50 ticks
+    if( global.isNewServer ) Game.lastServerSwitch = Game.time;
 
-    // Flush & create cache
+    // Flush cache
     Events.flush();
     Population.flush();
     FlagDir.flush();
-    // custom flush injection
-    if( glob.flush ) glob.flush();
+    Room.flush();
+    // custom flush
+    if( global.mainInjection.flush ) global.mainInjection.flush();
 
     // analyze environment
     Population.analyze();
     FlagDir.analyze();
-    Room.loop();
-    // custom analyze injection
-    if( glob.analyze ) glob.analyze();
+    Room.analyze();
+    // custom analyze
+    if( global.mainInjection.analyze ) global.mainInjection.analyze();
 
     // Register event hooks
     Creep.register();
     Task.register();
-    // custom register injection
-    if( glob.register ) glob.register();
+    // custom register
+    if( global.mainInjection.register ) global.mainInjection.register();
 
     // Execution
     Population.execute();
     FlagDir.execute();
-    Room.loop();
+    Room.execute();
     Creep.loop();
     Spawn.loop();
-    // custom execute injection
-    if( glob.execute ) glob.execute();
+    // custom execute
+    if( global.mainInjection.execute ) global.mainInjection.execute();
 
     // Postprocessing
     if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
@@ -247,11 +254,8 @@ module.exports.loop = function () {
     processReports();
     Population.cleanup();
     FlagDir.cleanup();
-    // custom cleanup injection
-    if( glob.cleanup ) glob.cleanup();
-
-    // deprecated
-    if( glob.custom ) glob.custom();
+    // custom cleanup
+    if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
 
     Game.cacheTime = Game.time;
 };
