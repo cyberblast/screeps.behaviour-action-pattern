@@ -199,8 +199,6 @@ _.assign(Creep, {
 global.inject(Creep, load("creep"));
 global.inject(Room, load("room"));
 global.inject(Spawn, load("spawn"));
-// custom boot
-if( global.mainInjection.boot ) global.mainInjection.boot();
 
 // Extend server objects
 global.extend();
@@ -213,6 +211,14 @@ FlagDir.extend();
 if( global.mainInjection.extend ) global.mainInjection.extend();
 
 module.exports.loop = function () {
+    // ensure required memory namespaces
+    if (Memory.modules === undefined) 
+        Memory.modules = {};
+    if (Memory.modules.viral === undefined) 
+        Memory.modules.viral = {};
+    if (Memory.modules.internalViral === undefined) 
+        Memory.modules.internalViral = {};
+
     // ensure up to date parameters
     _.assign(global, load("parameter"));
     global.isNewServer = Game.cacheTime !== Game.time-1 || Game.time - Game.lastServerSwitch > 50; // enforce reload after 50 ticks
