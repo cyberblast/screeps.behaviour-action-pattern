@@ -1,4 +1,4 @@
-// This task will react onrobbing flags (invade/rob or red/green), sending 2 creeps to rob that room
+// This task will react on robbing flags (invade/rob or red/yellow), sending 2 creeps to rob that room
 module.exports = {
     minControllerLevel: 4,
     // hook into events
