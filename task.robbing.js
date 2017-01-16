@@ -95,7 +95,6 @@ module.exports = {
             let validateSpawning = o => {
                 let spawn = Game.spawns[o.spawn];
                 if( spawn && ((spawn.spawning && spawn.spawning.name == o.name) || (spawn.newSpawn && spawn.newSpawn.name == o.name))) {
-                    count++;
                     spawning.push(o);
                 }
             };
