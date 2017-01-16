@@ -52,7 +52,7 @@ var Setup = function(typeName){
         };
         memory.setup = this.type;
         memory.parts = this.parts(spawn.room);
-        memory.cost = Creep.bodyCosts(memory.parts);
+        memory.cost = Creep.Setup.bodyCosts(memory.parts);
         memory.mother = spawn.name;
         memory.home = spawn.pos.roomName;
         for( var son = 1; memory.name == null || Game.creeps[memory.name]; son++ ) {
@@ -127,8 +127,8 @@ var Setup = function(typeName){
 
     this.multi = function(room){
         let rcl = this.RCL[room.controller.level];
-        let fixedCosts = Creep.bodyCosts(this.SelfOrCall(rcl.fixedBody, room));
-        let multiCosts = Creep.bodyCosts(this.SelfOrCall(rcl.multiBody, room));
+        let fixedCosts = Creep.Setup.bodyCosts(this.SelfOrCall(rcl.fixedBody, room));
+        let multiCosts = Creep.Setup.bodyCosts(this.SelfOrCall(rcl.multiBody, room));
         let max = this.SelfOrCall(rcl.maxMulti, room);
         if( max == 0 || multiCosts == 0 ) return 0;
         let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
@@ -182,9 +182,49 @@ var Setup = function(typeName){
     this.maxCost = function(room){
         let c = this;
         let rcl = c.RCL[room.controller.level];
-        return (Creep.bodyCosts( c.SelfOrCall(rcl.multiBody, room) ) * c.SelfOrCall(rcl.maxMulti, room)) + (Creep.bodyCosts(c.SelfOrCall(rcl.fixedBody, room)));
+        return (Creep.Setup.bodyCosts( c.SelfOrCall(rcl.multiBody, room) ) * c.SelfOrCall(rcl.maxMulti, room)) + (Creep.Setup.bodyCosts(c.SelfOrCall(rcl.fixedBody, room)));
     };
 }
+Setup.bodyCosts = function(body){
+    let costs = 0;
+    if( body ){
+        body.forEach(function(part){
+            costs += BODYPART_COST[part];
+        });
+    }
+    return costs;
+};
+Setup.multi = function (room, fixedBody, multiBody) {
+    let fixedCosts = Creep.Setup.bodyCosts(fixedBody);
+    let multiCosts = Creep.Setup.bodyCosts(multiBody);
+    if(multiCosts === 0) return 0; // prevent divide-by-zero
+    let maxParts = Math.floor((50 - fixedBody.length) / multiBody.length);
+    let maxAffordable = Math.floor((room.energyCapacityAvailable - fixedCosts) / multiCosts);
+    return _.min([maxParts, maxAffordable]);
+};
+Setup.partsComparator = function (a, b) {
+    let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, HEAL, MOVE];
+    let indexOfA = partsOrder.indexOf(a);
+    let indexOfB = partsOrder.indexOf(b);
+    return indexOfA - indexOfB;
+};
+Setup.compileBody = function (room, fixedBody, multiBody, sort = false) {
+    var parts = [];
+    let multi = Creep.Setup.multi(room, fixedBody, multiBody);
+    for (let iMulti = 0; iMulti < multi; iMulti++) {
+        parts = parts.concat(multiBody);
+    }
+    for (let iPart = 0; iPart < fixedBody.length; iPart++) {
+        parts[parts.length] = fixedBody[iPart];
+    }
+    if( sort ) parts.sort(Creep.Setup.partsComparator);            
+    if( parts.includes(HEAL) ) {
+        let index = parts.indexOf(HEAL);
+        parts.splice(index, 1);
+        parts.push(HEAL);
+    }
+    return parts;
+};
 Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
     if( !flagFilter ) {
         throw new Error("undefined flagFilter");

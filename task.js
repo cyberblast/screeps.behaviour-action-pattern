@@ -1,4 +1,13 @@
-let mod = {
+var mod = {
+    // load all task modules
+    guard: load("task.guard"),
+    defense: load("task.defense"),
+    mining: load("task.mining"),
+    claim: load("task.claim"),
+    reserve: load("task.reserve"),
+    pioneer: load("task.pioneer"),
+    attackController: load("task.attackController"),
+
     // register tasks (hook up into events)
     register: function () {
         let tasks = [
@@ -36,7 +45,7 @@ let mod = {
         destiny.targetName = targetName;
         let name = `${creepDefinition.name || creepDefinition.behaviour}-${targetName}`;
         let creepSetup = {
-            parts: Creep.compileBody(room, creepDefinition.fixedBody, creepDefinition.multiBody, true),
+            parts: Creep.Setup.compileBody(room, creepDefinition.fixedBody, creepDefinition.multiBody, true),
             name: name,
             behaviour: creepDefinition.behaviour,
             destiny: destiny, 

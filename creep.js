@@ -1,5 +1,59 @@
 var mod = {
     extend: function(){
+        Creep.Action = load("creep.Action"),
+        Creep.Setup = load("creep.Setup"),
+        Creep.action = {
+            building: load("creep.action.building"), 
+            charging: load("creep.action.charging"),
+            claiming: load("creep.action.claiming"),
+            defending: load("creep.action.defending"),
+            dismantling: load("creep.action.dismantling"),
+            feeding: load("creep.action.feeding"), 
+            fortifying: load("creep.action.fortifying"), 
+            fueling: load("creep.action.fueling"), 
+            guarding: load("creep.action.guarding"), 
+            harvesting: load("creep.action.harvesting"),
+            healing: load("creep.action.healing"),
+            idle: load("creep.action.idle"),
+            invading: load("creep.action.invading"),
+            picking: load("creep.action.picking"), 
+            repairing: load("creep.action.repairing"), 
+            reserving: load("creep.action.reserving"),
+            travelling: load("creep.action.travelling"), 
+            storing: load("creep.action.storing"), 
+            uncharging: load("creep.action.uncharging"),
+            upgrading: load("creep.action.upgrading"), 
+            withdrawing: load("creep.action.withdrawing"),
+            robbing:load("creep.action.robbing"),
+            reallocating:load("creep.action.reallocating"),
+            recycling:load("creep.action.recycling"),
+            attackController:load("creep.action.attackController")
+        };
+        Creep.behaviour = {
+            claimer: load("creep.behaviour.claimer"),
+            hauler: load("creep.behaviour.hauler"),
+            healer: load("creep.behaviour.healer"),
+            melee: load("creep.behaviour.melee"),
+            miner: load("creep.behaviour.miner"),
+            mineralMiner: load("creep.behaviour.mineralMiner"),
+            remoteMiner: load("creep.behaviour.remoteMiner"),
+            remoteHauler: load("creep.behaviour.remoteHauler"),
+            remoteWorker: load("creep.behaviour.remoteWorker"),
+            pioneer: load("creep.behaviour.pioneer"),
+            privateer: load("creep.behaviour.privateer"),
+            ranger: load("creep.behaviour.ranger"),
+            upgrader: load("creep.behaviour.upgrader"),
+            worker: load("creep.behaviour.worker")
+        };
+        Creep.setup = {
+            hauler: load("creep.setup.hauler"),
+            healer: load("creep.setup.healer"),
+            miner: load("creep.setup.miner"),
+            mineralMiner: load("creep.setup.mineralMiner"),
+            privateer: load("creep.setup.privateer"),
+            upgrader: load("creep.setup.upgrader"),
+            worker: load("creep.setup.worker")
+        };
         Creep.loop = function(){
             var run = creep => creep.run();
             _.forEach(Game.creeps, run);
@@ -33,48 +87,7 @@ var mod = {
                     return i;
                 }
             }
-        };
-        
-        Creep.bodyCosts = function(body){
-            let costs = 0;
-            if( body ){
-                body.forEach(function(part){
-                    costs += BODYPART_COST[part];
-                });
-            }
-            return costs;
-        };
-        Creep.multi = function (room, fixedBody, multiBody) {
-            let fixedCosts = Creep.bodyCosts(fixedBody);
-            let multiCosts = Creep.bodyCosts(multiBody);
-            if(multiCosts === 0) return 0; // prevent divide-by-zero
-            let maxParts = Math.floor((50 - fixedBody.length) / multiBody.length);
-            let maxAffordable = Math.floor((room.energyCapacityAvailable - fixedCosts) / multiCosts);
-            return _.min([maxParts, maxAffordable]);
-        };
-        Creep.partsComparator = function (a, b) {
-            let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, HEAL, MOVE];
-            let indexOfA = partsOrder.indexOf(a);
-            let indexOfB = partsOrder.indexOf(b);
-            return indexOfA - indexOfB;
-        };
-        Creep.compileBody = function (room, fixedBody, multiBody, sort = false) {
-            var parts = [];
-            let multi = Creep.multi(room, fixedBody, multiBody);
-            for (let iMulti = 0; iMulti < multi; iMulti++) {
-                parts = parts.concat(multiBody);
-            }
-            for (let iPart = 0; iPart < fixedBody.length; iPart++) {
-                parts[parts.length] = fixedBody[iPart];
-            }
-            if( sort ) parts.sort(Creep.partsComparator);            
-            if( parts.includes(HEAL) ) {
-                let index = parts.indexOf(HEAL);
-                parts.splice(index, 1);
-                parts.push(HEAL);
-            }
-            return parts;
-        };
+        }
 
         Creep.partThreat = {
             'move': { common: 0, boosted: 0 },
@@ -86,7 +99,7 @@ var mod = {
             'claim': { common: 1, boosted: 3 },
             'tough': { common: 1, boosted: 3 },
             tower: 25
-        };
+        }
         Creep.bodyThreat = function(body) {
             let threat = 0;
             let evaluatePart = part => {
@@ -94,7 +107,7 @@ var mod = {
             };
             body.forEach(evaluatePart);
             return threat;
-        };
+        }
 
         Creep.register = function() {
             for (const action in Creep.action) {
@@ -116,6 +129,20 @@ var mod = {
                 return (this.body.some((part) => ( partTypes.includes(part.type) && part.hits > 0 )));
             else return (this.body.some((part) => ( part.type == partTypes && part.hits > 0 )));
         } 
+        // TODO: reduce obsolete functions (check usage & update to use hasActiveBodyparts)
+        // obsolete
+        Creep.prototype.hasActiveOffensivePart = function(){
+            return this.hasActiveBodyparts([ATTACK, RANGED_ATTACK]);
+        }
+        // obsolete
+        Creep.prototype.hasActiveAttackPart = function(){
+            return this.hasActiveBodyparts(ATTACK);
+        }
+        // obsolete
+        Creep.prototype.hasActiveRangedAttackPart = function(){
+            return this.hasActiveBodyparts(RANGED_ATTACK);
+        }
+
         Creep.prototype.run = function(behaviour){
             if( !this.spawning ){
                 if(!behaviour && this.data && this.data.creepType) {

@@ -1,13 +1,13 @@
 var mod = {
-    priorityHigh: [
+    extend: function(){
+        Spawn.priorityHigh = [
             Creep.setup.worker,
             Creep.setup.miner,
             Creep.setup.hauler,
-            Creep.setup.upgrader],
-    priorityLow: [
+            Creep.setup.upgrader];
+        Spawn.priorityLow = [
             Creep.setup.mineralMiner,
-            Creep.setup.privateer],
-    extend: function(){
+            Creep.setup.privateer];
         Spawn.prototype.loop = function(){
             if( this.spawning ) return;
             let room = this.room;
@@ -91,7 +91,7 @@ var mod = {
                 if(CENSUS_ANNOUNCEMENTS) console.log( dye(CRAYON.system, this.pos.roomName  + ' &gt; ') + dye(CRAYON.birth, 'Good morning ' + newName + '!') );
                 return true;
             }
-            if( DEBUG ) console.log( dye(CRAYON.system, this.pos.roomName + ' &gt; ') + dye(CRAYON.error, 'Offspring failed: ' + translateErrorCode(newName) + '<br/> - body: ' + JSON.stringify(_.countBy(body)) + '<br/> - name: ' + name + '<br/> - behaviour: ' + behaviour + '<br/> - destiny: ' + destiny) );
+            if( DEBUG ) console.log( dye(CRAYON.system, this.pos.roomName + ' &gt; ') + dye(CRAYON.error, 'Offspring failed: ' + translateErrorCode(newName) + '<br/> - body: ' + JSON.stringify(_.countBy(body)) + '<br/> - name: ' + name + '<br/> - type:  ' + type + '<br/> - destiny: ' + destiny) );
             return false;
         };
         Spawn.loop = function(){

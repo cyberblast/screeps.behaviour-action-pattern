@@ -1,7 +1,7 @@
 module.exports = {
     name: 'ranger',
     run: function(creep) {
-        creep.flee = creep.flee || !creep.hasActiveBodyparts([ATTACK, RANGED_ATTACK]);
+        creep.flee = creep.flee || !creep.hasActiveOffensivePart();
         creep.attacking = false;
         creep.attackingRanged = false;
         // Assign next Action

@@ -11,7 +11,7 @@ action.isAddableAction = function(creep){
 };
 action.isAddableTarget = function(target){
     return ( target.my &&
-        (!target.targetOf || _.filter(target.targetOf, {'actionName':'feeding'}).length < this.maxPerTarget));
+        (!target.targetOf || target.targetOf.length < this.maxPerTarget));
 };
 action.newTarget = function(creep){
     var that = this;
