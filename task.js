@@ -1,13 +1,4 @@
-var mod = {
-    // load all task modules
-    guard: load("task.guard"),
-    defense: load("task.defense"),
-    mining: load("task.mining"),
-    claim: load("task.claim"),
-    reserve: load("task.reserve"),
-    pioneer: load("task.pioneer"),
-    attackController: load("task.attackController"),
-
+let mod = {
     // register tasks (hook up into events)
     register: function () {
         let tasks = [
