@@ -138,7 +138,8 @@ _.assign(global.Task, {
     claim: load("task.claim"),
     reserve: load("task.reserve"),
     pioneer: load("task.pioneer"),
-    attackController: load("task.attackController")
+    attackController: load("task.attackController"),
+    robbing: load("task.robbing")
 });
 Creep.Action = load("creep.Action");
 Creep.Setup = load("creep.Setup");
