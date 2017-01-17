@@ -276,7 +276,7 @@ module.exports = {
 
     creep: {
         robbing: {
-            fixedBody: [CARRY, CARRY, MOVE, MOVE],
+            fixedBody: [WORK, CARRY, MOVE, MOVE],
             multiBody: [CARRY, MOVE],
             name: "robber", 
             behaviour: "privateer"
