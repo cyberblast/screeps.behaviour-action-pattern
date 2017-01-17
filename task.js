@@ -8,7 +8,8 @@ let mod = {
             Task.reserve,
             Task.mining,
             Task.pioneer,
-            Task.attackController
+            Task.attackController,
+            Task.robbing
         ];
         var loop = task => {
             task.register();
