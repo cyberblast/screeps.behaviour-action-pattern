@@ -49,11 +49,19 @@ module.exports = {
         }
         // at target room
         else if( creep.data.destiny.room == creep.pos.roomName ){
+            // get any containers less than 2 away from the creep.
+            let closeContainers = creep.pos.findInRange(FIND_STRUCTURES, 2, { filter: { structureType: STRUCTURE_CONTAINER }});
             // if it's not full
             if( creep.sum < (creep.carryCapacity*0.8) ) {
+                // if creep has already picked energy off ground pull from close container instead of traveling to other source.
+                if( closeContainers.length > 0 && this.assign(creep, Creep.action.uncharging, closeContainers[0])) return;
                 // get some energy
                 if( this.assign(creep, Creep.action.picking) ) return;
                 if( this.assign(creep, Creep.action.uncharging) ) return;
+            } else if ( creep.sum < (creep.carryCapacity*0.95) ) {
+                // reason why creep.carryCapacity*0.95 is due to creep repairing roads and containers that are low
+                // why go home if close to container? 
+                if( closeContainers.length > 0 && this.assign(creep, Creep.action.uncharging, closeContainers[0])) return;
             }
             // carrier full or everything picked
             this.goHome(creep);
