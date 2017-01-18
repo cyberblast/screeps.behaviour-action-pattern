@@ -1,4 +1,5 @@
-var action = new Creep.Action('feeding');
+let action = new Creep.Action('feeding');
+module.exports = action;
 action.maxPerTarget = 1;
 action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 && creep.room.energyAvailable < creep.room.energyCapacityAvailable );
@@ -30,4 +31,3 @@ action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
     if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);
 };
-module.exports = action;

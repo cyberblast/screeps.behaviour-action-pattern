@@ -1,5 +1,5 @@
 // base class for every action
-var Action = function(actionName){
+let Action = function(actionName){
     // action name
     this.name = actionName;
     // max allowed creeps per target

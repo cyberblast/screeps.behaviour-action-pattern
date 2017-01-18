@@ -1,4 +1,5 @@
-var action = new Creep.Action('charging'); // store into container
+let action = new Creep.Action('charging'); // store into container
+module.exports = action;
 action.renewTarget = false;
 action.isValidAction = function(creep){ return creep.carry.energy > 0; }
 action.isAddableAction = function(creep){ return true; }
@@ -86,4 +87,3 @@ action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
     if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);
 };
-module.exports = action;

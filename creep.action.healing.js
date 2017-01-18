@@ -1,4 +1,5 @@
-var action = new Creep.Action('healing');
+let action = new Creep.Action('healing');
+module.exports = action;
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.isValidTarget = function(target){
@@ -27,4 +28,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9960), SAY_PUBLIC);
 };
-module.exports = action;

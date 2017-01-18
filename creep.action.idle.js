@@ -1,4 +1,5 @@
-var action = new Creep.Action('idle');
+let action = new Creep.Action('idle');
+module.exports = action;
 action.targetRange = 3;
 action.isValidAction = function(creep){ return true; };
 action.isAddableAction = function(creep){ return true; };
@@ -15,4 +16,3 @@ action.step = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9835), SAY_PUBLIC);
 };
-module.exports = action;

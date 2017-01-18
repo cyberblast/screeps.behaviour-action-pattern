@@ -1,4 +1,5 @@
-var action = new Creep.Action('attackController');
+let action = new Creep.Action('attackController');
+module.exports = action;
 action.isValidAction = function(creep){ return true; }; 
 action.isValidTarget = function(target){  return target && (!target.reservation ) };
 action.isAddableAction = function(){ return true; };
@@ -63,4 +64,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9971), SAY_PUBLIC);
 };
-module.exports = action;

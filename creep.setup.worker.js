@@ -1,4 +1,5 @@
-var setup = new Creep.Setup('worker');
+let setup = new Creep.Setup('worker');
+module.exports = setup;
 setup.maxWorker = room => {
     // no hauler and no miner => 1
     // if there is a miner it should be no problem to spawn a hauler, and vice versa. 
@@ -92,4 +93,3 @@ setup.RCL = {
         maxWeight: 3200
     }
 };
-module.exports = setup;

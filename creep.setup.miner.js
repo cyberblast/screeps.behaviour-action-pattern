@@ -1,4 +1,5 @@
-var setup = new Creep.Setup('miner');
+let setup = new Creep.Setup('miner');
+module.exports = setup;
 setup.minControllerLevel = 3;
 setup.default = {
     fixedBody: [WORK, WORK, WORK, WORK, CARRY, MOVE],
@@ -18,4 +19,3 @@ setup.RCL = {
     7: setup.default,
     8: setup.default
 };
-module.exports = setup;

@@ -239,7 +239,7 @@ mod.execute = function(){
     this.predictedRenewal.forEach(triggerRenewal);
 
     if( Game.time % SPAWN_INTERVAL != 0 ) {
-        let probeSpawn = spawnName => Game.spawns[spawnName].loop();
+        let probeSpawn = spawnName => Game.spawns[spawnName].execute();
         this.spawnsToProbe.forEach(probeSpawn);
     }
 };

@@ -1,4 +1,5 @@
-var setup = new Creep.Setup('upgrader');
+let setup = new Creep.Setup('upgrader');
+module.exports = setup;
 setup.minControllerLevel = 3;
 setup.maxMulti = function(room){
     let multi = 0;
@@ -63,4 +64,3 @@ setup.RCL = {
     7: setup.default,
     8: setup.default
 };
-module.exports = setup;

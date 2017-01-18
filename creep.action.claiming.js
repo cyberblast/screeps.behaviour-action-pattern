@@ -1,4 +1,5 @@
-var action = new Creep.Action('claiming');
+let action = new Creep.Action('claiming');
+module.exports = action;
 action.isValidAction = function(creep){ return true; };
 action.isValidTarget = function(target){ return !target.room || !target.owner; }; // no sight or not owned
 action.isAddableAction = function(){ return true; };
@@ -74,4 +75,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9983), SAY_PUBLIC);
 };
-module.exports = action;

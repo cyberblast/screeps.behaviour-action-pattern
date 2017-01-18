@@ -1,4 +1,4 @@
-var mod = {
+let mod = {
     CHATTY: false, // creeps say their current action
     HONK: true, // HONK when stored path is blocked by other creeps
     OOPS: true, // Creeps say Oops when dropping energy during dropmining

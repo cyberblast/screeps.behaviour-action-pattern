@@ -1,4 +1,5 @@
-var setup = new Creep.Setup('privateer');
+let setup = new Creep.Setup('privateer');
+module.exports = setup;
 setup.minControllerLevel = 3;
 setup.globalMeasurement = true;
 setup.measureByHome = true;
@@ -21,4 +22,3 @@ setup.RCL = {
     7: setup.default,
     8: setup.default
 };
-module.exports = setup;

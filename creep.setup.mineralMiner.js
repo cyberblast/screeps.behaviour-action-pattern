@@ -1,4 +1,5 @@
-var setup = new Creep.Setup('mineralMiner');
+let setup = new Creep.Setup('mineralMiner');
+module.exports = setup;
 setup.minControllerLevel = 6;
 setup.maxCount = function(room){
     let max = 0;
@@ -31,4 +32,3 @@ setup.RCL = {
     7: setup.default,
     8: setup.default
 };
-module.exports = setup;

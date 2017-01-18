@@ -1,12 +1,12 @@
 /* https://github.com/ScreepsOCS/screeps.behaviour-action-pattern */
 
 // ensure required memory namespaces
-if (Memory.modules === undefined) 
-    Memory.modules = {};
-if (Memory.modules.viral === undefined) 
-    Memory.modules.viral = {};
-if (Memory.modules.internalViral === undefined) 
-    Memory.modules.internalViral = {};
+if (Memory.modules === undefined)  {
+    Memory.modules = {
+        viral: {}, 
+        internalViral: {}
+    };
+}
 
 // check if a path is valid
 global.validatePath = path => {
@@ -202,7 +202,7 @@ global.inject(Room, load("room"));
 global.inject(Spawn, load("spawn"));
 
 // Extend server objects
-global.extend();
+//global.extend();
 Extensions.extend();
 Creep.extend();
 Room.extend();
@@ -213,12 +213,12 @@ if( global.mainInjection.extend ) global.mainInjection.extend();
 
 module.exports.loop = function () {
     // ensure required memory namespaces
-    if (Memory.modules === undefined) 
-        Memory.modules = {};
-    if (Memory.modules.viral === undefined) 
-        Memory.modules.viral = {};
-    if (Memory.modules.internalViral === undefined) 
-        Memory.modules.internalViral = {};
+    if (Memory.modules === undefined)  {
+        Memory.modules = {
+            viral: {}, 
+            internalViral: {}
+        };
+    }
 
     // ensure up to date parameters
     _.assign(global, load("parameter"));
@@ -250,14 +250,14 @@ module.exports.loop = function () {
     Population.execute();
     FlagDir.execute();
     Room.execute();
-    Creep.loop(); // TODO: split up Creep.loop() into stages
-    Spawn.loop(); // TODO: split up Spawn.loop() into stages
+    Creep.execute();
+    Spawn.execute();
     // custom execute
     if( global.mainInjection.execute ) global.mainInjection.execute();
 
     // Postprocessing
     if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
-        load("statistics").loop();
+        load("statistics").process(); 
     processReports();
     Population.cleanup();
     FlagDir.cleanup();

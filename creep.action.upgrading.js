@@ -1,4 +1,5 @@
-var action = new Creep.Action('upgrading');
+let action = new Creep.Action('upgrading');
+module.exports = action;
 action.targetRange = 3;
 action.isAddableAction = function(creep){
     // no storage
@@ -36,5 +37,3 @@ action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9962), SAY_PUBLIC);
     if( SAY_ASSIGNMENT ) creep.say('\u{26EA}\u{FE0E}', SAY_PUBLIC);
 };
-
-module.exports = action;

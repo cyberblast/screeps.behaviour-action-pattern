@@ -1,4 +1,5 @@
-var action = new Creep.Action('robbing');
+let action = new Creep.Action('robbing');
+module.exports = action;
 action.maxPerTarget = 2;
 action.maxPerAction = 10;
 action.isValidAction = function(creep){ 
@@ -35,4 +36,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9760), SAY_PUBLIC);
 };
-module.exports = action;

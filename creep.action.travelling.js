@@ -1,4 +1,5 @@
-var action = new Creep.Action('travelling');
+let action = new Creep.Action('travelling');
+module.exports = action;
 action.isValidTarget = function(target){ return target != null; };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
@@ -23,4 +24,3 @@ action.step = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9784), SAY_PUBLIC);
 };
-module.exports = action;

@@ -1,4 +1,5 @@
-var action = new Creep.Action('guarding');
+let action = new Creep.Action('guarding');
+module.exports = action;
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){
@@ -24,4 +25,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9929), SAY_PUBLIC);
 };
-module.exports = action;

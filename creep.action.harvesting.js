@@ -1,4 +1,5 @@
-var action = new Creep.Action('harvesting');
+let action = new Creep.Action('harvesting');
+module.exports = action;
 action.renewTarget = false;
 action.isValidAction = function(creep){
     return ( creep.sum < creep.carryCapacity && creep.room.sourceEnergyAvailable > 0 );
@@ -48,4 +49,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9935), SAY_PUBLIC);
 };
-module.exports = action;

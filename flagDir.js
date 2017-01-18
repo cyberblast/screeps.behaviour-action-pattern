@@ -1,4 +1,4 @@
-var mod = {};
+let mod = {};
 module.exports = mod;
 mod.findName = function(flagColor, pos, local, mod, modArgs){
     let that = this;

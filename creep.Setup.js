@@ -1,4 +1,4 @@
-var Setup = function(typeName){
+let Setup = function(typeName){
     this.none = {
         fixedBody: [],
         multiBody: [],
@@ -185,6 +185,7 @@ var Setup = function(typeName){
         return (Creep.bodyCosts( c.SelfOrCall(rcl.multiBody, room) ) * c.SelfOrCall(rcl.maxMulti, room)) + (Creep.bodyCosts(c.SelfOrCall(rcl.fixedBody, room)));
     };
 }
+module.exports = Setup;
 Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
     if( !flagFilter ) {
         throw new Error("undefined flagFilter");
@@ -213,4 +214,3 @@ Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
         return max;
     };
 };
-module.exports = Setup;

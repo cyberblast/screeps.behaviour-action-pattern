@@ -1,4 +1,5 @@
-var action = new Creep.Action('reallocating');
+let action = new Creep.Action('reallocating');
+module.exports = action;
 action.maxPerTarget = 1;
 action.maxPerAction = 1;
 action.isValidAction = function(creep){
@@ -94,4 +95,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(8660), SAY_PUBLIC);
 };
-module.exports = action;

@@ -1,4 +1,5 @@
-var action = new Creep.Action('building');
+let action = new Creep.Action('building');
+module.exports = action;
 action.maxPerTarget = 3;
 action.targetRange = 3;
 action.maxPerAction = 3;
@@ -26,4 +27,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9874), SAY_PUBLIC); 
 };
-module.exports = action;
