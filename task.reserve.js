@@ -28,8 +28,12 @@ mod.handleFlagFound = flag => {
 // check if a new creep has to be spawned
 mod.checkForRequiredCreeps = (flag) => {
     //only when controller is under 2500 ticks or has no controller (requires vision)
-    if( !flag || (flag.room && !flag.room.controller) || (flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)) return;
-    
+    if( !flag || 
+        !Room.isControllerRoom(flag.pos.roomName) || 
+        (flag.room && !flag.room.controller) || 
+        (flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)) 
+        return;
+
     // get task memory
     let memory = Task.reserve.memory(flag);
     // count creeps assigned to task

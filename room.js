@@ -793,133 +793,6 @@ mod.extend = function(){
         }
     });
 
-    Room.bestSpawnRoomFor = function(targetRoomName) {
-        var range = room => room.my ? routeRange(room.name, targetRoomName) : Infinity;
-        return _.min(Game.rooms, range);
-    };
-    // find a room to spawn
-    // params: { targetRoom, minRCL = 0, maxRange = Infinity, minEnergyAvailable = 0, minEnergyCapacity = 0, callBack = null, allowTargetRoom = false, rangeRclRatio = 3, rangeQueueRatio = 51 }
-    // requiredParams: targetRoom
-    Room.findSpawnRoom = function(params){
-        if( !params || !params.targetRoom ) return null;
-        // filter validRooms
-        let isValidRoom = room => (
-            room.my && 
-            (params.minEnergyCapacity === undefined || params.minEnergyCapacity >= room.energyCapacityAvailable) &&
-            (params.minEnergyAvailable === undefined || params.minEnergyAvailable >= room.energyAvailable) &&
-            (room.name != params.targetRoom || allowTargetRoom === true) && 
-            (params.minRCL === undefined || room.controller.level >= params.minRCL) && 
-            (params.callBack === undefined || params.callBack(room)) 
-        );
-        let validRooms = _.filter(Game.rooms, isValidRoom);
-        if( validRooms.length == 0 ) return null;
-        // select "best"
-        // range + roomLevelsUntil8/rangeRclRatio + spawnQueueDuration/rangeQueueRatio
-        let queueTime = queue => _.sum(queue, parts.length*3);
-        let roomTime = room => ((queueTime(room.spawnQueueLow)*0.9) + queueTime(room.spawnQueueMedium) + (queueTime(room.spawnQueueHigh)*1.1) ) / room.structures.spawns.length;
-        let evaluation = room => { return routeRange(room.name, targetRoomName) + 
-            ( (8-room.controller.level) / (params.rangeRclRatio||3) ) + 
-            ( roomTime(room) / (params.rangeQueueRatio||51) );
-        }
-        let best = _.min(validRooms, evaluation);
-    };
-    Room.getCostMatrix = function(roomName) {
-        var room = Game.rooms[roomName];
-        if(!room) return;
-        return room.costMatrix;
-    };
-    Room.isMine = function(roomName) {
-        let room = Game.rooms[roomName];
-        return( room && room.my );
-    };
-    Room.isCenterRoom = function(roomName){
-        let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
-        return (parsed[1] % 10 === 5) && (parsed[2] % 10 === 5);
-    };
-    Room.adjacentRooms = function(roomName){
-        let parts = roomName.split(/([N,E,S,W])/);
-        let dirs = ['N','E','S','W'];
-        let toggle = q => dirs[ (dirs.indexOf(q)+2) % 4 ];
-        let names = [];
-        for( let x = parseInt(parts[2])-1; x < parseInt(parts[2])+2; x++ ){
-            for( let y = parseInt(parts[4])-1; y < parseInt(parts[4])+2; y++ ){
-                names.push( ( x < 0 ? toggle(parts[1]) + '0' : parts[1] + x ) + ( y < 0 ? toggle(parts[3]) + '0' : parts[3] + y ) );
-            }
-        }
-        return names;
-    };
-    Room.adjacentAccessibleRooms = function(roomName, diagonal = true) {
-        let validRooms = [];
-        let exits = Game.map.describeExits(roomName);
-        let addValidRooms = (roomName, direction) => {
-            if( diagonal ) {
-                let roomExits = Game.map.describeExits(roomName);
-                let dirA = (direction + 2) % 8;
-                let dirB = (direction + 6) % 8;
-                if( roomExits[dirA] && !validRooms.includes(roomExits[dirA]) )
-                    validRooms.push(roomExits[dirA]);
-                if( roomExits[dirB] && !validRooms.includes(roomExits[dirB]) )
-                    validRooms.push(roomExits[dirB]);
-            }
-            validRooms.push(roomName);
-        }
-        _.forEach(exits, addValidRooms);
-        return validRooms;
-    };
-    Room.roomDistance = function(roomName1, roomName2, diagonal, continuous){
-        if( diagonal ) return Game.map.getRoomLinearDistance(roomName1, roomName2, continuous);
-        if( roomName1 == roomName2 ) return 0;
-        let posA = roomName1.split(/([N,E,S,W])/);
-        let posB = roomName2.split(/([N,E,S,W])/);
-        let xDif = posA[1] == posB[1] ? Math.abs(posA[2]-posB[2]) : posA[2]+posB[2]+1;
-        let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
-        //if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1
-        return xDif + yDif; // count diagonal as 2
-    };
-    Room.getCostMatrix = function(roomName) {
-        var room = Game.rooms[roomName];
-        if(!room) return;
-        return room.costMatrix;
-    };
-    Room.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
-        let look;
-        if( checkWalkable ) {
-            look = Game.rooms[roomName].lookAtArea(minY,minX,maxY,maxX);
-        }
-        let invalidObject = o => {
-            return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
-                // o.type == LOOK_CONSTRUCTION_SITES ||
-                (o.type == LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType) ));
-        };
-        let isWalkable = (posX, posY) => look[posY][posX].filter(invalidObject).length == 0;
-
-        let fields = [];
-        for( let x = minX; x <= maxX; x++) {
-            for( let y = minY; y <= maxY; y++){
-                if( x > 1 && x < 48 && y > 1 && y < 48 ){
-                    if( !checkWalkable || isWalkable(x,y) ){
-                        let p = new RoomPosition(x, y, roomName);
-                        if( !where || where(p) )
-                            fields.push(p);
-                    }
-                }
-            }
-        }
-        return fields;
-    };
-    // args = { spots: [{pos: RoomPosition, range:1}], checkWalkable: false, where: ()=>{}, roomName: abc ) }
-    Room.fieldsInRange = function(args) {
-        let plusRangeX = args.spots.map(spot => spot.pos.x + spot.range);
-        let plusRangeY = args.spots.map(spot => spot.pos.y + spot.range);
-        let minusRangeX = args.spots.map(spot => spot.pos.x - spot.range);
-        let minusRangeY = args.spots.map(spot => spot.pos.y - spot.range);
-        let minX = Math.max(...minusRangeX);
-        let maxX = Math.min(...plusRangeX);
-        let minY = Math.max(...minusRangeY);
-        let maxY = Math.min(...plusRangeY);
-        return Room.validFields(args.roomName, minX, maxX, minY, maxY, args.checkWalkable, args.where);
-    };
-
     Room.prototype.find = function (c, opt) {
         if (_.isArray(c)) {
             return _(c)
@@ -1375,4 +1248,159 @@ mod.execute = function() {
     };
     _.forEach(Memory.rooms, run);
 };
-mod = _.bindAll(mod);
+
+mod.bestSpawnRoomFor = function(targetRoomName) {
+    var range = room => room.my ? routeRange(room.name, targetRoomName) : Infinity;
+    return _.min(Game.rooms, range);
+};
+// find a room to spawn
+// params: { targetRoom, minRCL = 0, maxRange = Infinity, minEnergyAvailable = 0, minEnergyCapacity = 0, callBack = null, allowTargetRoom = false, rangeRclRatio = 3, rangeQueueRatio = 51 }
+// requiredParams: targetRoom
+mod.findSpawnRoom = function(params){
+    if( !params || !params.targetRoom ) return null;
+    // filter validRooms
+    let isValidRoom = room => (
+        room.my && 
+        (params.minEnergyCapacity === undefined || params.minEnergyCapacity >= room.energyCapacityAvailable) &&
+        (params.minEnergyAvailable === undefined || params.minEnergyAvailable >= room.energyAvailable) &&
+        (room.name != params.targetRoom || allowTargetRoom === true) && 
+        (params.minRCL === undefined || room.controller.level >= params.minRCL) && 
+        (params.callBack === undefined || params.callBack(room)) 
+    );
+    let validRooms = _.filter(Game.rooms, isValidRoom);
+    if( validRooms.length == 0 ) return null;
+    // select "best"
+    // range + roomLevelsUntil8/rangeRclRatio + spawnQueueDuration/rangeQueueRatio
+    let queueTime = queue => _.sum(queue, parts.length*3);
+    let roomTime = room => ((queueTime(room.spawnQueueLow)*0.9) + queueTime(room.spawnQueueMedium) + (queueTime(room.spawnQueueHigh)*1.1) ) / room.structures.spawns.length;
+    let evaluation = room => { return routeRange(room.name, targetRoomName) + 
+        ( (8-room.controller.level) / (params.rangeRclRatio||3) ) + 
+        ( roomTime(room) / (params.rangeQueueRatio||51) );
+    }
+    let best = _.min(validRooms, evaluation);
+};
+mod.getCostMatrix = function(roomName) {
+    var room = Game.rooms[roomName];
+    if(!room) return;
+    return room.costMatrix;
+};
+mod.isMine = function(roomName) {
+    let room = Game.rooms[roomName];
+    return( room && room.my );
+};
+
+mod.calcCoordinates = function(roomName, callBack){
+    let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+    let x = parsed[1] % 10;
+    let y = parsed[2] % 10;
+    if( callBack ) return callBack(x,y);
+    return null;
+}
+mod.isCenterRoom = function(roomName){
+    return Room.calcCoordinates(roomName, (x,y) => {
+        return x === 5 && y === 5;
+    });
+};
+mod.isCenterNineRoom = function(roomName){ 
+    return Room.calcCoordinates(roomName, (x,y) => {
+        return x > 3 && x < 7 && y > 3 && y < 7;
+    });
+};
+mod.isControllerRoom = function(roomName){
+    return Room.calcCoordinates(roomName, (x,y) => {
+        return x !== 0 && y !== 0 && (x < 4 || x > 6 || y < 4 || y > 6);
+    });
+};
+mod.isSKRoom = function(roomName){ 
+    return Room.calcCoordinates(roomName, (x,y) => {
+        return (x > 3 || x < 7) && (y > 3 || y < 7) && (x !== 5 || y !== 5);
+    });
+};
+mod.isHighwayRoom = function(roomName){ 
+    return Room.calcCoordinates(roomName, (x,y) => {
+        return x === 0 || y === 0;
+    });
+};
+mod.adjacentRooms = function(roomName){
+    let parts = roomName.split(/([N,E,S,W])/);
+    let dirs = ['N','E','S','W'];
+    let toggle = q => dirs[ (dirs.indexOf(q)+2) % 4 ];
+    let names = [];
+    for( let x = parseInt(parts[2])-1; x < parseInt(parts[2])+2; x++ ){
+        for( let y = parseInt(parts[4])-1; y < parseInt(parts[4])+2; y++ ){
+            names.push( ( x < 0 ? toggle(parts[1]) + '0' : parts[1] + x ) + ( y < 0 ? toggle(parts[3]) + '0' : parts[3] + y ) );
+        }
+    }
+    return names;
+};
+mod.adjacentAccessibleRooms = function(roomName, diagonal = true) {
+    let validRooms = [];
+    let exits = Game.map.describeExits(roomName);
+    let addValidRooms = (roomName, direction) => {
+        if( diagonal ) {
+            let roomExits = Game.map.describeExits(roomName);
+            let dirA = (direction + 2) % 8;
+            let dirB = (direction + 6) % 8;
+            if( roomExits[dirA] && !validRooms.includes(roomExits[dirA]) )
+                validRooms.push(roomExits[dirA]);
+            if( roomExits[dirB] && !validRooms.includes(roomExits[dirB]) )
+                validRooms.push(roomExits[dirB]);
+        }
+        validRooms.push(roomName);
+    }
+    _.forEach(exits, addValidRooms);
+    return validRooms;
+};
+mod.roomDistance = function(roomName1, roomName2, diagonal, continuous){
+    if( diagonal ) return Game.map.getRoomLinearDistance(roomName1, roomName2, continuous);
+    if( roomName1 == roomName2 ) return 0;
+    let posA = roomName1.split(/([N,E,S,W])/);
+    let posB = roomName2.split(/([N,E,S,W])/);
+    let xDif = posA[1] == posB[1] ? Math.abs(posA[2]-posB[2]) : posA[2]+posB[2]+1;
+    let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
+    //if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1
+    return xDif + yDif; // count diagonal as 2
+};
+mod.getCostMatrix = function(roomName) {
+    var room = Game.rooms[roomName];
+    if(!room) return;
+    return room.costMatrix;
+};
+mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
+    let look;
+    if( checkWalkable ) {
+        look = Game.rooms[roomName].lookAtArea(minY,minX,maxY,maxX);
+    }
+    let invalidObject = o => {
+        return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
+            // o.type == LOOK_CONSTRUCTION_SITES ||
+            (o.type == LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType) ));
+    };
+    let isWalkable = (posX, posY) => look[posY][posX].filter(invalidObject).length == 0;
+
+    let fields = [];
+    for( let x = minX; x <= maxX; x++) {
+        for( let y = minY; y <= maxY; y++){
+            if( x > 1 && x < 48 && y > 1 && y < 48 ){
+                if( !checkWalkable || isWalkable(x,y) ){
+                    let p = new RoomPosition(x, y, roomName);
+                    if( !where || where(p) )
+                        fields.push(p);
+                }
+            }
+        }
+    }
+    return fields;
+};
+// args = { spots: [{pos: RoomPosition, range:1}], checkWalkable: false, where: ()=>{}, roomName: abc ) }
+mod.fieldsInRange = function(args) {
+    let plusRangeX = args.spots.map(spot => spot.pos.x + spot.range);
+    let plusRangeY = args.spots.map(spot => spot.pos.y + spot.range);
+    let minusRangeX = args.spots.map(spot => spot.pos.x - spot.range);
+    let minusRangeY = args.spots.map(spot => spot.pos.y - spot.range);
+    let minX = Math.max(...minusRangeX);
+    let maxX = Math.min(...plusRangeX);
+    let minY = Math.max(...minusRangeY);
+    let maxY = Math.min(...plusRangeY);
+    return Room.validFields(args.roomName, minX, maxX, minY, maxY, args.checkWalkable, args.where);
+};
