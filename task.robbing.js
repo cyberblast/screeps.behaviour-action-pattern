@@ -169,7 +169,7 @@ module.exports = {
             }
             // empty
             // travelling
-            if( this.exploitNextRoom(creep) )
+            if( Task[creep.data.destiny.task].exploitNextRoom(creep) )
                 return;
             else {
                 // no new flag
@@ -181,12 +181,12 @@ module.exports = {
         // not at home
         else {
             // at target room
-            if( creep.flag && creep.flag.pos.roomName == creep.pos.roomName ){
+            if( creep.data.destiny.targetName == creep.pos.roomName ){
                 // check invader/cloaking state
                 if( creep.room.situation.invasion &&
                     (creep.flag.color != FLAG_COLOR.invade.robbing.color || creep.flag.secondaryColor != FLAG_COLOR.invade.robbing.secondaryColor )) {
                     creep.flag.cloaking = 50; // TODO: set to Infinity & release when solved
-                    this.exploitNextRoom(creep);
+                    Task[creep.data.destiny.task].exploitNextRoom(creep);
                     return;
                 }
 
@@ -197,7 +197,7 @@ module.exports = {
                         // cloak flag
                         creep.flag.cloaking = _.max([creep.room.ticksToNextRegeneration-20,0]); // approach a bit earlier
                         // travelling
-                        this.exploitNextRoom(creep);
+                        Task[creep.data.destiny.task].exploitNextRoom(creep);
                         return;
                     }
                     // energy available
@@ -219,7 +219,6 @@ module.exports = {
                         }
                         // no targets in current room
                         creep.flag.cloaking = 50;
-                        this.exploitNextRoom(creep);
                         return;
                     }
                 }
@@ -241,7 +240,7 @@ module.exports = {
             }
             // not at target room
             else {
-                 this.exploitNextRoom(creep);
+                 Task[creep.data.destiny.task].exploitNextRoom(creep);
                  return;
             }
         }
