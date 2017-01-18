@@ -39,7 +39,7 @@ var Action = function(actionName){
     // determines, if a target is valid. Gets validated only once upon assignment. 
     // check possible override in derived action
     this.isAddableTarget = function(target, creep){ // target is valid to be given to an additional creep
-        return (this.maxPerTarget === Infinity || !target.targetOf || target.targetOf.length < this.maxPerTarget);
+        return (!target.targetOf || this.maxPerTarget === Infinity || _.filter(target.targetOf, {'actionName': this.name}).length < this.maxPerTarget);
     };
     // find a new target for that action
     // needs implementation in derived action
