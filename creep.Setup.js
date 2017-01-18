@@ -152,7 +152,7 @@ var Setup = function(typeName){
             parts[parts.length] = fixedBody[iPart];
         }
         if( this.sortedParts ) {
-            parts.sort(Creep.Setup.partsComparator);
+            parts.sort(Creep.partsComparator);
             if( this.mixMoveParts )
                 parts = this.mixParts(parts);
             else if( parts.includes(HEAL) ) {
