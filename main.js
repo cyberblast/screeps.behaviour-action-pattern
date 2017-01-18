@@ -3,7 +3,7 @@
 // ensure required memory namespaces
 if (Memory.modules === undefined)  {
     Memory.modules = {
-        viral: {}, 
+        viral: {},
         internalViral: {}
     };
 }
@@ -215,9 +215,12 @@ module.exports.loop = function () {
     // ensure required memory namespaces
     if (Memory.modules === undefined)  {
         Memory.modules = {
-            viral: {}, 
+            viral: {},
             internalViral: {}
         };
+    }
+    if (Memory.debugTrace === undefined) {
+        Memory.debugTrace = {};
     }
 
     // ensure up to date parameters
@@ -257,7 +260,7 @@ module.exports.loop = function () {
 
     // Postprocessing
     if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
-        load("statistics").process(); 
+        load("statistics").process();
     processReports();
     Population.cleanup();
     FlagDir.cleanup();

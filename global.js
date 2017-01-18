@@ -1,3 +1,18 @@
+const reduceMemoryWhere = function(result, value, key) {
+    const setting = Memory.debugTrace[key];
+    if (setting === undefined) {
+        return result;
+    } else if (result) { // default result
+        return setting === value;
+    } else {
+        return false;
+    }
+};
+const noMemoryWhere = function(e) {
+    const setting = Memory.debugTrace.no[e[0]];
+    return setting === true || setting === e[1];
+};
+
 let mod = {};
 module.exports = mod;
 // base class for events
@@ -14,7 +29,7 @@ mod.LiteEvent = function() {
     }
     // call all registered subscribers
     this.trigger = function(data) {
-        this.handlers.slice(0).forEach(h => h(data)); 
+        this.handlers.slice(0).forEach(h => h(data));
     }
 };
 // Flag colors, used throughout the code
@@ -66,7 +81,7 @@ mod.FLAG_COLOR = {
             secondaryColor: COLOR_BROWN,
             filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_BROWN}
         }
-        
+
     },
     defense: { // point to gather troops
         color: COLOR_YELLOW,
@@ -122,7 +137,7 @@ mod.translateErrorCode = function(code){
 };
 // manipulate log output
 // simply put a color as "style"
-// or an object, containing any css 
+// or an object, containing any css
 mod.dye = function(style, text){
     if( isObj(style) ) {
         var css = "";
@@ -158,8 +173,19 @@ mod.logErrorCode = function(creep, code) {
     }
 };
 // log some text as error
-mod.logError = function(message) {
-    console.log( dye(CRAYON.error, message) );
+mod.logError = function (message, entityWhere) {
+    if (entityWhere) {
+        trace('error', entityWhere, dye(CRAYON.error, message));
+    } else {
+        console.log(dye(CRAYON.error, message));
+    }
+};
+// trace an error or debug statement
+mod.trace = function (category, entityWhere, ...message) {
+    if (!( Memory.debugTrace[category] === true || _(entityWhere).reduce(reduceMemoryWhere, 1) === true )) return;
+    if (Memory.debugTrace.no && _(entityWhere).pairs().some(noMemoryWhere) === true) return;
+
+    console.log(Game.time, dye(CRAYON.error, category), ...message, dye(CRAYON.birth, JSON.stringify(entityWhere)));
 };
 // log some text as "system message" showing a "referrer" as label
 mod.logSystem = function(roomName, message) {
