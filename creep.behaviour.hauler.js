@@ -1,6 +1,6 @@
 let mod = {};
 module.exports = mod;
-name: 'hauler',
+mod.name = 'hauler';
 mod.run = function(creep) {
     // Assign next Action
     let oldTargetId = creep.data.targetId;
