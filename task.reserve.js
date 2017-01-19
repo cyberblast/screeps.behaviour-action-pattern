@@ -39,13 +39,28 @@ mod.checkForRequiredCreeps = (flag) => {
     // count creeps assigned to task
 
     let count = memory.queued.length + memory.spawning.length + memory.running.length;
-    // Allow a second claimer in medium queue if reservation low
+    
+    // check reservation level
     let lowReservation = ( !flag.room ||
             (flag.room.controller && !flag.room.controller.reservation) ||
-            (flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd < 250)) && count == 1; // always let it queue one in low as well
+            (flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd < 250)); 
+    
+    // if low & creep in low queue => move to medium queue
+    if( lowReservation && memory.queued.length == 1 ) {
+        let spawnRoom = Game.rooms[memory.queued[0].room];
+        let elevate = (entry, index) => {
+            if( entry.targetName == memory.queued[0].targetName ){
+                let spawnData = spawnRoom.spawnQueueLow.splice(index, 1);
+                spawnRoom.spawnQueueMedium.push(spawnData);
+                return true;
+            }
+            return false;
+        };
+        spawnRoom.spawnQueueLow.find(elevate);
+    }
 
     // if creep count below requirement spawn a new creep creep 
-    if( count < 1 || lowReservation) {
+    if( count < 1 ) {
         Task.spawn(
             lowReservation ? 'Medium' : 'Low', // queue
             'reserve', // taskname
@@ -57,7 +72,8 @@ mod.checkForRequiredCreeps = (flag) => {
                 let memory = Task.reserve.memory(Game.flags[creepSetup.destiny.targetName]);
                 memory.queued.push({
                     room: creepSetup.queueRoom,
-                    name: creepSetup.name
+                    name: creepSetup.name, 
+                    targetName: flag.name
             });
         });
     }
