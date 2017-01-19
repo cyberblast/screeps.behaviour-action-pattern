@@ -41,9 +41,7 @@ action.step = function(creep){
     if( range <= this.targetRange ) {
         var workResult = this.work(creep);
         if( workResult != OK ) {
-            if( DEBUG ) logErrorCode(creep, workResult);
-            delete creep.data.actionName;
-            delete creep.data.targetId;
+            creep.handleError({errorCode:workResult,action,target:creep.target,range,creep});
         }
     }
     creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
