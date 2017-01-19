@@ -652,7 +652,9 @@ mod.extend = function(){
                 if( _.isUndefined(Memory.pathfinder)) Memory.pathfinder = {};
                 if( _.isUndefined(Memory.pathfinder[this.name])) Memory.pathfinder[this.name] = {};
 
-                if( Memory.pathfinder[this.name].costMatrix && (Game.time - Memory.pathfinder[this.name].updated) < COST_MATRIX_VALIDITY) {
+                const ttl = Game.time - Memory.pathfinder[this.name].updated;
+                if( Memory.pathfinder[this.name].costMatrix && ttl < COST_MATRIX_VALIDITY) {
+                    if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
                     return PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
                 }
 
@@ -667,8 +669,10 @@ mod.extend = function(){
                 };
                 this.structures.all.forEach(setCosts);
 
+                const prevTime = Memory.pathfinder[this.name].updated;
                 Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
                 Memory.pathfinder[this.name].updated = Game.time;
+                if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
                 return costMatrix;
             }
         },
@@ -1093,7 +1097,7 @@ mod.extend = function(){
             if( orders.length > 0 ){
                 let order = _.max(orders, 'ratio');
                 let result = Game.market.deal(order.id, order.transactionAmount, that.name);
-                if( DEBUG ) logSystem(that.name, `Selling ${order.transactionAmount} ${mineral} for ${order.credits} (${order.price} ¢/${mineral}, ${order.transactionCost} e): ${translateErrorCode(result)}`);
+                if( DEBUG || SELL_NOTIFICATION ) logSystem(that.name, `Selling ${order.transactionAmount} ${mineral} for ${order.credits} (${order.price} ¢/${mineral}, ${order.transactionCost} e): ${translateErrorCode(result)}`);
                 if( SELL_NOTIFICATION ) Game.notify( `<h2>Room ${that.name} executed an order!</h2><br/>Result: ${translateErrorCode(result)}<br/>Details:<br/>${JSON.stringify(order).replace(',',',<br/>')}` );
                 transacting = result == OK;
             }

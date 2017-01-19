@@ -61,24 +61,27 @@ let Setup = function(typeName){
         return memory;
     };
     this.isValidSetup = function(room){
-        if( room.controller.level < this.minControllerLevel ) {
+        let rcl = room.controller.level;
+        if( rcl < this.minControllerLevel ) {
+            if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, rcl, Setup:'isValidSetup'}, 'low RCL');
             return false;
-            if (DEBUG && this.type === Creep.Setup.debugType) console.log(room.name, Creep.Setup.debugType, 'low RCL');
         }
 
-        let rcl = this.RCL[room.controller.level];
+        rcl = this.RCL[room.controller.level];
         let minAbsEnergyAvailable = this.SelfOrCall(rcl.minAbsEnergyAvailable, room);
         let minEnergyAvailable = this.SelfOrCall(rcl.minEnergyAvailable, room);
-        if( room.remainingEnergyAvailable < minAbsEnergyAvailable ||
-            room.relativeRemainingEnergyAvailable < minEnergyAvailable ) {
-            if (DEBUG && this.type === Creep.Setup.debugType) console.log(room.name, Creep.Setup.debugType, 'not enough energy');
+        const absEnergy = room.remainingEnergyAvailable;
+        const energy = room.relativeRemainingEnergyAvailable;
+        if( absEnergy < minAbsEnergyAvailable ||
+            energy < minEnergyAvailable ) {
+            if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, absEnergy, energy, Setup:'isValidSetup'}, 'not enough energy');
             return false;
         }
 
         let maxCount = this.SelfOrCall(rcl.maxCount, room);
         let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
         if( maxCount == 0 || maxWeight == 0 ) {
-            if (DEBUG && this.type === Creep.Setup.debugType) console.log(room.name, Creep.Setup.debugType, 'zero count || weight');
+            if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, maxCount, maxWeight, Setup:'isValidSetup'}, 'too many creeps');
             return false;
         }
         if( maxCount == null )
@@ -104,9 +107,9 @@ let Setup = function(typeName){
             existingCount = population.typeCount[this.type] || 0;
             existingWeight = population.typeWeight[this.type] || 0;
         }
-        if (DEBUG && this.type === Creep.Setup.debugType) console.log(room.name, Creep.Setup.debugType, 'count:',
-            existingCount, '<', maxCount, 'weight:', existingWeight, '<', maxWeight);
-        return existingCount < maxCount && existingWeight < maxWeight;
+        const returnVal = existingCount < maxCount && existingWeight < maxWeight;
+        if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, returnVal, Setup:'isValidSetup'}, 'count:', existingCount, '<', maxCount, 'weight:', existingWeight, '<', maxWeight);
+        return returnVal;
     };
     this.existingWeight = function(room){
         let existingWeight = 0;

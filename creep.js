@@ -39,10 +39,12 @@ mod.extend = function(){
         if( !this.spawning ){
             if(!behaviour && this.data && this.data.creepType) {
                 behaviour = Creep.behaviour[this.data.creepType];
-            }                
+            }
             this.repairNearby();
+            if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Behaviour: behaviour && behaviour.name, Creep:'run'});
             if( behaviour ) behaviour.run(this);
             else if(!this.data){
+                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Creep:'run'}, 'memory init');
                 let type = this.memory.setup;
                 let weight = this.memory.cost;
                 let home = this.memory.home;
@@ -203,6 +205,7 @@ mod.extend = function(){
         else return null;
     };
     Creep.prototype.fleeMove = function() {
+        if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'fleeMove', Creep:'run'});
         let drop = r => { if(this.carry[r] > 0 ) this.drop(r); };
         _.forEach(Object.keys(this.carry), drop);
         if( this.fatigue > 0 ) return;
@@ -278,8 +281,13 @@ mod.extend = function(){
         if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
             let nearby = this.pos.findInRange(this.room.structures.repairable, 3);
             if( nearby && nearby.length > 0 ){
+                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
                 this.repair(nearby[0]);
+            } else {
+                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'none');
             }
+        } else {
+            if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'no WORK');
         }
     };
     
@@ -323,6 +331,19 @@ mod.extend = function(){
                     this._threat = Creep.bodyThreat(this.body);
                 }
                 return this._threat;
+            }
+        },
+        'trace': { // only valid on one creep at a time
+            configurable: true,
+            get: function() {
+                return Memory.debugTrace.creepName === this.name;
+            },
+            set: function(value) {
+                if (value) {
+                    Memory.debugTrace.creepName = this.name;
+                } else if (this.trace) {
+                    delete Memory.debugTrace.creepName;
+                }
             }
         }
     });
