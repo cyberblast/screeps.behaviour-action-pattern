@@ -1249,9 +1249,16 @@ mod.execute = function() {
     _.forEach(Memory.rooms, run);
 };
 
-mod.bestSpawnRoomFor = function(targetRoomName) {
-    var range = room => room.my ? routeRange(room.name, targetRoomName) : Infinity;
-    return _.min(Game.rooms, range);
+mod.bestSpawnRoomFor = function(targetRoomName, scoreCallback) {
+    if(! scoreCallback) {
+        scoreCallback = room => room.structures.spawns.length ? undefined : 10000;
+    }
+    var range = room => {
+        if(! room.my) return Infinity;
+        const score = scoreCallback(room);
+        return score !== undefined ? score : routeRange(room.name, targetRoomName);
+    }
+    return _.chain(Game.rooms).min(range).value();
 };
 // find a room to spawn
 // params: { targetRoom, minRCL = 0, maxRange = Infinity, minEnergyAvailable = 0, minEnergyCapacity = 0, callBack = null, allowTargetRoom = false, rangeRclRatio = 3, rangeQueueRatio = 51 }

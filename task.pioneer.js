@@ -41,7 +41,15 @@ mod.checkForRequiredCreeps = (flag) => {
     // if creep count below requirement spawn a new creep creep 
     if( count < pNeed ) {
         // get nearest room
-        let room = Room.bestSpawnRoomFor(flag.pos.roomName);
+        let room = Room.bestSpawnRoomFor(flag.pos.roomName, room => room.name === flag.pos.roomName ? 100 : undefined);
+        if (!room) {
+            room = Game.rooms[flag.pos.roomName];
+            // double-check
+            if (!room) {
+                global.logSystem(flag.pos.roomName, dye(CRAYON.error, 'no room available for pioneer spawning'));
+                return;
+            }
+        }
         // define new creep
         let fixedBody = Task.pioneer.creep.pioneer.fixedBody;
         let multiBody = Task.pioneer.creep.pioneer.multiBody;
