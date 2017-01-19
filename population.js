@@ -71,13 +71,17 @@ mod.registerAction = function(creep, action, target, entry) {
     else this.actionWeight[action.name] += entry.weight;
 
     let targetId = target.id || target.name;
+    let oldTargetId;
     if( entry.targetId ) {
         // unregister target
         let oldTarget = entry.targetId ? Game.getObjectById(entry.targetId) || Game.spawns[entry.targetId] || Game.flags[entry.targetId] : null;
-        if( oldTarget && oldTarget.targetOf ){
-            let byName = elem => elem.creepName === creep.name;
-            let index = oldTarget.targetOf.findIndex(byName);
-            if( index > -1 ) oldTarget.targetOf.splice(index, 1);
+        if( oldTarget ){
+            oldTargetId = oldTarget.id || oldTarget.name;
+            if( oldTarget.targetOf ) {
+                let byName = elem => elem.creepName === creep.name;
+                let index = oldTarget.targetOf.findIndex(byName);
+                if( index > -1 ) oldTarget.targetOf.splice(index, 1);
+            }
         }
     }
     // register target
@@ -87,6 +91,11 @@ mod.registerAction = function(creep, action, target, entry) {
             target.targetOf = [entry];
         else target.targetOf.push(entry);
     }
+    // clear saved path
+    if( targetId != oldTargetId ) {
+        delete entry.path;
+    }
+    
     creep.action = action;
     creep.target = target;
     creep.data = entry;

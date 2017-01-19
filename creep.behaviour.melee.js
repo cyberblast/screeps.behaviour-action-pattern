@@ -12,9 +12,7 @@ mod.run = function(creep) {
             Task[creep.data.destiny.task].nextAction(creep);
         else this.nextAction(creep);
     }
-    if( creep.data.targetId != oldTargetId ) {
-        delete creep.data.path;
-    }
+    
     // Do some work
     if( creep.action && creep.target ) {
         creep.action.step(creep);

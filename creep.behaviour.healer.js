@@ -7,9 +7,7 @@ mod.run = function(creep) {
     if( creep.action == null || ['guarding','idle'].includes(creep.action.name)) {
         this.nextAction(creep);
     }
-    if( creep.data.targetId != oldTargetId ) {
-        delete creep.data.path;
-    }
+    
     // Do some work
     if( creep.action && creep.target ) {
         creep.action.step(creep);

@@ -12,10 +12,7 @@ mod.run = function(creep) {
         // else go there
         Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.targetName]);
     }
-
-    if( creep.data.targetId != oldTargetId ) {
-        delete creep.data.path;
-    }
+    
     // Do some work
     if( creep.action && creep.target ) {
         creep.action.step(creep);
