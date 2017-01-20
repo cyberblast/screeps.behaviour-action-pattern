@@ -438,11 +438,7 @@ mod.extend = function(){
             configurable: true,
             get: function() {
                 if( _.isUndefined(this._hostiles) ){
-                    let notWhitelisted = (creep) => 
-                        !(PLAYER_WHITELIST.some((player) => 
-                            player.toLowerCase() == creep.owner.username.toLowerCase()
-                        ));
-                    this._hostiles = this.find(FIND_HOSTILE_CREEPS, { filter : notWhitelisted });
+                    this._hostiles = this.find(FIND_HOSTILE_CREEPS, { filter : Task.reputation.hostileOwner });
                 }
                 return this._hostiles;
             }
@@ -747,11 +743,7 @@ mod.extend = function(){
                     if (this.reserved) {
                         this._ally = true;
                     } else if (this.controller) {
-                        const owner = this.owner;
-                        const reservation = this.reservation;
-                        this._ally = _.some(PLAYER_WHITELIST, function(player) {
-                            return player === owner || player === reservation;
-                        });
+                        this._ally = Task.reputation.isAlly(this.owner) || Task.reputation.isAlly(this.reservation);
                     } else {
                         this._ally = false;
                     }
@@ -794,7 +786,7 @@ mod.extend = function(){
                 }
                 return this.memory.pavementArt;
             }
-        }, 
+        },
         'collapsed': {
             configurable: true,
             get: function() {
@@ -817,7 +809,7 @@ mod.extend = function(){
                 }
                 return this._collapsed;
             }
-        }, 
+        },
     });
 
     Room.prototype.find = function (c, opt) {
@@ -1181,7 +1173,7 @@ mod.extend = function(){
             // for each known invader
             if( !that.hostileIds.includes(id) ) { // not found anymore
                 // save to trigger subscribers later
-                that.goneInvader.push(id)                
+                that.goneInvader.push(id)
                 // update statistics
                 if( SEND_STATISTIC_REPORTS && that.memory.statistics && that.memory.statistics.invaders !== undefined && that.memory.statistics.invaders.length > 0 ){
                     let select = invader => invader.id == id && invader.leave === undefined;
@@ -1297,7 +1289,7 @@ mod.findSpawnRoom = function(params){
         room.my && 
         (params.minEnergyCapacity === undefined || params.minEnergyCapacity <= room.energyCapacityAvailable) &&
         (params.minEnergyAvailable === undefined || params.minEnergyAvailable <= room.energyAvailable) &&
-        (room.name != params.targetRoom || params.allowTargetRoom === true) && 
+        (room.name != params.targetRoom || params.allowTargetRoom === true) &&
         (params.minRCL === undefined || room.controller.level >= params.minRCL) && 
         (params.callBack === undefined || params.callBack(room)) 
     );
@@ -1307,7 +1299,7 @@ mod.findSpawnRoom = function(params){
     // range + roomLevelsUntil8/rangeRclRatio + spawnQueueDuration/rangeQueueRatio
     let queueTime = queue => _.sum(queue, c => (c.parts.length*3));
     let roomTime = room => ((queueTime(room.spawnQueueLow)*0.9) + queueTime(room.spawnQueueMedium) + (queueTime(room.spawnQueueHigh)*1.1) ) / room.structures.spawns.length;
-    let evaluation = room => { return routeRange(room.name, params.targetRoom) + 
+    let evaluation = room => { return routeRange(room.name, params.targetRoom) +
         ( (8-room.controller.level) / (params.rangeRclRatio||3) ) + 
         ( roomTime(room) / (params.rangeQueueRatio||51) );
     }
@@ -1335,7 +1327,7 @@ mod.isCenterRoom = function(roomName){
         return x === 5 && y === 5;
     });
 };
-mod.isCenterNineRoom = function(roomName){ 
+mod.isCenterNineRoom = function(roomName){
     return Room.calcCoordinates(roomName, (x,y) => {
         return x > 3 && x < 7 && y > 3 && y < 7;
     });
@@ -1345,12 +1337,12 @@ mod.isControllerRoom = function(roomName){
         return x !== 0 && y !== 0 && (x < 4 || x > 6 || y < 4 || y > 6);
     });
 };
-mod.isSKRoom = function(roomName){ 
+mod.isSKRoom = function(roomName){
     return Room.calcCoordinates(roomName, (x,y) => {
         return (x > 3 || x < 7) && (y > 3 || y < 7) && (x !== 5 || y !== 5);
     });
 };
-mod.isHighwayRoom = function(roomName){ 
+mod.isHighwayRoom = function(roomName){
     return Room.calcCoordinates(roomName, (x,y) => {
         return x === 0 || y === 0;
     });

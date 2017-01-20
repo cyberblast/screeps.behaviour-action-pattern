@@ -3,14 +3,15 @@ module.exports = mod;
 // register tasks (hook up into events)
 mod.register = function () {
     let tasks = [
-        Task.guard, 
+        Task.guard,
         Task.defense,
         Task.claim,
         Task.reserve,
         Task.mining,
         Task.pioneer,
         Task.attackController,
-        Task.robbing
+        Task.robbing,
+        Task.reputation,
     ];
     var loop = task => {
         task.register();
@@ -26,6 +27,15 @@ mod.memory = (task, s) => { // task:  (string) name of the task, s: (string) any
 mod.clearMemory = (task, s) => {
     if( Memory.tasks[task] && Memory.tasks[task][s] )
         delete Memory.tasks[task][s];
+};
+mod.cache = (task, s) => {
+    if( !cache[task] ) cache[task] = {};
+    if( !cache[task][s] ) cache[task][s] = {};
+    return cache[task][s];
+};
+mod.clearCache = (task, s) => {
+    if( cache[task] && cache[task][s] )
+        delete cache[task][s];
 };
 // creepDefinition: { queue, name, behaviour, fixedBody, multiBody }
 // destiny: { task, targetName }
@@ -45,7 +55,7 @@ mod.spawn = (creepDefinition, destiny, roomParams, onQueued) => {
         parts: parts,
         name: name,
         behaviour: creepDefinition.behaviour,
-        destiny: destiny, 
+        destiny: destiny,
         queueRoom: room.name
     };
     if( creepSetup.parts.length === 0 ) {
@@ -60,3 +70,4 @@ mod.spawn = (creepDefinition, destiny, roomParams, onQueued) => {
     if( onQueued ) onQueued(creepSetup);
     return creepSetup;
 };
+const cache = {};
