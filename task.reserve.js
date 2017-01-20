@@ -61,21 +61,26 @@ mod.checkForRequiredCreeps = (flag) => {
 
     // if creep count below requirement spawn a new creep creep 
     if( count < 1 ) {
+        Task.reserve.creep.reserver.queue = lowReservation ? 'Medium' : 'Low';
         Task.spawn(
-            lowReservation ? 'Medium' : 'Low', // queue
-            'reserve', // taskname
-            flag.pos.roomName, // targetRoom
-            flag.name, // targetName
             Task.reserve.creep.reserver, // creepDefinition
-            null, // custom destiny attributes
+            { // destiny
+                task: 'reserve', // taskName
+                targetName: flag.name, // targetName
+            }, 
+            { // spawn room selection params
+                targetRoom: flag.pos.roomName, 
+                minEnergyCapacity: 1300
+            },
             creepSetup => { // callback onQueued
                 let memory = Task.reserve.memory(Game.flags[creepSetup.destiny.targetName]);
                 memory.queued.push({
                     room: creepSetup.queueRoom,
                     name: creepSetup.name, 
                     targetName: flag.name
-            });
-        });
+                });
+            }
+        );
     }
 };
 // when a creep starts spawning

@@ -1,7 +1,6 @@
 // This task will react on Red/Cyan flags, sending a giant (RCL7 Req) claiming creep to the flags position.
 let mod = {};
 module.exports = mod;
-mod.minControllerLevel = 7;
 // hook into events
 mod.register = () => {
     // when a new flag has been found (occurs every tick, for each flag)
@@ -33,16 +32,18 @@ mod.checkForRequiredCreeps = (flag) => {
     let memory = Task.attackController.memory(flag);
     // count creeps assigned to task
     let count = memory.queued.length + memory.spawning.length + memory.running.length;
-    //console.log("attacker count" +count)
     // if creep count below requirement spawn a new creep creep
     if( count < 1 ) {
-        Task.spawn(
-            'Low', // queue
-            'attackController', // taskName
-            flag.pos.roomName, // targetRoom
-            flag.name, // targetName
+        Task.spawn(            
             Task.attackController.creep.attackController, // creepDefinition
-            { }, // custom destiny attributes
+            { // destiny
+                task: 'attackController', // taskName
+                targetName: flag.name, // targetName
+            }, 
+            { // spawn room selection params
+                targetRoom: flag.pos.roomName, 
+                minEnergyCapacity: 3250
+            },
             creepSetup => { // onQueued callback
                     memory.queued.push({
                     room: creepSetup.queueRoom,
@@ -168,6 +169,7 @@ mod.creep = {
         fixedBody: [CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE],
         multiBody: [],
         name: "Atk-Contr", 
-        behaviour: "claimer"
+        behaviour: "claimer", 
+        queue: "Low"
     },
 };

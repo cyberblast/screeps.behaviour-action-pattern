@@ -1,7 +1,6 @@
 // This task will react on pioneer flags - 4 for Green/White, 1 for Green/Red
 let mod = {};
 module.exports = mod;
-mod.minControllerLevel = 4;
 // hook into events
 mod.register = () => {
     // when a new flag has been found (occurs every tick, for each flag)
@@ -40,32 +39,27 @@ mod.checkForRequiredCreeps = (flag) => {
     // count creeps assigned to task
     // if creep count below requirement spawn a new creep creep 
     if( count < pNeed ) {
-        // get nearest room
-        let room = Room.bestSpawnRoomFor(flag.pos.roomName);
-        // define new creep
-        let fixedBody = Task.pioneer.creep.pioneer.fixedBody;
-        let multiBody = Task.pioneer.creep.pioneer.multiBody;
-        let name = Task.pioneer.creep.pioneer.name + '-' + flag.pos.roomName;
-        let creep = {
-            parts: Creep.compileBody(room, fixedBody, multiBody, true),
-            name: name,
-            maxMulti: 4,
-            behaviour: Task.pioneer.creep.pioneer.behaviour,
-            destiny: { task: "pioneer", flagName: flag.name }
-        };
-        if( creep.parts.length === 0 ) {
-            // creep has no body. 
-            global.logSystem(flag.pos.roomName, dye(CRAYON.error, 'pioneer Flag tried to queue a zero parts body creep. Aborted.' ));
-            return;
-        }
-        
-        room.spawnQueueLow.push(creep);
-
-            // save queued creep to task memory
-        memory.queued.push({
-            room: room.name,
-            name: name
-        });
+        Task.spawn(
+            Task.pioneer.creep.pioneer, // creepDefinition
+            { // destiny
+                task: 'pioneer', // taskName
+                targetName: flag.name, // targetName
+                flagName: flag.name // custom
+            }, 
+            { // spawn room selection params
+                targetRoom: flag.pos.roomName, 
+                minEnergyCapacity: 200, 
+                rangeRclRatio: 2 // stronger preference of higher RCL rooms
+            },
+            creepSetup => { // callback onQueued
+                let memory = Task.pioneer.memory(Game.flags[creepSetup.destiny.targetName]);
+                memory.queued.push({
+                    room: creepSetup.queueRoom,
+                    name: creepSetup.name,
+                    targetName: flag.name
+                });
+            }
+        );
     }
 };
 // when a creep starts spawning
@@ -171,6 +165,7 @@ mod.creep = {
         fixedBody: [WORK, WORK, MOVE, MOVE, CARRY, CARRY],
         multiBody: [WORK, MOVE, CARRY],
         name: "pioneer", 
-        behaviour: "pioneer"
+        behaviour: "pioneer", 
+        queue: 'Low'
     },
 };

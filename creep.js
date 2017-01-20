@@ -301,6 +301,10 @@ mod.extend = function(){
         'flee': {
             configurable: true,
             get: function() {
+                if( !this.data ) {
+                    // err
+                    return;
+                }
                 if( this.data.flee ){
                     // release when restored
                     this.data.flee = this.hits != this.hitsMax;
@@ -380,13 +384,28 @@ mod.bodyCosts = function(body){
     }
     return costs;
 };
-mod.multi = function (room, fixedBody, multiBody) {
-    let fixedCosts = Creep.bodyCosts(fixedBody);
-    let multiCosts = Creep.bodyCosts(multiBody);
+// params: {minThreat, maxWeight, maxMulti}
+mod.multi = function (room, params) {
+    let fixedCosts = Creep.bodyCosts(params.fixedBody);
+    let multiCosts = Creep.bodyCosts(params.multiBody);
+    let maxThreatMulti;
+    if( params && params.minThreat ){
+        let fixedThreat = Creep.bodyThreat(params.fixedBody);
+        let multiThreat = Creep.bodyThreat(params.multiBody);
+        maxThreatMulti = 0;
+        let iThreat = fixedThreat;
+        while(iThreat < params.minThreat){
+            maxThreatMulti += 1;
+            iThreat += multiThreat;
+        };
+    } else maxThreatMulti = Infinity;
     if(multiCosts === 0) return 0; // prevent divide-by-zero
-    let maxParts = Math.floor((50 - fixedBody.length) / multiBody.length);
-    let maxAffordable = Math.floor((room.energyCapacityAvailable - fixedCosts) / multiCosts);
-    return _.min([maxParts, maxAffordable]);
+    let maxParts = Math.floor((50 - params.fixedBody.length) / params.multiBody.length);
+    let maxEnergy = params.currentEnergy ? room.energyAvailable : room.energyCapacityAvailable;
+    let maxAffordable = Math.floor((maxEnergy - fixedCosts) / multiCosts);
+    let maxWeightMulti = (params && params.maxWeight) ? Math.floor((params.maxWeight-fixedCosts)/multiCosts) : Infinity;
+    let maxMulti = (params && params.maxMulti) ? params.maxMulti : Infinity;
+    return _.min([maxParts, maxAffordable, maxThreatMulti, maxWeightMulti, maxMulti]);
 };
 mod.partsComparator = function (a, b) {
     let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, HEAL, MOVE];
@@ -394,14 +413,15 @@ mod.partsComparator = function (a, b) {
     let indexOfB = partsOrder.indexOf(b);
     return indexOfA - indexOfB;
 };
-mod.compileBody = function (room, fixedBody, multiBody, sort = false) {
+// params: {minThreat, maxWeight, maxMulti}
+mod.compileBody = function (room, params, sort = true) {
     let parts = [];
-    let multi = Creep.multi(room, fixedBody, multiBody);
+    let multi = Creep.multi(room, params);
     for (let iMulti = 0; iMulti < multi; iMulti++) {
-        parts = parts.concat(multiBody);
+        parts = parts.concat(params.multiBody);
     }
-    for (let iPart = 0; iPart < fixedBody.length; iPart++) {
-        parts[parts.length] = fixedBody[iPart];
+    for (let iPart = 0; iPart < params.fixedBody.length; iPart++) {
+        parts[parts.length] = params.fixedBody[iPart];
     }
     if( sort ) parts.sort(Creep.partsComparator);            
     if( parts.includes(HEAL) ) {
@@ -427,7 +447,7 @@ mod.bodyThreat = function(body) {
     let evaluatePart = part => {
         threat += Creep.partThreat[part.type ? part.type : part][part.boost ? 'boosted' : 'common'];
     };
-    body.forEach(evaluatePart);
+    if( body ) body.forEach(evaluatePart);
     return threat;
 };
 mod.register = function() {

@@ -31,30 +31,26 @@ mod.checkForRequiredCreeps = (flag) => {
     let count = memory.queued.length + memory.spawning.length + memory.running.length;
     // if creep count below requirement spawn a new creep creep
     if( count < 1 ) {
-        // get nearest room
-        let room = Room.bestSpawnRoomFor(flag.pos.roomName);
-        // define new creep
-        let fixedBody = Task.claim.creep.claimer.fixedBody;
-        let multiBody = Task.claim.creep.claimer.multiBody;
-        let name = Task.claim.creep.claimer.name + '-' + flag.name;
-        let creep = {
-            parts: Creep.compileBody(room, fixedBody, multiBody, true),
-            name: name,
-            behaviour: Task.claim.creep.claimer.behaviour,
-            destiny: { task: "claim", flagName: flag.name }
-        };
-        if( creep.parts.length === 0 ) {
-            // creep has no body. 
-            global.logSystem(flag.pos.roomName, dye(CRAYON.error, 'Claim Flag tried to queue a zero parts body creep. Aborted.' ));
-            return;
-        }
-        // queue creep for spawning
-        room.spawnQueueLow.push(creep);
-        // save queued creep to task memory
-        memory.queued.push({
-            room: room.name,
-            name: name
-        });
+        Task.spawn(
+            Task.claim.creep.claimer, // creepDefinition
+            { // destiny
+                task: 'claim', // taskName
+                targetName: flag.name, // targetName
+                flagName: flag.name // custom
+            }, 
+            { // spawn room selection params
+                targetRoom: flag.pos.roomName, 
+                minEnergyCapacity: 650
+            },
+            creepSetup => { // callback onQueued
+                let memory = Task.claim.memory(Game.flags[creepSetup.destiny.targetName]);
+                memory.queued.push({
+                    room: creepSetup.queueRoom,
+                    name: creepSetup.name,
+                    targetName: flag.name
+                });
+            }
+        );
     }
 };
 // when a creep starts spawning
@@ -177,6 +173,7 @@ mod.creep = {
         fixedBody: [CLAIM, MOVE],
         multiBody: [],
         name: "claimer", 
-        behaviour: "claimer"
+        behaviour: "claimer", 
+        queue: 'Low'
     },
 };

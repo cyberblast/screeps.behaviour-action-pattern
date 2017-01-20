@@ -28,7 +28,8 @@ mod.creep = {
         fixedBody: [RANGED_ATTACK, MOVE],
         multiBody: [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE],
         name: "guard", 
-        behaviour: "ranger"
+        behaviour: "ranger", 
+        queue: 'Low'
     },
 };
 // check if a new creep has to be spawned
@@ -39,30 +40,27 @@ mod.checkForRequiredCreeps = (flag) => {
     let count = memory.queued.length + memory.spawning.length + memory.running.length;
     // if creep count below requirement spawn a new creep creep
     if( count < 1 ) {
-        // get nearest room
-        let room = Room.bestSpawnRoomFor(flag.pos.roomName);
-        // define new creep
-        let fixedBody = Task.guard.creep.guard.fixedBody;
-        let multiBody = Task.guard.creep.guard.multiBody;
-        let name = Task.guard.creep.guard.name + '-' + flag.name;
-        let creep = {
-            parts: Creep.compileBody(room, fixedBody, multiBody, true),
-            name: name,
-            behaviour: Task.guard.creep.guard.behaviour,
-            destiny: { task: "guard", flagName: flag.name }
-        };
-        if( creep.parts.length === 0 ) {
-            // creep has no body. 
-            global.logSystem(flag.pos.roomName, dye(CRAYON.error, 'Guard Flag tried to queue a zero parts body creep. Aborted.' ));
-            return;
-        }
-        // queue creep for spawning
-        room.spawnQueueMedium.push(creep);
-        // save queued creep to task memory
-        memory.queued.push({
-            room: room.name,
-            name: name
-        });
+        Task.spawn(
+            Task.guard.creep.guard, // creepDefinition
+            { // destiny
+                task: 'guard', // taskName
+                targetName: flag.name, // targetName
+                flagName: flag.name // custom
+            }, 
+            { // spawn room selection params
+                targetRoom: flag.pos.roomName, 
+                minEnergyCapacity: 200, 
+                rangeRclRatio: 1.8 // stronger preference of higher RCL rooms
+            },
+            creepSetup => { // callback onQueued
+                let memory = Task.guard.memory(Game.flags[creepSetup.destiny.targetName]);
+                memory.queued.push({
+                    room: creepSetup.queueRoom,
+                    name: creepSetup.name,
+                    targetName: flag.name
+                });
+            }
+        );
     }
 };
 // when a creep starts spawning

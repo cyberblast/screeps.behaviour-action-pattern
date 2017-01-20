@@ -165,7 +165,7 @@ mod.analyze = function(){
     let register = entry => {
         let creep = Game.creeps[entry.creepName];
         if ( !creep ) {
-            if(CENSUS_ANNOUNCEMENTS) console.log(dye(CRAYON.system, entry.homeRoom + ' &gt; ') + dye(CRAYON.death, 'Good night ' + entry.creepName + '!') );
+            if(CENSUS_ANNOUNCEMENTS) global.logSystem(entry.homeRoom, dye(CRAYON.death, 'Good night ' + entry.creepName + '!') );
             this.died.push(entry.creepName); 
         }
         else {

@@ -166,8 +166,11 @@ mod.analyze = function(){
     _.forEach(Memory.flags, findStaleFlags);
 };
 mod.execute = function() {
-    let triggerFound = flag => Flag.found.trigger(flag);
-    _.forEach(Game.flags, triggerFound);
+    let triggerFound = entry => {
+        if( !entry.cloaking || entry.cloaking == 0)
+        Flag.found.trigger(Game.flags[entry.name]);
+    }
+    this.list.forEach(triggerFound);
 
     let triggerRemoved = flagName => Flag.FlagRemoved.trigger(flagName);
     this.stale.forEach(triggerRemoved);

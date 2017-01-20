@@ -27,18 +27,22 @@ mod.clearMemory = (task, s) => {
     if( Memory.tasks[task] && Memory.tasks[task][s] )
         delete Memory.tasks[task][s];
 };
-mod.spawn = (queueName, taskName, targetRoomName, targetName, creepDefinition, destiny, onQueued) => {  
+// creepDefinition: { queue, name, behaviour, fixedBody, multiBody }
+// destiny: { task, targetName }
+// roomParams: { targetRoom, minRCL = 0, maxRange = Infinity, minEnergyAvailable = 0, minEnergyCapacity = 0, callBack = null, allowTargetRoom = false, rangeRclRatio = 3, rangeQueueRatio = 51 }
+mod.spawn = (creepDefinition, destiny, roomParams, onQueued) => {
     // get nearest room
-    let room = Room.bestSpawnRoomFor(targetRoomName);
-    if( Task[taskName].minControllerLevel && room.controller.level < Task[taskName].minControllerLevel ) return;
+    let room = Room.findSpawnRoom(roomParams);
+    if( Task[destiny.task].minControllerLevel && room.controller.level < Task[destiny.task].minControllerLevel ) return null;
     // define new creep
     if(!destiny) destiny = {};
-    destiny.task = taskName;
-    destiny.room = targetRoomName;
-    destiny.targetName = targetName;
-    let name = `${creepDefinition.name || creepDefinition.behaviour}-${targetName}`;
+    destiny.room = roomParams.targetRoom;
+
+    let parts = Creep.compileBody(room, creepDefinition);
+
+    let name = `${creepDefinition.name || creepDefinition.behaviour}-${destiny.targetName}`;
     let creepSetup = {
-        parts: Creep.compileBody(room, creepDefinition.fixedBody, creepDefinition.multiBody, true),
+        parts: parts,
         name: name,
         behaviour: creepDefinition.behaviour,
         destiny: destiny, 
@@ -46,12 +50,13 @@ mod.spawn = (queueName, taskName, targetRoomName, targetName, creepDefinition, d
     };
     if( creepSetup.parts.length === 0 ) {
         // creep has no body. 
-        global.logSystem(flag.pos.roomName, dye(CRAYON.error, `${taskName} task tried to queue a zero parts body ${creepDefinition.behaviour} creep. Aborted.` ));
-        return;
+        global.logSystem(flag.pos.roomName, dye(CRAYON.error, `${destiny.task} task tried to queue a zero parts body ${creepDefinition.behaviour} creep. Aborted.` ));
+        return null;
     }
     // queue creep for spawning
-    let queue = room['spawnQueue' + queueName] || room.spawnQueueLow;
+    let queue = room['spawnQueue' + creepDefinition.queue] || room.spawnQueueLow;
     queue.push(creepSetup);
     // save queued creep to task memory
     if( onQueued ) onQueued(creepSetup);
+    return creepSetup;
 };

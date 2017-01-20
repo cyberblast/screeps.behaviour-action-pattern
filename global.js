@@ -153,7 +153,7 @@ mod.dye = function(style, text){
 mod.CRAYON = {
     death: { color: 'black', 'font-weight': 'bold' },
     birth: '#e6de99',
-    error: 'FireBrick',
+    error: '#e79da7',
     system: { color: '#999', 'font-size': '10px' }
 };
 // log an error for a creeps action, given an error code

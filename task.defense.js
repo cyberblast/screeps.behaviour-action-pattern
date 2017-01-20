@@ -1,7 +1,6 @@
 // Defense task handles spotted invaders. Spawns defenders and gives them special behaviour.
 let mod = {};
 module.exports = mod;
-mod.minControllerLevel = 3;
 // hook into events
 mod.register = () => {
     // When a new invader has been spotted
@@ -14,7 +13,7 @@ mod.register = () => {
 // When a new invader has been spotted
 mod.handleNewInvader = invaderCreep => {
     // ignore if on blacklist
-    if( DEFENSE_BLACKLIST.includes(invaderCreep.pos.roomName) ) return;
+    if( !SPAWN_DEFENSE_ON_ATTACK || DEFENSE_BLACKLIST.includes(invaderCreep.pos.roomName) ) return;
     // if not our room and not our reservation
     
     if( !invaderCreep.room.my && !invaderCreep.room.reserved ) {
@@ -34,8 +33,7 @@ mod.handleNewInvader = invaderCreep => {
         return;
     } else {
         // order a defender for each invader (if not happened yet)
-        invaderCreep.room.hostiles.forEach(Task.defense.orderDefenses);
-            
+        invaderCreep.room.hostiles.forEach(Task.defense.orderDefenses);            
     }
 };
 // When an invader leaves a room
@@ -65,7 +63,7 @@ mod.handleGoneInvader = invaderId => {
     }
 };
 // when a creep died
-mod.handleCreepDied = creepName => {        
+mod.handleCreepDied = creepName => {     
     // check if its our creep
     let creepMemory = Memory.population[creepName];
     if (!creepMemory || !creepMemory.destiny || !creepMemory.destiny.task || creepMemory.destiny.task != 'defense' || !creepMemory.destiny.invaderId )
@@ -113,39 +111,42 @@ mod.orderDefenses = invaderCreep => {
     }
 
     // analyze invader threat and create something bigger
-    while( remainingThreat > 0 ){
-        // get spawning room and calculate defense creep
-        let room = Room.bestSpawnRoomFor(invaderCreep.pos.roomName);
-        // TODO: Compile smaller body (only slightly bigger than remainingThreat)
-        let body = Creep.compileBody(room, Task.defense.creep.defender.fixedBody, Task.defense.creep.defender.multiBody, true);
-        let bodyThreat = Creep.bodyThreat(body);
+    while( remainingThreat > 0 ){        
         let orderId = global.guid();
-        remainingThreat -= bodyThreat;
-
-        let creep = {
-            parts: body,
-            name: Task.defense.creep.defender.name,
-            behaviour: Task.defense.creep.defender.behaviour,
-            destiny: { 
-                task: "defense", 
+        Task.defense.creep.defender.queue = invaderCreep.room.my ? 'High' : 'Medium';
+        Task.defense.creep.defender.minThreat = (remainingThreat * 1.1);
+      
+        let queued = Task.spawn(
+            Task.defense.creep.defender, { // destiny
+                task: 'defense', 
+                targetName: invaderId,
                 invaderId: invaderId, 
                 spottedIn: invaderCreep.pos.roomName, 
                 order: orderId
+            }, { // spawn room selection params
+                targetRoom: invaderCreep.pos.roomName, 
+                maxRange: 4, 
+                minEnergyCapacity: 800, 
+                allowTargetRoom: true
+            },
+            creepSetup => { // callback onQueued
+                let memory = Task.defense.memory(invaderId);
+                memory.defender.push({
+                    spawnRoom: creepSetup.queueRoom,
+                    order: creepSetup.destiny.order
+                });
+                if( DEBUG ) global.logSystem(creepSetup.queueRoom, `Defender queued for hostile creep ${creepSetup.destiny.order} in ${creepSetup.destiny.spottedIn}`);
             }
-        };
-        if( creep.parts.length === 0 ) {
-            // creep has no body. 
-            global.logSystem(invaderCreep.pos.roomName, dye(CRAYON.error, 'Defense Task tried to queue a zero parts body defender. Aborted.' ));
+        );
+
+        if( queued ) {
+            let bodyThreat = Creep.bodyThreat(queued.parts);
+            remainingThreat -= bodyThreat;
+        } else {
+            // Can't spawn. Invader will not get handled!
+            if( TRACE || DEBUG ) trace('Task', {task: 'defense', invaderId: invaderId, targetRoom: invaderCreep.pos.roomName}, 'Unable to spawn. Invader will not get handled!');
             return;
         }
-
-        room.spawnQueueHigh.push(creep);
-        taskMemory.defender.push({
-            spawnRoom: room.name,
-            threat: bodyThreat, 
-            order: orderId
-        });
-        if( DEBUG ) global.logSystem(room.name, `Defender queued for hostile creep ${invaderId}`);
     }
 };
 // define action assignment for defender creeps

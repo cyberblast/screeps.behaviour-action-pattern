@@ -1129,22 +1129,17 @@ mod.extend = function(){
         if( this.memory.statistics === undefined)
             this.memory.statistics = {};
 
-        var registerHostile = creep => {
+        let registerHostile = creep => {
             // if invader id unregistered
             if( !that.memory.hostileIds.includes(creep.id) ){
                 // handle new invader
                 // register 
                 that.memory.hostileIds.push(creep.id);
-                // create notification
-                let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-                if( DEBUG || NOTIFICATE_INVADER ) logSystem(that.name, `Hostile intruder (${bodyCount}) from "${creep.owner.username}.`);
-                if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
-                    Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${that.name} at ${toDateTimeString(toLocalDate(new Date()))}`);
-                }
-                // trigger subscribers
-                Room.newInvader.trigger(creep);
+                // save to trigger subscribers later
+                that.newInvader.push(creep)
                 // create statistics
                 if( SEND_STATISTIC_REPORTS ) {
+                    let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
                     if(that.memory.statistics.invaders === undefined)
                         that.memory.statistics.invaders = [];
                     that.memory.statistics.invaders.push({
@@ -1162,24 +1157,19 @@ mod.extend = function(){
         let registerHostileLeave = id => {
             // for each known invader
             if( !that.hostileIds.includes(id) ) { // not found anymore
-                // trigger subscribers
-                Room.goneInvader.trigger(id);
+                // save to trigger subscribers later
+                that.goneInvader.push(id)                
                 // update statistics
                 if( SEND_STATISTIC_REPORTS && that.memory.statistics && that.memory.statistics.invaders !== undefined && that.memory.statistics.invaders.length > 0 ){
                     let select = invader => invader.id == id && invader.leave === undefined;
                     let entry = _.find(that.memory.statistics.invaders, select);
                     if( entry != undefined ) entry.leave = Game.time;
                 }
-            } else {
-                // trigger subscribers
-                Room.knownInvader.trigger(id);
             }
         }
         _.forEach(this.memory.hostileIds, registerHostileLeave);
 
         this.memory.hostileIds = this.hostileIds;
-    };
-    Room.processSightlessRoom = function(roomName, memory){
     };
 };
 mod.flush = function(){
@@ -1214,6 +1204,8 @@ mod.flush = function(){
             delete room.structures._fortifyableSites;
             delete room.structures._fuelables;
         }
+        room.newInvader = [];
+        room.goneInvader = [];
     };
     _.forEach(Game.rooms, clean);
 };
@@ -1240,10 +1232,24 @@ mod.analyze = function(){
     _.forEach(Game.rooms, getEnvironment);        
 };
 mod.execute = function() {
+    let triggerNewInvaders = creep => {
+        // create notification
+        let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
+        if( DEBUG || NOTIFICATE_INVADER ) logSystem(creep.pos.roomName, `Hostile intruder (${bodyCount}) from "${creep.owner.username}.`);
+        if( NOTIFICATE_INVADER || creep.owner.username != 'Invader' ){
+            Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${creep.pos.roomName} at ${toDateTimeString(toLocalDate(new Date()))}`);
+        }
+        // trigger subscribers
+        Room.newInvader.trigger(creep);
+    }
     let triggerKnownInvaders = id =>  Room.knownInvader.trigger(id);
+    let triggerGoneInvaders = id =>  Room.goneInvader.trigger(id);
     let run = (memory, roomName) => {
         let room = Game.rooms[roomName];
         if( room ){ // has sight
+            room.goneInvader.forEach(triggerGoneInvaders);
+            room.hostileIds.forEach(triggerKnownInvaders);
+            room.newInvader.forEach(triggerNewInvaders);
             Tower.loop(room);
         }
         else { // no sight
@@ -1265,9 +1271,9 @@ mod.findSpawnRoom = function(params){
     // filter validRooms
     let isValidRoom = room => (
         room.my && 
-        (params.minEnergyCapacity === undefined || params.minEnergyCapacity >= room.energyCapacityAvailable) &&
-        (params.minEnergyAvailable === undefined || params.minEnergyAvailable >= room.energyAvailable) &&
-        (room.name != params.targetRoom || allowTargetRoom === true) && 
+        (params.minEnergyCapacity === undefined || params.minEnergyCapacity <= room.energyCapacityAvailable) &&
+        (params.minEnergyAvailable === undefined || params.minEnergyAvailable <= room.energyAvailable) &&
+        (room.name != params.targetRoom || params.allowTargetRoom === true) && 
         (params.minRCL === undefined || room.controller.level >= params.minRCL) && 
         (params.callBack === undefined || params.callBack(room)) 
     );
@@ -1275,13 +1281,13 @@ mod.findSpawnRoom = function(params){
     if( validRooms.length == 0 ) return null;
     // select "best"
     // range + roomLevelsUntil8/rangeRclRatio + spawnQueueDuration/rangeQueueRatio
-    let queueTime = queue => _.sum(queue, parts.length*3);
+    let queueTime = queue => _.sum(queue, c => (c.parts.length*3));
     let roomTime = room => ((queueTime(room.spawnQueueLow)*0.9) + queueTime(room.spawnQueueMedium) + (queueTime(room.spawnQueueHigh)*1.1) ) / room.structures.spawns.length;
-    let evaluation = room => { return routeRange(room.name, targetRoomName) + 
+    let evaluation = room => { return routeRange(room.name, params.targetRoom) + 
         ( (8-room.controller.level) / (params.rangeRclRatio||3) ) + 
         ( roomTime(room) / (params.rangeQueueRatio||51) );
     }
-    let best = _.min(validRooms, evaluation);
+    return _.min(validRooms, evaluation);
 };
 mod.getCostMatrix = function(roomName) {
     var room = Game.rooms[roomName];

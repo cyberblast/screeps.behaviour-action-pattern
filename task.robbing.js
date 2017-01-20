@@ -1,7 +1,6 @@
 // This task will react on robbing flags (invade/rob or red/yellow), sending 2 creeps to rob that room
 let mod = {};
 module.exports = mod;
-mod.minControllerLevel = 4;
 // hook into events
 mod.register = () => {
     // when a new flag has been found (occurs every tick, for each flag)
@@ -34,12 +33,15 @@ mod.checkForRequiredCreeps = (flag) => {
     // if creep count below requirement spawn a new creep creep 
     if( count < 2 ) {
         Task.spawn(
-            'Low', // queue
-            'robbing', // taskname
-            flag.pos.roomName, // targetRoom
-            flag.name, // targetName
             Task.robbing.creep.robbing, // creepDefinition
-            null, // custom destiny attributes
+            { // destiny
+                task: 'robbing', // taskName
+                targetName: flag.name, // targetName
+            }, 
+            { // spawn room selection params
+                targetRoom: flag.pos.roomName, 
+                minEnergyCapacity: 250
+            },
             creepSetup => { // callback onQueued
                 let memory = Task.robbing.memory(Game.flags[creepSetup.destiny.targetName]);
                 memory.queued.push({
@@ -277,6 +279,7 @@ mod.creep = {
         fixedBody: [WORK, CARRY, MOVE, MOVE],
         multiBody: [CARRY, MOVE],
         name: "robber", 
-        behaviour: "privateer"
+        behaviour: "privateer", 
+        queue: 'Low'
     },
 };

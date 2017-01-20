@@ -127,26 +127,26 @@ let Setup = function(typeName){
         }
         return existingWeight;
     };
-
-    this.multi = function(room){
-        let rcl = this.RCL[room.controller.level];
-        let fixedCosts = Creep.bodyCosts(this.SelfOrCall(rcl.fixedBody, room));
-        let multiCosts = Creep.bodyCosts(this.SelfOrCall(rcl.multiBody, room));
-        let max = this.SelfOrCall(rcl.maxMulti, room);
-        if( max == 0 || multiCosts == 0 ) return 0;
-        let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
-        if( maxWeight == null)
-            return _.min([Math.floor( (room.remainingEnergyAvailable-fixedCosts) / multiCosts), max]);
-        let existingWeight = this.existingWeight(room);
-        return Math.floor(_.min([((room.remainingEnergyAvailable-fixedCosts) / multiCosts), max,((maxWeight - existingWeight - fixedCosts) / multiCosts)]));
-    };
     this.parts = function(room){
         let rcl = this.RCL[room.controller.level];
         let fixedBody = this.SelfOrCall(rcl.fixedBody, room);
         let multiBody = this.SelfOrCall(rcl.multiBody, room);
         var parts = [];
         let min = this.SelfOrCall(rcl.minMulti, room);
-        let multi = this.multi(room);
+        let maxMulti = this.SelfOrCall(rcl.maxMulti, room);
+        let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
+        let maxMultiWeight;
+        if( maxWeight ){
+            let existingWeight = this.existingWeight(room);
+            maxMultiWeight = maxWeight - existingWeight;
+        }
+        let multi = Creep.multi(room, {
+            fixedBody, multiBody,
+            maxWeight: maxMultiWeight,
+            maxMulti: maxMulti, 
+            currentEnergy: true
+        });
+
         if( multi < (min ? min : 0) ) return parts;
         for (let iMulti = 0; iMulti < multi; iMulti++) {
             parts = parts.concat(multiBody);
