@@ -1207,6 +1207,7 @@ mod.flush = function(){
         delete room._combatCreeps;
         delete room._defenseLevel;
         delete room._hostileThreatLevel;
+        delete room._collapsed;
         if( global.isNewServer ) {
             delete room._my;
             delete room._constructionSites;
