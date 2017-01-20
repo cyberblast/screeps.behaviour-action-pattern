@@ -32,8 +32,8 @@ mod.clearMemory = (task, s) => {
 // roomParams: { targetRoom, minRCL = 0, maxRange = Infinity, minEnergyAvailable = 0, minEnergyCapacity = 0, callBack = null, allowTargetRoom = false, rangeRclRatio = 3, rangeQueueRatio = 51 }
 mod.spawn = (creepDefinition, destiny, roomParams, onQueued) => {
     // get nearest room
-    let room = Room.findSpawnRoom(roomParams);
-    if( Task[destiny.task].minControllerLevel && room.controller.level < Task[destiny.task].minControllerLevel ) return null;
+    let room = roomParams.explicit ? Game.rooms[roomParams.explicit] : Room.findSpawnRoom(roomParams);
+    if( !room ) return null;
     // define new creep
     if(!destiny) destiny = {};
     destiny.room = roomParams.targetRoom;

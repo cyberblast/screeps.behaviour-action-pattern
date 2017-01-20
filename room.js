@@ -794,7 +794,30 @@ mod.extend = function(){
                 }
                 return this.memory.pavementArt;
             }
-        }
+        }, 
+        'collapsed': {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._collapsed) ) {
+                    // only if owned
+                    if( !this.my ) {
+                        this._collapsed = false;
+                        return;
+                    }
+                    // no creeps ? collapsed!
+                    if( !room.population ) {
+                        this._collapsed = true;
+                        return;
+                    }
+                    // is collapsed if workers + haulers + pioneers in room = 0
+                    let workers = room.population.typeCount['worker'] ? room.population.typeCount['worker'] : 0;
+                    let haulers = room.population.typeCount['hauler'] ? room.population.typeCount['hauler'] : 0;
+                    let pioneers = room.population.typeCount['pioneer'] ? room.population.typeCount['pioneer'] : 0;
+                    this._collapsed = (workers + haulers + pioneers) === 0;
+                }
+                return this._collapsed;
+            }
+        }, 
     });
 
     Room.prototype.find = function (c, opt) {
@@ -1251,6 +1274,7 @@ mod.execute = function() {
             room.hostileIds.forEach(triggerKnownInvaders);
             room.newInvader.forEach(triggerNewInvaders);
             Tower.loop(room);
+            if( room.collapsed ) Room.collapsed.trigger(room);
         }
         else { // no sight
             if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);

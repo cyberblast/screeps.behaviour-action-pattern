@@ -13,7 +13,32 @@ mod.register = () => {
     Creep.predictedRenewal.on( creep => Task.pioneer.handleCreepDied(creep.name) );
     // a creep died
     Creep.died.on( name => Task.pioneer.handleCreepDied(name) );
+    // a room collapsed
+    Room.collapsed.on( room => Task.pioneer.handleRoomDied(room) );
 };
+mod.handleRoomDied = room => {
+    // try to spawn a worker
+    if( room.energyAvailable > 199 ) {
+        // flush high queue
+        room.spawnQueueHigh.splice(0, room.spawnQueueHigh.length);
+        Task.spawn(
+            Task.pioneer.creep.worker, // creepDefinition
+            { // destiny
+                task: 'pioneer', // taskName
+                targetName: room.name // targetName
+            }, 
+            { // spawn room selection params
+                explicit: room.name
+            }
+        );
+    }
+    // check if room has a pioneer flag
+    let pos = new RoomPosition(25, 25, room.name);
+    let flag = FlagDir.find(FLAG_COLOR.claim.pioneer, pos, true);
+    if( !flag ){
+        room.createFlag(pos, null, FLAG_COLOR.claim.pioneer.color, FLAG_COLOR.claim.pioneer.secondaryColor);
+    }
+}
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a pioneer single or spawn
@@ -165,4 +190,10 @@ mod.creep = {
         behaviour: "pioneer", 
         queue: 'Low'
     },
+    worker: {
+        fixedBody: [MOVE, CARRY, WORK],
+        multiBody: [MOVE, CARRY, WORK], 
+        behaviour: 'worker',
+        queue: 'High'
+    }
 };

@@ -55,7 +55,6 @@ mod.handleSpawningStarted = params => {
 };
 // check if a new creep has to be spawned
 mod.checkForRequiredCreeps = (flag) => {
-    let spawnRoom = Room.bestSpawnRoomFor(flag.pos.roomName);
     const roomName = flag.pos.roomName;
     const room = Game.rooms[roomName];
     // Use the roomName as key in Task.memory?
@@ -78,7 +77,7 @@ mod.checkForRequiredCreeps = (flag) => {
     let workerCount = memory.queued.remoteWorker.length + _.filter(Game.creeps, function(c){return c.data && c.data.creepType=='remoteWorker' && c.data.destiny.room==roomName;}).length;
     // TODO: calculate creeps by type needed per source / mineral
 
-    if( DEBUG && TRACE ) trace('Task', {task:mod.name, flagName:flag.name, room:spawnRoom.name, sourceCount, haulerCount, minerCount, workerCount, Task:'Flag.found'}, 'checking flag@', flag.pos);
+    if( DEBUG && TRACE ) trace('Task', {task:mod.name, flagName:flag.name, sourceCount, haulerCount, minerCount, workerCount, Task:'Flag.found'}, 'checking flag@', flag.pos);
 
     if(minerCount < sourceCount) {
         for(let i = minerCount; i < sourceCount; i++) {

@@ -40,4 +40,8 @@ mod.flush = function(){
     // ocurrs when an invader is not in the same room anymore (or died). will only occur when (or as soon as) there is sight in the room.
     // param: invader creep id
     Room.goneInvader = new LiteEvent();
+    
+    // ocurrs when a room is considered to have collapsed. Will occur each tick until solved.
+    // param: room
+    Room.collapsed = new LiteEvent();
 };

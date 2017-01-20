@@ -25,7 +25,6 @@ mod.handleFlagFound = flag => {
 };
 // check if a new creep has to be spawned
 mod.checkForRequiredCreeps = (flag) => {
-    let spawnRoom = Room.bestSpawnRoomFor(flag.pos.roomName);
     const roomName = flag.pos.roomName;
     const room = Game.rooms[roomName];
     // get task memory
