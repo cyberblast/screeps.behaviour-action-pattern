@@ -102,7 +102,7 @@ mod.register = function(){
 };
 mod.handleSpawningCompleted = function(creep){
     if( DEBUG && TRACE ) trace('Spawn', {behaviour:creep.data.creepType, creepName:creep.name, Spawn:'Creep.spawningCompleted'});
-    if(CENSUS_ANNOUNCEMENTS) global.logSystem(this.pos.roomName, dye(CRAYON.birth, 'Off to work ' + creep.name + '!') );
+    if(CENSUS_ANNOUNCEMENTS) global.logSystem(creep.pos.roomName, dye(CRAYON.birth, 'Off to work ' + creep.name + '!') );
 };
 mod.execute = function(){
     let run = spawn => {
