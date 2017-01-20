@@ -805,14 +805,14 @@ mod.extend = function(){
                         return;
                     }
                     // no creeps ? collapsed!
-                    if( !room.population ) {
+                    if( !this.population ) {
                         this._collapsed = true;
                         return;
                     }
                     // is collapsed if workers + haulers + pioneers in room = 0
-                    let workers = room.population.typeCount['worker'] ? room.population.typeCount['worker'] : 0;
-                    let haulers = room.population.typeCount['hauler'] ? room.population.typeCount['hauler'] : 0;
-                    let pioneers = room.population.typeCount['pioneer'] ? room.population.typeCount['pioneer'] : 0;
+                    let workers = this.population.typeCount['worker'] ? this.population.typeCount['worker'] : 0;
+                    let haulers = this.population.typeCount['hauler'] ? this.population.typeCount['hauler'] : 0;
+                    let pioneers = this.population.typeCount['pioneer'] ? this.population.typeCount['pioneer'] : 0;
                     this._collapsed = (workers + haulers + pioneers) === 0;
                 }
                 return this._collapsed;
