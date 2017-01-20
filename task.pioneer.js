@@ -17,8 +17,7 @@ mod.register = () => {
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a pioneer single or spawn
-    if( flag.color == FLAG_COLOR.claim.pioneer.color && flag.secondaryColor == FLAG_COLOR.claim.pioneer.secondaryColor ||
-        flag.color == FLAG_COLOR.claim.spawn.color && flag.secondaryColor == FLAG_COLOR.claim.spawn.secondaryColor){
+    if( flag.color == FLAG_COLOR.claim.pioneer.color && flag.secondaryColor == FLAG_COLOR.claim.pioneer.secondaryColor ){
         // check if a new creep has to be spawned
         Task.pioneer.checkForRequiredCreeps(flag);
     }
@@ -33,12 +32,10 @@ mod.checkForRequiredCreeps = (flag) => {
 
     // decide number of pioneers required
     let count = memory.queued.length + memory.spawning.length + memory.running.length;
-    var pNeed = 1;
-    if(flag.color == FLAG_COLOR.claim.spawn.color && flag.secondaryColor == FLAG_COLOR.claim.spawn.secondaryColor) pNeed = 4;
         
     // count creeps assigned to task
     // if creep count below requirement spawn a new creep creep 
-    if( count < pNeed ) {
+    if( count < 1 ) {
         Task.spawn(
             Task.pioneer.creep.pioneer, // creepDefinition
             { // destiny
