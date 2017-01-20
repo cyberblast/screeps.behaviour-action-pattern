@@ -231,16 +231,16 @@ module.exports.loop = function () {
 
     // Flush cache
     Events.flush();
-    Population.flush();
     FlagDir.flush();
+    Population.flush();
     Room.flush();
     // custom flush
     if( global.mainInjection.flush ) global.mainInjection.flush();
 
     // analyze environment
-    Population.analyze();
     FlagDir.analyze();
     Room.analyze();
+    Population.analyze();
     // custom analyze
     if( global.mainInjection.analyze ) global.mainInjection.analyze();
 
@@ -264,8 +264,8 @@ module.exports.loop = function () {
     if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
         load("statistics").process();
     processReports();
-    Population.cleanup();
     FlagDir.cleanup();
+    Population.cleanup();
     // custom cleanup
     if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
 
