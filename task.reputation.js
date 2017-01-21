@@ -1,6 +1,6 @@
 const NPC = {
     ["Source Keeper"]: true,
-    ["Invasion"]: true,
+    ["Invader"]: true,
 };
 const CONST = {
     MY_SCORE: 1000,
