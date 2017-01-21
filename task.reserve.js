@@ -27,11 +27,16 @@ mod.handleFlagFound = flag => {
 };
 // check if a new creep has to be spawned
 mod.checkForRequiredCreeps = (flag) => {
-    //only when controller is under 2500 ticks or has no controller (requires vision)
-    if( !flag || 
-        !Room.isControllerRoom(flag.pos.roomName) || 
-        (flag.room && !flag.room.controller) || 
-        (flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)) 
+    const myName = _.find(Game.spawns).owner.username;
+    // Don't spawn if...
+    if( // Flag was removed
+        !flag || 
+        // No controller in room
+        !Room.isControllerRoom(flag.pos.roomName) ||  (flag.room && !flag.room.controller) || 
+        // My reservation is already sufficiently high or reserved by another player
+        (flag.room && flag.room.controller && flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 2500 || flag.room.controller.reservation.username != myName) ) ||
+        // Room is owned
+        (flag.room && flag.room.controller && flag.room.controller.owner) )
         return;
 
     // get task memory
