@@ -184,6 +184,7 @@ _.assign(Creep, {
         remoteWorker: load("creep.behaviour.remoteWorker"),
         pioneer: load("creep.behaviour.pioneer"),
         privateer: load("creep.behaviour.privateer"),
+        recycler: load("creep.behaviour.recycler"),
         ranger: load("creep.behaviour.ranger"),
         upgrader: load("creep.behaviour.upgrader"),
         worker: load("creep.behaviour.worker")

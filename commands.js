@@ -14,6 +14,9 @@ Game.rooms['<roomName>'].spawnQueueLow.push({parts:[MOVE,WORK,CARRY],name:'max',
 // move Creep
 Game.creeps['<creepName>'].move(RIGHT);
 
+// force recycle a Creep
+Game.creeps['<creepName>'].data.creepType="recycler";
+
 // To override a module file create a copy of an existing module and name it "custom.<originalModuleName>". Then call this method (without ".js"): 
 getPath('<originalModuleName>', true);
 // To completely re-evaluate all modules:
