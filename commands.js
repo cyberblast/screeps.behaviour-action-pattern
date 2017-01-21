@@ -1,5 +1,8 @@
 // useful commands
 
+// Recycle a creep
+Creep.action.recycling.assign(Game.creeps['<creepName>']);
+
 // flush road construction traces
 _.forEach(Memory.rooms, r => delete r.roadConstructionTrace);
 
