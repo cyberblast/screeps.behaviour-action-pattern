@@ -241,6 +241,7 @@ mod.execute = function(){
     let triggerCompleted = name => Creep.spawningCompleted.trigger(Game.creeps[name]);
     this.spawned.forEach(triggerCompleted);
 
+    // Creep.died.on(n => console.log(`Creep ${n} died!`));
     let triggerDied = name => Creep.died.trigger(name);
     this.died.forEach(triggerDied);
 
