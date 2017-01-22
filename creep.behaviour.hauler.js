@@ -57,3 +57,37 @@ mod.nextAction = function(creep){
         }
     }
 };
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        canWithdrawEnergy: function (creep) {
+            const min = Math.min(creep.carryCapacity - creep.sum, 500);
+
+            return function (amount) {
+                return amount >= min;
+            };
+        }
+    },
+    uncharging: {
+        name: `uncharging-${mod.name}`,
+        targetScore: function (creep) {
+            const canWithdrawEnergy = creep.getStrategyHandler(['uncharging'], 'canWithdrawEnergy', creep);
+            if (!canWithdrawEnergy) return;
+
+            // take from fullest IN container having energy
+            return function (target) {
+                let score = target.sum;
+                if (target.targetOf)
+                    score -= _.sum(target.targetOf.map(t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 )));
+
+                if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, target: target.pos, score, strategy:'canWithdrawEnergy', Action:'uncharging'});
+
+                if (!canWithdrawEnergy(score)) score = 0;
+                return {target, score}
+            };
+        },
+    },
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};

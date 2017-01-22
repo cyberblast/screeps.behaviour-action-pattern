@@ -82,3 +82,35 @@ mod.gotoTargetRoom = function(creep){
 mod.goHome = function(creep){
     return Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
 };
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        canWithdrawEnergy: function (creep) {
+            const min = Math.min(creep.carryCapacity - creep.sum, 250);
+
+            return function (amount) {
+                return amount >= min;
+            };
+        }
+    },
+    uncharging: {
+        name: `uncharging-${mod.name}`,
+        targetScore: function (creep) {
+            const canWithdrawEnergy = creep.getStrategyHandler(['uncharging'], 'canWithdrawEnergy', creep);
+            if (!canWithdrawEnergy) return;
+
+            // take from fullest IN container having energy
+            return function (target) {
+                let score = target.sum;
+                if (target.targetOf)
+                    score -= _.sum(target.targetOf.map(t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 )));
+
+                if (!canWithdrawEnergy(score)) score = 0;
+                return {target, score}
+            };
+        },
+    },
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};

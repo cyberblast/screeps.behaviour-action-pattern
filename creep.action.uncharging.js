@@ -23,12 +23,13 @@ action.newTarget = function(creep){
         let linkStorage = creep.room.structures.links.storage.find(l => l.energy > 0);
         if( linkStorage ){
             let emptyControllerLink = creep.room.structures.links.controller.find(l => l.energy < l.energyCapacity * 0.15);
-            if( !emptyControllerLink || linkStorage.energy <= linkStorage.energyCapacity * 0.85 ) // also clear half filled
+            if( !emptyControllerLink || linkStorage.energy <= linkStorage.energyCapacity * 0.85 ) {// also clear half filled
+                if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, Action:action.name}, linkStorage.energy, 'priority link');
                 return linkStorage;
+            }
         }
     }
 
-    var that = this;
     if( creep.room.structures.container.in.length > 0 ) {
         let min;
         if( creep.data.creepType.indexOf('remote') > 0 ) min = 250;
@@ -49,8 +50,22 @@ action.newTarget = function(creep){
             }
         };
         _.forEach(creep.room.structures.container.in, fullest);
+        /*
+         const targetScore = creep.getStrategyHandler([action.name], 'targetScore', creep);
+         if (!targetScore) return;
+
+         const targetPool = creep.room.structures.container.in;
+         if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, Action:action.name}, 'considering', targetPool.length, 'targets');
+         const targets = _.chain(targetPool)
+         .map(targetScore).filter('score').sortBy('score').reverse().value();
+         const scoredTarget = targets[0];
+         const target = scoredTarget && scoredTarget.target || null;
+         if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, target: target && target.pos, score: scoredTarget && scoredTarget.score, Action:action.name}, 'selected');
+         */
         return target;
     }
+
+    if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, Action:action.name}, 'no possible targets');
 };
 action.work = function(creep){
     let workResult = OK;
@@ -84,4 +99,25 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9738), SAY_PUBLIC);
     if( SAY_ASSIGNMENT ) creep.say('\u{1F4E4}\u{FE0E}', SAY_PUBLIC);
+};
+action.defaultStrategy.canWithdrawEnergy = function(creep) {
+    const min = creep.body.carry * 25;
+    return function(amount) {
+        return creep.sum + amount >= min;
+    };
+};
+action.defaultStrategy.targetScore = function (creep) {
+    // take from closest IN container that will put us to work
+    const canWithdrawEnergy = creep.getStrategyHandler([action.name],'canWithdrawEnergy',creep);
+    if (!canWithdrawEnergy) return;
+
+    return function (target) {
+        let contFilling = target.sum;
+        if (target.targetOf)
+            contFilling -= _.sum(target.targetOf.map(t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 )));
+
+        let score = -creep.pos.getRangeTo(target.pos);
+        if ( !canWithdrawEnergy(contFilling)) score = 0;
+        return {target, score};
+    }
 };
