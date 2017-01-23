@@ -1,4 +1,5 @@
 /* https://github.com/ScreepsOCS/screeps.behaviour-action-pattern */
+const cpuAtLoad = Game.cpu.getUsed();
 
 // ensure required memory namespaces
 if (Memory.modules === undefined)  {
@@ -213,7 +214,11 @@ FlagDir.extend();
 // custom extend
 if( global.mainInjection.extend ) global.mainInjection.extend();
 
+let cpuAtFirstLoop;
 module.exports.loop = function () {
+    const cpuAtLoop = Game.cpu.getUsed();
+    if (!cpuAtFirstLoop) cpuAtFirstLoop = cpuAtLoop;
+
     // ensure required memory namespaces
     if (Memory.modules === undefined)  {
         Memory.modules = {
@@ -222,7 +227,7 @@ module.exports.loop = function () {
         };
     }
     if (Memory.debugTrace === undefined) {
-        Memory.debugTrace = {};
+        Memory.debugTrace = {error:true, no:{}};
     }
 
     // ensure up to date parameters
@@ -271,4 +276,6 @@ module.exports.loop = function () {
     if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
 
     Game.cacheTime = Game.time;
+
+    if( DEBUG && TRACE ) trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
 };
