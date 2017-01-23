@@ -1,14 +1,6 @@
 /* https://github.com/ScreepsOCS/screeps.behaviour-action-pattern */
 const cpuAtLoad = Game.cpu.getUsed();
 
-// ensure required memory namespaces
-if (Memory.modules === undefined)  {
-    Memory.modules = {
-        viral: {},
-        internalViral: {}
-    };
-}
-
 // check if a path is valid
 global.validatePath = path => {
     let mod;
@@ -116,103 +108,113 @@ global.load = (modName) => {
     }
     return mod;
 };
-
-// Initialize global & parameters
-//let glob = load("global");
-global.inject(global, load("global"));
-_.assign(global, load("parameter"));
-global.mainInjection = load("mainInjection");
-
-// Load modules
-_.assign(global, {
-    Extensions: load("extensions"),
-    Population: load("population"),
-    FlagDir: load("flagDir"),
-    Task: load("task"),
-    Tower: load("tower"),
-    Events: load('events')
-});
-_.assign(global.Task, {
-    guard: load("task.guard"),
-    defense: load("task.defense"),
-    mining: load("task.mining"),
-    claim: load("task.claim"),
-    reserve: load("task.reserve"),
-    pioneer: load("task.pioneer"),
-    attackController: load("task.attackController"),
-    robbing: load("task.robbing"),
-    reputation: load("task.reputation"),
-});
-Creep.Action = load("creep.Action");
-Creep.Setup = load("creep.Setup");
-_.assign(Creep, {
-    action: {
-        building: load("creep.action.building"), 
-        charging: load("creep.action.charging"),
-        claiming: load("creep.action.claiming"),
-        defending: load("creep.action.defending"),
-        dismantling: load("creep.action.dismantling"),
-        feeding: load("creep.action.feeding"), 
-        fortifying: load("creep.action.fortifying"), 
-        fueling: load("creep.action.fueling"), 
-        guarding: load("creep.action.guarding"), 
-        harvesting: load("creep.action.harvesting"),
-        healing: load("creep.action.healing"),
-        idle: load("creep.action.idle"),
-        invading: load("creep.action.invading"),
-        picking: load("creep.action.picking"), 
-        repairing: load("creep.action.repairing"), 
-        reserving: load("creep.action.reserving"),
-        travelling: load("creep.action.travelling"), 
-        storing: load("creep.action.storing"), 
-        uncharging: load("creep.action.uncharging"),
-        upgrading: load("creep.action.upgrading"), 
-        withdrawing: load("creep.action.withdrawing"),
-        robbing:load("creep.action.robbing"),
-        reallocating:load("creep.action.reallocating"),
-        recycling:load("creep.action.recycling"),
-        attackController:load("creep.action.attackController")
-    },
-    behaviour: {
-        claimer: load("creep.behaviour.claimer"),
-        hauler: load("creep.behaviour.hauler"),
-        healer: load("creep.behaviour.healer"),
-        melee: load("creep.behaviour.melee"),
-        miner: load("creep.behaviour.miner"),
-        mineralMiner: load("creep.behaviour.mineralMiner"),
-        remoteMiner: load("creep.behaviour.remoteMiner"),
-        remoteHauler: load("creep.behaviour.remoteHauler"),
-        remoteWorker: load("creep.behaviour.remoteWorker"),
-        pioneer: load("creep.behaviour.pioneer"),
-        privateer: load("creep.behaviour.privateer"),
-        recycler: load("creep.behaviour.recycler"),
-        ranger: load("creep.behaviour.ranger"),
-        upgrader: load("creep.behaviour.upgrader"),
-        worker: load("creep.behaviour.worker")
-    },
-    setup: {
-        hauler: load("creep.setup.hauler"),
-        healer: load("creep.setup.healer"),
-        miner: load("creep.setup.miner"),
-        mineralMiner: load("creep.setup.mineralMiner"),
-        privateer: load("creep.setup.privateer"),
-        upgrader: load("creep.setup.upgrader"),
-        worker: load("creep.setup.worker")
+// load code
+global.install = () => {
+    // ensure required memory namespaces
+    if (Memory.modules === undefined)  {
+        Memory.modules = {
+            viral: {},
+            internalViral: {}
+        };
     }
-});
-global.inject(Creep, load("creep"));
-global.inject(Room, load("room"));
-global.inject(Spawn, load("spawn"));
+    // Initialize global & parameters
+    //let glob = load("global");
+    global.inject(global, load("global"));
+    _.assign(global, load("parameter"));
+    global.mainInjection = load("mainInjection");
 
-// Extend server objects
-//global.extend();
-Extensions.extend();
-Creep.extend();
-Room.extend();
-Spawn.extend();
-FlagDir.extend();
-// custom extend
-if( global.mainInjection.extend ) global.mainInjection.extend();
+    // Load modules
+    _.assign(global, {
+        Extensions: load("extensions"),
+        Population: load("population"),
+        FlagDir: load("flagDir"),
+        Task: load("task"),
+        Tower: load("tower"),
+        Events: load('events')
+    });
+    _.assign(global.Task, {
+        guard: load("task.guard"),
+        defense: load("task.defense"),
+        mining: load("task.mining"),
+        claim: load("task.claim"),
+        reserve: load("task.reserve"),
+        pioneer: load("task.pioneer"),
+        attackController: load("task.attackController"),
+        robbing: load("task.robbing"),
+        reputation: load("task.reputation"),
+    });
+    Creep.Action = load("creep.Action");
+    Creep.Setup = load("creep.Setup");
+    _.assign(Creep, {
+        action: {
+            building: load("creep.action.building"), 
+            charging: load("creep.action.charging"),
+            claiming: load("creep.action.claiming"),
+            defending: load("creep.action.defending"),
+            dismantling: load("creep.action.dismantling"),
+            feeding: load("creep.action.feeding"), 
+            fortifying: load("creep.action.fortifying"), 
+            fueling: load("creep.action.fueling"), 
+            guarding: load("creep.action.guarding"), 
+            harvesting: load("creep.action.harvesting"),
+            healing: load("creep.action.healing"),
+            idle: load("creep.action.idle"),
+            invading: load("creep.action.invading"),
+            picking: load("creep.action.picking"), 
+            repairing: load("creep.action.repairing"), 
+            reserving: load("creep.action.reserving"),
+            travelling: load("creep.action.travelling"), 
+            storing: load("creep.action.storing"), 
+            uncharging: load("creep.action.uncharging"),
+            upgrading: load("creep.action.upgrading"), 
+            withdrawing: load("creep.action.withdrawing"),
+            robbing:load("creep.action.robbing"),
+            reallocating:load("creep.action.reallocating"),
+            recycling:load("creep.action.recycling"),
+            attackController:load("creep.action.attackController")
+        },
+        behaviour: {
+            claimer: load("creep.behaviour.claimer"),
+            hauler: load("creep.behaviour.hauler"),
+            healer: load("creep.behaviour.healer"),
+            melee: load("creep.behaviour.melee"),
+            miner: load("creep.behaviour.miner"),
+            mineralMiner: load("creep.behaviour.mineralMiner"),
+            remoteMiner: load("creep.behaviour.remoteMiner"),
+            remoteHauler: load("creep.behaviour.remoteHauler"),
+            remoteWorker: load("creep.behaviour.remoteWorker"),
+            pioneer: load("creep.behaviour.pioneer"),
+            privateer: load("creep.behaviour.privateer"),
+            recycler: load("creep.behaviour.recycler"),
+            ranger: load("creep.behaviour.ranger"),
+            upgrader: load("creep.behaviour.upgrader"),
+            worker: load("creep.behaviour.worker")
+        },
+        setup: {
+            hauler: load("creep.setup.hauler"),
+            healer: load("creep.setup.healer"),
+            miner: load("creep.setup.miner"),
+            mineralMiner: load("creep.setup.mineralMiner"),
+            privateer: load("creep.setup.privateer"),
+            upgrader: load("creep.setup.upgrader"),
+            worker: load("creep.setup.worker")
+        }
+    });
+    global.inject(Creep, load("creep"));
+    global.inject(Room, load("room"));
+    global.inject(Spawn, load("spawn"));
+
+    // Extend server objects
+    //global.extend();
+    Extensions.extend();
+    Creep.extend();
+    Room.extend();
+    Spawn.extend();
+    FlagDir.extend();
+    // custom extend
+    if( global.mainInjection.extend ) global.mainInjection.extend();
+};
+global.install();
 
 let cpuAtFirstLoop;
 module.exports.loop = function () {

@@ -29,7 +29,11 @@ mod.LiteEvent = function() {
     }
     // call all registered subscribers
     this.trigger = function(data) {
-        this.handlers.slice(0).forEach(h => h(data));
+        try{
+            this.handlers.slice(0).forEach(h => h(data));
+        } catch(e){
+            global.logError('Error in LiteEvent.trigger: ' + e);
+        }
     }
 };
 // Flag colors, used throughout the code
