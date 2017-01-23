@@ -184,50 +184,15 @@ mod.nextAction = creep => {
     // not at home
     else {
         // at target room
-        if( creep.data.destiny.targetName == creep.pos.roomName ){
-            // check invader/cloaking state
-            if( creep.room.situation.invasion &&
-                (creep.flag.color != FLAG_COLOR.invade.robbing.color || creep.flag.secondaryColor != FLAG_COLOR.invade.robbing.secondaryColor )) {
-                creep.flag.cloaking = 50; // TODO: set to Infinity & release when solved
-                Task[creep.data.destiny.task].exploitNextRoom(creep);
-                return;
-            }
+        if( creep.data.destiny.room == creep.pos.roomName ){
 
             // get some energy
             if( creep.sum < creep.carryCapacity*0.4 ) {
-                // sources depleted
-                if( creep.room.sourceEnergyAvailable == 0 ){
-                    // cloak flag
-                    creep.flag.cloaking = _.max([creep.room.ticksToNextRegeneration-20,0]); // approach a bit earlier
-                    // travelling
-                    Task[creep.data.destiny.task].exploitNextRoom(creep);
-                    return;
-                }
-                // energy available
-                else {
-                    // harvesting or picking
-                    var actions = [
-                        Creep.action.picking,
-                        Creep.action.uncharging,
-                        Creep.action.withdrawing,
-                        Creep.action.robbing,
-                    ];
-                    // TODO: Add extracting (if extractor present) ?
-                    for(var iAction = 0; iAction < actions.length; iAction++) {
-                        var action = actions[iAction];
-                        if(action.isValidAction(creep) &&
-                            action.isAddableAction(creep) &&
-                            action.assign(creep))
-                            return;
-                    }
-                    // no targets in current room
-                    creep.flag.cloaking = 50;
-                    return;
-                }
-            }
-            // carrier full
-            else {
-                var actions = [Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller)];
+                // harvesting or picking
+                var actions = [
+                    Creep.action.picking,
+                    Creep.action.robbing
+                ];
                 for(var iAction = 0; iAction < actions.length; iAction++) {
                     var action = actions[iAction];
                     if(action.isValidAction(creep) &&
@@ -235,7 +200,13 @@ mod.nextAction = creep => {
                         action.assign(creep))
                         return;
                 }
-
+                // no targets in current room
+                creep.flag.cloaking = 50;
+                Task[creep.data.destiny.task].exploitNextRoom(creep);
+                return;
+            }
+            // carrier full
+            else {
                 Population.registerCreepFlag(creep, null);
                 Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
                 return;
@@ -243,8 +214,8 @@ mod.nextAction = creep => {
         }
         // not at target room
         else {
-                Task[creep.data.destiny.task].exploitNextRoom(creep);
-                return;
+            Task[creep.data.destiny.task].exploitNextRoom(creep);
+            return;
         }
     }
     // fallback
@@ -258,7 +229,7 @@ mod.exploitNextRoom = creep => {
         );
         var flag;
         if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.flagName];
-        if( !flag ) flag = FlagDir.find(validColor, Game.rooms[creep.data.homeRoom].controller.pos, false, FlagDir.exploitMod, creep.name);
+        if( !flag ) flag = FlagDir.find(validColor, Game.rooms[creep.data.homeRoom].controller.pos, false);
         // new flag found
         if( flag ) {
             // travelling
