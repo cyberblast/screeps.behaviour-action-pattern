@@ -18,10 +18,11 @@ mod.register = () => {
 };
 mod.handleRoomDied = room => {
     // try to spawn a worker
+    let pioneer = true;
     if( room.energyAvailable > 199 ) {
         // flush high queue
         room.spawnQueueHigh.splice(0, room.spawnQueueHigh.length);
-        Task.spawn(
+        pioneer = !Task.spawn(
             Task.pioneer.creep.worker, // creepDefinition
             { // destiny
                 task: 'pioneer', // taskName
@@ -31,12 +32,14 @@ mod.handleRoomDied = room => {
                 explicit: room.name
             }
         );
-    }
-    // check if room has a pioneer flag
-    let pos = new RoomPosition(25, 25, room.name);
-    let flag = FlagDir.find(FLAG_COLOR.claim.pioneer, pos, true);
-    if( !flag ){
-        room.createFlag(pos, null, FLAG_COLOR.claim.pioneer.color, FLAG_COLOR.claim.pioneer.secondaryColor);
+    } 
+    if( pioneer ){
+        // ensure room has a pioneer flag
+        let pos = new RoomPosition(25, 25, room.name);
+        let flag = FlagDir.find(FLAG_COLOR.claim.pioneer, pos, true);
+        if( !flag ){
+            room.createFlag(pos, null, FLAG_COLOR.claim.pioneer.color, FLAG_COLOR.claim.pioneer.secondaryColor);
+        }
     }
 }
 // for each flag

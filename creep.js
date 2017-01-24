@@ -292,8 +292,8 @@ mod.extend = function(){
     };
     
     Creep.prototype.controllerSign = function() {
-        if(CONTROLLER_SIGN && (!this.target.sign || this.target.sign.username != this.owner.username)) {
-            this.signController(this.target, CONTROLLER_SIGN_MESSAGE);
+        if(CONTROLLER_SIGN && (!this.room.controller.sign || this.room.controller.sign.username != this.owner.username)) {
+            this.signController(this.room.controller, CONTROLLER_SIGN_MESSAGE);
         }
     };
 

@@ -92,6 +92,7 @@ mod.run = function(creep) {
                 if( !store ) store = creep.room.structures.container.controller.find(l => l.store.energy > 0);
                 if( store ) creep.withdraw(store, RESOURCE_ENERGY);
             }
+            creep.controllerSign();
             creep.upgradeController(creep.room.controller);
         }
     }

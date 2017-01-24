@@ -19,14 +19,15 @@ action.isValidTarget = function(target){
 action.newTarget = function(creep){
     return ( creep.room.controller && creep.room.controller.my) ? creep.room.controller : null;
 };
-action.work = function(creep){
+action.work = function(creep, range){
+    if( range && range < 2 ) creep.controllerSign();
     return creep.upgradeController(creep.room.controller);
 };
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
     let range = creep.pos.getRangeTo(creep.target);
     if( range <= this.targetRange ) {
-        var workResult = this.work(creep);
+        let workResult = this.work(creep, range);
         if( workResult != OK ) {
             creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
         }
