@@ -17,10 +17,16 @@ setup.maxMulti = function(room){
     return Math.min(11, multi, rclMax);
 };
 setup.maxCount = function(room){
-    if (room.situation.invasion ||
-        room.conserveForDefense ||
-        (room.structures.container.controller.length + room.structures.links.controller.length) == 0 )
-        return 0;
+    // Don't spawn upgrader if...
+    if (    // Room under attack
+            room.situation.invasion ||
+            // Energy reserves are low
+            room.conserveForDefense ||
+            // No energy structures built near controller
+            (room.structures.container.controller.length + room.structures.links.controller.length) == 0 ||
+            // Upgrading blocked -> http://support.screeps.com/hc/en-us/articles/207711889-StructureController#upgradeBlocked
+            room.controller.upgradeBlocked
+        ) return 0;
     // if there is no energy for the upgrader return 0
     let upgraderEnergy = 0;
     let sumCont = cont => upgraderEnergy += cont.store.energy;

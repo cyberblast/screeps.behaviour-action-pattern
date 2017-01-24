@@ -9,6 +9,10 @@ mod.approach = function(creep){
     return range;
 };
 mod.run = function(creep) {
+    if( creep.room.controller.upgradeBlocked ){
+        creep.data.creepType='recycler';
+        return;
+    }
     if( !creep.action ) Population.registerAction(creep, Creep.action.upgrading, creep.room.controller);
     if( !creep.data.determinatedSpot ) {
         let args = {
