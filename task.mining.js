@@ -122,21 +122,12 @@ mod.checkForRequiredCreeps = (flag) => {
     let maxHaulers = Math.ceil(runningMiners.length * REMOTE_HAULER_MULTIPLIER);
     if(haulerCount < maxHaulers) {
         for(let i = haulerCount; i < maxHaulers; i++) {
-            const spawnRoom = Room.findSpawnRoom({ // spawn room selection params
-                targetRoom: roomName,
-                minEnergyCapacity: 500
-            });
+            const spawnRoom = mod.strategies.hauler.spawnRoom(roomName);
 
             if( !spawnRoom ) break;
 
             // haulers set homeRoom if closer storage exists
-            const storageRoom = REMOTE_HAULER_REHOME ? Room.findSpawnRoom({
-                targetRoom: roomName,
-                minRCL: 4,
-                callBack: r=>r.storage,
-                rangeRclRatio: Infinity,
-                rangeQueueRatio: Infinity,
-            }) : spawnRoom;
+            const storageRoom = REMOTE_HAULER_REHOME ? mod.strategies.hauler.homeRoom(roomName) : spawnRoom;
 
             const maxWeight = mod.strategies.hauler.maxWeight(
                 storageRoom, roomName, existingHaulers, memory.queued.remoteHauler); // TODO Task.strategies
@@ -254,10 +245,30 @@ mod.strategies = {
     },
     hauler: {
         name: `hauler-${mod.name}`,
+        homeRoom: function(flagRoomName) {
+            return Room.findSpawnRoom({
+                targetRoom: flagRoomName,
+                minRCL: 4,
+                callBack: function(r){return r.storage},
+                rangeRclRatio: Infinity,
+                rangeQueueRatio: Infinity,
+            });
+        },
+        spawnRoom: function(flagRoomName) {
+            return Room.findSpawnRoom({
+                targetRoom: flagRoomName,
+                minEnergyCapacity: 500
+            });
+        },
         maxWeight: function(travelRoom, roomName, existingCreeps, queuedCreeps) {
             const room = Game.rooms[roomName];
             const travel = routeRange(roomName, travelRoom.name);
-            const ept = room ? 10 * room.sources.length : 10;
+            let ept = 10;
+            if( room ) {
+                ept = 10 * room.sources.length;
+            } else if( travel > 3 ) {
+                ept = 20; // assume profitable
+            }
             // carry = ept * travel * 2 * 50 / 50
             const existingCarry = _.chain(existingCreeps)
                 .filter(function(c) {return c.ticksToLive > (50 * travel + c.body.length * 3)})
