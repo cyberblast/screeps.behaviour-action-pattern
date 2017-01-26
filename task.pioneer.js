@@ -53,7 +53,7 @@ mod.handleFlagFound = flag => {
 // check if a new creep has to be spawned
 mod.checkForRequiredCreeps = (flag) => {
     //only when room is owned
-    if( !flag || (flag.room && !flag.room.controller.my) ) return console.log("Pioneer room not owned");
+    if( !flag || (flag.room && !flag.room.controller.my) ) return console.log("[" + flag.room.name + "] Pioneer room not owned");
     
     // get task memory
     let memory = Task.pioneer.memory(flag);
