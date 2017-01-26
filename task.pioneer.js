@@ -18,7 +18,7 @@ mod.register = () => {
 };
 mod.handleRoomDied = room => {
     // try to spawn a worker
-    let pioneer = true;
+    let pioneer = false;
     if( room.energyAvailable > 199 ) {
         // flush high queue
         room.spawnQueueHigh.splice(0, room.spawnQueueHigh.length);

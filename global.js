@@ -298,8 +298,20 @@ mod.pave = function(roomName){
     let remove = flag => flag.remove();
     flags.forEach(remove);
 };
-// TODO: remove a pavement
-mod.unpave = function(roomname){};
+mod.unpave = function(roomname){
+    console.log(1);
+    if( !Memory.pavementArt || !Memory.pavementArt[roomname] ) return false;
+    console.log(2);
+    let room = Game.rooms[roomname];
+    if( !room ) return false;
+    console.log(3);
+    let unpaved = structure => Memory.pavementArt[roomname].indexOf('x'+structure.pos.x+'y'+structure.pos.y+'x') >= 0;
+    let structures = room.structures.all.filter(unpaved);
+    let destroy = structure => structure.destroy();
+    if( structures ) structures.forEach(destroy);
+    delete Memory.pavementArt[roomname];
+    return true;
+};
 mod.guid = function(){
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);

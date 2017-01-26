@@ -177,6 +177,7 @@ mod.analyze = function(){
                 entry.spawningTime++;
             }
             else if( creep.ticksToLive ==  ( creep.data.body.claim !== undefined ? 499 : 1499 ) ){ // spawning complete
+                if( !entry.predictedRenewal ) entry.predictedRenewal = entry.spawningTime + 50;
                 this.spawned.push(entry.creepName);
                 this.spawnsToProbe.push(entry.motherSpawn);
             }
