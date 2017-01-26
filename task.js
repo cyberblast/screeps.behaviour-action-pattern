@@ -46,7 +46,7 @@ mod.spawn = (creepDefinition, destiny, roomParams, onQueued) => {
     if( !room ) return null;
     // define new creep
     if(!destiny) destiny = {};
-    destiny.room = roomParams.targetRoom;
+    if(!destiny.room && roomParams.targetRoom) destiny.room = roomParams.targetRoom;
 
     let parts = Creep.compileBody(room, creepDefinition);
 

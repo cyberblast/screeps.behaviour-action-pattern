@@ -86,7 +86,8 @@ let mod = {
     COST_MATRIX_VALIDITY: 1000,
     CONTROLLER_SIGN: false,
     CONTROLLER_SIGN_MESSAGE: "Territory of the Open Collaboration Society! (https://github.com/ScreepsOCS)",
-    REMOTE_HAULER_MULTIPLIER: 1, // Number of haulers spawned per source in a remote mining room.
+    REMOTE_HAULER_MULTIPLIER: 1, // Max number of haulers spawned per source in a remote mining room.
+    REMOTE_HAULER_REHOME: false, // May haulers choose closer storage for delivery?
     REMOTE_WORKER_MULTIPLIER: 1, // Number of workers spawned per remote mining room.
     PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah','fsck-u','FaceWound','forkmantis','Migaaresno','xAix1999','silentpoots','arguinyano','OokieCookie','OverlordQ','Nibinhilion','Crowsbane','Yew','BogdanBiv','s1akr','Pandabear41','Logmadr','Patrik','novice','Conquest','ofirl','GeorgeBerkeley','TTR','tynstar','K-C','Hoekynl','Sunri5e','AgOrange','distantcam','Lisp','bbdMinimbl'],
     // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
