@@ -130,9 +130,9 @@ mod.checkForRequiredCreeps = (flag) => {
             const storageRoom = REMOTE_HAULER_REHOME ? mod.strategies.hauler.homeRoom(roomName) : spawnRoom;
 
             const maxWeight = mod.strategies.hauler.maxWeight(
-                storageRoom, roomName, existingHaulers, memory.queued.remoteHauler); // TODO Task.strategies
+                roomName, storageRoom, existingHaulers, memory); // TODO Task.strategies
 
-            if( !maxWeight ) break;
+            if( !maxWeight || (i > 1 && maxWeight < REMOTE_HAULER_MIN_WEIGHT)) break;
 
             const creepDefinition = _.create(Task.mining.creep.hauler);
             creepDefinition.maxWeight = maxWeight;
@@ -229,6 +229,11 @@ mod.creep = {
         queue: 'Low'
     }
 };
+mod.carry = function(roomName, partChange) {
+    let memory = Task.mining.memory(roomName);
+    memory.carryParts = (memory.carryParts || 0) + (partChange || 0);
+    return `Task.${mod.name} set hauler carry parts for ${roomName} to ${memory.carryParts}`;
+};
 function haulerWeightToCarry(weight) {
     if( !weight || weight < 0) return 0;
     const multiWeight = _.max([0, weight - 500]);
@@ -260,7 +265,10 @@ mod.strategies = {
                 minEnergyCapacity: 500
             });
         },
-        maxWeight: function(travelRoom, roomName, existingCreeps, queuedCreeps) {
+        maxWeight: function(roomName, travelRoom, existingCreeps, memory) {
+            if( !memory ) memory = Task.mining.memory(roomName);
+            if( !existingCreeps ) existingCreeps = [];
+            const queuedCreeps = memory.queued.remoteHauler;
             const room = Game.rooms[roomName];
             const travel = routeRange(roomName, travelRoom.name);
             let ept = 10;
@@ -271,15 +279,15 @@ mod.strategies = {
             }
             // carry = ept * travel * 2 * 50 / 50
             const existingCarry = _.chain(existingCreeps)
-                .filter(function(c) {return c.ticksToLive > (50 * travel + c.body.length * 3)})
+                .filter(function(c) {return c.ticksToLive > (50 * travel - 40 + c.body.length * 3)})
                 .sum(function(c) {return haulerWeightToCarry(c.data.weight || 500)}).value();
             const queuedCarry = _.sum(queuedCreeps, c=>haulerWeightToCarry(c.weight || 500));
-            const neededCarry = ept * travel * 2 - existingCarry - queuedCarry;
+            const neededCarry = ept * travel * 2 + (memory.carryParts || 0) - existingCarry - queuedCarry;
 
             const maxWeight = haulerCarryToWeight(neededCarry);
             if( DEBUG && TRACE ) trace('Task', {Task:mod.name, room: roomName, travelRoom: travelRoom.name,
-                haulers: existingCreeps.length + queuedCreeps.length, travel, existingCarry, queuedCarry, neededCarry,
-                maxWeight, [mod.name]:'maxWeight'});
+                haulers: existingCreeps.length + queuedCreeps.length, ept, travel, existingCarry, queuedCarry,
+                neededCarry, maxWeight, [mod.name]:'maxWeight'});
             return maxWeight;
         }
     },
