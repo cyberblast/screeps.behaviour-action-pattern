@@ -87,13 +87,17 @@ mod.checkForRequiredCreeps = (flag) => {
     let existingHaulers = creepsByType.remoteHauler || [];
     let haulerCount = memory.queued.remoteHauler.length + existingHaulers.length;
     let existingMiners = creepsByType.remoteMiner || [];
-    let minerCount = memory.queued.remoteMiner.length + existingMiners.length;
+    let minerCount = memory.queued.remoteMiner.length +
+        _.sum(existingMiners, function(c) {return (c.ticksToLive || CREEP_LIFE_TIME) > (c.data.predictedRenewal || 0)});
     let workerCount = memory.queued.remoteWorker.length + (creepsByType.remoteWorker || []).length;
     // TODO: calculate creeps by type needed per source / mineral
 
     if( DEBUG && TRACE ) trace('Task', {Task:mod.name, flagName:flag.name, sourceCount, haulerCount, minerCount, workerCount, [mod.name]:'Flag.found'}, 'checking flag@', flag.pos);
 
     if(minerCount < sourceCount) {
+        if( DEBUG && TRACE ) trace('Task', {Task:mod.name, room:flag.pos.roomName, minerCount,
+            minerTTLs: _.map(existingMiners, "ticksToLive"), [mod.name]:'minerCount'});
+
         for(let i = minerCount; i < sourceCount; i++) {
             Task.spawn(
                 Task.mining.creep.miner, // creepDefinition
@@ -104,7 +108,7 @@ mod.checkForRequiredCreeps = (flag) => {
                 }, 
                 { // spawn room selection params
                     targetRoom: flag.pos.roomName,
-                    minEnergyCapacity: 700
+                    minEnergyCapacity: 800
                 },
                 creepSetup => { // onQueued callback
                     let memory = Task.mining.memory(creepSetup.destiny.room);
@@ -211,7 +215,7 @@ mod.memory = key => {
 };
 mod.creep = {
     miner: {
-        fixedBody: [MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, CARRY],
+        fixedBody: [MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK, CARRY],
         multiBody: [],
         behaviour: 'remoteMiner',
         queue: 'Low'
@@ -279,7 +283,7 @@ mod.strategies = {
             }
             // carry = ept * travel * 2 * 50 / 50
             const existingCarry = _.chain(existingCreeps)
-                .filter(function(c) {return c.ticksToLive > (50 * travel - 40 + c.body.length * 3)})
+                .filter(function(c) {return (c.ticksToLive || CREEP_LIFE_TIME) > (50 * travel - 40 + c.data.spawningTime)})
                 .sum(function(c) {return haulerWeightToCarry(c.data.weight || 500)}).value();
             const queuedCarry = _.sum(queuedCreeps, c=>haulerWeightToCarry(c.weight || 500));
             const neededCarry = ept * travel * 2 + (memory.carryParts || 0) - existingCarry - queuedCarry;
