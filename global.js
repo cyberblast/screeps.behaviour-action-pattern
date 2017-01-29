@@ -37,6 +37,7 @@ mod.LiteEvent = function() {
     }
 };
 // Flag colors, used throughout the code
+//COLOR_RED
 mod.FLAG_COLOR = {
     invade: { // destroy everything enemy in the room
         color: COLOR_RED,
@@ -60,7 +61,8 @@ mod.FLAG_COLOR = {
     },
     //COLOR_PURPLE,
     //COLOR_BLUE,
-    //COLOR_CYAN,
+    //COLOR_CYAN - Reserved
+    //COLOR_GREEN
     claim: { // claim this room, then build spawn at flag
         color: COLOR_GREEN,
         secondaryColor: COLOR_GREEN,
@@ -87,11 +89,13 @@ mod.FLAG_COLOR = {
         }
 
     },
+    //COLOR_YELLOW
     defense: { // point to gather troops
         color: COLOR_YELLOW,
         secondaryColor: COLOR_YELLOW,
         filter: {'color': COLOR_YELLOW, 'secondaryColor': COLOR_YELLOW }
     },
+    //COLOR_ORANGE
     destroy: { // destroy whats standing here
         color: COLOR_ORANGE,
         secondaryColor: COLOR_ORANGE,
@@ -102,6 +106,7 @@ mod.FLAG_COLOR = {
             filter: {'color': COLOR_ORANGE, 'secondaryColor': COLOR_YELLOW }
         },
     },
+    //COLOR_BROWN
     pavementArt: {
         color: COLOR_BROWN,
         secondaryColor: COLOR_BROWN,
