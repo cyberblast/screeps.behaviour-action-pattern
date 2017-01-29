@@ -24,7 +24,7 @@ mod.mine = function(creep) {
     let source;
     if( !creep.data.determinatedTarget ) { // select source
         let notDeterminated = source => {
-            let hasThisSource = data => { return data.determinatedTarget == source.id };
+            let hasThisSource = data => { return data.determinatedTarget == source.id && data.ttl > 100 };
             let existingBranding = _.find(Memory.population, hasThisSource);
             return !existingBranding;
         };
