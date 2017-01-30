@@ -1,16 +1,18 @@
 const reduceMemoryWhere = function(result, value, key) {
     const setting = Memory.debugTrace[key];
-    if (setting === undefined) {
+    if (!Memory.debugTrace.hasOwnProperty(key)) {
         return result;
     } else if (result) { // default result
-        return setting === value;
+        // matches or for falsey values matches printed value
+        return setting === value || (!value && setting === `${value}`);
     } else {
         return false;
     }
 };
 const noMemoryWhere = function(e) {
     const setting = Memory.debugTrace.no[e[0]];
-    return setting === true || setting === e[1];
+    return setting === true || Memory.debugTrace.no.hasOwnProperty(e[0]) &&
+        (setting === e[1] || (!e[1] && setting === `${e[1]}`));
 };
 
 let mod = {};
