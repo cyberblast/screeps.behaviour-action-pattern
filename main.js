@@ -10,7 +10,7 @@ global.validatePath = path => {
     catch (e) {
         if (global.DEBUG !== false && !(e.message && e.message.startsWith('Unknown module'))) {
             console.log('<font style="color:FireBrick">Error loading ' + path
-                + ' caused by ' + e.toString() + '</font>');
+                + ' caused by ' + (e.stack || e.toString()) + '</font>');
         }
         mod = null;
     }
@@ -51,7 +51,7 @@ global.tryRequire = (path, silent = false) => {
         if( e.message && e.message.indexOf('Unknown module') > -1 ){
             if(!silent) console.log(`Module "${path}" not found!`);
         } else if(mod == null) {
-            console.log(`Error loading module "${path}"!<br/>${e.toString()}`);
+            console.log(`Error loading module "${path}"!<br/>${e.stack || e.toString()}`);
         }
         mod = null;
     }

@@ -34,7 +34,7 @@ mod.LiteEvent = function() {
         try{
             this.handlers.slice(0).forEach(h => h(data));
         } catch(e){
-            global.logError('Error in LiteEvent.trigger: ' + e);
+            global.logError('Error in LiteEvent.trigger: ' + (e.stack || e));
         }
     }
 };
