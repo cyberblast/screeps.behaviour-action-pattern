@@ -215,7 +215,7 @@ mod.extend = function(){
         }
     };
     Creep.prototype.getPath = function( targetPos, ignoreCreeps ) {
-        let range = 1;
+        let range = undefined;
         let tempTarget = targetPos;
         if (ROUTE_PRECALCULATION && this.pos.roomName != targetPos.roomName) {
             var route = this.room.findRoute(targetPos.roomName);
