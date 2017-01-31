@@ -36,16 +36,16 @@ mod.nextAction = function(creep) {
             // and has spawn flag
             if( spawnFlag ) {
                 // but spawn is complete
-                if( flag.room.structures.spawns && flag.room.structures.spawns.length > 0 ){ 
+                if( spawnFlag.room.structures.spawns && spawnFlag.room.structures.spawns.length > 0 ){
                     // remove spawn flag
-                    flag.remove();
+                    spawnFlag.remove();
                     // also remove exploit flags
                     let remove = f => Game.flags[f.name].remove();
-                    _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit, flag.pos, true), remove);
+                    _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit, spawnFlag.pos, true), remove);
                 }
                 else { // no spawn => build it
                     if( flag.room.constructionSites.length == 0 ) // no constructionSites // TODO: filter for spawn-constructionSite
-                        flag.room.createConstructionSite(flag, STRUCTURE_SPAWN); // create spawn construction site
+                        flag.room.createConstructionSite(spawnFlag, STRUCTURE_SPAWN); // create spawn construction site
                 }
             }
         }

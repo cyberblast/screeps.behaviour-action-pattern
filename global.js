@@ -1,16 +1,18 @@
 const reduceMemoryWhere = function(result, value, key) {
     const setting = Memory.debugTrace[key];
-    if (setting === undefined) {
+    if (!Memory.debugTrace.hasOwnProperty(key)) {
         return result;
     } else if (result) { // default result
-        return setting === value;
+        // matches or for falsey values matches printed value
+        return setting === value || (!value && setting === `${value}`);
     } else {
         return false;
     }
 };
 const noMemoryWhere = function(e) {
     const setting = Memory.debugTrace.no[e[0]];
-    return setting === true || setting === e[1];
+    return setting === true || Memory.debugTrace.no.hasOwnProperty(e[0]) &&
+        (setting === e[1] || (!e[1] && setting === `${e[1]}`));
 };
 
 let mod = {};
@@ -32,11 +34,12 @@ mod.LiteEvent = function() {
         try{
             this.handlers.slice(0).forEach(h => h(data));
         } catch(e){
-            global.logError('Error in LiteEvent.trigger: ' + e);
+            global.logError('Error in LiteEvent.trigger: ' + (e.stack || e));
         }
     }
 };
 // Flag colors, used throughout the code
+//COLOR_RED
 mod.FLAG_COLOR = {
     invade: { // destroy everything enemy in the room
         color: COLOR_RED,
@@ -60,7 +63,8 @@ mod.FLAG_COLOR = {
     },
     //COLOR_PURPLE,
     //COLOR_BLUE,
-    //COLOR_CYAN,
+    //COLOR_CYAN - Reserved
+    //COLOR_GREEN
     claim: { // claim this room, then build spawn at flag
         color: COLOR_GREEN,
         secondaryColor: COLOR_GREEN,
@@ -87,11 +91,13 @@ mod.FLAG_COLOR = {
         }
 
     },
+    //COLOR_YELLOW
     defense: { // point to gather troops
         color: COLOR_YELLOW,
         secondaryColor: COLOR_YELLOW,
         filter: {'color': COLOR_YELLOW, 'secondaryColor': COLOR_YELLOW }
     },
+    //COLOR_ORANGE
     destroy: { // destroy whats standing here
         color: COLOR_ORANGE,
         secondaryColor: COLOR_ORANGE,
@@ -102,6 +108,7 @@ mod.FLAG_COLOR = {
             filter: {'color': COLOR_ORANGE, 'secondaryColor': COLOR_YELLOW }
         },
     },
+    //COLOR_BROWN
     pavementArt: {
         color: COLOR_BROWN,
         secondaryColor: COLOR_BROWN,
@@ -316,8 +323,17 @@ mod.pave = function(roomName){
     let remove = flag => flag.remove();
     flags.forEach(remove);
 };
-// TODO: remove a pavement
-mod.unpave = function(roomname){};
+mod.unpave = function(roomname){
+    if( !Memory.pavementArt || !Memory.pavementArt[roomname] ) return false;
+    let room = Game.rooms[roomname];
+    if( !room ) return false;
+    let unpaved = structure => Memory.pavementArt[roomname].indexOf('x'+structure.pos.x+'y'+structure.pos.y+'x') >= 0;
+    let structures = room.structures.all.filter(unpaved);
+    let destroy = structure => structure.destroy();
+    if( structures ) structures.forEach(destroy);
+    delete Memory.pavementArt[roomname];
+    return true;
+};
 mod.guid = function(){
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);

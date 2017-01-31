@@ -99,15 +99,20 @@ mod.extend = function(){
     Creep.prototype.leaveBorder = function() {
         // if on border move away
         // for emergency case, Path not found
+        let dir = 0;
         if( this.pos.y == 0 ){
-            this.move(BOTTOM);
+            dir = BOTTOM;
         } else if( this.pos.x == 0  ){
-            this.move(RIGHT);
+            dir = RIGHT;
         } else if( this.pos.y == 49  ){
-            this.move(TOP);
+            dir = TOP;
         } else if( this.pos.x == 49  ){
-            this.move(LEFT);
+            dir = LEFT;
         }
+        if (dir) {
+            this.move(dir);
+        }
+        return dir;
         // TODO: CORNER cases
     };
     Creep.prototype.honk = function(){
@@ -120,8 +125,19 @@ mod.extend = function(){
     // enoughRange: range at wich the creep may calm down and interact with the target (may be higher than intentionRange)
     // range: current distance (optional)
     Creep.prototype.drive = function( targetPos, intentionRange, enoughRange, range ) {
-        if( !targetPos || this.fatigue > 0 || range <= intentionRange ) return;
+        if( !targetPos ) {
+            if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, drive: 'no target', Creep:'drive'}, 'no target');
+            return;
+        }
         if( !range ) range = this.pos.getRangeTo(targetPos);
+        if( range <= intentionRange ) {
+            if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, range, intentionRange, drive: 'arrived', Creep:'drive'}, 'arrived');
+            return;
+        }
+        if( this.fatigue > 0 ) {
+            if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, fatigue: this.fatigue, drive: 'fatigued', Creep:'drive'}, 'fatigued');
+            return;
+        }
         let lastPos = this.data.lastPos;
         this.data.lastPos = new RoomPosition(this.pos.x, this.pos.y, this.pos.roomName);
         if( this.data.moveMode == null ||
@@ -140,15 +156,18 @@ mod.extend = function(){
                 this.data.path = this.getPath( targetPos, true);
 
             if( this.data.path && this.data.path.length > 0 ) {
-                let moveResult = this.move(this.data.path.charAt(0));
+                const direction = +this.data.path.charAt(0);
+                const moveResult = this.move(direction);
                 if( moveResult == OK ) { // OK is no guarantee that it will move to the next pos.
                     this.data.moveMode = 'auto';
                 } else logErrorCode(this, moveResult);
                 if( moveResult == ERR_NOT_FOUND ) delete this.data.path;
+                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, direction, moveResult, drive:'ok', Creep:'drive'});
             } else if( range > enoughRange ) {
                 this.say('NO PATH!');
                 this.data.targetId = null;
-                this.leaveBorder();
+                const leaveBorder = this.leaveBorder();
+                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, leaveBorder, nopath: 'zero len', drive: 'nopath', Creep:'drive'});
             }
         } else if( this.data.moveMode == 'auto' ) {
             // try again to use path.
@@ -159,14 +178,18 @@ mod.extend = function(){
             if( !this.data.path || this.data.path.length == 0 )
                 this.data.path = this.getPath( targetPos, true);
 
+            if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, lastPos, moveMode: this.data.moveMode, path: this.data.path, Creep:'drive'}, 'move failed');
             if( this.data.path && this.data.path.length > 0 ) {
-                let moveResult = this.move(this.data.path.charAt(0));
+                const direction = +this.data.path.charAt(0);
+                const moveResult = this.move(direction);
                 if( moveResult != OK ) logErrorCode(this, moveResult);
                 if( moveResult == ERR_NOT_FOUND ) delete this.data.path;
+                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, direction, moveResult, drive:'auto', Creep:'drive'});
             } else if( range > enoughRange ) {
                 this.say('NO PATH!');
                 this.data.targetId = null;
-                this.leaveBorder();
+                const leaveBorder = this.leaveBorder();
+                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, leaveBorder, nopath: 'blocked', drive: 'nopath', Creep:'drive'});
             }
         } else { // evade
             // get path (don't ignore thiss)
@@ -179,12 +202,15 @@ mod.extend = function(){
             if( this.data.path && this.data.path.length > 0 ) {
                 if( this.data.path.length > 5 )
                     this.data.path = this.data.path.substr(0,4);
-                let moveResult = this.move(this.data.path.charAt(0));
+                const direction = +this.data.path.charAt(0);
+                const moveResult = this.move(direction);
                 if( moveResult != OK ) logErrorCode(this, moveResult);
+                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, direction, moveResult, drive:'evade', Creep:'drive'});
             } else if( range > enoughRange ){
                 this.say('NO PATH!');
                 this.data.targetId = null;
-                this.leaveBorder();
+                const leaveBorder = this.leaveBorder();
+                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, leaveBorder, nopath:'evade', drive:'nopath', Creep:'drive'});
             }
         }
     };
