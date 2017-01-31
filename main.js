@@ -130,7 +130,8 @@ global.install = () => {
         FlagDir: load("flagDir"),
         Task: load("task"),
         Tower: load("tower"),
-        Events: load('events')
+        Events: load('events'),
+        Grafana: GRAFANA ? load('grafana') : undefined,
     });
     _.assign(global.Task, {
         guard: load("task.guard"),
@@ -276,6 +277,8 @@ module.exports.loop = function () {
     Population.cleanup();
     // custom cleanup
     if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
+    
+    if ( GRAFANA && Game.time % GRAFANA_INTERVAL === 0 ) Grafana.run();
 
     Game.cacheTime = Game.time;
 

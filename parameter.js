@@ -6,6 +6,8 @@ let mod = {
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details, use false not undefined to unset
     TRACE: false, // use Memory.debugTrace for low-level information
+    GRAFANA: false, // track for Grafana data
+    GRAFANA_INTERVAL: 3, // loops between Grafana tracking - No lower than 3.
     CENSUS_ANNOUNCEMENTS: true, // log birth and death
     SELL_NOTIFICATION: true, // send mail when selling minerals
     SPAWN_INTERVAL: 5, // loops between regular spawn probe
