@@ -24,7 +24,7 @@ mod.mine = function(creep) {
     let source;
     if( !creep.data.determinatedTarget ) { // select source
         let notDeterminated = source => {
-            let hasThisSource = data => { return data.determinatedTarget == source.id };
+            let hasThisSource = data => { return data.determinatedTarget == source.id && data.ttl > 100 };
             let existingBranding = _.find(Memory.population, hasThisSource);
             return !existingBranding;
         };
@@ -121,7 +121,11 @@ mod.mine = function(creep) {
 mod.approach = function(creep){
     let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.destiny.room);
     let range = creep.pos.getRangeTo(targetPos);
-    if( range > 0 )
+    if( range > 0 ) {
         creep.drive( targetPos, 0, 0, range );
+        if( range === 1 && !creep.data.predictedRenewal ) {
+            creep.data.predictedRenewal = _.min([500, 1500 - creep.ticksToLive + creep.data.spawningTime]);
+        }
+    }
     return range;
 };

@@ -197,16 +197,24 @@ mod.trace = function (category, entityWhere, ...message) {
     if (Memory.debugTrace.no && _(entityWhere).pairs().some(noMemoryWhere) === true) return;
 
     let msg = message;
+    let key = '';
     if (message.length === 0 && category) {
         let leaf = category;
         do {
+            key = leaf;
             leaf = entityWhere[leaf];
         } while( entityWhere[leaf] && leaf != category);
 
-        if (leaf && leaf != category) msg = leaf;
+        if (leaf && leaf != category) {
+            if (typeof leaf === 'string') {
+                msg = [leaf];
+            } else {
+                msg = [key, '=', leaf];
+            }
+        }
     }
 
-    console.log(Game.time, dye(CRAYON.error, category), msg, dye(CRAYON.birth, JSON.stringify(entityWhere)));
+    console.log(Game.time, dye(CRAYON.error, category), ...msg, dye(CRAYON.birth, JSON.stringify(entityWhere)));
 };
 // log some text as "system message" showing a "referrer" as label
 mod.logSystem = function(roomName, message) {
