@@ -215,16 +215,20 @@ mod.extend = function(){
         }
     };
     Creep.prototype.getPath = function( targetPos, ignoreCreeps ) {
+        let range = 1;
         let tempTarget = targetPos;
         if (ROUTE_PRECALCULATION && this.pos.roomName != targetPos.roomName) {
             var route = this.room.findRoute(targetPos.roomName);
-            if ( route.length > 0 )
-                targetPos = new RoomPosition(25,25,route[0].room);
+            if ( route.length > 0 ) {
+                targetPos = new RoomPosition(25, 25, route[0].room);
+                range = 24;
+            }
         }
 
         let path = this.room.findPath(this.pos, targetPos, {
             serialize: true,
-            ignoreCreeps: ignoreCreeps
+            ignoreCreeps: ignoreCreeps,
+            range,
         });
         if( path && path.length > 4 )
             return path.substr(4);
