@@ -71,8 +71,8 @@ mod.strategies = {
     uncharging: {
         name: `uncharging-${mod.name}`,
         targetScore: function (creep) {
-            const canWithdrawEnergy = creep.getStrategyHandler(['uncharging'], 'canWithdrawEnergy', creep);
-            if (!canWithdrawEnergy) return;
+            const isValidTarget = creep.getStrategyHandler(['uncharging'], 'isValidTarget', creep);
+            if (!isValidTarget) return;
 
             // take from fullest IN container having energy
             return function (target) {
@@ -82,7 +82,7 @@ mod.strategies = {
 
                 if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, target: target.pos, score, strategy:'canWithdrawEnergy', Action:'uncharging'});
 
-                if (!canWithdrawEnergy(score)) score = 0;
+                if (!isValidTarget(score)) score = 0;
                 return {target, score}
             };
         },

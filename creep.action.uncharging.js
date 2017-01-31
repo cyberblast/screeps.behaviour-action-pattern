@@ -5,17 +5,8 @@ action.isAddableAction = function(creep){ return true; }
 action.isAddableTarget = function(target){ return true;}
 action.isValidAction = function(creep){ return creep.sum < creep.carryCapacity; }
 action.isValidTarget = function(target, creep){
-    if( !target ) return false;
-    if( target.structureType == 'link' ){
-        return target.energy > 0;
-    } else if( target.structureType == 'container' ) {
-    let min;
-        if(target.source === true && target.controller == true) min = target.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER);
-        else if( creep.data.creepType.indexOf('remote') > 0 ) min = 250;
-        else min = 500;
-        return target.sum > min;
-    }
-    return false;
+    const handler = creep.getStrategyHandler([action.name], 'isValidTarget', creep);
+    return handler(target);
 };
 action.newTarget = function(creep){
     // if storage link is not empty & no controller link < 15% => uncharge
@@ -30,38 +21,17 @@ action.newTarget = function(creep){
         }
     }
 
-    if( creep.room.structures.container.in.length > 0 ) {
-        let min;
-        if( creep.data.creepType.indexOf('remote') > 0 ) min = 250;
-        else min = 500;
-        // take from fullest IN container having energy
-        let target = null;
-        let filling = 0;
-        let fullest = cont => {
-            if( that.isValidTarget(cont, creep) ){
-                let contFilling = cont.sum;
-                if( cont.targetOf )
-                    contFilling -= _.sum( cont.targetOf.map( t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 )));
-                if( contFilling < Math.min(creep.carryCapacity - creep.sum, min) ) return;
-                if( contFilling > filling ){
-                    filling = contFilling ;
-                    target = cont;
-                }
-            }
-        };
-        _.forEach(creep.room.structures.container.in, fullest);
-        /*
-         const targetScore = creep.getStrategyHandler([action.name], 'targetScore', creep);
-         if (!targetScore) return;
+    const targetPool = creep.room.structures.container.in;
+    if( targetPool.length > 0 ) {
+        const targetScore = creep.getStrategyHandler([action.name], 'targetScore', creep);
+        if (!targetScore) return;
 
-         const targetPool = creep.room.structures.container.in;
-         if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, Action:action.name}, 'considering', targetPool.length, 'targets');
-         const targets = _.chain(targetPool)
-         .map(targetScore).filter('score').sortBy('score').reverse().value();
-         const scoredTarget = targets[0];
-         const target = scoredTarget && scoredTarget.target || null;
-         if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, target: target && target.pos, score: scoredTarget && scoredTarget.score, Action:action.name}, 'selected');
-         */
+        if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, Action:action.name}, 'considering', targetPool.length, 'targets');
+        const targets = _.chain(targetPool)
+        .map(targetScore).filter('score').sortBy('score').reverse().value();
+        const scoredTarget = targets[0];
+        const target = scoredTarget && scoredTarget.target || null;
+        if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, target: target && target.pos, score: scoredTarget && scoredTarget.score, Action:action.name}, 'selected');
         return target;
     }
 
@@ -99,6 +69,21 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9738), SAY_PUBLIC);
     if( SAY_ASSIGNMENT ) creep.say('\u{1F4E4}\u{FE0E}', SAY_PUBLIC);
+};
+action.defaultStrategy.isValidTarget = function(creep) {
+    return function(target) {
+        if (!target) return false;
+        if (target.structureType == 'link') {
+            return target.energy > 0;
+        } else if (target.structureType == 'container') {
+            let min;
+            if (target.source === true && target.controller == true) min = target.storeCapacity * (1 - MANAGED_CONTAINER_TRIGGER);
+            else if (creep.data.creepType.indexOf('remote') > 0) min = 250;
+            else min = 500;
+            return target.sum > min;
+        }
+        return false;
+    }
 };
 action.defaultStrategy.canWithdrawEnergy = function(creep) {
     const min = creep.body.carry * 25;
