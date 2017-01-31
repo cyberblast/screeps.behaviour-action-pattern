@@ -131,7 +131,7 @@ mod.checkForRequiredCreeps = (flag) => {
             if( !spawnRoom ) break;
 
             // haulers set homeRoom if closer storage exists
-            const storageRoom = REMOTE_HAULER_REHOME ? mod.strategies.hauler.homeRoom(roomName) : spawnRoom;
+            const storageRoom = REMOTE_HAULER_REHOME && mod.strategies.hauler.homeRoom(roomName) || spawnRoom;
 
             const maxWeight = mod.strategies.hauler.maxWeight(
                 roomName, storageRoom, existingHaulers, memory); // TODO Task.strategies
