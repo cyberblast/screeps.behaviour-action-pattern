@@ -48,11 +48,11 @@ mod.nextAction = function(creep){
     }
     // at target room
     else if( creep.data.destiny.room == creep.pos.roomName ){
+        if( this.assign(creep, Creep.action.uncharging) ) return;
         // if it's not full
         if( creep.sum < (creep.carryCapacity*0.8) ) {
             // get some energy
             if( this.assign(creep, Creep.action.picking) ) return;
-            if( this.assign(creep, Creep.action.uncharging) ) return;
         }
         // carrier full or everything picked
         this.goHome(creep);
