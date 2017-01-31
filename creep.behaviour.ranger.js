@@ -24,7 +24,9 @@ mod.run = function(creep) {
 };
 mod.heal = function(creep){
     if( creep.data.body.heal !== undefined  &&  creep.hits < creep.hitsMax ){
-        creep.heal(creep);
+        if( !(creep.attacking || creep.hits >= creep.data.coreHits) ) {
+            creep.heal(creep);
+        }
     }
 };
 mod.nextAction = function(creep){
