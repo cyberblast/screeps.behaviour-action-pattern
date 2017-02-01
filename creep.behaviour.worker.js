@@ -40,17 +40,45 @@ mod.nextAction = function(creep){
                 Creep.action.repairing,
                 Creep.action.idle];
         } else {
-            priority = [
-                Creep.action.repairing,
-                Creep.action.feeding,
-                Creep.action.building,
-                Creep.action.fueling,
-                Creep.action.fortifying,
-                Creep.action.charging,
-                Creep.action.upgrading,
-                Creep.action.storing,
-                Creep.action.picking,
-                Creep.action.idle];
+            if (creep.data.creepType === "pioneer") { // prioritize building for pioneers, upgrade to RCL2 first
+                if (creep.room.controller && creep.room.controller.level < 2) {
+                    priority = [
+                        Creep.action.feeding,
+                        Creep.action.upgrading,
+                        Creep.action.building,
+                        Creep.action.repairing,
+                        Creep.action.fueling,
+                        Creep.action.fortifying,
+                        Creep.action.charging,
+                        Creep.action.storing,
+                        Creep.action.picking,
+                        Creep.action.idle];
+                } else {
+                    priority = [
+                        Creep.action.feeding,
+                        Creep.action.building,
+                        Creep.action.repairing,
+                        Creep.action.fueling,
+                        Creep.action.fortifying,
+                        Creep.action.charging,
+                        Creep.action.upgrading,
+                        Creep.action.storing,
+                        Creep.action.picking,
+                        Creep.action.idle];
+                }
+            } else {
+                priority = [
+                    Creep.action.repairing,
+                    Creep.action.feeding,
+                    Creep.action.building,
+                    Creep.action.fueling,
+                    Creep.action.fortifying,
+                    Creep.action.charging,
+                    Creep.action.upgrading,
+                    Creep.action.storing,
+                    Creep.action.picking,
+                    Creep.action.idle];
+            }
         }
         if( creep.room.relativeEnergyAvailable < 1 && (!creep.room.population || !creep.room.population.typeCount['hauler'] || creep.room.population.typeCount['hauler'] < 1 || !creep.room.population.typeCount['miner'] || creep.room.population.typeCount['miner'] < 1) ) {
             priority.unshift(Creep.action.feeding);
