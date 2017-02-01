@@ -25,6 +25,7 @@ mod.nextAction = function(creep){
                 Creep.action.picking,
                 Creep.action.uncharging,
                 Creep.action.withdrawing,
+                Creep.action.harvesting,
                 Creep.action.idle];
         } else {
             priority = [

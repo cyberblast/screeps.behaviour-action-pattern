@@ -37,8 +37,9 @@ mod.nextAction = function(creep){
             // no deposit :/ 
             // try spawn & extensions
             if( this.assign(creep, Creep.action.feeding) ) return;
-            // TODO: hauler shouldn't work. drop at spawn instead of calling worker behaviour
-            Creep.behaviour.worker.nextAction(creep);
+            // drop off at the nearest spawn
+            let spawn = creep.pos.findClosestByRange(creep.room.structures.spawns);
+            this.assign(creep, Creep.action.dropping, spawn);
             return;
         }
         // empty

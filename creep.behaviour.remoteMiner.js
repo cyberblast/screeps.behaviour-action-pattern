@@ -71,11 +71,9 @@ mod.mine = function(creep) {
                         {'structureType': STRUCTURE_CONTAINER}
                     );
                 }})
-                let hasContainer = spot ? true : false;
                 if( !spot ) spot = creep.pos.findClosestByPath(spots) || spots[0];
                 if( spot ) {
                     creep.data.determinatedSpot = {
-                        hasContainer: hasContainer,
                         x: spot.x,
                         y: spot.y
                     }
@@ -97,7 +95,7 @@ mod.mine = function(creep) {
             } else if( source.container && source.container.sum < source.container.storeCapacity ) {
                 if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
                 let range = this.approach(creep);
-                if( range == 0 && !creep.data.determinatedSpot.hasContainer){
+                if( range == 0){
                     if( carrying > ( creep.carryCapacity - ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) ))){
                         let transfer = r => { if(creep.carry[r] > 0 ) creep.transfer(source.container, r); };
                         _.forEach(Object.keys(creep.carry), transfer);
