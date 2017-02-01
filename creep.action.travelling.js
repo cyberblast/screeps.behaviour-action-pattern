@@ -8,9 +8,13 @@ action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
     if( creep.target ){
         let pos;
-        if( creep.target.id == creep.id ) pos = new RoomPosition(25, 25, creep.data.travelRoom);
+        let targetRange = this.targetRange;
+        if( creep.target.id == creep.id ) {
+            targetRange = 24;
+            pos = new RoomPosition(25, 25, creep.data.travelRoom);
+        }
         else pos = creep.target.pos;
-        creep.drive( pos, this.reachedRange, this.targetRange, Infinity );
+        creep.drive( pos, this.reachedRange, targetRange, Infinity );
     }
     if( !creep.target || creep.target.pos.roomName == creep.pos.roomName ){
         // unregister
