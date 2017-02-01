@@ -2,6 +2,14 @@ let action = new Creep.Action('reallocating');
 module.exports = action;
 action.maxPerTarget = 1;
 action.maxPerAction = 1;
+action.terminalMineralTotal = function(terminal){
+    // Minerals stored in terminal
+    return terminal.sum-terminal.store.energy;
+}
+action.terminalMineralSpace = function(terminal){
+    // Space for minerals in terminal
+    return terminal.storeCapacity-TERMINAL_ENERGY*1.05;
+}
 action.isValidAction = function(creep){
     return creep.room.storage && creep.room.terminal &&
         ( this.isValidMineralToTerminal(creep) ||
@@ -12,6 +20,8 @@ action.isValidMineralToTerminal = function(creep){
     let room = creep.room;
     let storage = room.storage;
     let terminal = room.terminal;
+    // Don't store any more minerals in the terminal or there won't be space for energy!
+    if(terminal.store.energy < TERMINAL_ENERGY && this.terminalMineralTotal(terminal) >= this.terminalMineralSpace(terminal) ) return false;
     return ( storage.store[room.mineralType] &&
         (storage.store[creep.room.mineralType] + (creep.carry[room.mineralType] || 0)) > MAX_STORAGE_MINERAL*1.05 &&
         (terminal.sum - terminal.store.energy + Math.max(terminal.store.energy, TERMINAL_ENERGY)) < terminal.storeCapacity);
@@ -21,6 +31,8 @@ action.isValidEnergyToStorage = function(creep){
 };
 action.isValidMineralToStorage = function(creep){
     let terminal = creep.room.terminal;
+    // Don't store any more minerals in the terminal or there won't be space for energy!
+    if(this.terminalMineralTotal(terminal) >= this.terminalMineralSpace(terminal)) return true;
     let mineral = terminal.store[creep.room.mineralType] || 0;
     return terminal.sum > mineral + terminal.store.energy;
 };
@@ -45,7 +57,7 @@ action.work = function(creep){
     let storage = room.storage;
     let terminal = room.terminal;
     var workResult = null;
-    if( creep.sum == 0 && target.structureType == STRUCTURE_STORAGE ){
+    if( creep.sum == 0 && target.structureType == STRUCTURE_STORAGE && this.terminalMineralTotal(terminal) < this.terminalMineralSpace(terminal) ){
         // load: storage => terminal
         workResult = creep.withdraw(target, room.mineralType);
         this.assign(creep, terminal);
@@ -57,7 +69,7 @@ action.work = function(creep){
         else if( this.isValidMineralToStorage(creep) ){
             // TODO: get minerals != room mineral
             let withdraw = r => {
-                if( r != RESOURCE_ENERGY && r != room.mineralType && target.store[r] > 0 )
+                if( r != RESOURCE_ENERGY && ( r != room.mineralType || this.terminalMineralTotal(terminal) > this.terminalMineralSpace(terminal) )  && target.store[r] > 0 )
                     workResult = creep.withdraw(target, r);
             };
             _.forEach(Object.keys(target.store), withdraw);
