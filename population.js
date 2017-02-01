@@ -178,12 +178,12 @@ mod.analyze = function(){
             }
             else if( creep.ticksToLive ==  ( creep.data.body.claim !== undefined ? 499 : 1499 ) ){ // spawning complete
                 this.spawned.push(entry.creepName);
-                this.spawnsToProbe.push(entry.motherSpawn);
+                if (Game.spawns[entry.motherSpawn]) this.spawnsToProbe.push(entry.motherSpawn); // only push living spawns
             }
             else if(creep.ticksToLive == ( entry.predictedRenewal ? entry.predictedRenewal : entry.spawningTime)) { // will die in ticks equal to spawning time or custom
                 if(CENSUS_ANNOUNCEMENTS) console.log(dye(CRAYON.system, entry.creepName + ' &gt; ') + dye(CRAYON.death, 'Farewell!') );
                 this.predictedRenewal.push(creep.name);
-                if( !this.spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' ) {
+                if( !this.spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' && Game.spawns[entry.motherSpawn] ) {
                     this.spawnsToProbe.push(entry.motherSpawn);
                 }
             } 
