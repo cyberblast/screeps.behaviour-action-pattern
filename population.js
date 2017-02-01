@@ -282,10 +282,10 @@ mod.getCombatStats = function(body) {
     let hull = 99;
     let coreHits = body.length * 100 - 99;
     while (i < body.length) {
-        if (mod.stats.creep.coreParts[body[i++].type]) {
+        if (Population.stats.creep.coreParts[body[i++].type]) {
             break;
         }
-        hull = hull + (mod.stats.creep.boost.hits[body[i++].boost] || 100);
+        hull = hull + (Population.stats.creep.boost.hits[body[i++].boost] || 100);
         coreHits = coreHits - 100;
     }
 
