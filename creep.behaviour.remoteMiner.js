@@ -52,7 +52,7 @@ mod.mine = function(creep) {
 
             let invalid = [];
             let findInvalid = entry => {
-                if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot && entry.ttl > entry.spawningTime)
+                if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot && entry.ttl > 100)
                     invalid.push(entry.determinatedSpot)
             };
             _.forEach(Memory.population, findInvalid);
@@ -71,10 +71,14 @@ mod.mine = function(creep) {
                         {'structureType': STRUCTURE_CONTAINER}
                     );
                 }})
+                let hasContainer = spot ? true : false;
                 if( !spot ) spot = creep.pos.findClosestByPath(spots) || spots[0];
-                if( spot ) creep.data.determinatedSpot = {
-                    x: spot.x,
-                    y: spot.y
+                if( spot ) {
+                    creep.data.determinatedSpot = {
+                        hasContainer: hasContainer,
+                        x: spot.x,
+                        y: spot.y
+                    }
                 }
             }
             if( !creep.data.determinatedSpot ) logError('Unable to determine working location for miner in room ' + creep.pos.roomName);
@@ -93,13 +97,13 @@ mod.mine = function(creep) {
             } else if( source.container && source.container.sum < source.container.storeCapacity ) {
                 if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
                 let range = this.approach(creep);
-                if( range == 0 ){
+                if( range == 0 && !creep.data.determinatedSpot.hasContainer){
                     if( carrying > ( creep.carryCapacity - ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) ))){
                         let transfer = r => { if(creep.carry[r] > 0 ) creep.transfer(source.container, r); };
                         _.forEach(Object.keys(creep.carry), transfer);
                     }
-                    creep.harvest(source);
                 }
+                creep.harvest(source);
             } else if( creep.room.population && creep.room.population.typeCount['hauler'] && creep.room.population.typeCount['hauler'] > 0 ) {
                 if(CHATTY) creep.say('dropmining', SAY_PUBLIC);
                 let range = this.approach(creep);
