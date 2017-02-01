@@ -860,7 +860,7 @@ mod.extend = function(){
         if( filter ) sites = this.constructionSites.filter(filter);
         else sites = this.constructionSites;
         if( sites.length == 0 ) return null;
-        let siteOrder = [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_LINK,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_WALL,STRUCTURE_RAMPART];
+        let siteOrder = CONSTRUCTION_PRIORITY;
         let rangeOrder = site => {
             let order = siteOrder.indexOf(site.structureType); 
             return pos.getRangeTo(site) + ( order < 0 ? 100000 : (order * 100) );
