@@ -44,8 +44,9 @@ mod.nextAction = function(creep){
         }
         // empty
         // travelling
-        this.gotoTargetRoom(creep);
-        return;
+        if (this.gotoTargetRoom(creep)) {
+            return;
+        }
     }
     // at target room
     else if( creep.data.destiny.room == creep.pos.roomName ){
@@ -61,11 +62,14 @@ mod.nextAction = function(creep){
     }
     // somewhere
     else {
+        let ret = false;
         if( creep.sum > 0 )
-            this.goHome(creep);
+            ret = this.goHome(creep);
         else
-            this.gotoTargetRoom(creep);
-        return;
+            ret = this.gotoTargetRoom(creep);
+        if (ret) {
+            return;
+        }
     }
     // fallback
     // recycle self
