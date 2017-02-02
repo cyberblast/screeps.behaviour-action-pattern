@@ -136,12 +136,10 @@ mod.checkForRequiredCreeps = (flag) => {
 
             const maxWeight = mod.strategies.hauler.maxWeight(
                 roomName, storageRoom, existingHaulers, memory); // TODO Task.strategies
-
-            if( !maxWeight || (i > 1 && maxWeight < REMOTE_HAULER_MIN_WEIGHT)) break;
+            if( !maxWeight || (i >= 1 && maxWeight < REMOTE_HAULER_MIN_WEIGHT)) break;
 
             const creepDefinition = _.create(Task.mining.creep.hauler);
             creepDefinition.maxWeight = maxWeight;
-
             Task.spawn(
                 creepDefinition,
                 { // destiny
@@ -238,7 +236,7 @@ mod.creep = {
 mod.carry = function(roomName, partChange) {
     let memory = Task.mining.memory(roomName);
     memory.carryParts = (memory.carryParts || 0) + (partChange || 0);
-    return `Task.${mod.name} set hauler carry parts for ${roomName} to ${memory.carryParts}`;
+    return `Task.${mod.name} ${memory.carryParts >= 0 ? 'increase' : 'decrease'} overall hauler carry parts for ${roomName} by ${Math.abs(memory.carryParts)}`;
 };
 function haulerWeightToCarry(weight) {
     if( !weight || weight < 0) return 0;
@@ -257,13 +255,7 @@ mod.strategies = {
     hauler: {
         name: `hauler-${mod.name}`,
         homeRoom: function(flagRoomName) {
-            return Room.findSpawnRoom({
-                targetRoom: flagRoomName,
-                minRCL: 4,
-                callBack: function(r){return r.storage},
-                rangeRclRatio: Infinity,
-                rangeQueueRatio: Infinity,
-            });
+            return Room.bestSpawnRoomFor(flagRoomName);
         },
         spawnRoom: function(flagRoomName) {
             return Room.findSpawnRoom({
@@ -290,7 +282,6 @@ mod.strategies = {
                 .sum(function(c) {return haulerWeightToCarry(c.data.weight || 500)}).value();
             const queuedCarry = _.sum(queuedCreeps, c=>haulerWeightToCarry(c.weight || 500));
             const neededCarry = ept * travel * 2 + (memory.carryParts || 0) - existingCarry - queuedCarry;
-
             const maxWeight = haulerCarryToWeight(neededCarry);
             if( DEBUG && TRACE ) trace('Task', {Task:mod.name, room: roomName, travelRoom: travelRoom.name,
                 haulers: existingCreeps.length + queuedCreeps.length, ept, travel, existingCarry, queuedCarry,
