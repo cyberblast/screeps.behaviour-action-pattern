@@ -289,7 +289,30 @@ mod.extend = function(){
                     }
                     return this._links;
                 }
-            }
+            },
+            'virtual': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._virtual) ){
+                        this._virtual = _(this.all).concat(this.piles);
+                    }
+                    return this._virtual;
+                }
+            },
+            'piles': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._piles) ){
+                        const room = this.room;
+                        this._piles = room.find(FIND_FLAGS, {filter: FLAG_COLOR.command.drop.filter})
+                            .map(function(flag) {
+                                const piles = room.lookForAt(LOOK_ENERGY, flag.pos.x, flag.pos.y);
+                                return piles.length && piles[0] || flag;
+                            });
+                    }
+                    return this._piles;
+                }
+            },
         });
     };
 

@@ -1,6 +1,6 @@
 let mod = {};
 module.exports = mod;
-mod.minControllerLevel = 4;
+mod.minControllerLevel = 2;
 mod.name = 'mining';
 mod.register = () => {
     // when a new flag has been found (occurs every tick, for each flag)
@@ -108,7 +108,8 @@ mod.checkForRequiredCreeps = (flag) => {
                 }, 
                 { // spawn room selection params
                     targetRoom: flag.pos.roomName,
-                    minEnergyCapacity: 800
+                    minEnergyCapacity: 550,
+                    rangeRclRatio: 1,
                 },
                 creepSetup => { // onQueued callback
                     let memory = Task.mining.memory(creepSetup.destiny.room);
@@ -215,8 +216,9 @@ mod.memory = key => {
 };
 mod.creep = {
     miner: {
-        fixedBody: [MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK, CARRY],
-        multiBody: [],
+        fixedBody: [MOVE, WORK, WORK, WORK, WORK, WORK],
+        multiBody: [MOVE, MOVE, WORK, CARRY],
+        maxMulti: 1,
         behaviour: 'remoteMiner',
         queue: 'Medium' // not much point in hauling or working without a miner, and they're a cheap spawn.
     },
@@ -274,6 +276,7 @@ mod.strategies = {
             if( !existingCreeps ) existingCreeps = [];
             const queuedCreeps = memory.queued.remoteHauler;
             const room = Game.rooms[roomName];
+            // TODO loop per-source, take pinned delivery for route calc
             const travel = routeRange(roomName, travelRoom.name);
             let ept = 10;
             if( room ) {

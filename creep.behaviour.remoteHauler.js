@@ -37,9 +37,7 @@ mod.nextAction = function(creep){
             // no deposit :/ 
             // try spawn & extensions
             if( this.assign(creep, Creep.action.feeding) ) return;
-            // drop off at the nearest spawn
-            let spawn = creep.pos.findClosestByRange(creep.room.structures.spawns);
-            this.assign(creep, Creep.action.dropping, spawn);
+            this.assign(creep, Creep.action.dropping);
             return;
         }
         // empty
@@ -51,6 +49,7 @@ mod.nextAction = function(creep){
     // at target room
     else if( creep.data.destiny.room == creep.pos.roomName ){
         if( this.assign(creep, Creep.action.uncharging) ) return;
+        if( this.assign(creep, Creep.action.robbing) ) return;
         // if it's not full
         if( creep.sum < (creep.carryCapacity*0.8) ) {
             // get some energy
