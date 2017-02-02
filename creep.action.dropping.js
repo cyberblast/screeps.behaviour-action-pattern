@@ -8,18 +8,20 @@ action.isValidAction = function(creep){
 action.newTarget = function(creep) {
     // drop off at drop pile or the nearest spawn
     let drop = creep.pos.findClosestByRange(creep.room.structures.piles);
-    if( !(drop && drop.length) ) {
+    if( !drop ) {
         drop = creep.pos.findClosestByRange(creep.room.structures.spawns);
     }
-    return drop && drop[0];
+    return drop;
 };
 action.work = function(creep) {
-    let range = creep.pos.getRangeTo(creep.target);
     let ret = OK;
-    if( range <= action.targetRange && range > action.reachedRange &&
-        creep.data.lastPos && creep.data.path && !_.eq(creep.pos, creep.data.lastPos) ) {
-        // move ok, don't drop early
-        return ret;
+    if !(creep.target instanceof StructureSpawn) {
+        let range = creep.pos.getRangeTo(creep.target);
+        if( range > action.reachedRange && creep.data.lastPos && creep.data.path
+            && !_.eq(creep.pos, creep.data.lastPos) ) {
+            // move ok, don't drop early
+            return ret;
+        }
     }
     for(let resourceType in creep.carry) {
         ret = creep.drop(resourceType);
