@@ -236,7 +236,7 @@ mod.creep = {
 mod.carry = function(roomName, partChange) {
     let memory = Task.mining.memory(roomName);
     memory.carryParts = (memory.carryParts || 0) + (partChange || 0);
-    return `Task.${mod.name} ${memory.carryParts >= 0 ? 'increase' : 'decrease'} overall hauler carry parts for ${roomName} by ${Math.abs(memory.carryParts)}`;
+    return `Task.${mod.name} overall hauler carry parts for ${roomName} are ${memory.carryParts >= 0 ? 'increased' : 'decreased'} by ${Math.abs(memory.carryParts)}`;
 };
 function haulerWeightToCarry(weight) {
     if( !weight || weight < 0) return 0;
