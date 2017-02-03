@@ -219,7 +219,7 @@ mod.extend = function(){
         let tempTarget = targetPos;
         if (ROUTE_PRECALCULATION && this.pos.roomName != targetPos.roomName) {
             var route = this.room.findRoute(targetPos.roomName);
-            if ( route.length > 0 ) {
+            if ( route.length > 1 ) {
                 targetPos = new RoomPosition(25, 25, route[0].room);
                 range = 24;
             }
