@@ -86,6 +86,7 @@ let Action = function(actionName){
     this.assign = function(creep, target){
         if( target === undefined ) target = this.newTarget(creep);
         if( target != null ) {
+            if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, assign:this.name, target:!target || target.name || target.id, Action:'assign'});
             if( creep.action == null || creep.action.name != this.name || creep.target == null || creep.target.id != target.id ) {
                 Population.registerAction(creep, this, target);
                 this.onAssignment(creep, target);

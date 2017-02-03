@@ -1,6 +1,7 @@
 // This task will react on exploit, reserve and remotemine flags, sending a reserving creep to the flags position.
 let mod = {};
 module.exports = mod;
+mod.name = 'reserve';
 mod.creep = {
     reserver: {
         fixedBody: [CLAIM, CLAIM, MOVE, MOVE],
@@ -77,7 +78,7 @@ mod.checkForRequiredCreeps = (flag) => {
         Task.spawn(
             Task.reserve.creep.reserver, // creepDefinition
             { // destiny
-                task: 'reserve', // taskName
+                task: mod.name, // taskName
                 targetName: flag.name, // targetName
             }, 
             { // spawn room selection params
@@ -98,7 +99,7 @@ mod.checkForRequiredCreeps = (flag) => {
 // when a creep starts spawning
 mod.handleSpawningStarted = params => { // params: {spawn: spawn.name, name: creep.name, destiny: creep.destiny}
     // ensure it is a creep which has been queued by this task (else return)    
-    if ( !params.destiny || !params.destiny.task || params.destiny.task != 'reserve' )
+    if ( !params.destiny || !params.destiny.task || params.destiny.task != mod.name )
         return;
     // get flag which caused queueing of that creep
     let flag = Game.flags[params.destiny.targetName];
@@ -114,7 +115,7 @@ mod.handleSpawningStarted = params => { // params: {spawn: spawn.name, name: cre
 // when a creep completed spawning
 mod.handleSpawningCompleted = creep => {
     // ensure it is a creep which has been requested by this task (else return)
-    if (!creep.data || !creep.data.destiny || !creep.data.destiny.task || creep.data.destiny.task != 'reserve')
+    if (!creep.data || !creep.data.destiny || !creep.data.destiny.task || creep.data.destiny.task != mod.name)
         return;
     // get flag which caused request of that creep
     let flag = Game.flags[creep.data.destiny.targetName];
@@ -136,7 +137,7 @@ mod.handleCreepDied = name => {
     // console.log('task.reserve.handleCreepDied(' + name + ")" );
     let mem = Memory.population[name];
     // ensure it is a creep which has been requested by this task (else return)
-    if (!mem || !mem.destiny || !mem.destiny.task || mem.destiny.task != 'reserve')
+    if (!mem || !mem.destiny || !mem.destiny.task || mem.destiny.task != mod.name)
         return;
     // get flag which caused request of that creep
     let flag = Game.flags[mem.destiny.targetName];
@@ -162,9 +163,10 @@ mod.nextAction = creep => {
         if(action.isValidAction(creep) &&
             action.isAddableAction(creep) &&
             action.assign(creep)) {
-                return;
+                break;
         }
     }
+    if( DEBUG && TRACE ) trace('Task', {creepName:creep.name, nextAction:creep.action.name, [mod.name]: 'nextAction', Task:mod.name});
 };
 // get task memory
 mod.memory = (flag) => {
