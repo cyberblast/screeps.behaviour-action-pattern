@@ -16,7 +16,7 @@ action.isAddableTarget = function(target, creep){
                 (!creep.room.controller.reservation || creep.room.controller.reservation.username == creep.owner.username) // my reservation or none
             )
         )
-    ) && ( target.targetOf === undefined || target.targetOf.length < target.accessibleFields + 1 );
+    ) && ( target.targetOf === undefined || target.targetOf.length < target.accessibleFields );
 };
 action.newTarget = function(creep){
     let target = null;
