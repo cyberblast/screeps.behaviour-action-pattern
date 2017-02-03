@@ -16,9 +16,8 @@ action.isAddableTarget = function(target, creep){
     let max;
     if( creep.data.creepType.indexOf('remote') > 0 ) max = Infinity;
     else max =  this.maxPerTarget;
-    return (!target.targetOf || ((
-        target.targetOf.length < max) &&
-        target.amount > _.sum( target.targetOf.map( t => ( t.actionName == 'picking' ? t.carryCapacityLeft : 0 )))));
+    let pickers = target.targetOf ? _.filter(target.targetOf, {actionName: 'picking'}) : [];
+    return (!target.targetOf || !pickers.length || ((pickers.length < max) && target.amount > _.sum( pickers.map( t => t.carryCapacityLeft))));
 };
 action.newTarget = function(creep){
     let target;
