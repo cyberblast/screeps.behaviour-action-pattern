@@ -107,7 +107,9 @@ mod.handleCreepDied = name => {
             running.push(o);
         }
     };
-    memory.running[mem.creepType].forEach(validateRunning);
+    if( memory.running[mem.creepType] ) {
+        memory.running[mem.creepType].forEach(validateRunning);
+    }
     memory.running[mem.creepType] = running;
 };
 // check if a new creep has to be spawned
