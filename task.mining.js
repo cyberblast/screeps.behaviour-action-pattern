@@ -129,7 +129,7 @@ mod.checkForRequiredCreeps = (flag) => {
 
     let countExisting = type => {
         let running = _.map(memory.running[type], n => Game.creeps[n]);
-        let runningCount = _.filter(running, c => (c.ticksToLive || CREEP_LIFE_TIME) > (c.data.predictedRenewal || 0)).length;
+        let runningCount = _.filter(running, c => c && (c.ticksToLive || CREEP_LIFE_TIME) > (c.data.predictedRenewal || 0)).length;
         return memory.queued[type].length + memory.spawning[type].length + runningCount;
     };
 
