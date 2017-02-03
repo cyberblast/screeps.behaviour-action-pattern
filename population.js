@@ -29,6 +29,8 @@ mod.unregisterCreep = function(creepName){
     delete Memory.creeps[creepName];
 };
 mod.registerAction = function(creep, action, target, entry) {
+    if( DEBUG && TRACE ) trace('Population', {creepName:this.name, registerAction:action.name, target:target.name || target.id, Population:'registerAction'});
+
     if( entry === undefined ) entry = this.getCreep(creep.name);
     entry.carryCapacityLeft = creep.carryCapacity - creep.sum;
     let room = creep.room;
@@ -215,6 +217,10 @@ mod.analyze = function(){
                 creep.target = null;
             }
 
+            if( entry.hull === undefined ) {
+                _.assign(entry, mod.getCombatStats(creep.body));
+            }
+
             creep.data = entry;
         }
     };
@@ -256,4 +262,37 @@ mod.execute = function(){
 mod.cleanup = function(){
     let unregister = name => Population.unregisterCreep(name);
     this.died.forEach(unregister);
+};
+mod.stats = {
+    creep: {
+        coreParts: {
+            [MOVE]: true,
+            [HEAL]: true,
+        },
+        boost: {
+            hits: {
+                [RESOURCE_GHODIUM_OXIDE]: 143,
+                [RESOURCE_GHODIUM_ALKALIDE]: 200,
+                [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 334,
+            },
+        },
+    },
+};
+mod.getCombatStats = function(body) {
+    let i = 0;
+
+    let hull = 99;
+    let coreHits = body.length * 100 - 99;
+    for(;i < body.length; i++) {
+        if (Population.stats.creep.coreParts[body[i].type]) {
+            break;
+        }
+        hull = hull + (Population.stats.creep.boost.hits[body[i].boost] || 100);
+        coreHits = coreHits - 100;
+    }
+
+    return {
+        hull, // damage needed to impede movement
+        coreHits // if (hits < coreHits) missing moves!
+    };
 };
