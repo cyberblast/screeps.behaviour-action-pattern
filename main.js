@@ -153,6 +153,7 @@ global.install = () => {
             claiming: load("creep.action.claiming"),
             defending: load("creep.action.defending"),
             dismantling: load("creep.action.dismantling"),
+            dropping: load("creep.action.dropping"),
             feeding: load("creep.action.feeding"), 
             fortifying: load("creep.action.fortifying"), 
             fueling: load("creep.action.fueling"), 

@@ -269,7 +269,9 @@ mod.extend = function(){
     Creep.prototype.idleMove = function( ) {
         if( this.fatigue > 0 ) return;
         // check if on road/structure
-        let here = this.room.lookForAt(LOOK_STRUCTURES, this.pos);
+        let here = _.chain(this.room.structures.piles).filter('pos', this.pos)
+            .concat(this.room.lookForAt(LOOK_STRUCTURES, this.pos))
+            .value();
         if( here && here.length > 0 ) {
             let path;
             if( !this.data.idlePath || this.data.idlePath.length < 2 || this.data.idlePath[0].x != this.pos.x || this.data.idlePath[0].y != this.pos.y || this.data.idlePath[0].roomName != this.pos.roomName ) {

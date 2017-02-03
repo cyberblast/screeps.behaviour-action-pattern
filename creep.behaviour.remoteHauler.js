@@ -37,18 +37,19 @@ mod.nextAction = function(creep){
             // no deposit :/ 
             // try spawn & extensions
             if( this.assign(creep, Creep.action.feeding) ) return;
-            // TODO: hauler shouldn't work. drop at spawn instead of calling worker behaviour
-            Creep.behaviour.worker.nextAction(creep);
+            this.assign(creep, Creep.action.dropping);
             return;
         }
         // empty
         // travelling
-        this.gotoTargetRoom(creep);
-        return;
+        if (this.gotoTargetRoom(creep)) {
+            return;
+        }
     }
     // at target room
     else if( creep.data.destiny.room == creep.pos.roomName ){
         if( this.assign(creep, Creep.action.uncharging) ) return;
+        if( this.assign(creep, Creep.action.robbing) ) return;
         // if it's not full
         if( creep.sum < (creep.carryCapacity*0.8) ) {
             // get some energy
@@ -60,11 +61,14 @@ mod.nextAction = function(creep){
     }
     // somewhere
     else {
+        let ret = false;
         if( creep.sum > 0 )
-            this.goHome(creep);
+            ret = this.goHome(creep);
         else
-            this.gotoTargetRoom(creep);
-        return;
+            ret = this.gotoTargetRoom(creep);
+        if (ret) {
+            return;
+        }
     }
     // fallback
     // recycle self

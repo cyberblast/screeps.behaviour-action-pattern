@@ -52,7 +52,7 @@ mod.mine = function(creep) {
 
             let invalid = [];
             let findInvalid = entry => {
-                if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot && entry.ttl > entry.spawningTime)
+                if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot && entry.ttl > 100)
                     invalid.push(entry.determinatedSpot)
             };
             _.forEach(Memory.population, findInvalid);
@@ -72,9 +72,11 @@ mod.mine = function(creep) {
                     );
                 }})
                 if( !spot ) spot = creep.pos.findClosestByPath(spots) || spots[0];
-                if( spot ) creep.data.determinatedSpot = {
-                    x: spot.x,
-                    y: spot.y
+                if( spot ) {
+                    creep.data.determinatedSpot = {
+                        x: spot.x,
+                        y: spot.y
+                    }
                 }
             }
             if( !creep.data.determinatedSpot ) logError('Unable to determine working location for miner in room ' + creep.pos.roomName);
@@ -98,8 +100,8 @@ mod.mine = function(creep) {
                         let transfer = r => { if(creep.carry[r] > 0 ) creep.transfer(source.container, r); };
                         _.forEach(Object.keys(creep.carry), transfer);
                     }
-                    creep.harvest(source);
                 }
+                creep.harvest(source);
             } else if( creep.room.population && creep.room.population.typeCount['hauler'] && creep.room.population.typeCount['hauler'] > 0 ) {
                 if(CHATTY) creep.say('dropmining', SAY_PUBLIC);
                 let range = this.approach(creep);
