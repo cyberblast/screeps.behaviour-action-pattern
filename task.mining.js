@@ -66,7 +66,7 @@ mod.handleSpawningCompleted = creep => {
     }
     // calculate & set time required to spawn and send next substitute creep
     // TODO: implement better distance calculation
-    creep.data.predictedRenewal = creep.data.spawningTime + (routeRange(creep.data.homeRoom, creep.data.targetRoom)*50);
+    creep.data.predictedRenewal = creep.data.spawningTime + (routeRange(creep.data.homeRoom, creep.data.destiny.room)*50);
     // get task memory
     let memory = Task.mining.memory(creep.data.destiny.room);
     // save running creep to task memory
@@ -126,14 +126,17 @@ mod.checkForRequiredCreeps = (flag) => {
     else if( Memory.rooms[roomName] && Memory.rooms[roomName].sources ) sourceCount = Memory.rooms[roomName].sources.length;
     // never been there
     else sourceCount = 1;
-    let c = {};
-    for (let type of ['remoteHauler', 'remoteMiner', 'remoteWorker']) {
-        c[type] = memory.queued[type].length + memory.spawning[type].length + memory.running[type].length;
-    }
+
+    let countExisting = type => {
+        let running = _.map(memory.running[type], n => Game.creeps[n]);
+        let runningCount = _.filter(running, c => (c.ticksToLive || CREEP_LIFE_TIME) > (c.data.predictedRenewal || 0)).length;
+        return memory.queued[type].length + memory.spawning[type].length + runningCount;
+    };
+
     // trace didn't like c.remoteMiner
-    let haulerCount = c.remoteHauler;
-    let minerCount = c.remoteMiner;
-    let workerCount = c.remoteWorker;
+    let haulerCount = countExisting('remoteHauler');
+    let minerCount = countExisting('remoteMiner');
+    let workerCount = countExisting('remoteWorker');
     // TODO: calculate creeps by type needed per source / mineral
 
     if( DEBUG && TRACE ) trace('Task', {Task:mod.name, flagName:flag.name, sourceCount, haulerCount, minerCount, workerCount, [mod.name]:'Flag.found'}, 'checking flag@', flag.pos);
@@ -169,7 +172,7 @@ mod.checkForRequiredCreeps = (flag) => {
     // only spawn haulers for sources a miner has been spawned for
     let maxHaulers = Math.ceil(memory.running.remoteMiner.length * REMOTE_HAULER_MULTIPLIER);
     if(haulerCount < maxHaulers && (!memory.haulersChecked || haulerCount < memory.haulersChecked)) {
-        // don't check for haulers again until one has died
+        // don't check for haulers again until one has died, otherwise it loops in maxWeight returning < REMOTE_HAULER_MIN_WEIGHT
         memory.haulersChecked = haulerCount;
         for(let i = haulerCount; i < maxHaulers; i++) {
             const spawnRoom = mod.strategies.hauler.spawnRoom(roomName);
@@ -290,6 +293,10 @@ mod.creep = {
 };
 mod.carry = function(roomName, partChange) {
     let memory = Task.mining.memory(roomName);
+    if (partChange > 0) {
+        let maxHaulers = Math.ceil(memory.running.remoteMiner.length * REMOTE_HAULER_MULTIPLIER);
+        memory.haulersChecked = maxHaulers;
+    }
     memory.carryParts = (memory.carryParts || 0) + (partChange || 0);
     return `Task.${mod.name} overall hauler carry parts for ${roomName} are ${memory.carryParts >= 0 ? 'increased' : 'decreased'} by ${Math.abs(memory.carryParts)}`;
 };
