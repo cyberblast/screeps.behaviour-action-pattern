@@ -220,7 +220,7 @@ mod.extend = function(){
         if (ROUTE_PRECALCULATION && this.pos.roomName != targetPos.roomName) {
             var route = this.room.findRoute(targetPos.roomName);
             if ( route.length > 1 ) {
-                targetPos = new RoomPosition(25, 25, route[0].room);
+                targetPos = new RoomPosition(25, 25, route[1].room);
                 range = 24;
             }
         }
