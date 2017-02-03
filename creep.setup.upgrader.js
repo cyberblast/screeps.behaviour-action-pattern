@@ -1,6 +1,6 @@
 let setup = new Creep.Setup('upgrader');
 module.exports = setup;
-setup.minControllerLevel = 3;
+setup.minControllerLevel = 2;
 setup.maxMulti = function(room){
     let multi = 0;
     if( !room.storage || room.storage.store.energy > MIN_STORAGE_ENERGY[room.controller.level])
@@ -60,9 +60,17 @@ setup.default = {
     maxMulti: setup.maxMulti,
     maxCount: setup.maxCount
 };
+setup.low = {
+    fixedBody: [WORK, WORK, CARRY, MOVE],
+    multiBody: [WORK, WORK, MOVE],
+    minAbsEnergyAvailable: 300,
+    minEnergyAvailable: 1,
+    maxMulti: setup.maxMulti,
+    maxCount: setup.maxCount
+};
 setup.RCL = {
     1: setup.none,
-    2: setup.none,
+    2: setup.low,
     3: setup.default,
     4: setup.default,
     5: setup.default,

@@ -1,6 +1,6 @@
 let setup = new Creep.Setup('hauler');
 module.exports = setup;
-setup.minControllerLevel = 3;
+setup.minControllerLevel = 2;
 setup.maxMulti = function(room) {
     let max = 7;
     if( room.minerals.length > 0 )
