@@ -29,6 +29,8 @@ mod.unregisterCreep = function(creepName){
     delete Memory.creeps[creepName];
 };
 mod.registerAction = function(creep, action, target, entry) {
+    if( DEBUG && TRACE ) trace('Population', {creepName:this.name, registerAction:action.name, target:target.name || target.id, Population:'registerAction'});
+
     if( entry === undefined ) entry = this.getCreep(creep.name);
     entry.carryCapacityLeft = creep.carryCapacity - creep.sum;
     let room = creep.room;
@@ -281,11 +283,11 @@ mod.getCombatStats = function(body) {
 
     let hull = 99;
     let coreHits = body.length * 100 - 99;
-    while (i < body.length) {
-        if (Population.stats.creep.coreParts[body[i++].type]) {
+    for(;i < body.length; i++) {
+        if (Population.stats.creep.coreParts[body[i].type]) {
             break;
         }
-        hull = hull + (Population.stats.creep.boost.hits[body[i++].boost] || 100);
+        hull = hull + (Population.stats.creep.boost.hits[body[i].boost] || 100);
         coreHits = coreHits - 100;
     }
 
