@@ -51,7 +51,7 @@ mod.extend = function(){
         }
         // wait with spawning until enough resources are available
         if (cost > this.room.remainingEnergyAvailable) {
-            if (cost > this.room.energyCapacityAvailable || (cost >= 300 && !this.room.creeps.length)) {
+            if (cost > this.room.energyCapacityAvailable || (cost > 300 && !this.room.creeps.length)) {
                 global.logSystem(this.pos.roomName, dye(CRAYON.error, 'Queued creep too big for room: ' + JSON.stringify(params) ));
                 return false;
             }
