@@ -1,3 +1,5 @@
+const strategy = load("strategy");
+
 let mod = {};
 module.exports = mod;
 mod.extend = function(){
@@ -34,7 +36,7 @@ mod.extend = function(){
         if(Array.isArray(partTypes))
             return (this.body.some((part) => ( partTypes.includes(part.type) && part.hits > 0 )));
         else return (this.body.some((part) => ( part.type == partTypes && part.hits > 0 )));
-    } 
+    }
     Creep.prototype.run = function(behaviour){
         if( !this.spawning ){
             if(!behaviour && this.data && this.data.creepType) {
@@ -95,6 +97,8 @@ mod.extend = function(){
                 if( SAY_ASSIGNMENT ) this.say(String.fromCharCode(10133), SAY_PUBLIC);
             }
         }
+
+        strategy.freeStrategy(this);
     };
     Creep.prototype.leaveBorder = function() {
         // if on border move away
@@ -396,6 +400,23 @@ mod.extend = function(){
             Creep.resolvingError = null;
         }
     };
+
+    // Creep.prototype.strategy = function(actionName, behaviourName, taskName)
+    strategy.decorateAgent(Creep.prototype,
+        {
+            default: creep => creep.action && creep.action.name,
+            selector: actionName => Creep.action[actionName],
+        },{
+            default: creep => creep.data.creepType,
+            selector: behaviourName => Creep.behaviour[behaviourName] && Creep.behaviour[behaviourName],
+        },{
+            default: creep => creep.data.destiny && creep.data.destiny.task,
+            selector: taskName => Task[taskName] && Task[taskName],
+        });
+
+    // API
+    Creep.prototype.staticCustomStrategy = function(actionName, behaviourName, taskName) {};
+    Creep.prototype.customStrategy = function(actionName, behaviourName, taskName) {};
 };
 mod.execute = function(){
     let run = creep => creep.run();

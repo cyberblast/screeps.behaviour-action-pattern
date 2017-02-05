@@ -97,5 +97,13 @@ let Action = function(actionName){
     // assignment postprocessing
     // needs implementation in derived action
     this.onAssignment = (creep, target) => {};
-}
+    // empty default strategy
+    this.defaultStrategy = {
+        name: `default-${actionName}`
+    };
+    // strategy accessor
+    this.selectStrategies = function() {
+        return [this.defaultStrategy];
+    };
+};
 module.exports = Action;
