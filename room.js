@@ -885,11 +885,14 @@ mod.extend = function(){
             });
 
         let min = Math.max(ROAD_CONSTRUCTION_ABS_MIN, (data.reduce( (_sum, b) => _sum + b.n, 0 ) / data.length) * minDeviation);
-
         data = data.filter( e => {
-            return e.n > min &&
-                this.lookForAt(LOOK_STRUCTURES,e.x,e.y).length == 0 &&
-                this.lookForAt(LOOK_CONSTRUCTION_SITES,e.x,e.y).length == 0;
+            if (e.n >= min) {
+                let structures = this.lookForAt(LOOK_STRUCTURES,e.x,e.y);
+                return (structures.length === 0 || structures[0].structureType === STRUCTURE_RAMPART)
+                    && this.lookForAt(LOOK_CONSTRUCTION_SITES,e.x,e.y).length === 0;
+            } else {
+                return false;
+            }
         });
 
         // build roads on all most frequent used fields
