@@ -82,7 +82,7 @@ mod.checkForRequiredCreeps = (flag) => {
 
     // TODO: don't iterate/filter all creeps (3 times) each tick. store numbers into memory (see guard tasks)
     const creepsByType = _.chain(Game.creeps)
-        .filter(function(c) {return c.data.destiny && c.data.destiny.room===roomName;})
+        .filter(function(c) {return c.data && c.data.destiny && c.data.destiny.room===roomName;})
         .groupBy('data.creepType').value();
     let existingHaulers = creepsByType.remoteHauler || [];
     let haulerCount = memory.queued.remoteHauler.length + existingHaulers.length;
