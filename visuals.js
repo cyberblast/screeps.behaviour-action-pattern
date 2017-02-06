@@ -22,6 +22,12 @@ mod.run = function() {
 		if (VISUALS.SOURCE) {
 			room.sources.forEach(s => mod.drawSourceInfo(s));
 		}
+		if (VISUALS.WALL) {
+			mod.highlightWeakest(room, STRUCTURE_WALL);
+		}
+		if (VISUALS.RAMPART) {
+			mod.highlightWeakest(room, STRUCTURE_RAMPART);
+		}
 	}
 };
 
@@ -90,6 +96,15 @@ mod.drawControllerInfo = function(controller) {
 	if (controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[controller.level]) {
 		let downgradeStyle = Object.assign({}, style, {color: '#FF0000'});
 		vis.text(`D: ${formatNum(controller.ticksToDowngrade)}`, BASE_X, y += 0.4, downgradeStyle);
+	}
+};
+
+mod.highlightWeakest = function(room, type) {
+	const vis = new RoomVisual(room.name);
+	let weakest = _(room.find(FIND_STRUCTURES)).filter(s => s.structureType === type).min(s => s.hits);
+	if (weakest) {
+		vis.circle(weakest.pos.x, weakest.pos.y, {radius: 0.4, fill: '#FF0000', opacity: 0.3, strokeWidth: 0,});
+		vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, weakest.pos.y - 0.5, {align: 'left', size: 0.4,});
 	}
 };
 
