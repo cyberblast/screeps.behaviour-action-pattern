@@ -16,6 +16,7 @@ let mod = {
         ROOM: true, // displays basic info relative to the room
         ROOM_GLOBAL: true, // displays basic info relative to your account
         SPAWN: true, // displays creep name and spawn progress percentage when spawning
+        CONTROLLER: true, // displays level, progress, and ticks to downgrade if active
         MINERAL: true, // displays mineral amount, or ticks to regen
         SOURCE: true, // displays energy amount, or ticks to regen
     },
