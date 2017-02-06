@@ -312,8 +312,9 @@ mod.extend = function(){
             let nearby = this.pos.findInRange(this.room.structures.repairable, 3);
             if( nearby ){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
-                this.repair(nearby[0]);
-            } else {
+                if( this.repair(nearby[0]) == OK && this.carry.energy <= this.getActiveBodyparts(WORK) * REPAIR_POWER / REPAIR_COST ) {
+                    Creep.action.idle.assign(this);
+                };            } else {
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'none');
                 // enable remote haulers to build their own roads and containers
                 if( REMOTE_HAULER_DRIVE_BY_BUILDING && this.data && this.data.creepType == 'remoteHauler' ) {
@@ -325,7 +326,9 @@ mod.extend = function(){
                     }});
                     if( nearby ){
                         if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, nearby[0].pos);
-                        this.build(nearby[0]);
+                        if( this.build(nearby[0]) == OK && this.carry.energy <= this.getActiveBodyparts(WORK) * BUILD_POWER ) {
+                            Creep.action.idle.assign(this);
+                        };
                     } else {
                         if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, 'none');
                     }
