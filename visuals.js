@@ -9,6 +9,9 @@ mod.run = function() {
 		if (VISUALS.ROOM) {
 			mod.drawRoomInfo(room, VISUALS.ROOM_GLOBAL);
 		}
+		if (VISUALS.CONTROLLER) {
+			mod.drawControllerInfo(room.controller);
+		}
 		if (VISUALS.SPAWN) {
 			room.structures.spawns.filter(s => s.spawning).forEach(s => mod.drawSpawnInfo(s));
 		}
@@ -44,7 +47,7 @@ mod.drawRoomInfo = function(room, global = true) {
 	}
 	vis.text(`GCL: ${GCL}`, 2, ++line, {align: 'left',});
 	vis.text(`CPU: ${Game.cpu.limit}`, 2, ++line, {align: 'left',});
-	vis.text(`Used: ${Game.cpu.getUsed()}`, 2, ++line, {align: 'left',});
+	vis.text(`Used: ${Game.cpu.getUsed().toFixed(2)}`, 2, ++line, {align: 'left',});
 	vis.text(`Bucket: ${Game.cpu.bucket}`, 2, ++line, {align: 'left',});
 	vis.text(`Creeps: ${_.size(Game.creeps)}`, 2, ++line, {align: 'left',});
 };
@@ -60,9 +63,9 @@ mod.drawMineralInfo = function(mineral) {
 	let x = mineral.pos.x + 1;
 	let y = mineral.pos.y - 0.5;
 	if (mineral.mineralAmount) {
-		vis.text(`Amount: ${mineral.mineralAmount}`, x, y, {align: 'left', size: 0.4,});
+		vis.text(`Amount: ${formatNum(mineral.mineralAmount)}`, x, y, {align: 'left', size: 0.4,});
 	} else {
-		vis.text(`Regen: ${mineral.ticksToRegeneration}`, x, y, {align: 'left', size: 0.4,});
+		vis.text(`Regen: ${formatNum(mineral.ticksToRegeneration)}`, x, y, {align: 'left', size: 0.4,});
 	}
 };
 
@@ -76,3 +79,25 @@ mod.drawSourceInfo = function(source) {
 		vis.text(`Regen: ${source.ticksToRegeneration}`, x, y, {align: 'left', size: 0.4,});
 	}
 };
+
+mod.drawControllerInfo = function(controller) {
+	const vis = new RoomVisual(controller.room.name);
+	const BASE_X = controller.pos.x + 1;
+	let y = controller.pos.y - 0.5;
+	const style = {align: 'left', size: 0.4,};
+	vis.text(`L: ${controller.level}`, BASE_X, y, style);
+	vis.text(`P: ${formatNum(controller.progress)}/${formatNum(controller.progressTotal)} (${(controller.progress / controller.progressTotal * 100).toFixed(2)}%)`, BASE_X, y += 0.4, style);
+	if (controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[controller.level]) {
+		let downgradeStyle = Object.assign({}, style, {color: '#FF0000'});
+		vis.text(`D: ${formatNum(controller.ticksToDowngrade)}`, BASE_X, y += 0.4, downgradeStyle);
+	}
+};
+
+function formatNum(n) {
+	if (n >= 1000000) {
+		return (n / 1000000).toFixed(2) + 'M';
+	} else if (n >= 1000) {
+		return (n / 1000).toFixed(1) + 'K';
+	}
+	return n;
+}
