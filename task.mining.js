@@ -238,6 +238,22 @@ mod.carry = function(roomName, partChange) {
     memory.carryParts = (memory.carryParts || 0) + (partChange || 0);
     return `Task.${mod.name} set hauler carry parts for ${roomName} to ${memory.carryParts}`;
 };
+mod.storage = function(roomName, storageRoom) {
+    const room = Game.rooms[roomName];
+    let memory = Task.mining.memory(roomName);
+    if (storageRoom) {
+        memory.storageRoom = storageRoom;
+        return `Task.${mod.name} set ${roomName} storage destination for haulers to ${storageRoom}`;
+    } else if (!memory.storageRoom) {
+        return `Task.${mod.name} mining ${roomName} custom storage rooms not set`;
+    } else if (storageRoom === false) {
+        const was = memory.storageRoom;
+        delete memory.storageRoom;
+        return `Task.${mod.name} cleared ${roomName} custom storage room, was ${was}`;
+    } else {
+        return `Task.${mod.name} mining ${roomName} sending haulers to ${memory.storageRoom}`
+    }
+};
 function haulerWeightToCarry(weight) {
     if( !weight || weight < 0) return 0;
     const multiWeight = _.max([0, weight - 500]);
@@ -255,6 +271,10 @@ mod.strategies = {
     hauler: {
         name: `hauler-${mod.name}`,
         homeRoom: function(flagRoomName) {
+            // Explicity set by user?
+            let memory = Task.mining.memory(flagRoomName);
+            if(memory.storageRoom) return Game.rooms[memory.storageRoom];
+            // Otherwise, score it
             return Room.findSpawnRoom({
                 targetRoom: flagRoomName,
                 minRCL: 4,
