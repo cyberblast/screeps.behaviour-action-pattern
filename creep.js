@@ -319,8 +319,9 @@ mod.extend = function(){
                 if( REMOTE_HAULER_DRIVE_BY_BUILDING && this.data && this.data.creepType == 'remoteHauler' ) {
                     // only search in a range of 1 to save cpu
                     let nearby = this.pos.findInRange(this.room.constructionSites, 1, {filter: (site) =>{
-                        return site.structureType == STRUCTURE_CONTAINER ||
-					site.structureType == STRUCTURE_ROAD;
+                        return site.my && REMOTE_HAULER_DRIVE_BY_BUILD_ALL ||
+                            (site.structureType == STRUCTURE_CONTAINER ||
+                            site.structureType == STRUCTURE_ROAD);
                     }});
                     if( nearby ){
                         if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, nearby[0].pos);

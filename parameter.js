@@ -95,6 +95,7 @@ let mod = {
     REMOTE_HAULER_REHOME: false, // May haulers choose closer storage for delivery?
     REMOTE_HAULER_MIN_WEIGHT: 800, // Small haulers are a CPU drain.
     REMOTE_HAULER_DRIVE_BY_BUILDING: false, // Allows remote haulers to build roads and containers. Consider setting REMOTE_WORKER_MULTIPLIER to 0.
+    REMOTE_HAULER_DRIVE_BY_BUILD_ALL: false, // If the above option is enabled then remote haulers will drive-by-build any of your structures.
     REMOTE_WORKER_MULTIPLIER: 1, // Number of workers spawned per remote mining room.
     PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah','fsck-u','FaceWound','forkmantis','Migaaresno','xAix1999','silentpoots','arguinyano','OokieCookie','OverlordQ','Nibinhilion','Crowsbane','Yew','BogdanBiv','s1akr','Pandabear41','Logmadr','Patrik','novice','Conquest','ofirl','GeorgeBerkeley','TTR','tynstar','K-C','Hoekynl','Sunri5e','AgOrange','distantcam','Lisp','bbdMinimbl','Twill','Logxen','miR','Spedwards','Krazyfuq','Icesory','chobobobo','deft-code','mmmd','DKPlugins','pavelnieks','buckley310'],
     // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
