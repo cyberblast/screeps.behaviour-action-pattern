@@ -82,7 +82,9 @@ mod.mine = function(creep) {
 
         if( creep.data.determinatedSpot ) {
             let carrying = creep.sum;
-            if( source.link && source.link.energy < source.link.energyCapacity ) {
+            if( source.energy == 0) {
+                Creep.behaviour.worker.run(creep);
+            } else if( source.link && source.link.energy < source.link.energyCapacity ) {
                 if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
                 let range = this.approach(creep);
                 if( range == 0 ){
