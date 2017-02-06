@@ -19,6 +19,8 @@ let mod = {
         CONTROLLER: true, // displays level, progress, and ticks to downgrade if active
         MINERAL: true, // displays mineral amount, or ticks to regen
         SOURCE: true, // displays energy amount, or ticks to regen
+        WALL: false, // highlight weakest wall and display hits
+        RAMPART: false, // highlight weakest rampart and display hits
     },
     MAX_STORAGE_ENERGY: { // get rid of energy when reached
         1: 2000,
