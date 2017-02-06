@@ -310,16 +310,19 @@ mod.extend = function(){
         // if it has energy and a work part
         if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
             let nearby = this.pos.findInRange(this.room.structures.repairable, 3);
-            if( nearby && nearby.length > 0 ){
+            if( nearby ){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
                 this.repair(nearby[0]);
             } else {
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'none');
                 // enable remote haulers to build their own roads and containers
-                if( this.data && this.data.creepType == 'remoteHauler' ) {
+                if( REMOTE_HAULER_DRIVE_BY_BUILDING && this.data && this.data.creepType == 'remoteHauler' ) {
                     // only search in a range of 1 to save cpu
-                    let nearby = this.pos.findInRange(this.room.constructionSites, 1);
-                    if( nearby && nearby.length > 0 ){
+                    let nearby = this.pos.findInRange(this.room.constructionSites, 1, {filter: (site) =>{
+                        return site.structureType == STRUCTURE_CONTAINER ||
+					site.structureType == STRUCTURE_ROAD;
+                    }});
+                    if( nearby ){
                         if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, nearby[0].pos);
                         this.build(nearby[0]);
                     } else {
