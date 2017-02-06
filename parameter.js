@@ -103,4 +103,3 @@ let mod = {
     DEFENSE_BLACKLIST: [], // Don't defend those rooms (add room names). Blocks spawning via defense task (will not prevent offensive actions at all)
 }
 module.exports = mod;
-0000
