@@ -310,7 +310,7 @@ mod.extend = function(){
         // if it has energy and a work part
         if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
             let nearby = this.pos.findInRange(this.room.structures.repairable, 3);
-            if( nearby ){
+            if( nearby && nearby.length ){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
                 if( this.repair(nearby[0]) == OK && this.carry.energy <= this.getActiveBodyparts(WORK) * REPAIR_POWER / REPAIR_COST ) {
                     Creep.action.idle.assign(this);
@@ -324,11 +324,11 @@ mod.extend = function(){
                             (site.structureType == STRUCTURE_CONTAINER ||
                             site.structureType == STRUCTURE_ROAD);
                     }});
-                    if( nearby ){
+                    if( nearby && nearby.length ){
                         if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, nearby[0].pos);
                         if( this.build(nearby[0]) == OK && this.carry.energy <= this.getActiveBodyparts(WORK) * BUILD_POWER ) {
                             Creep.action.idle.assign(this);
-                        };
+                        }
                     } else {
                         if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, 'none');
                     }
