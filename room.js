@@ -1369,11 +1369,11 @@ mod.adjacentAccessibleRooms = function(roomName, diagonal = true) {
     let addValidRooms = (roomName, direction) => {
         if( diagonal ) {
             let roomExits = Game.map.describeExits(roomName);
-            let dirA = (direction + 2) % 8;
-            let dirB = (direction + 6) % 8;
-            if( roomExits[dirA] && !validRooms.includes(roomExits[dirA]) )
+            let dirA = (direction + 1) % 8 + 1;
+            let dirB = (direction + 5) % 8 + 1;
+            if( roomExits && roomExits[dirA] && !validRooms.includes(roomExits[dirA]) )
                 validRooms.push(roomExits[dirA]);
-            if( roomExits[dirB] && !validRooms.includes(roomExits[dirB]) )
+            if( roomExits && roomExits[dirB] && !validRooms.includes(roomExits[dirB]) )
                 validRooms.push(roomExits[dirB]);
         }
         validRooms.push(roomName);
