@@ -10,7 +10,7 @@ mod.decorateAgent = function(prototype, ...definitions) {
         const currentStrategy = this.currentStrategy || this.strategy(ids);
         const returnValOrMethod = currentStrategy[method];
         const key = currentStrategy.key;
-        if (!returnValOrMethod) {
+        if (returnValOrMethod === undefined) {
             logError('no strategy handler', {agent: this.name || this.id, key, method, stack: new Error().stack});
             return;
         }
@@ -18,7 +18,7 @@ mod.decorateAgent = function(prototype, ...definitions) {
             return returnValOrMethod;
         }
         const returnVal = returnValOrMethod.apply(this.currentStrategy, args);
-        if (returnVal) {
+        if (returnVal !== undefined) {
             return returnVal;
         }
         logError('no strategy handler for args', {agent: this.name || this.id, key, method, args, stack: new Error().stack});
