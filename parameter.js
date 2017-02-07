@@ -17,10 +17,13 @@ let mod = {
         ROOM_GLOBAL: true, // displays basic info relative to your account
         SPAWN: true, // displays creep name and spawn progress percentage when spawning
         CONTROLLER: true, // displays level, progress, and ticks to downgrade if active
+        STORAGE: true, // displays storage contents
+        TERMINAL: true, // displays terminal contents
         MINERAL: true, // displays mineral amount, or ticks to regen
         SOURCE: true, // displays energy amount, or ticks to regen
         WALL: false, // highlight weakest wall and display hits
         RAMPART: false, // highlight weakest rampart and display hits
+        ROAD: false, // highlight weakest road and display hits
     },
     MAX_STORAGE_ENERGY: { // get rid of energy when reached
         1: 2000,

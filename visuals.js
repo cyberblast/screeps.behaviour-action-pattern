@@ -28,34 +28,73 @@ mod.run = function() {
 		if (VISUALS.RAMPART) {
 			mod.highlightWeakest(room, STRUCTURE_RAMPART);
 		}
+		if (VISUALS.ROAD) {
+			mod.highlightWeakest(room, STRUCTURE_ROAD);
+		}
+		if (VISUALS.STORAGE) {
+			// WIP - Fix positioning
+			//mod.storage(room);
+		}
+		if (VISUALS.TERMINAL) {
+			// WIP - Fix positioning
+			//mod.terminal(room);
+		}
 	}
 };
 
-mod.drawRoomInfo = function(room, global = true) {
+mod.drawRoomInfo = function(room) {
 	const vis = new RoomVisual(room.name);
-	let line = 1;
-	vis.text(`Room: ${vis.roomName}`, 2, ++line, {align: 'left',});
-	vis.text(`Creeps: ${_.size(room.creeps)}`, 2, ++line, {align: 'left',});
-	let RCL = room.controller.level;
-	if (room.controller.progress) {
-		RCL += ` (${(room.controller.progress / room.controller.progressTotal * 100).toFixed(2)}%)`;
-	}
-	vis.text(`RCL: ${RCL}`, 2, ++line, {align: 'left',});
-	vis.text(`Energy: ${room.energyAvailable}/${room.energyCapacityAvailable} (${(room.energyAvailable / room.energyCapacityAvailable * 100).toFixed(0)}%)`, 2, ++line, {align: 'left',});
-	// Blank line - Separate Room and Global
-	++line;
-	if (!global) {
-		return;
-	}
-	let GCL = Game.gcl.level;
-	if (Game.gcl.progress) {
-		GCL += ` (${(Game.gcl.progress / Game.gcl.progressTotal * 100).toFixed(2)}%)`;
-	}
-	vis.text(`GCL: ${GCL}`, 2, ++line, {align: 'left',});
-	vis.text(`CPU: ${Game.cpu.limit}`, 2, ++line, {align: 'left',});
-	vis.text(`Used: ${Game.cpu.getUsed().toFixed(2)}`, 2, ++line, {align: 'left',});
-	vis.text(`Bucket: ${Game.cpu.bucket}`, 2, ++line, {align: 'left',});
-	vis.text(`Creeps: ${_.size(Game.creeps)}`, 2, ++line, {align: 'left',});
+	let x;
+	let y = 0;
+	// Room Name, centered middle
+	vis.text(`Room: ${vis.roomName}`, 24.5, ++y);
+	// Display bars: RCL, GCL, CPU, Bucket, Tick #
+	const bufferWidth = 1;
+	const sectionWidth = 49 / 5;
+	const BAR_STYLE = {fill: '#2B2B2B', opacity: 0.8, stroke: '#000000',};
+	
+	// RCL
+	x = bufferWidth;
+	vis.rect(x, ++y - 0.7, sectionWidth, 1, BAR_STYLE);
+	const RCL_PERCENTAGE = room.controller.progress / room.controller.progressTotal;
+	vis.rect(x, y - 0.7, RCL_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(RCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
+	vis.text(`RCL: ${room.controller.level} (${(RCL_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
+	
+	// GCL
+	x = bufferWidth * 2 + sectionWidth;
+	vis.rect(x, y - 0.7, sectionWidth, 1, BAR_STYLE);
+	const GCL_PERCENTAGE = Game.gcl.progress / Game.gcl.progressTotal;
+	vis.rect(x, y - 0.7, GCL_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(GCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
+	vis.text(`GCL: ${Game.gcl.level} (${(GCL_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
+	
+	// CPU
+	x += sectionWidth + bufferWidth;
+	vis.rect(x, y - 0.7, sectionWidth, 1, BAR_STYLE);
+	const CPU_PERCENTAGE = Game.cpu.getUsed() / Game.cpu.limit;
+	const FUNCTIONAL_CPU_PERCENTAGE = CPU_PERCENTAGE > 1 ? 1 : CPU_PERCENTAGE;
+	vis.rect(x, y - 0.7, FUNCTIONAL_CPU_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(FUNCTIONAL_CPU_PERCENTAGE), opacity: BAR_STYLE.opacity});
+	vis.text(`CPU: ${(CPU_PERCENTAGE * 100).toFixed(2)}%`, x + sectionWidth / 2, y);
+	
+	// Bucket
+	x += sectionWidth + bufferWidth;
+	vis.rect(x, y - 0.7, sectionWidth, 1, BAR_STYLE);
+	const BUCKET_PERCENTAGE = Game.cpu.bucket / 10000;
+	vis.rect(x, y - 0.7, BUCKET_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(BUCKET_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
+	vis.text(`Bucket: ${Game.cpu.bucket}`, x + sectionWidth / 2, y);
+	
+	// Tick
+	x += sectionWidth + bufferWidth;
+	vis.text(`Tick: ${Game.time}`, x, y, {align: 'left'});
+	
+	// New line
+	y += 0.5;
+	
+	// Display Creep Count, Energy Available
+	x = bufferWidth;
+	vis.rect(x, ++y - 0.7, sectionWidth, 1, BAR_STYLE);
+	const ENERGY_PERCENTAGE = room.energyAvailable / room.energyCapacityAvailable;
+	vis.rect(x, y - 0.7, ENERGY_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(ENERGY_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
+	vis.text(`Energy: ${room.energyAvailable}/${room.energyCapacityAvailable} (${(ENERGY_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
 };
 
 mod.drawSpawnInfo = function(spawn) {
@@ -108,6 +147,29 @@ mod.highlightWeakest = function(room, type) {
 	}
 };
 
+mod.storage = function(room) {
+	if (room.storage) {
+		const vis = new RoomVisual(room.name);
+		const x = 40;
+		let y = 1;
+		vis.text('Storage Contents', x, ++y, {align: 'left'});
+		storageObject(vis, room.storage.store, x, y);
+	}
+};
+
+mod.terminal = function(room) {
+	if (room.terminal) {
+		const vis = new RoomVisual(room.name);
+		const x = 40;
+		let y = 1;
+		if (VISUALS.STORAGE && room.storage) {
+			y += 2 + _.size(room.storage.store);
+		}
+		vis.text('Terminal Contents', x, ++y, {align: 'left'});
+		storageObject(vis, room.terminal.store, x, y);
+	}
+};
+
 function formatNum(n) {
 	if (n >= 1000000) {
 		return (n / 1000000).toFixed(2) + 'M';
@@ -115,4 +177,14 @@ function formatNum(n) {
 		return (n / 1000).toFixed(1) + 'K';
 	}
 	return n;
+}
+
+function storageObject(vis, store, x, startY) {
+	Object.keys(store).forEach(resource => vis.text(`${resource}: ${formatNum(store[resource])}`, x, ++startY, {align: 'left'}));
+}
+
+function getColourByPercentage(percentage, reverse = false) {
+	const value = reverse ? percentage : 1 - percentage;
+	const hue = (value * 120).toString(10);
+	return `hsl(${hue}, 100%, 50%)`;
 }
