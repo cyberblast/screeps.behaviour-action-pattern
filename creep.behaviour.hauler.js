@@ -60,7 +60,7 @@ mod.nextAction = function(creep){
 mod.strategies = {
     defaultStrategy: {
         name: `default-${mod.name}`,
-        canWithdrawEnergy: function (creep) {
+        canWithdrawEnergy: function (creep, target) {
             const min = Math.min(creep.carryCapacity - creep.sum, 500);
 
             return function (amount) {

@@ -8,6 +8,7 @@ action.isValidTarget = function(target, creep){
     const handler = creep.getStrategyHandler([action.name], 'isValidTarget', creep);
     return handler(target);
 };
+const superNewTarget = action.newTarget;
 action.newTarget = function(creep){
     // if storage link is not empty & no controller link < 15% => uncharge
     if( creep.room.structures.links.storage.length > 0 ){
@@ -21,21 +22,7 @@ action.newTarget = function(creep){
         }
     }
 
-    const targetPool = creep.room.structures.container.in;
-    if( targetPool.length > 0 ) {
-        const targetScore = creep.getStrategyHandler([action.name], 'targetScore', creep);
-        if (!targetScore) return;
-
-        if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, Action:action.name}, 'considering', targetPool.length, 'targets');
-        const targets = _.chain(targetPool)
-        .map(targetScore).filter('score').sortBy('score').reverse().value();
-        const scoredTarget = targets[0];
-        const target = scoredTarget && scoredTarget.target || null;
-        if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, target: target && target.pos, score: scoredTarget && scoredTarget.score, Action:action.name}, 'selected');
-        return target;
-    }
-
-    if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, Action:action.name}, 'no possible targets');
+    return superNewTarget.apply(action, [creep]);
 };
 action.work = function(creep){
     let workResult = OK;
@@ -76,11 +63,9 @@ action.defaultStrategy.isValidTarget = function(creep) {
         if (target.structureType == 'link') {
             return target.energy > 0;
         } else if (target.structureType == 'container') {
-            let min;
-            if (target.source === true && target.controller == true) min = target.storeCapacity * (1 - MANAGED_CONTAINER_TRIGGER);
-            else if (creep.data.creepType.indexOf('remote') > 0) min = 250;
-            else min = 500;
-            return target.sum > min;
+            const canWithdrawEnergy = creep.getStrategyHandler([action.name], 'canWithdrawEnergy', creep);
+            const withdrawAmount = creep.getStrategyHandler([action.name], 'withdrawAmount', target);
+            return canWithdrawEnergy(withdrawAmount);
         }
         return false;
     }
@@ -90,6 +75,17 @@ action.defaultStrategy.canWithdrawEnergy = function(creep) {
     return function(amount) {
         return creep.sum + amount >= min;
     };
+};
+action.defaultStrategy.withdrawAmount = function(target) {
+    if (target.source === true && target.controller == true) {
+        const amount = target.storeCapacity * (1 - MANAGED_CONTAINER_TRIGGER);
+        if (target.sum > amount) {
+            return target.sum - target.storeCapacity * MANAGED_CONTAINER_MINIMUM;
+        } else {
+            return 0;
+        }
+    }
+    return target.sum;
 };
 action.defaultStrategy.targetScore = function (creep) {
     // take from closest IN container that will put us to work
