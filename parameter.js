@@ -14,7 +14,7 @@ let mod = {
     ROOM_VISUALS: false, // display basic room statistics with RoomVisuals
     VISUALS: { // if ROOM_VISUALS is enabled, you can select what you want to display - All is a bit much for some people.
         ROOM: true, // displays basic info relative to the room
-        ROOM_GLOBAL: true, // displays basic info relative to your account
+        ROOM_GLOBAL: true, // displays basic info relative to your account - requires ROOM: true
         SPAWN: true, // displays creep name and spawn progress percentage when spawning
         CONTROLLER: true, // displays level, progress, and ticks to downgrade if active
         STORAGE: true, // displays storage contents

@@ -55,45 +55,58 @@ mod.drawRoomInfo = function(room) {
 	
 	// RCL
 	x = bufferWidth;
-	vis.rect(x, ++y - 0.7, sectionWidth, 1, BAR_STYLE);
+	vis.rect(x, ++y - 0.75, sectionWidth, 1, BAR_STYLE);
 	const RCL_PERCENTAGE = room.controller.progress / room.controller.progressTotal;
-	vis.rect(x, y - 0.7, RCL_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(RCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
+	vis.rect(x, y - 0.75, RCL_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(RCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
 	vis.text(`RCL: ${room.controller.level} (${(RCL_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
-	
-	// GCL
-	x = bufferWidth * 2 + sectionWidth;
-	vis.rect(x, y - 0.7, sectionWidth, 1, BAR_STYLE);
-	const GCL_PERCENTAGE = Game.gcl.progress / Game.gcl.progressTotal;
-	vis.rect(x, y - 0.7, GCL_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(GCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
-	vis.text(`GCL: ${Game.gcl.level} (${(GCL_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
-	
-	// CPU
-	x += sectionWidth + bufferWidth;
-	vis.rect(x, y - 0.7, sectionWidth, 1, BAR_STYLE);
-	const CPU_PERCENTAGE = Game.cpu.getUsed() / Game.cpu.limit;
-	const FUNCTIONAL_CPU_PERCENTAGE = CPU_PERCENTAGE > 1 ? 1 : CPU_PERCENTAGE;
-	vis.rect(x, y - 0.7, FUNCTIONAL_CPU_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(FUNCTIONAL_CPU_PERCENTAGE), opacity: BAR_STYLE.opacity});
-	vis.text(`CPU: ${(CPU_PERCENTAGE * 100).toFixed(2)}%`, x + sectionWidth / 2, y);
-	
-	// Bucket
-	x += sectionWidth + bufferWidth;
-	vis.rect(x, y - 0.7, sectionWidth, 1, BAR_STYLE);
-	const BUCKET_PERCENTAGE = Game.cpu.bucket / 10000;
-	vis.rect(x, y - 0.7, BUCKET_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(BUCKET_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
-	vis.text(`Bucket: ${Game.cpu.bucket}`, x + sectionWidth / 2, y);
-	
-	// Tick
-	x += sectionWidth + bufferWidth;
-	vis.text(`Tick: ${Game.time}`, x, y, {align: 'left'});
-	
-	// New line
-	y += 0.5;
+	if (VISUALS.ROOM_GLOBAL) {
+		// GCL
+		x = bufferWidth * 2 + sectionWidth;
+		vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
+		const GCL_PERCENTAGE = Game.gcl.progress / Game.gcl.progressTotal;
+		vis.rect(x, y - 0.75, GCL_PERCENTAGE * sectionWidth, 1, {
+			fill: getColourByPercentage(GCL_PERCENTAGE, true),
+			opacity: BAR_STYLE.opacity
+		});
+		vis.text(`GCL: ${Game.gcl.level} (${(GCL_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
+		
+		// CPU
+		x += sectionWidth + bufferWidth;
+		vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
+		const CPU_PERCENTAGE = Game.cpu.getUsed() / Game.cpu.limit;
+		const FUNCTIONAL_CPU_PERCENTAGE = CPU_PERCENTAGE > 1 ? 1 : CPU_PERCENTAGE;
+		vis.rect(x, y - 0.75, FUNCTIONAL_CPU_PERCENTAGE * sectionWidth, 1, {
+			fill: getColourByPercentage(FUNCTIONAL_CPU_PERCENTAGE),
+			opacity: BAR_STYLE.opacity
+		});
+		vis.text(`CPU: ${(CPU_PERCENTAGE * 100).toFixed(2)}%`, x + sectionWidth / 2, y);
+		
+		// Bucket
+		x += sectionWidth + bufferWidth;
+		vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
+		const BUCKET_PERCENTAGE = Game.cpu.bucket / 10000;
+		vis.rect(x, y - 0.75, BUCKET_PERCENTAGE * sectionWidth, 1, {
+			fill: getColourByPercentage(BUCKET_PERCENTAGE, true),
+			opacity: BAR_STYLE.opacity
+		});
+		vis.text(`Bucket: ${Game.cpu.bucket}`, x + sectionWidth / 2, y);
+		
+		// Tick
+		x += sectionWidth + bufferWidth;
+		vis.text(`Tick: ${Game.time}`, x, y, {align: 'left'});
+		
+		// New line
+		y += 1.5;
+		
+		x = bufferWidth;
+	} else {
+		x += sectionWidth + bufferWidth;
+	}
 	
 	// Display Creep Count, Energy Available
-	x = bufferWidth;
-	vis.rect(x, ++y - 0.7, sectionWidth, 1, BAR_STYLE);
+	vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
 	const ENERGY_PERCENTAGE = room.energyAvailable / room.energyCapacityAvailable;
-	vis.rect(x, y - 0.7, ENERGY_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(ENERGY_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
+	vis.rect(x, y - 0.75, ENERGY_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(ENERGY_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
 	vis.text(`Energy: ${room.energyAvailable}/${room.energyCapacityAvailable} (${(ENERGY_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
 };
 
