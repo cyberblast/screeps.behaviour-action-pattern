@@ -174,7 +174,7 @@ mod.highlightWeakest = function(room, type) {
 mod.storage = function(room) {
 	if (room.storage) {
 		const vis = new RoomVisual(room.name);
-		const x = 40;
+		const x = 43;
 		let y = 4.5;
 		vis.text('Storage Contents', x, ++y, {align: 'left'});
 		storageObject(vis, room.storage.store, x, y);
@@ -184,7 +184,7 @@ mod.storage = function(room) {
 mod.terminal = function(room) {
 	if (room.terminal) {
 		const vis = new RoomVisual(room.name);
-		const x = 40;
+		const x = 43;
 		let y = 4.5;
 		if (VISUALS.STORAGE && room.storage) {
 			y += 2 + _.size(room.storage.store) * 0.6;
