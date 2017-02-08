@@ -314,7 +314,7 @@ mod.extend = function(){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
                 if( this.repair(nearby[0]) == OK && this.carry.energy <= this.getActiveBodyparts(WORK) * REPAIR_POWER / REPAIR_COST ) {
                     Creep.action.idle.assign(this);
-                };
+                }
             } else {
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'none');
                 // enable remote haulers to build their own roads and containers
