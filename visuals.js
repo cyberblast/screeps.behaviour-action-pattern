@@ -45,12 +45,10 @@ mod.run = function() {
 			mod.highlightWeakest(room, STRUCTURE_ROAD);
 		}
 		if (VISUALS.STORAGE) {
-			// WIP - Fix positioning
-			//mod.storage(room);
+			mod.storage(room);
 		}
 		if (VISUALS.TERMINAL) {
-			// WIP - Fix positioning
-			//mod.terminal(room);
+			mod.terminal(room);
 		}
 	}
 };
@@ -177,7 +175,7 @@ mod.storage = function(room) {
 	if (room.storage) {
 		const vis = new RoomVisual(room.name);
 		const x = 40;
-		let y = 1;
+		let y = 4.5;
 		vis.text('Storage Contents', x, ++y, {align: 'left'});
 		storageObject(vis, room.storage.store, x, y);
 	}
@@ -187,9 +185,9 @@ mod.terminal = function(room) {
 	if (room.terminal) {
 		const vis = new RoomVisual(room.name);
 		const x = 40;
-		let y = 1;
+		let y = 4.5;
 		if (VISUALS.STORAGE && room.storage) {
-			y += 2 + _.size(room.storage.store);
+			y += 2 + _.size(room.storage.store) * 0.6;
 		}
 		vis.text('Terminal Contents', x, ++y, {align: 'left'});
 		storageObject(vis, room.terminal.store, x, y);
@@ -246,7 +244,30 @@ function formatNum(n) {
 }
 
 function storageObject(vis, store, x, startY) {
-	Object.keys(store).forEach(resource => vis.text(`${resource}: ${formatNum(store[resource])}`, x, ++startY, {align: 'left'}));
+	Object.keys(store).forEach(resource => vis.text(`${resource}: ${formatNum(store[resource])}`, x, startY += 0.6, {align: 'left', size: 0.5, color: getResourceColour(resource)}));
+}
+
+function getResourceColour(resourceType) {
+	const BASE = {
+		[RESOURCE_ENERGY]: '#FFE56D',
+		[RESOURCE_POWER]: '#FF0000',
+		[RESOURCE_CATALYST]: '#FF7A7A',
+		[RESOURCE_GHODIUM]: '#FFFFFF',
+		[RESOURCE_HYDROGEN]: '#CCCCCC',
+		[RESOURCE_KEANIUM]: '#9370FF',
+		[RESOURCE_LEMERGIUM]: '#89F4A5',
+		[RESOURCE_OXYGEN]: '#CCCCCC',
+		[RESOURCE_UTRIUM]: '#88D6F7',
+		[RESOURCE_ZYNTHIUM]: '#F2D28B',
+	};
+	
+	let colour = BASE[resourceType];
+	
+	if (!colour) {
+		let compoundType = [RESOURCE_UTRIUM, RESOURCE_LEMERGIUM, RESOURCE_KEANIUM, RESOURCE_ZYNTHIUM, RESOURCE_GHODIUM, RESOURCE_HYDROGEN, RESOURCE_OXYGEN].find(type => resourceType.indexOf(type) !== -1);
+		colour = BASE[compoundType];
+	}
+	return colour;
 }
 
 function getColourByPercentage(percentage, reverse = false) {
