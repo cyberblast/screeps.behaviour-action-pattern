@@ -312,7 +312,7 @@ mod.extend = function(){
             let nearby = this.pos.findInRange(this.room.structures.repairable, 3);
             if( nearby && nearby.length ){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
-                if( this.repair(nearby[0]) == OK && this.carry.energy <= this.getActiveBodyparts(WORK) * REPAIR_POWER / REPAIR_COST ) {
+                if( this.repair(nearby[0]) == OK && this.carry.energy <= this.getActiveBodyparts(WORK) * REPAIR_POWER * REPAIR_COST ) {
                     Creep.action.idle.assign(this);
                 }
             } else {
