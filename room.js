@@ -957,7 +957,22 @@ mod.extend = function(){
         containers.forEach(add);
 
         if( this.terminal ) {
-            let source = this.terminal.pos.findInRange(this.sources, 2);
+            // terminal in range <= 2 is too simplistic for certain room placements near sources. See #681
+            // This solution finds all walkable source fields in a room, then compares adjacency with the terminal
+            // The first room position adjacent to the terminal is remapped back to it's adjacent source for mapping to terminal
+            let minerSpots = [];
+            let findValidFields = s => { minerSpots = _(minerSpots).concat(Room.validFields(this.name, s.pos.x-1, s.pos.x+1, s.pos.y-1, s.pos.y+1, true)); };
+            _.forEach(this.sources, findValidFields);
+            let sourceField = this.terminal.pos.findClosestByRange(minerSpots, 1);
+            let source = [];
+            if(sourceField){
+                if(this.sources.length == 1){
+                    source = this.sources;
+                } else {
+                    source.push( sourceField.isNearTo(this.sources[0]) ? this.sources[0] : this.sources[1] );
+                }
+            }
+           
             let mineral = this.terminal.pos.findInRange(this.minerals, 2);
             let assignTerminal = s => s.memory.terminal = this.terminal.id;
             source.forEach(assignTerminal);
