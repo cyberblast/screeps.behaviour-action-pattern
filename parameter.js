@@ -24,6 +24,8 @@ let mod = {
         WALL: false, // highlight weakest wall and display hits
         RAMPART: false, // highlight weakest rampart and display hits
         ROAD: false, // highlight weakest road and display hits
+        HEATMAP: false, // collects creep positioning to display a heatmap
+        HEATMAP_INTERVAL: 2, // intervals between collections
     },
     MAX_STORAGE_ENERGY: { // get rid of energy when reached
         1: 2000,

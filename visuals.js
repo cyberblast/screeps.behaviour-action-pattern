@@ -6,6 +6,19 @@ mod.run = function() {
 		const room = Game.rooms[roomName];
 		if (!room.my) continue; // Skip rooms not owned by you
 		
+		if (Memory.heatmap === undefined) Memory.heatmap = false;
+		
+		if (VISUALS.HEATMAP) {
+			if (Game.time % VISUALS.HEATMAP_INTERVAL === 0) {
+				mod.setHeatMapData(room);
+			}
+			
+			if (Memory.heatmap) {
+				mod.drawHeatMapData(room);
+				continue;
+			}
+		}
+		
 		if (VISUALS.ROOM) {
 			mod.drawRoomInfo(room, VISUALS.ROOM_GLOBAL);
 		}
@@ -181,6 +194,46 @@ mod.terminal = function(room) {
 		vis.text('Terminal Contents', x, ++y, {align: 'left'});
 		storageObject(vis, room.terminal.store, x, y);
 	}
+};
+
+mod.setHeatMapData = function(room) {
+	if (room.memory.heatmap === undefined) {
+		room.memory.heatmap = {};
+		for (let x = 0; x < 50; x++) {
+			for (let y = 0; y < 50; y++) {
+				const look = room.lookForAt(LOOK_TERRAIN, x, y);
+				if (look && look[0] === 'wall') continue;
+				const key = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
+				room.memory.heatmap[key] = 0;
+			}
+		}
+	}
+	room.creeps.filter(creep => !creep.spawning).forEach(creep => {
+		const x = creep.pos.x;
+		const y = creep.pos.y;
+		const key = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
+		room.memory.heatmap[key]++;
+	});
+};
+
+mod.drawHeatMapData = function(room) {
+	const vis = new RoomVisual(room.name);
+	const data = Object.keys(room.memory.heatmap).map(k => {
+		return {
+			n: room.memory.heatmap[k],
+			x: k.charCodeAt(0) - 32,
+			y: k.charCodeAt(1) - 32,
+		};
+	});
+	
+	const MAP_DATA = _.filter(data, d => d.n > 0);
+	
+	const PERCENTAGE_MAX = _.sum(MAP_DATA, d => d.n) / MAP_DATA.length * 2;
+	MAP_DATA.forEach(d => {
+		const PERCENTAGE = d.n / PERCENTAGE_MAX;
+		const colour = getColourByPercentage(PERCENTAGE > 1 ? 1 : PERCENTAGE);
+		vis.rect(d.x - 0.5, d.y - 0.5, 1, 1, {fill: colour});
+	});
 };
 
 function formatNum(n) {
