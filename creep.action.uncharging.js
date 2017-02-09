@@ -85,3 +85,51 @@ action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9738), SAY_PUBLIC);
     if( SAY_ASSIGNMENT ) creep.say('\u{1F4E4}\u{FE0E}', SAY_PUBLIC);
 };
+action.defaultStrategy.isValidTarget = function(creep) {
+    return function(target) {
+        if (!target) return false;
+        if (target.structureType == 'link') {
+            return target.energy > 0;
+        } else if (target.structureType == 'container') {
+            const canWithdrawEnergy = creep.getStrategyHandler([action.name], 'canWithdrawEnergy', creep);
+            const withdrawAmount = creep.getStrategyHandler([action.name], 'withdrawAmount', target);
+            return canWithdrawEnergy(withdrawAmount);
+        }
+        return false;
+    };
+};
+action.defaultStrategy.canWithdrawEnergy = function(creep) {
+    const min = creep.data.body.carry * 25;
+    return function(amount) {
+        return creep.sum + amount >= min;
+    };
+};
+action.defaultStrategy.withdrawAmount = function(target) {
+    if (target.source === true && target.controller == true) {
+        const amount = target.storeCapacity * (1 - MANAGED_CONTAINER_TRIGGER);
+        if (target.sum > amount) {
+            return target.sum - target.storeCapacity * MANAGED_CONTAINER_MINIMUM;
+        } else {
+            return 0;
+        }
+    }
+    return target.sum;
+};
+action.defaultStrategy.targetPool = function(creep) {
+    return creep.room.structures.container.in;
+};
+action.defaultStrategy.targetScore = function (creep) {
+    // take from closest IN container that will put us to work
+    const canWithdrawEnergy = creep.getStrategyHandler([action.name],'canWithdrawEnergy',creep);
+    if (!canWithdrawEnergy) return;
+
+    return function (target) {
+        let contFilling = target.sum;
+        if (target.targetOf)
+            contFilling -= _.sum(target.targetOf.map(t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 )));
+
+        let score = -creep.pos.getRangeTo(target.pos);
+        if ( !canWithdrawEnergy(contFilling)) score = 0;
+        return {target, score};
+    };
+};

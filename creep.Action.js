@@ -44,7 +44,24 @@ let Action = function(actionName){
     // find a new target for that action
     // needs implementation in derived action
     this.newTarget = function(creep){
-        return null;
+        const targetPool = creep.getStrategyHandler([this.name], 'targetPool', creep);
+        if( targetPool.length > 0 ) {
+            const targetScore = creep.getStrategyHandler([this.name], 'targetScore', creep);
+            if (!targetScore) return;
+
+            if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, Action:this.name}, 'considering', targetPool.length, 'targets');
+            const targets = _.chain(targetPool)
+                .map(targetScore)
+                .filter('score')
+                .sortBy('score').reverse()
+                .value();
+            const scoredTarget = targets[0];
+            const target = scoredTarget && scoredTarget.target || null;
+            if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, target: target && target.pos, score: scoredTarget && scoredTarget.score, Action:this.name}, 'selected');
+            return target;
+        }
+
+        if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, Action:this.name}, 'no possible targets');
     };
     // order for the creep to execute each tick, when assigned to that action
     this.step = function(creep){
