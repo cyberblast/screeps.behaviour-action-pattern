@@ -21,6 +21,7 @@ let mod = {
         TERMINAL: true, // displays terminal contents
         MINERAL: true, // displays mineral amount, or ticks to regen
         SOURCE: true, // displays energy amount, or ticks to regen
+        CREEP: true, // draws creep paths
         WALL: false, // highlight weakest wall and display hits
         RAMPART: false, // highlight weakest rampart and display hits
         ROAD: false, // highlight weakest road and display hits

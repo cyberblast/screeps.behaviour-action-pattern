@@ -50,6 +50,9 @@ mod.run = function() {
 		if (VISUALS.TERMINAL) {
 			mod.terminal(room);
 		}
+		if (VISUALS.CREEP) {
+			mod.drawCreepPath(room);
+		}
 	}
 };
 
@@ -167,7 +170,7 @@ mod.highlightWeakest = function(room, type) {
 	let weakest = _(room.find(FIND_STRUCTURES)).filter(s => s.structureType === type).min(s => s.hits);
 	if (weakest) {
 		vis.circle(weakest.pos.x, weakest.pos.y, {radius: 0.4, fill: '#FF0000', opacity: 0.3, strokeWidth: 0,});
-		vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x - 0.5, weakest.pos.y - 0.5, {align: 'right', size: 0.4,});
+		vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 0.5, weakest.pos.y - 0.1, {align: 'left', size: 0.4,});
 	}
 };
 
@@ -231,6 +234,82 @@ mod.drawHeatMapData = function(room) {
 		const PERCENTAGE = d.n / PERCENTAGE_MAX;
 		const colour = getColourByPercentage(PERCENTAGE > 1 ? 1 : PERCENTAGE);
 		vis.rect(d.x - 0.5, d.y - 0.5, 1, 1, {fill: colour});
+	});
+};
+
+mod.creepPathStyle = function(creep) {
+	function randomColour() {
+		let c = '#';
+		while (c.length < 7) {
+			c += (Math.random()).toString(16).substr(-6).substr(-1);
+		}
+		return c;
+	}
+	
+	const style = {
+		width: 0.15,
+		color: creep.data.pathColour ? creep.data.pathColour : randomColour(),
+		lineStyle: 'dashed',
+	};
+	creep.data.pathColour = style.color; // set colour in memory. Makes tracking easier, and prevents rainbows.
+	return style;
+};
+
+mod.drawCreepPath = function(room) {
+	const vis = new RoomVisual(room.name);
+	room.creeps.forEach(creep => {
+		if (creep.data.path) {
+			const path = creep.data.path.substr(1); // remove initial direction to prevent drawing behind creep
+			const style = mod.creepPathStyle(creep);
+			let x = creep.pos.x;
+			let y = creep.pos.y;
+			const initDirection = +creep.data.path[0]; // get initial so we know where to set the start (x, y)
+			if (initDirection === TOP) {
+				--y;
+			} else if (initDirection === TOP_RIGHT) {
+				++x;
+				--y;
+			} else if (initDirection === RIGHT) {
+				++x;
+			} else if (initDirection === BOTTOM_RIGHT) {
+				++x;
+				++y;
+			} else if (initDirection === BOTTOM) {
+				++y;
+			} else if (initDirection === BOTTOM_LEFT) {
+				--x;
+				++y;
+			} else if (initDirection === LEFT) {
+				--x;
+			} else if (initDirection === TOP_LEFT) {
+				--x;
+				--y;
+			} else {
+				// we're not supposed to be here.
+			}
+			for (let direction of path) {
+				direction = +direction; // force coerce to number
+				if (direction === TOP) {
+					vis.line(x, y, x, --y, style);
+				} else if (direction === TOP_RIGHT) {
+					vis.line(x, y, ++x, --y, style);
+				} else if (direction === RIGHT) {
+					vis.line(x, y, ++x, y, style);
+				} else if (direction === BOTTOM_RIGHT) {
+					vis.line(x, y, ++x, ++y, style);
+				} else if (direction === BOTTOM) {
+					vis.line(x, y, x, ++y, style);
+				} else if (direction === BOTTOM_LEFT) {
+					vis.line(x, y, --x, ++y, style);
+				} else if (direction === LEFT) {
+					vis.line(x, y, --x, y, style);
+				} else if (direction === TOP_LEFT) {
+					vis.line(x, y, --x, --y, style);
+				} else {
+					// we're not supposed to be here.
+				}
+			}
+		}
 	});
 };
 
