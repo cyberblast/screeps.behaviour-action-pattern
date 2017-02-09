@@ -246,13 +246,12 @@ mod.creepPathStyle = function(creep) {
 		return c;
 	}
 	
-	const style = {
+	creep.data.pathColour = creep.data.pathColour ? creep.data.pathColour : randomColour(); // set colour in memory. Makes tracking easier, and prevents rainbows.
+	return {
 		width: 0.15,
-		color: creep.data.pathColour ? creep.data.pathColour : randomColour(),
+		color: creep.data.pathColour,
 		lineStyle: 'dashed',
 	};
-	creep.data.pathColour = style.color; // set colour in memory. Makes tracking easier, and prevents rainbows.
-	return style;
 };
 
 mod.drawCreepPath = function(room) {
