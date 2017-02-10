@@ -138,6 +138,10 @@ mod.extend = function(){
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, range, intentionRange, drive: 'arrived', Creep:'drive'}, 'arrived');
             return;
         }
+        if (this.getActiveBodyparts(MOVE) === 0) {
+            if ( DEBUG && TRACE ) trace('Creep', {creepName:this.name, moveParts: this.getActiveBodyparts(MOVE), drive: 'no move parts'}, 'no move parts');
+            return;
+        }
         if( this.fatigue > 0 ) {
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, fatigue: this.fatigue, drive: 'fatigued', Creep:'drive'}, 'fatigued');
             return;
