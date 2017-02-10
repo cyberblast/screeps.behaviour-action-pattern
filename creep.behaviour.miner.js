@@ -40,7 +40,8 @@ mod.run = function(creep) {
 
             let invalid = [];
             let findInvalid = entry => {
-                if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot && entry.ttl > entry.spawningTime)
+                if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot
+                    && (entry.ttl > entry.spawningTime || entry.ttl > entry.predictedRenewal))
                     invalid.push(entry.determinatedSpot)
             };
             _.forEach(Memory.population, findInvalid);

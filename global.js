@@ -115,7 +115,14 @@ mod.FLAG_COLOR = {
         filter: {'color': COLOR_BROWN, 'secondaryColor': COLOR_BROWN },
     },
     // COLOR_GREY
-    // COLOR_WHITE reserved for memory-based command api
+    command: { // command api
+        color: COLOR_WHITE,
+        drop: { // haulers drop energy in a pile here
+            color: COLOR_WHITE,
+            secondaryColor: COLOR_YELLOW,
+            filter: {'color': COLOR_WHITE, 'secondaryColor': COLOR_YELLOW }
+        }
+    },
 };
 mod.DECAY_AMOUNT = {
     'rampart': RAMPART_DECAY_AMOUNT, // 300

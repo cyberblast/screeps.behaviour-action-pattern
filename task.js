@@ -15,7 +15,7 @@ mod.register = function () {
     ];
     var loop = task => {
         task.register();
-    }
+    };
     _.forEach(tasks, loop);
 };
 mod.memory = (task, s) => { // task:  (string) name of the task, s: (string) any selector for that task, could be room name, flag name, enemy name

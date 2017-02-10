@@ -37,34 +37,41 @@ mod.nextAction = function(creep){
             // no deposit :/ 
             // try spawn & extensions
             if( this.assign(creep, Creep.action.feeding) ) return;
-            // TODO: hauler shouldn't work. drop at spawn instead of calling worker behaviour
-            Creep.behaviour.worker.nextAction(creep);
+            this.assign(creep, Creep.action.dropping);
             return;
         }
         // empty
         // travelling
-        this.gotoTargetRoom(creep);
-        return;
+        if (this.gotoTargetRoom(creep)) {
+            return;
+        }
     }
     // at target room
     else if( creep.data.destiny.room == creep.pos.roomName ){
-        if( this.assign(creep, Creep.action.uncharging) ) return;
-        // if it's not full
-        if( creep.sum < (creep.carryCapacity*0.8) ) {
-            // get some energy
-            if( this.assign(creep, Creep.action.picking) ) return;
+        // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
+        if( creep.sum / creep.carryCapacity > REMOTE_HAULER_MIN_LOAD) {
+            this.goHome(creep);
+            return;
         }
+        // picking last until we have strategies that can compare cost vs benefit otherwise remoteHaulers bounce between piles of dropped energy
+        if( this.assign(creep, Creep.action.uncharging) ) return;
+        // if( this.assign(creep, Creep.action.robbing) ) return;
+        if( this.assign(creep, Creep.action.picking) ) return;
         // carrier full or everything picked
         this.goHome(creep);
         return;
     }
     // somewhere
     else {
-        if( creep.sum > 0 )
-            this.goHome(creep);
+        let ret = false;
+        // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
+        if( creep.sum / creep.carryCapacity > REMOTE_HAULER_MIN_LOAD )
+            ret = this.goHome(creep);
         else
-            this.gotoTargetRoom(creep);
-        return;
+            ret = this.gotoTargetRoom(creep);
+        if (ret) {
+            return;
+        }
     }
     // fallback
     // recycle self

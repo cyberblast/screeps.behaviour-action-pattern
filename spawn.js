@@ -89,7 +89,7 @@ mod.extend = function(){
                 body,
                 destiny); 
             this.newSpawn = {name: newName};
-            Creep.spawningStarted.trigger({spawn: this.name, name: newName, destiny: destiny});
+            Creep.spawningStarted.trigger({spawn: this.name, name: newName, body: body, destiny: destiny, spawnTime: body.length * CREEP_SPAWN_TIME});
             if(CENSUS_ANNOUNCEMENTS) global.logSystem(this.pos.roomName, dye(CRAYON.birth, 'Good morning ' + newName + '!') );
             return true;
         }
