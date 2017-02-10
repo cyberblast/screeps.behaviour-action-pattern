@@ -116,6 +116,7 @@ let mod = {
     CONTROLLER_SIGN: false,
     CONTROLLER_SIGN_MESSAGE: "Territory of the Open Collaboration Society! (https://github.com/ScreepsOCS)",
     CONTROLLER_SIGN_UPDATE: false, // Update sign message if user changes CONTROLLER_SIGN_MESSAGE
+    MINERS_AUTO_BUILD: false, // miners and remoteMiners will build their own containers if they are missing.
     REMOTE_HAULER_MULTIPLIER: 1, // Max number of haulers spawned per source in a remote mining room.
     REMOTE_HAULER_CHECK_INTERVAL: 5, // how many ticks before we check to see if new haulers need spawninig?
     REMOTE_HAULER_REHOME: false, // May haulers choose closer storage for delivery?
