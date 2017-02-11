@@ -256,34 +256,38 @@ module.exports = class Visuals {
 	static drawCreepPath(room) {
 		const vis = new RoomVisual(room.name);
 		room.creeps.forEach(creep => {
-			if (creep.data.path) {
-				const path = creep.data.path.substr(1); // remove initial direction to prevent drawing behind creep
+			if (creep.data && creep.data.path) {
+				let path = creep.data.path;
 				const style = Visuals.creepPathStyle(creep);
 				let x = creep.pos.x;
 				let y = creep.pos.y;
-				const initDirection = +creep.data.path[0]; // get initial so we know where to set the start (x, y)
-				if (initDirection === TOP) {
-					--y;
-				} else if (initDirection === TOP_RIGHT) {
-					++x;
-					--y;
-				} else if (initDirection === RIGHT) {
-					++x;
-				} else if (initDirection === BOTTOM_RIGHT) {
-					++x;
-					++y;
-				} else if (initDirection === BOTTOM) {
-					++y;
-				} else if (initDirection === BOTTOM_LEFT) {
-					--x;
-					++y;
-				} else if (initDirection === LEFT) {
-					--x;
-				} else if (initDirection === TOP_LEFT) {
-					--x;
-					--y;
-				} else {
-					// we're not supposed to be here.
+				if (creep.fatigue === 0) {
+					path = path.substr(1); // remove initial direction to prevent drawing behind creep
+					
+					const initDirection = +creep.data.path[0]; // get initial so we know where to set the start (x, y)
+					if (initDirection === TOP) {
+						--y;
+					} else if (initDirection === TOP_RIGHT) {
+						++x;
+						--y;
+					} else if (initDirection === RIGHT) {
+						++x;
+					} else if (initDirection === BOTTOM_RIGHT) {
+						++x;
+						++y;
+					} else if (initDirection === BOTTOM) {
+						++y;
+					} else if (initDirection === BOTTOM_LEFT) {
+						--x;
+						++y;
+					} else if (initDirection === LEFT) {
+						--x;
+					} else if (initDirection === TOP_LEFT) {
+						--x;
+						--y;
+					} else {
+						// we're not supposed to be here.
+					}
 				}
 				for (let direction of path) {
 					direction = +direction; // force coerce to number
