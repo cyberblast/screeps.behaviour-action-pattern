@@ -4,9 +4,10 @@ action.renewTarget = false;
 action.isValidAction = function(creep){
     return ( creep.sum < creep.carryCapacity && creep.room.sourceEnergyAvailable > 0 );
 };
-action.isValidTarget = function(target){
-    return (target != null && target.energy != null && target.energy > 0 &&
-        (target.targetOf === undefined || !_.some(target.targetOf, c => c.creepType === 'miner' || c.creepType === 'remoteMiner') ));
+action.isValidTarget = function(target) {
+    return (target !== null && target.energy !== null && target.energy > 0 &&
+        (target.targetOf === undefined || !_.some(target.targetOf,
+            c => (c.creepType === 'miner' || c.creepType === 'remoteMiner') && c.body.work >= 5)));
 };
 action.isAddableTarget = function(target, creep){
     return (
