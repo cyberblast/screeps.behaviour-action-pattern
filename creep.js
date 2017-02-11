@@ -275,11 +275,12 @@ mod.extend = function(){
         // check if on road/structure
         let here = _.chain(this.room.structures.piles).filter('pos', this.pos)
             .concat(this.room.lookForAt(LOOK_STRUCTURES, this.pos))
+            .concat(this.room.lookForAt(LOOK_CONSTRUCTION_SITES, this.pos))
             .value();
         if( here && here.length > 0 ) {
             let path;
             if( !this.data.idlePath || this.data.idlePath.length < 2 || this.data.idlePath[0].x != this.pos.x || this.data.idlePath[0].y != this.pos.y || this.data.idlePath[0].roomName != this.pos.roomName ) {
-                let goals = _.map(this.room.structures.all, function(o) {
+                let goals = _.map(this.room.structures.all, function(o) { // TODO room obstacles
                     return { pos: o.pos, range: 1 };
                 });
 
