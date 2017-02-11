@@ -1186,7 +1186,7 @@ mod.extend = function(){
             this.memory.statistics = {};
 
         let registerHostile = creep => {
-            if(creep.owner.username == "Source Keeper") return;
+            if (Room.isCenterNineRoom(this.name)) return;
             // if invader id unregistered
             if( !that.memory.hostileIds.includes(creep.id) ){
                 // handle new invader
