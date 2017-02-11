@@ -108,3 +108,17 @@ mod.nextAction = function(creep){
     }
     return false;
 };
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        canWithdrawEnergy: function(creep, target) {
+            const min = creep.carryCapacity * 0.5;
+            return function(amount) {
+                return creep.sum + amount >= min;
+            };
+        },
+    },
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};

@@ -149,3 +149,20 @@ mod.approach = function(creep){
     }
     return range;
 };
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        // TODO don't move more than a few tiles to withdraw or pick
+        canWithdrawEnergy: function (creep) {
+            return _.constant(true);
+        },
+    },
+    picking: {
+        isAddableAction: function (creep) {
+            return true;
+        },
+        maxPerTarget: function() {
+            return Infinity;
+        },
+    },
+};

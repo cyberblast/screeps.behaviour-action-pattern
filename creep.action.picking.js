@@ -9,13 +9,10 @@ action.isValidTarget = function(target){
     return (target != null && target.amount != null && target.amount > 0);
 };
 action.isAddableAction = function(creep){
-    if( creep.data.creepType.indexOf('remote') > 0 ) return true;
-    else return (this.maxPerAction === Infinity || !creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
+    return creep.getStrategyHandler([action.name], 'isAddableAction', creep);
 };
 action.isAddableTarget = function(target, creep){
-    let max;
-    if( creep.data.creepType.indexOf('remote') > 0 ) max = Infinity;
-    else max =  this.maxPerTarget;
+    const max = creep.getStrategyHandler([action.name], 'maxPerTarget');
     let pickers = target.targetOf ? _.filter(target.targetOf, {actionName: 'picking'}) : [];
     return (!target.targetOf || !pickers.length || ((pickers.length < max) && target.amount > _.sum( pickers.map( t => t.carryCapacityLeft))));
 };
@@ -61,4 +58,10 @@ action.work = function(creep){
 };
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(8681), SAY_PUBLIC);
+};
+action.defaultStrategy.isAddableAction = function(creep) {
+    return (action.maxPerAction === Infinity || !creep.room.population || !creep.room.population.actionCount[action.name] || creep.room.population.actionCount[action.name] < action.maxPerAction);
+};
+action.defaultStrategy.maxPerTarget = function() {
+    return action.maxPerTarget;
 };
