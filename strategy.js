@@ -9,9 +9,10 @@ mod.decorateAgent = function(prototype, ...definitions) {
     prototype.getStrategyHandler = function(ids, method, ...args) {
         const currentStrategy = this.currentStrategy || this.strategy(ids);
         const returnValOrMethod = currentStrategy[method];
-        const key = currentStrategy.key;
+        const strategyKey = currentStrategy.key;
+        const strategyName = currentStrategy.name;
         if (returnValOrMethod === undefined) {
-            logError('no strategy handler', {agent: this.name || this.id, key, method, stack: new Error().stack});
+            logError('strategy handler returned undefined', {agent: this.name || this.id, strategyKey, strategyName, method, stack: new Error().stack});
             return;
         }
         if (args.length === 0) {
@@ -21,7 +22,7 @@ mod.decorateAgent = function(prototype, ...definitions) {
         if (returnVal !== undefined) {
             return returnVal;
         }
-        logError('no strategy handler for args', {agent: this.name || this.id, key, method, args:args.toString(), stack: new Error().stack});
+        logError('handler returned undefined for args', {agent: this.name || this.id, strategyKey, strategyName, method, args:args.toString(), stack: new Error().stack});
     };
     prototype._strategyCache = {};
     prototype.strategyKey = function(ids) {
