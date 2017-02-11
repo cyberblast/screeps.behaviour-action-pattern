@@ -22,7 +22,7 @@ action.isAddableTarget = function(target, creep){
 action.newTarget = function(creep){
     let target = null;
     let sourceGuests = 999;
-    var roomSources = _.sortBy(creep.room.sources, s => creep.pos.getRangeTo(s))
+    var roomSources = _.sortBy(creep.room.sources, s => creep.pos.getRangeTo(s));
     for( var iSource = 0; iSource < roomSources.length; iSource++ ){
         let source = roomSources[iSource];
         if( this.isValidTarget(source) && this.isAddableTarget(source, creep) ){
