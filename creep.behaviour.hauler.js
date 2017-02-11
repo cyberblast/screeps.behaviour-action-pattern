@@ -35,6 +35,7 @@ mod.nextAction = function(creep){
             Creep.action.charging,
             Creep.action.fueling,
             Creep.action.storing,
+            Creep.action.dropping,
             Creep.action.idle];
 
         if ( creep.sum > creep.carry.energy ||

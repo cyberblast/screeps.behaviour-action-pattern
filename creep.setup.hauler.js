@@ -49,10 +49,19 @@ setup.default = {
     maxCount: setup.maxCount,
     maxWeight: setup.maxWeight
 };
+setup.low = {
+    fixedBody: [CARRY, CARRY, MOVE],
+    multiBody: [CARRY, CARRY, MOVE],
+    minAbsEnergyAvailable: 150,
+    minEnergyAvailable: 0.4,
+    maxMulti: setup.maxMulti,
+    maxCount: setup.maxCount,
+    maxWeight: setup.maxWeight
+};
 setup.RCL = {
     1: setup.none,
-    2: setup.default,
-    3: setup.default,
+    2: setup.low,
+    3: setup.low,
     4: setup.default,
     5: setup.default,
     6: setup.default,
