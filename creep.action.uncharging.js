@@ -68,10 +68,10 @@ action.defaultStrategy.isValidTarget = function(creep) {
             return canWithdrawEnergy(withdrawAmount);
         }
         return false;
-    }
+    };
 };
 action.defaultStrategy.canWithdrawEnergy = function(creep) {
-    const min = creep.body.carry * 25;
+    const min = creep.data.body.carry * 25;
     return function(amount) {
         return creep.sum + amount >= min;
     };
@@ -87,6 +87,9 @@ action.defaultStrategy.withdrawAmount = function(target) {
     }
     return target.sum;
 };
+action.defaultStrategy.targetPool = function(creep) {
+    return creep.room.structures.container.in;
+};
 action.defaultStrategy.targetScore = function (creep) {
     // take from closest IN container that will put us to work
     const canWithdrawEnergy = creep.getStrategyHandler([action.name],'canWithdrawEnergy',creep);
@@ -100,5 +103,5 @@ action.defaultStrategy.targetScore = function (creep) {
         let score = -creep.pos.getRangeTo(target.pos);
         if ( !canWithdrawEnergy(contFilling)) score = 0;
         return {target, score};
-    }
+    };
 };
