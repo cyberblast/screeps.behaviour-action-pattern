@@ -21,7 +21,7 @@ mod.decorateAgent = function(prototype, ...definitions) {
         if (returnVal !== undefined) {
             return returnVal;
         }
-        logError('no strategy handler for args', {agent: this.name || this.id, key, method, args, stack: new Error().stack});
+        logError('no strategy handler for args', {agent: this.name || this.id, key, method, args:args.toString(), stack: new Error().stack});
     };
     prototype._strategyCache = {};
     prototype.strategyKey = function(ids) {
