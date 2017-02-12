@@ -57,9 +57,8 @@ mod.nextAction = function(creep){
         if( this.assign(creep, Creep.action.uncharging) ) return;
         // if( this.assign(creep, Creep.action.robbing) ) return;
         if( this.assign(creep, Creep.action.picking) ) return;
-        // carrier full or everything picked
-        this.goHome(creep);
-        return;
+        // wait
+        return this.assign(creep, Creep.action.idle);
     }
     // somewhere
     else {

@@ -135,7 +135,7 @@ mod.mine = function(creep) {
                     creep.harvest(source);
                 }
             }
-        }
+        } else Creep.action.idle.assign(creep);
     }
 };
 mod.approach = function(creep){
