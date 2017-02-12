@@ -58,7 +58,9 @@ mod.nextAction = function(creep){
         // if( this.assign(creep, Creep.action.robbing) ) return;
         if( this.assign(creep, Creep.action.picking) ) return;
         // wait
-        return this.assign(creep, Creep.action.idle);
+        const flag = creep.data && creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
+        if (flag) return creep.moveTo(flag);
+        else return this.assign(creep, Creep.action.idle);
     }
     // somewhere
     else {

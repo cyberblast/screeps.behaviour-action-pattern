@@ -135,7 +135,11 @@ mod.mine = function(creep) {
                     creep.harvest(source);
                 }
             }
-        } else Creep.action.idle.assign(creep);
+        } else {
+            const flag = creep.data && creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
+            if (flag) return creep.moveTo(flag);
+            else return Creep.action.idle.assign(creep);
+        }
     }
 };
 mod.approach = function(creep){
