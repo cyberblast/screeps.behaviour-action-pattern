@@ -58,9 +58,11 @@ mod.nextAction = function(creep){
         // if( this.assign(creep, Creep.action.robbing) ) return;
         if( this.assign(creep, Creep.action.picking) ) return;
         // wait
-        const flag = creep.data && creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
-        if (flag) return creep.moveTo(flag);
-        else return this.assign(creep, Creep.action.idle);
+        if ( creep.sum === 0 ) {
+            let source = creep.pos.findClosestByRange(creep.room.sources);
+            if (creep.room && source && creep.pos.getRangeTo(source) > 3) return Creep.action.travelling.assign(creep, source);
+        }
+        return this.assign(creep, Creep.action.idle);
     }
     // somewhere
     else {
