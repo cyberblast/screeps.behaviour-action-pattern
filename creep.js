@@ -200,8 +200,15 @@ mod.extend = function(){
             // try to move.
             if( range > enoughRange ) {
                 this.honkEvade();
-                delete this.data.path;
-                this.data.path = this.getPath( targetPos, false);
+                if (this.data.path && this.data.path.length > 10) {
+                    let newPath = this.getEvadePath();
+                    if (newPath) {
+                        this.data.path = newPath;
+                    } else {
+                        delete this.data.path;
+                        this.data.path = this.getPath( targetPos, false);
+                    }
+                } else this.data.path = this.getPath( targetPos, false );
             }
             if( this.data.path && this.data.path.length > 0 ) {
                 if( this.data.path.length > 5 )
@@ -233,6 +240,72 @@ mod.extend = function(){
         if( path && path.length > 4 )
             return path.substr(4);
         else return null;
+    };
+    Creep.prototype.getEvadePath = function () {
+        let goals = [];
+        const cPos = this.pos;
+        let x = cPos.x;
+        let y = cPos.y;
+        let numSteps = 0;
+        const oldPath = this.data.path;
+        // deserialize path
+        for (let direction of oldPath) {
+            direction = +direction; // force coerce to number
+            if (direction === TOP) {
+                y++;
+            } else if (direction === TOP_RIGHT) {
+                x++;
+                y--;
+            } else if (direction === RIGHT) {
+                x++;
+            } else if (direction === BOTTOM_RIGHT) {
+                x++;
+                y++;
+            } else if (direction === BOTTOM) {
+                y++;
+            } else if (direction === BOTTOM_LEFT) {
+                x--;
+                y++;
+            } else if (direction === LEFT) {
+                x--;
+            } else if (direction === TOP_LEFT) {
+                x--;
+                y--;
+            } else {
+                // we're not supposed to be here.
+            }
+            if ( x >= 0 && x <= 49 && y >= 0 && y <= 49) {
+                goals.push(new RoomPosition(x, y, cPos.roomName));
+                if (++numSteps > 10) break;
+            } else break;
+        }
+        // find the closest point to get back on the path
+        let ret = PathFinder.search(
+            cPos, goals, {
+                maxOps: 350,
+                maxRooms: 1,
+                ignoreCreeps: false,
+                algorithm: 'dijkstra',
+                roomCallback: function(roomName) {
+                    let room = Game.rooms[roomName];
+                    if (!room) return;
+                    return room.currentCostMatrix;
+                }
+            }
+        );
+        // console.log(this.name, 'old', oldPath, goals);
+        // console.log('splice', ret.path, mod.serializePath(cPos, ret.path));
+        if (ret.incomplete) {
+            console.log('incomplete evade returned');
+        } else {
+            const end = ret.path[ret.path.length - 1];
+            let i = _.findIndex(goals, g => g.isEqualTo(end));
+            // splice together our re-route with the original path, but drop the steps we skipped
+            const newPath = mod.serializePath(cPos, ret.path) + oldPath.substr(i);
+            // console.log('new', newPath);
+            return newPath;
+        }
+        return false;
     };
     Creep.prototype.fleeMove = function() {
         if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Action:'fleeMove', Creep:'run'});
@@ -529,3 +602,33 @@ mod.register = function() {
         if (Creep.setup[setup].register) Creep.setup[setup].register(this);
     }
 };
+mod.serializePath = function(startPos, path) {
+    if (!_.isArray(path)) {
+        return;
+    }
+
+    let result = '';
+    if (!path.length) {
+        return result; // TODO adjacent pathing?
+    }
+
+    let lastPos = startPos;
+    for (let i = 0; i < path.length; i++) {
+        if (path[i].roomName === lastPos.roomName) {
+            result = result + mod.directionAtPosition(lastPos, path[i]);
+        }
+        lastPos = path[i];
+    }
+
+    return result;
+};
+const posToDirMap = [
+    [ TOP_LEFT,     TOP,    TOP_RIGHT ], // y, x
+    [ LEFT,         0,      RIGHT ],
+    [ BOTTOM_LEFT,  BOTTOM, BOTTOM_RIGHT],
+];
+mod.directionAtPosition = function(origin, position) {
+    const dirRow = posToDirMap[1 + position.y - origin.y] || [];
+    return dirRow[1 + position.x - origin.x];
+};
+
