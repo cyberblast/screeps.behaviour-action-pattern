@@ -103,8 +103,11 @@ mod.run = function(creep, params = {approach: mod.approach}) {
                         if(CHATTY) creep.say('picking', SAY_PUBLIC);
                         creep.pickup(dropped[0]);
                     } else if (source.container && source.container.sum > 0) {
-                        if(CHATTY) creep.say('withdrawing', SAY_PUBLIC);
+                        if(CHATTY) creep.say('withdraw cont', SAY_PUBLIC);
                         creep.withdraw(source.container, RESOURCE_ENERGY);
+                    } else if (!params.remote && source.link && source.link.energy > 0) {
+                        if(CHATTY) creep.say('withdraw link', SAY_PUBLIC);
+                        creep.withdraw(source.link, RESOURCE_ENERGY);
                     } else if (creep.carry.energy === 0) {
                         if(CHATTY) creep.say('waiting', SAY_PUBLIC);
                         return; // idle
