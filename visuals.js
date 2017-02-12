@@ -50,6 +50,9 @@ module.exports = class Visuals {
 			if (VISUALS.TERMINAL) {
 				Visuals.terminal(room);
 			}
+			if (VISUALS.TRANSACTIONS) {
+				Visuals.drawTransactions(room);
+			}
 			if (VISUALS.CREEP) {
 				Visuals.drawCreepPath(room);
 			}
@@ -223,6 +226,39 @@ module.exports = class Visuals {
 			}
 			vis.text('Terminal Contents', x, ++y, {align: 'left'});
 			storageObject(vis, room.terminal.store, x, y);
+		}
+	}
+	
+	static drawTransactions(room) {
+		if (room.terminal) {
+			const vis = new RoomVisual(room.name);
+			const x = room.terminal.pos.x;
+			let y = room.terminal.pos.y - 1;
+			
+			const transactions = _([...Game.market.incomingTransactions, ...Game.market.outgoingTransactions])
+				.filter({from: room.name})
+				.sortBy('time')
+				.slice(0, 2)
+				.value();
+			
+			if (transactions.length === 0) {
+				return;
+			}
+			
+			if (transactions.length === 2) {
+				y -= 0.4;
+			}
+			
+			transactions.forEach(transaction => {
+				const outgoing = transaction.sender.username === room.controller.owner.username;
+				const colour = outgoing ? '#00FF00' : '#FF0000';
+				const prefix = outgoing ? '+' : '-';
+				const text = `${prefix}${transaction.amount * transaction.order.price}`;
+				// const detailedText = `${prefix}${transaction.amount * transaction.order.price} : ${transaction.resourceType} * ${transaction.amount}`;
+				vis.text(text, x, y, {size: 0.4, color: colour,});
+				
+				y += 0.4;
+			});
 		}
 	}
 	

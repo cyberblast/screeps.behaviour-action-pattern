@@ -20,6 +20,7 @@ let mod = {
         CONTROLLER: true, // displays level, progress, and ticks to downgrade if active
         STORAGE: true, // displays storage contents
         TERMINAL: true, // displays terminal contents
+        TRANSACTIONS: true, // displays 2 most recent transactions over room terminal
         MINERAL: true, // displays mineral amount, or ticks to regen
         SOURCE: true, // displays energy amount, or ticks to regen
         CREEP: true, // draws creep paths
