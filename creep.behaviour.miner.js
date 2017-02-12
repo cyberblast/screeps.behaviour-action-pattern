@@ -121,7 +121,10 @@ mod.run = function(creep) {
     } else {
         // move inside the room so we don't block the entrance
         const flag = creep.data && creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
-        if (flag && creep.pos.getRangeTo(flag) > 3) Creep.action.travelling.assign(creep, flag);
+        if (flag && creep.pos.getRangeTo(flag) > 3) {
+            creep.moveTo(flag);
+            return Creep.action.travelling.assign(creep, flag);
+        }
     }
     return Creep.action.idle.assign(creep);
 };
