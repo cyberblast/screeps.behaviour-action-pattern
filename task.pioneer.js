@@ -73,7 +73,7 @@ mod.checkForRequiredCreeps = (flag) => {
             }, 
             { // spawn room selection params
                 targetRoom: flag.pos.roomName, 
-                minEnergyCapacity: 200, 
+                minEnergyCapacity: 400, // weight of fixedBody
                 rangeRclRatio: 2 // stronger preference of higher RCL rooms
             },
             creepSetup => { // callback onQueued
