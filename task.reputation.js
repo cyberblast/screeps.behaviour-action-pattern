@@ -37,7 +37,7 @@ const mod = {
         mod.playerMemory(username).score = score;
     },
 
-    register: () => {
+    flush: () => {
         mod._loadWhitelist();
         mod._loadScore();
     },
