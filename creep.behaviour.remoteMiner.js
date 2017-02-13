@@ -125,7 +125,7 @@ mod.approach = function(creep){
     let range = creep.pos.getRangeTo(targetPos);
     if( range > 0 ) {
         creep.drive( targetPos, 0, 0, range );
-        if( range === 1 && !creep.data.predictedRenewal ) {
+        if( range <= 2 && !creep.data.predictedRenewal ) {
             creep.data.predictedRenewal = _.min([500, 1500 - creep.ticksToLive + creep.data.spawningTime]);
         }
     }
