@@ -9,7 +9,7 @@ action.isValidTarget = function(target) {
         (target.targetOf === undefined || !_.some(target.targetOf, c =>
             (c.creepType === 'miner' || c.creepType === 'remoteMiner')
                 && c.body.work >= 5
-                && (creep.ticksToLive || CREEP_LIFE_TIME) >= (creep.data.predictedRenewal || 0)
+                && (c.ticksToLive || CREEP_LIFE_TIME) >= (c.data.predictedRenewal || 0)
             )
         ));
 };
