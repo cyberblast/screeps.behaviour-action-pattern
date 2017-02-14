@@ -11,7 +11,7 @@ action.isAddableAction = function(creep){
 };
 action.isAddableTarget = function(target, creep){ 
     // Limit to upgraders only at RCL8
-    if( target.level === 8 && creep.data.creepType != 'upgrader' ) return false;
+    if( target.level === 8 && (!creep.data || creep.data.creepType != 'upgrader') ) return false;
     return true;
 };
 action.isValidAction = function(creep){
