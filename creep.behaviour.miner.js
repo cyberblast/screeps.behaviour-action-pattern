@@ -133,7 +133,7 @@ mod.run = function(creep, params = {approach: mod.approach}) {
                 if( range === 0 ){
                     if(creep.carry.energy > ( creep.carryCapacity - ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) )))
                         creep.transfer(source.link, RESOURCE_ENERGY);
-                    creep.harvest(source);
+                    return creep.harvest(source);
                 }
             } else if( source.container && source.container.sum < source.container.storeCapacity ) {
                 if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
@@ -143,7 +143,7 @@ mod.run = function(creep, params = {approach: mod.approach}) {
                         let transfer = r => { if(creep.carry[r] > 0 ) creep.transfer(source.container, r); };
                         _.forEach(Object.keys(creep.carry), transfer);
                     }
-                    creep.harvest(source);
+                    return creep.harvest(source);
                 }
             } else {
                 if(CHATTY) creep.say('dropmining', SAY_PUBLIC);
@@ -154,7 +154,7 @@ mod.run = function(creep, params = {approach: mod.approach}) {
                         let drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
                         _.forEach(Object.keys(creep.carry), drop);
                     }
-                    creep.harvest(source);
+                    return creep.harvest(source);
                 }
             }
         // move towards our source so we're ready to take over
