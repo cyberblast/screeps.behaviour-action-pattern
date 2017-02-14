@@ -1174,8 +1174,10 @@ mod.extend = function(){
         _.forEach(this.hostiles, registerHostile);
 
         let registerHostileLeave = id => {
+            const creep = Game.getObjectById(id);
+            const stillHostile = !creep || Task.reputation.hostileOwner(creep);
             // for each known invader
-            if( !that.hostileIds.includes(id) ) { // not found anymore
+            if( !that.hostileIds.includes(id) && !stillHostile ) { // not found anymore or no longer hostile
                 // save to trigger subscribers later
                 that.goneInvader.push(id)
                 // update statistics
