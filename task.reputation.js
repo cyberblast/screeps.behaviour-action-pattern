@@ -26,15 +26,18 @@ const mod = {
         const reps = mod.cache('score');
         if( username === undefined ) {
             return reps;
-        } else if( reps[username] ) {
-            return reps[username];
+        }
+        const name = username && username.toLowerCase();
+        if( reps[name] ) {
+            return reps[name];
         } else {
-            return reps[username] = 0;
+            return reps[name] = 0;
         }
     },
     setScore: (username, score) => {
-        mod.score()[username] = score;
-        mod.playerMemory(username).score = score;
+        const name = username && username.toLowerCase();
+        mod.score()[name] = score;
+        mod.playerMemory(name).score = score;
     },
 
     flush: () => {
@@ -54,10 +57,11 @@ const mod = {
     memory: table => Task.memory(mod.name, table),
     playerMemory: username => {
         const playerMemory = mod.memory('players');
-        if( playerMemory[username] ) {
-            return playerMemory[username];
+        const name = username && username.toLowerCase();
+        if( playerMemory[name] ) {
+            return playerMemory[name];
         } else {
-            return playerMemory[username] = {};
+            return playerMemory[name] = {};
         }
     },
 
@@ -96,7 +100,7 @@ const mod = {
             whitelist = mod.killWhitelistCache();
 
             _.forEach(PLAYER_WHITELIST, function(playerName) {
-                whitelist[playerName] = true;
+                whitelist[playerName.toLowerCase()] = true;
             });
         }
     },
