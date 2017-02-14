@@ -1,6 +1,15 @@
-var action = new Creep.Action('reallocating');
+let action = new Creep.Action('reallocating');
+module.exports = action;
 action.maxPerTarget = 1;
 action.maxPerAction = 1;
+action.terminalMineralTotal = function(terminal){
+    // Minerals stored in terminal
+    return terminal.sum-terminal.store.energy;
+}
+action.terminalMineralSpace = function(terminal){
+    // Space for minerals in terminal
+    return terminal.storeCapacity-TERMINAL_ENERGY*1.05;
+}
 action.isValidAction = function(creep){
     return creep.room.storage && creep.room.terminal &&
         ( this.isValidMineralToTerminal(creep) ||
@@ -11,6 +20,8 @@ action.isValidMineralToTerminal = function(creep){
     let room = creep.room;
     let storage = room.storage;
     let terminal = room.terminal;
+    // Don't store any more minerals in the terminal or there won't be space for energy!
+    if(terminal.store.energy < TERMINAL_ENERGY && this.terminalMineralTotal(terminal) >= this.terminalMineralSpace(terminal) ) return false;
     return ( storage.store[room.mineralType] &&
         (storage.store[creep.room.mineralType] + (creep.carry[room.mineralType] || 0)) > MAX_STORAGE_MINERAL*1.05 &&
         (terminal.sum - terminal.store.energy + Math.max(terminal.store.energy, TERMINAL_ENERGY)) < terminal.storeCapacity);
@@ -19,11 +30,15 @@ action.isValidEnergyToStorage = function(creep){
     return creep.room.terminal.store.energy + creep.carry.energy > TERMINAL_ENERGY * 1.05;
 };
 action.isValidMineralToStorage = function(creep){
-    let mineral = creep.room.terminal.store[creep.room.mineralType] || 0;
-    return creep.room.terminal.sum > mineral + creep.room.terminal.store.energy;
+    let terminal = creep.room.terminal;
+    // Don't store any more minerals in the terminal or there won't be space for energy!
+    if(this.terminalMineralTotal(terminal) >= this.terminalMineralSpace(terminal)) return true;
+    let mineral = terminal.store[creep.room.mineralType] || 0;
+    return terminal.sum > mineral + terminal.store.energy;
 };
 action.isAddableAction = function(creep){
-    return creep.sum == 0 &&(!creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
+    let pop = creep.room.population;
+    return creep.sum == 0 &&(!pop || !pop.actionCount[this.name] || pop.actionCount[this.name] < this.maxPerAction);
 };
 action.isValidTarget = function(target){
     return true;
@@ -32,48 +47,53 @@ action.isAddableTarget = function(target){
     return true;
 };
 action.newTarget = function(creep){
-    if( (creep.sum == 0) == (creep.room.terminal.store.energy > TERMINAL_ENERGY*1.05 || this.isValidMineralToStorage(creep)) ) return creep.room.terminal;
+    let terminal = creep.room.terminal;
+    if( (creep.sum == 0) == (terminal.store.energy > TERMINAL_ENERGY*1.05 || this.isValidMineralToStorage(creep)) ) return terminal;
     else return creep.room.storage;
 };
 action.work = function(creep){
+    let target = creep.target;
+    let room = creep.room;
+    let storage = room.storage;
+    let terminal = room.terminal;
     var workResult = null;
-    if( creep.sum == 0 && creep.target.structureType == STRUCTURE_STORAGE ){
+    if( creep.sum == 0 && target.structureType == STRUCTURE_STORAGE && this.terminalMineralTotal(terminal) < this.terminalMineralSpace(terminal) ){
         // load: storage => terminal
-        workResult = creep.withdraw(creep.target, creep.room.mineralType);
-        this.assign(creep, creep.room.terminal);
+        workResult = creep.withdraw(target, room.mineralType);
+        this.assign(creep, terminal);
         delete creep.data.path;
-    } else if( creep.sum == 0 && creep.target.structureType == STRUCTURE_TERMINAL ) {
+    } else if( creep.sum == 0 && target.structureType == STRUCTURE_TERMINAL ) {
         // load: terminal => storage
         if( this.isValidEnergyToStorage(creep) )
-            workResult = creep.withdraw(creep.target, RESOURCE_ENERGY);
+            workResult = creep.withdraw(target, RESOURCE_ENERGY);
         else if( this.isValidMineralToStorage(creep) ){
             // TODO: get minerals != room mineral
             let withdraw = r => {
-                if( r != RESOURCE_ENERGY && r != creep.room.mineralType && creep.target.store[r] > 0 )
-                    workResult = creep.withdraw(creep.target, r);
+                if( r != RESOURCE_ENERGY && ( r != room.mineralType || this.terminalMineralTotal(terminal) > this.terminalMineralSpace(terminal) )  && target.store[r] > 0 )
+                    workResult = creep.withdraw(target, r);
             };
-            _.forEach(Object.keys(creep.target.store), withdraw);
+            _.forEach(Object.keys(target.store), withdraw);
         }
-        this.assign(creep, creep.room.storage);
+        this.assign(creep, storage);
         delete creep.data.path;
-    } else if( creep.target.structureType == STRUCTURE_TERMINAL ) {
+    } else if( target.structureType == STRUCTURE_TERMINAL ) {
         // deliver: storage => terminal
-        workResult = creep.transfer(creep.target, creep.room.mineralType);
+        workResult = creep.transfer(target, room.mineralType);
         // unregister action
         delete creep.data.actionName;
         delete creep.data.targetId;
         creep.action = null;
         creep.target = null;
         delete creep.data.path;
-    } else if( creep.target.structureType == STRUCTURE_STORAGE ) {
+    } else if( target.structureType == STRUCTURE_STORAGE ) {
         // deliver: terminal => storage
         for(let resourceType in creep.carry) {
             if( creep.carry[resourceType] > 0 ){
-                workResult = creep.transfer(creep.target, resourceType);
+                workResult = creep.transfer(target, resourceType);
                 if( workResult != OK ) break;
             }
         }
-        //workResult = creep.transfer(creep.target, RESOURCE_ENERGY);
+        //workResult = creep.transfer(target, RESOURCE_ENERGY);
         // unregister action
         if( creep.sum == creep.carry.energy ){
             delete creep.data.actionName;
@@ -94,4 +114,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(8660), SAY_PUBLIC);
 };
-module.exports = action;

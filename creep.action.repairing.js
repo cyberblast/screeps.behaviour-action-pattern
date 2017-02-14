@@ -1,4 +1,5 @@
-var action = new Creep.Action('repairing');
+let action = new Creep.Action('repairing');
+module.exports = action;
 action.targetRange = 3;
 action.maxPerTarget = 1;
 action.isValidAction = function(creep){
@@ -32,4 +33,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9874), SAY_PUBLIC);
 };
-module.exports = action;

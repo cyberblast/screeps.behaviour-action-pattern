@@ -1,4 +1,5 @@
-var setup = new Creep.Setup('healer');
+let setup = new Creep.Setup('healer');
+module.exports = setup;
 setup.minControllerLevel = 7;
 setup.globalMeasurement = true;
 setup.RCL = {
@@ -27,4 +28,3 @@ setup.RCL = {
         maxWeight: 0
     }
 };
-module.exports = setup;

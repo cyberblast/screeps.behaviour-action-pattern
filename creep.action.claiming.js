@@ -1,10 +1,15 @@
-var action = new Creep.Action('claiming');
+let action = new Creep.Action('claiming');
+module.exports = action;
 action.isValidAction = function(creep){ return true; };
 action.isValidTarget = function(target){ return !target.room || !target.owner; }; // no sight or not owned
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){
-    let flag = FlagDir.find(FLAG_COLOR.claim, creep.pos, false, FlagDir.claimMod, creep.name);
+    let flag;
+    // TODO: remove  || creep.data.destiny.flagName (temporary backward compatibility)
+    if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.targetName || creep.data.destiny.flagName];
+    if ( !flag ) flag = FlagDir.find(FLAG_COLOR.claim, creep.pos, false, FlagDir.claimMod, creep.name); 
+
     if( flag ) {
         Population.registerCreepFlag(creep, flag);
     }
@@ -43,9 +48,7 @@ action.step = function(creep){
     if( range <= this.targetRange ) {
         var workResult = this.work(creep);
         if( workResult != OK ) {
-            if( DEBUG ) logErrorCode(creep, workResult);
-            delete creep.data.actionName;
-            delete creep.data.targetId;
+            creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
         }
     }
     creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
@@ -72,4 +75,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9983), SAY_PUBLIC);
 };
-module.exports = action;

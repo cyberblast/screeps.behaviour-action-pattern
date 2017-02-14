@@ -1,4 +1,4 @@
-var Setup = function(typeName){
+let Setup = function(typeName){
     this.none = {
         fixedBody: [],
         multiBody: [],
@@ -52,7 +52,7 @@ var Setup = function(typeName){
         };
         memory.setup = this.type;
         memory.parts = this.parts(spawn.room);
-        memory.cost = Creep.Setup.bodyCosts(memory.parts);
+        memory.cost = Creep.bodyCosts(memory.parts);
         memory.mother = spawn.name;
         memory.home = spawn.pos.roomName;
         for( var son = 1; memory.name == null || Game.creeps[memory.name]; son++ ) {
@@ -61,20 +61,29 @@ var Setup = function(typeName){
         return memory;
     };
     this.isValidSetup = function(room){
-        if( room.controller.level < this.minControllerLevel )
+        let rcl = room.controller.level;
+        if( rcl < this.minControllerLevel ) {
+            if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, rcl, Setup:'isValidSetup'}, 'low RCL');
             return false;
+        }
 
-        let rcl = this.RCL[room.controller.level];
+        rcl = this.RCL[room.controller.level];
         let minAbsEnergyAvailable = this.SelfOrCall(rcl.minAbsEnergyAvailable, room);
         let minEnergyAvailable = this.SelfOrCall(rcl.minEnergyAvailable, room);
-        if( room.remainingEnergyAvailable < minAbsEnergyAvailable ||
-            room.relativeRemainingEnergyAvailable < minEnergyAvailable )
+        const absEnergy = room.remainingEnergyAvailable;
+        const energy = room.relativeRemainingEnergyAvailable;
+        if( absEnergy < minAbsEnergyAvailable ||
+            energy < minEnergyAvailable ) {
+            if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, absEnergy, energy, Setup:'isValidSetup'}, 'not enough energy');
             return false;
+        }
 
         let maxCount = this.SelfOrCall(rcl.maxCount, room);
         let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
-        if( maxCount == 0 || maxWeight == 0 )
+        if( maxCount == 0 || maxWeight == 0 ) {
+            if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, maxCount, maxWeight, Setup:'isValidSetup'}, 'too many creeps');
             return false;
+        }
         if( maxCount == null )
             maxCount = Infinity;
         if( maxWeight == null )
@@ -98,7 +107,9 @@ var Setup = function(typeName){
             existingCount = population.typeCount[this.type] || 0;
             existingWeight = population.typeWeight[this.type] || 0;
         }
-        return existingCount < maxCount && existingWeight < maxWeight;
+        const returnVal = existingCount < maxCount && existingWeight < maxWeight;
+        if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, returnVal, Setup:'isValidSetup'}, 'count:', existingCount, '<', maxCount, 'weight:', existingWeight, '<', maxWeight);
+        return returnVal;
     };
     this.existingWeight = function(room){
         let existingWeight = 0;
@@ -116,26 +127,26 @@ var Setup = function(typeName){
         }
         return existingWeight;
     };
-
-    this.multi = function(room){
-        let rcl = this.RCL[room.controller.level];
-        let fixedCosts = Creep.Setup.bodyCosts(this.SelfOrCall(rcl.fixedBody, room));
-        let multiCosts = Creep.Setup.bodyCosts(this.SelfOrCall(rcl.multiBody, room));
-        let max = this.SelfOrCall(rcl.maxMulti, room);
-        if( max == 0 || multiCosts == 0 ) return 0;
-        let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
-        if( maxWeight == null)
-            return _.min([Math.floor( (room.remainingEnergyAvailable-fixedCosts) / multiCosts), max]);
-        let existingWeight = this.existingWeight(room);
-        return Math.floor(_.min([((room.remainingEnergyAvailable-fixedCosts) / multiCosts), max,((maxWeight - existingWeight - fixedCosts) / multiCosts)]));
-    };
     this.parts = function(room){
         let rcl = this.RCL[room.controller.level];
         let fixedBody = this.SelfOrCall(rcl.fixedBody, room);
         let multiBody = this.SelfOrCall(rcl.multiBody, room);
         var parts = [];
         let min = this.SelfOrCall(rcl.minMulti, room);
-        let multi = this.multi(room);
+        let maxMulti = this.SelfOrCall(rcl.maxMulti, room);
+        let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
+        let maxMultiWeight;
+        if( maxWeight ){
+            let existingWeight = this.existingWeight(room);
+            maxMultiWeight = maxWeight - existingWeight;
+        }
+        let multi = Creep.multi(room, {
+            fixedBody, multiBody,
+            maxWeight: maxMultiWeight,
+            maxMulti: maxMulti, 
+            currentEnergy: true
+        });
+
         if( multi < (min ? min : 0) ) return parts;
         for (let iMulti = 0; iMulti < multi; iMulti++) {
             parts = parts.concat(multiBody);
@@ -144,7 +155,7 @@ var Setup = function(typeName){
             parts[parts.length] = fixedBody[iPart];
         }
         if( this.sortedParts ) {
-            parts.sort(Creep.Setup.partsComparator);
+            parts.sort(Creep.partsComparator);
             if( this.mixMoveParts )
                 parts = this.mixParts(parts);
             else if( parts.includes(HEAL) ) {
@@ -174,46 +185,35 @@ var Setup = function(typeName){
     this.maxCost = function(room){
         let c = this;
         let rcl = c.RCL[room.controller.level];
-        return (Creep.Setup.bodyCosts( c.SelfOrCall(rcl.multiBody, room) ) * c.SelfOrCall(rcl.maxMulti, room)) + (Creep.Setup.bodyCosts(c.SelfOrCall(rcl.fixedBody, room)));
+        return (Creep.bodyCosts( c.SelfOrCall(rcl.multiBody, room) ) * c.SelfOrCall(rcl.maxMulti, room)) + (Creep.bodyCosts(c.SelfOrCall(rcl.fixedBody, room)));
     };
 }
-Setup.bodyCosts = function(body){
-    let costs = 0;
-    if( body ){
-        body.forEach(function(part){
-            costs += BODYPART_COST[part];
-        });
-    }
-    return costs;
-};
-Setup.multi = function (room, fixedBody, multiBody) {
-    let fixedCosts = Creep.Setup.bodyCosts(fixedBody);
-    let multiCosts = Creep.Setup.bodyCosts(multiBody);
-    let maxParts = Math.floor((50 - fixedBody.length) / multiBody.length);
-    let maxAffordable = Math.floor((room.energyCapacityAvailable - fixedCosts) / multiCosts);
-    return _.min([maxParts, maxAffordable]);
-};
-Setup.partsComparator = function (a, b) {
-    let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, HEAL, MOVE];
-    let indexOfA = partsOrder.indexOf(a);
-    let indexOfB = partsOrder.indexOf(b);
-    return indexOfA - indexOfB;
-};
-Setup.compileBody = function (room, fixedBody, multiBody, sort = false) {
-        var parts = [];
-        let multi = Creep.Setup.multi(room, fixedBody, multiBody);
-        for (let iMulti = 0; iMulti < multi; iMulti++) {
-            parts = parts.concat(multiBody);
-        }
-        for (let iPart = 0; iPart < fixedBody.length; iPart++) {
-            parts[parts.length] = fixedBody[iPart];
-        }
-        if( sort ) parts.sort(Creep.Setup.partsComparator);            
-        if( parts.includes(HEAL) ) {
-            let index = parts.indexOf(HEAL);
-            parts.splice(index, 1);
-            parts.push(HEAL);
-        }
-        return parts;
-    },
 module.exports = Setup;
+Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
+    if( !flagFilter ) {
+        throw new Error("undefined flagFilter");
+    }
+    return function(room){
+        let max = 0;
+        let distance, flag;
+        let calcMax = flagEntry => {
+            distance = routeRange(room.name, flagEntry.roomName);
+            if( distance > maxRoomRange ) {
+                return;
+            }
+            if( !measureByHome ) {
+                max++;
+                return;
+            }
+            flag = Game.flags[flagEntry.name];
+            if( !flag.targetOf || flag.targetOf.length == 0 ) {
+                max++;
+            } else if( _.some(flag.targetOf, 'homeRoom', room.name) ) {
+                max++;
+            }
+        };
+        let flagEntries = FlagDir.filter(flagFilter);
+        flagEntries.forEach(calcMax);
+        return max;
+    };
+};

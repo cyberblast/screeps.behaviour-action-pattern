@@ -1,4 +1,5 @@
-var action = new Creep.Action('dismantling');
+let action = new Creep.Action('dismantling');
+module.exports = action;
 action.maxPerAction = 3;
 action.maxPerTarget = 3;
 action.renewTarget = false;
@@ -51,4 +52,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9850), SAY_PUBLIC);
 };
-module.exports = action;

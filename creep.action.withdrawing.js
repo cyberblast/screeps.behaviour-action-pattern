@@ -1,4 +1,5 @@
-var action = new Creep.Action('withdrawing');
+let action = new Creep.Action('withdrawing');
+module.exports = action;
 action.isValidAction = function(creep){
     return (
         creep.room.storage &&
@@ -21,4 +22,3 @@ action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9738), SAY_PUBLIC);
     if( SAY_ASSIGNMENT ) creep.say('\u{1F4E4}\u{FE0E}', SAY_PUBLIC);
 };
-module.exports = action;

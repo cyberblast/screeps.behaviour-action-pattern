@@ -1,4 +1,5 @@
-var action = new Creep.Action('recycling');
+let action = new Creep.Action('recycling');
+module.exports = action;
 action.isValidAction = () => true;
 action.isAddableAction = () => true;
 action.isAddableTarget = () => true;
@@ -20,4 +21,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9851), SAY_PUBLIC);
 };
-module.exports = action;

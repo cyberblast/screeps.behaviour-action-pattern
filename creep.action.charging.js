@@ -1,11 +1,16 @@
-var action = new Creep.Action('charging'); // store into container
+let action = new Creep.Action('charging'); // store into container
+module.exports = action;
 action.renewTarget = false;
 action.isValidAction = function(creep){ return creep.carry.energy > 0; }
 action.isAddableAction = function(creep){ return true; }
 action.isValidTarget = function(target){
-    return ( target &&
-        (( target.structureType == 'container' && target.sum < target.storeCapacity) ||
-        ( target.structureType == 'link' && target.energy < target.storeCapacity * 0.85 )));
+    if( !target ) return false;
+    if( target.structureType == 'link' ){
+        return target.energy < target.storeCapacity * 0.85;
+    } else if( target.structureType == 'container' ) {
+        return target.sum < ((target.source === true && target.controller == true) ? target.storeCapacity * MANAGED_CONTAINER_TRIGGER : target.storeCapacity);
+    }
+    return false;
 };
 action.isAddableTarget = function(target, creep){
     return (
@@ -41,11 +46,12 @@ action.newTarget = function(creep){
         let target = null;
         let maxFree = 0;
         var emptyest = o => {
-            if( !that.isAddableTarget(o, creep) ) return;
-            let free = o.storeCapacity - o.sum;
-            if( free > maxFree ){
-                maxFree = free;
-                target = o;
+            if( that.isValidTarget(o, creep) && that.isAddableTarget(o, creep) ) {
+                let free = o.storeCapacity - o.sum;
+                if( free > maxFree ){
+                    maxFree = free;
+                    target = o;
+                }
             }
         };
         _.forEach(creep.room.structures.container.out, emptyest);
@@ -56,16 +62,20 @@ action.work = function(creep){
     let workResult;
     if( creep.target.source === true && creep.target.controller == true ) {
         // don't overfill managed container'
-        let max = (creep.target.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER)) - creep.target.sum;
+        let max = (creep.target.storeCapacity * MANAGED_CONTAINER_TRIGGER) - creep.target.sum;
+        
         if( max < 1) workResult = ERR_FULL;
         else {
             let amount = _.min([creep.carry.energy, max]);
             workResult = creep.transfer(creep.target, RESOURCE_ENERGY, amount);
+            creep.target._sum += amount;
         }
     } else  workResult = creep.transfer(creep.target, RESOURCE_ENERGY);
     // unregister
     delete creep.data.actionName;
     delete creep.data.targetId;
+    creep.action = null;
+    creep.target = null;
     return workResult;
     /* container charging with minerals not supported currently
     var workResult;
@@ -86,4 +96,3 @@ action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
     if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);
 };
-module.exports = action;

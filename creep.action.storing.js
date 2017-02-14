@@ -1,11 +1,11 @@
-var action = new Creep.Action('storing');
+let action = new Creep.Action('storing');
+module.exports = action;
 action.isValidAction = function(creep){
     return (
         creep.room.storage != null &&
         creep.sum > 0 &&
         (
-            creep.data.creepType == 'hauler' ||
-            creep.data.creepType == 'privateer' ||
+            creep.data.creepType != 'worker' ||
             (
                 creep.sum > creep.carry.energy ||
                 (
@@ -74,4 +74,3 @@ action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
     if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);
 };
-module.exports = action;

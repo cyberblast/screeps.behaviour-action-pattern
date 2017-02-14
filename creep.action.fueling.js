@@ -1,4 +1,5 @@
-var action = new Creep.Action('fueling');
+let action = new Creep.Action('fueling');
+module.exports = action;
 action.maxPerTarget = 1;
 action.maxPerAction = 1;
 action.isValidAction = function(creep){
@@ -23,4 +24,3 @@ action.work = function(creep){
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say('\u{26FD}\u{FE0E}', SAY_PUBLIC);
 };
-module.exports = action;

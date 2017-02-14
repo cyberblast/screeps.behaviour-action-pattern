@@ -1,4 +1,5 @@
-var action = new Creep.Action('invading');
+let action = new Creep.Action('invading');
+module.exports = action;
 action.isValidAction = function(creep){ return FlagDir.hasInvasionFlag(); };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
@@ -153,4 +154,3 @@ action.run = {
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9876), SAY_PUBLIC);
 };
-module.exports = action;
