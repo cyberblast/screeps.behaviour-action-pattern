@@ -12,9 +12,8 @@ setup.maxMulti = function(room){
         let surplus = room.storage.store.energy - MAX_STORAGE_ENERGY[room.controller.level];
         multi += Math.ceil( surplus / 20000 ); // one more multi for each 20k surplus (+1)
     }
-    // at rcl 8 limit upgrading
-    let rclMax = ( room.controller.level == 8 ) ? CONTROLLER_MAX_UPGRADE_PER_TICK / UPGRADE_CONTROLLER_POWER : 50;
-    return Math.min(11, multi, rclMax);
+    let hardLimit = 50;
+    return Math.min(11, multi, hardLimit);
 };
 setup.maxCount = function(room){
     // Don't spawn upgrader if...
@@ -34,7 +33,6 @@ setup.maxCount = function(room){
     let sumLink = link => upgraderEnergy += link.energy;
     room.structures.links.controller.forEach(sumLink);
     if( upgraderEnergy === 0 ) return 0;
-    if( room.controller.level == 8 ) return 1;
     if( room.storage ) return Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000));
     // dont spawn a new upgrader while there are construction sites (and no storage)
     if( room.constructionSites.length > 0 ) return 0;
@@ -68,6 +66,14 @@ setup.low = {
     maxMulti: setup.maxMulti,
     maxCount: setup.maxCount
 };
+setup.level8 = {
+    fixedBody: [CARRY, MOVE, MOVE, MOVE],
+    multiBody: [WORK],
+    minAbsEnergyAvailable: 300,
+    minEnergyAvailable: 1,
+    maxMulti: CONTROLLER_MAX_UPGRADE_PER_TICK / UPGRADE_CONTROLLER_POWER,
+    maxCount: 1
+};
 setup.RCL = {
     1: setup.none,
     2: setup.low,
@@ -76,5 +82,5 @@ setup.RCL = {
     5: setup.default,
     6: setup.default,
     7: setup.default,
-    8: setup.default
+    8: setup.level8
 };
