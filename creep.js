@@ -200,15 +200,24 @@ mod.extend = function(){
             // try to move.
             if( range > enoughRange ) {
                 this.honkEvade();
-                if (this.data.path && this.data.path.length > 10) {
+                const rangeToTarget = this.pos.getRangeTo( targetPos );
+                if (rangeToTarget > 10) {
+                    if (!this.data.path) {
+                        this.data.path = this.getPath( targetPos, true );
+                    }
                     let newPath = this.getEvadePath();
                     if (newPath) {
                         this.data.path = newPath;
                     } else {
+                        // console.log(this.name, 'could not evade efficiently');
                         delete this.data.path;
                         this.data.path = this.getPath( targetPos, false);
                     }
-                } else this.data.path = this.getPath( targetPos, false );
+                } else {
+                    // console.log(this.name, 'going around creeps', rangeToTarget, targetPos);
+                    delete this.data.path;
+                    this.data.path = this.getPath( targetPos, false );
+                }
             }
             if( this.data.path && this.data.path.length > 0 ) {
                 if( this.data.path.length > 5 )
@@ -232,7 +241,6 @@ mod.extend = function(){
             if ( route.length > 0 )
                 targetPos = new RoomPosition(25,25,route[0].room);
         }
-
         let path = this.room.findPath(this.pos, targetPos, {
             serialize: true,
             ignoreCreeps: ignoreCreeps
