@@ -32,7 +32,7 @@ action.step = function(creep){
             creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
         }
     }
-    creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
+    creep.travelTo( creep.target.pos );
 };
 action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9962), SAY_PUBLIC);

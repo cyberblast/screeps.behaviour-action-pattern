@@ -107,13 +107,13 @@ action.run = {
     melee: function(creep){
         if( !creep.flee ){
             if( creep.target instanceof Flag ){
-                creep.drive( creep.target.pos, 1, 1, Infinity);
+                creep.travelTo( creep.target.pos );
                 return;
             } else if( creep.target instanceof ConstructionSite ){
-                creep.drive( creep.target.pos, 0, 0, Infinity);
+                creep.travelTo( creep.target.pos, {range:0});
                 return;
             }
-            creep.moveTo(creep.target, {reusePath: 0});
+            creep.MoveTo(creep.target, {reusePath: 0});
         }
         if( !creep.target.my )
             creep.attacking = creep.attack(creep.target) == OK;
@@ -121,10 +121,10 @@ action.run = {
     ranger: function(creep){
         if( !creep.flee ){
             if( creep.target instanceof Flag ){
-                creep.drive( creep.target.pos, 1, 1, Infinity);
+                creep.travelTo( creep.target.pos );
                 return;
             } else if( creep.target instanceof ConstructionSite ){
-                creep.drive( creep.target.pos, 0, 0, Infinity);
+                creep.travelTo( creep.target.pos, {range:0});
                 return;
             }
             var range = creep.pos.getRangeTo(creep.target);

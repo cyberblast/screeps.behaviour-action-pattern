@@ -1,5 +1,6 @@
 /* https://github.com/ScreepsOCS/screeps.behaviour-action-pattern */
 const cpuAtLoad = Game.cpu.getUsed();
+require('traveler')({exportTraveler: false, installTraveler: false, installPrototype: true, defaultStuckValue: 2});
 
 // check if a path is valid
 global.validatePath = path => {

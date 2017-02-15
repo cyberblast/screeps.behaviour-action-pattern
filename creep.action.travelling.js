@@ -14,7 +14,7 @@ action.step = function(creep){
             pos = new RoomPosition(25, 25, creep.data.travelRoom);
         }
         else pos = creep.target.pos;
-        creep.drive( pos, this.reachedRange, targetRange, Infinity );
+        creep.travelTo(pos);
     }
     if( !creep.target || creep.target.pos.roomName == creep.pos.roomName ){
         // unregister
@@ -24,7 +24,7 @@ action.step = function(creep){
         delete creep.data.targetId;
         delete creep.data.travelRoom;
     }
-}
+};
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9784), SAY_PUBLIC);
 };

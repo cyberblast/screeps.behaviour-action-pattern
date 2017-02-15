@@ -33,7 +33,7 @@ action.step = function(creep){
     if( creep.target.color ){
         if( creep.flag.pos.roomName == creep.pos.roomName )
             creep.data.targetId = null;
-        creep.drive( creep.target.pos, 0, 1, Infinity );
+        creep.travelTo(creep.target.pos);
         return;
     }
 
@@ -44,7 +44,7 @@ action.step = function(creep){
             creep.handleError({errorCode:workResult,action,target:creep.target,range,creep});
         }
     }
-    creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
+    creep.travelTo(creep.target.pos);
 };
 action.work = function(creep){
     var workResult;

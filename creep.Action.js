@@ -62,7 +62,7 @@ let Action = function(actionName){
             }
         }
         if( creep.target )
-            creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
+            creep.travelTo(creep.target.pos);
     };
     // order for the creep to execute when at target
     this.work = function(creep){

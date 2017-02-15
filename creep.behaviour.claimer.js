@@ -19,7 +19,7 @@ mod.run = function(creep) {
     if( creep.hits < creep.hitsMax ) { // creep injured. move to next owned room
         let nextHome = Room.bestSpawnRoomFor(creep.pos.roomName);
         if( nextHome )
-            creep.drive( nextHome.controller.pos, 3, 5);
+            creep.travelTo( nextHome.controller.pos );
     }
     if( DEBUG && TRACE ) trace('Behaviour', {creepName:creep.name, run:creep.action.name, [mod.name]: 'run', Behaviour:mod.name});
 };
