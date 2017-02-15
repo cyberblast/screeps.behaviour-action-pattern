@@ -17,9 +17,14 @@ mod.run = function(creep) {
         logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
     }
     if( creep.hits < creep.hitsMax ) { // creep injured. move to next owned room
-        let nextHome = Room.bestSpawnRoomFor(creep.pos.roomName);
-        if( nextHome )
-            creep.travelTo( nextHome.controller.pos );
+        if (creep.data) {
+            if (!creep.data.nearestHome || !Game.rooms[creep.data.nearestHome]) creep.data.nearestHome = Room.bestSpawnRoomFor(creep.pos.roomName);
+            if (creep.data.nearestHome) {
+                let c = Game.rooms[creep.data.nearestHome].controller;
+                let range = creep.pos.getRangeTo(c);
+                if (range > 1) creep.travelTo( c.pos );
+            }
+        }
     }
     if( DEBUG && TRACE ) trace('Behaviour', {creepName:creep.name, run:creep.action.name, [mod.name]: 'run', Behaviour:mod.name});
 };

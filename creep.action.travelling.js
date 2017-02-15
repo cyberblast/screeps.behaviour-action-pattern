@@ -14,7 +14,7 @@ action.step = function(creep){
             pos = new RoomPosition(25, 25, creep.data.travelRoom);
         }
         else pos = creep.target.pos;
-        creep.travelTo(pos);
+        creep.travelTo(pos, {range:targetRange});
     }
     if( !creep.target || creep.target.pos.roomName == creep.pos.roomName ){
         // unregister

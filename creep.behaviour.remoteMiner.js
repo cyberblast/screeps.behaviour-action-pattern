@@ -142,7 +142,7 @@ mod.approach = function(creep){
     let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.destiny.room);
     let range = creep.pos.getRangeTo(targetPos);
     if( range > 0 ) {
-        creep.drive( targetPos, 0, 0, range );
+        creep.travelTo( targetPos, {range:0} );
         if( range <= 2 && !creep.data.predictedRenewal ) {
             creep.data.predictedRenewal = _.min([500, 1500 - creep.ticksToLive + creep.data.spawningTime]);
         }

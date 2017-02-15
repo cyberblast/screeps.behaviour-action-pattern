@@ -183,6 +183,7 @@ module.exports = function(globalOpts = {}){
                     travelData.stuck++;
                 }
                 else {
+                    creep.room.recordMove(creep);
                     travelData.stuck = 0;
                 }
             }
