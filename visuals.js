@@ -3,7 +3,8 @@ module.exports = class Visuals {
 	static run() {
 		for (let roomName in Game.rooms) {
 			const room = Game.rooms[roomName];
-			if (!room.my) continue; // Skip rooms not owned by you
+			if (!ROOM_VISUALS_ALL && !room.my) continue;
+			if (!room.controller) continue;
 			
 			if (Memory.heatmap === undefined) Memory.heatmap = false;
 			
@@ -69,9 +70,21 @@ module.exports = class Visuals {
 		// RCL
 		x = bufferWidth;
 		vis.rect(x, ++y - 0.75, sectionWidth, 1, BAR_STYLE);
-		const RCL_PERCENTAGE = room.controller.progress / room.controller.progressTotal;
+		let text;
+		let RCL_PERCENTAGE;
+		if (room.controller.level === 8) {
+			RCL_PERCENTAGE = 1;
+			text = `RCL: 8`;
+		} else if (room.controller.reservation) {
+			RCL_PERCENTAGE = 0;
+			text = `Reserved: ${room.controller.reservation.ticksToEnd}`;
+		} else {
+			RCL_PERCENTAGE = room.controller.progress / room.controller.progressTotal;
+			text = `RCL: ${room.controller.level} (${(RCL_PERCENTAGE * 100).toFixed(2)}%)`;
+		}
 		vis.rect(x, y - 0.75, RCL_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(RCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
-		vis.text(`RCL: ${room.controller.level} (${(RCL_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
+		vis.text(text, x + sectionWidth / 2, y);
+		
 		if (VISUALS.ROOM_GLOBAL) {
 			// GCL
 			x = bufferWidth * 2 + sectionWidth;
@@ -117,10 +130,15 @@ module.exports = class Visuals {
 		}
 		
 		// Display Creep Count, Energy Available
-		vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
-		const ENERGY_PERCENTAGE = room.energyAvailable / room.energyCapacityAvailable;
-		vis.rect(x, y - 0.75, ENERGY_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(ENERGY_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
-		vis.text(`Energy: ${room.energyAvailable}/${room.energyCapacityAvailable} (${(ENERGY_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
+		if (!room.controller.reservation) {
+			vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
+			const ENERGY_PERCENTAGE = room.energyAvailable / room.energyCapacityAvailable;
+			vis.rect(x, y - 0.75, ENERGY_PERCENTAGE * sectionWidth, 1, {
+				fill: getColourByPercentage(ENERGY_PERCENTAGE, true),
+				opacity: BAR_STYLE.opacity
+			});
+			vis.text(`Energy: ${room.energyAvailable}/${room.energyCapacityAvailable} (${(ENERGY_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
+		}
 	}
 	
 	static drawSpawnInfo(spawn) {
@@ -156,11 +174,23 @@ module.exports = class Visuals {
 		const BASE_X = controller.pos.x + 1;
 		let y = controller.pos.y - 0.5;
 		const style = {align: 'left', size: 0.4,};
-		vis.text(`L: ${controller.level}`, BASE_X, y, style);
-		vis.text(`P: ${formatNum(controller.progress)}/${formatNum(controller.progressTotal)} (${(controller.progress / controller.progressTotal * 100).toFixed(2)}%)`, BASE_X, y += 0.4, style);
-		if (controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[controller.level]) {
+		let line0 = `L: ${controller.level}`;
+		let line1 = `P: ${formatNum(controller.progress)}/${formatNum(controller.progressTotal)} (${(controller.progress / controller.progressTotal * 100).toFixed(2)}%)`;
+		let line2 = `D: ${formatNum(controller.ticksToDowngrade)}`;
+		if (controller.level === 8) {
+			line1 = undefined;
+		} else if (controller.reservation) {
+			line0 = 'L: Reserved';
+			line1 = `P: ${controller.reservation.username}`;
+			line2 = `D: ${controller.reservation.ticksToEnd}`;
+		}
+		vis.text(line0, BASE_X, y, style);
+		if (line1) {
+			vis.text(line1, BASE_X, y += 0.4, style);
+		}
+		if (controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[controller.level] || controller.reservation) {
 			let downgradeStyle = Object.assign({}, style, {color: '#FF0000'});
-			vis.text(`D: ${formatNum(controller.ticksToDowngrade)}`, BASE_X, y += 0.4, downgradeStyle);
+			vis.text(line2, BASE_X, y += 0.4, downgradeStyle);
 		}
 	}
 	
