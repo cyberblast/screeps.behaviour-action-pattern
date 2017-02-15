@@ -245,6 +245,7 @@ module.exports.loop = function () {
     FlagDir.flush();
     Population.flush();
     Room.flush();
+    Task.flush();
     // custom flush
     if( global.mainInjection.flush ) global.mainInjection.flush();
 
