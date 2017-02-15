@@ -169,7 +169,7 @@ module.exports = class Visuals {
 		let weakest = _(room.find(FIND_STRUCTURES)).filter(s => s.structureType === type).min(s => s.hits);
 		if (weakest && weakest.pos) {
 			vis.circle(weakest.pos.x, weakest.pos.y, {radius: 0.4, fill: '#FF0000', opacity: 0.3, strokeWidth: 0,});
-			vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 0.5, weakest.pos.y - 0.1, {align: 'left', size: 0.4,});
+			vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, weakest.pos.y - 0.1, {align: 'left', size: 0.4,});
 		}
 	}
 	
