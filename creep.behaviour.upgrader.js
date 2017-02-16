@@ -43,9 +43,10 @@ mod.run = function(creep) {
                 };
                 spots = spots.concat(Room.fieldsInRange(args));
             };
-            if (creep.room.structures.container.controller) creep.room.structures.container.controller.forEach(getSpots);
             if (creep.room.structures.links.controller) creep.room.structures.links.controller.forEach(getSpots);
-            return spots;
+            if (spots.length) return spots; // prefer working next to a link
+            if (creep.room.structures.container.controller) creep.room.structures.container.controller.forEach(getSpots);
+            return spots; // containers are fine too
         };
         let spots = determineSpots();
         if( spots.length > 0 ){
@@ -82,8 +83,8 @@ mod.run = function(creep) {
         if( creep.room.controller && creep.pos.getRangeTo(creep.room.controller) <= 3){
             let carryThreshold = (creep.data.body&&creep.data.body.work ? creep.data.body.work : (creep.carryCapacity/2));
             if( creep.carry.energy <= carryThreshold ){
-                let store = creep.room.structures.links.controller.find(l => l.energy > 0);
-                if( !store ) store = creep.room.structures.container.controller.find(l => l.store.energy > 0);
+                let store = _.find(creep.room.structures.links.controller, s => s.energy > 0 && creep.pos.isNearTo(s));
+                if( !store ) store = _.find(creep.room.structures.container.controller, s => s.store[RESOURCE_ENERGY] > 0 && creep.pos.isNearTo(s));
                 if( store ) creep.withdraw(store, RESOURCE_ENERGY);
             }
             creep.controllerSign();
