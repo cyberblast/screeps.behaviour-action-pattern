@@ -845,36 +845,40 @@ mod.extend = function(){
             return find.apply(this, arguments);
     };
 
+    Room.routeCallback = function(targetRoomName, checkOwner, preferHighway) {
+        return function(roomName) {
+            if( roomName !== targetRoomName && ROUTE_ROOM_COST[roomName]) {
+                return ROUTE_ROOM_COST[roomName];
+            }
+            let isHighway = false;
+            if( preferHighway ){
+                let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+                isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
+            }
+            let isMyOrNeutralRoom = false;
+            if( checkOwner ){
+                let room = Game.rooms[roomName];
+                isMyOrNeutralRoom = room &&
+                    room.controller &&
+                    (room.controller.my ||
+                    (room.controller.owner === undefined));
+            }
+
+            if (isMyOrNeutralRoom || roomName == targetRoomName)
+                return 1;
+            else if (isHighway)
+                return 3;
+            else if( Game.map.isRoomAvailable(roomName))
+                return (checkOwner || preferHighway) ? 11 : 1;
+            return Infinity;
+        };
+    };
+
     Room.prototype.findRoute = function(targetRoomName, checkOwner = true, preferHighway = true){
         if (this.name == targetRoomName)  return [];
 
         return Game.map.findRoute(this, targetRoomName, {
-            routeCallback(roomName) {
-                if( roomName !== targetRoomName && ROUTE_ROOM_COST[roomName]) {
-                    return ROUTE_ROOM_COST[roomName];
-                }
-                let isHighway = false;
-                if( preferHighway ){
-                    let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
-                    isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
-                }
-                let isMyOrNeutralRoom = false;
-                if( checkOwner ){
-                    let room = Game.rooms[roomName];
-                    isMyOrNeutralRoom = room &&
-                        room.controller &&
-                        (room.controller.my ||
-                        (room.controller.owner === undefined));
-                }
-
-                if (isMyOrNeutralRoom || roomName == targetRoomName)
-                    return 1;
-                else if (isHighway)
-                    return 3;
-                else if( Game.map.isRoomAvailable(roomName))
-                    return (checkOwner || preferHighway) ? 11 : 1;
-                return Infinity;
-            }
+            routeCallback: Room.routeCallback(targetRoomName, checkOwner, preferHighway)
         });
     };
 
