@@ -2,10 +2,9 @@ let mod = {};
 module.exports = mod;
 mod.name = 'remoteMiner';
 mod.run = function(creep) {
-    let oldTargetId = creep.data.targetId;
     // assign Action
-    if( creep.room.name == creep.data.destiny.room ){
-        // if we're there, be a miner.
+    if( creep.room.name == creep.data.destiny.room || creep.data.determinatedTarget ){
+        // if we're there (or have been), be a miner.
         this.mine(creep);
         return;
     } else {

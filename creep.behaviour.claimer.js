@@ -20,9 +20,11 @@ mod.run = function(creep) {
         if (creep.data) {
             if (!creep.data.nearestHome || !Game.rooms[creep.data.nearestHome]) creep.data.nearestHome = Room.bestSpawnRoomFor(creep.pos.roomName);
             if (creep.data.nearestHome) {
-                let c = Game.rooms[creep.data.nearestHome].controller;
-                let range = creep.pos.getRangeTo(c);
-                if (range > 1) creep.travelTo( c.pos );
+                let room = Game.rooms[creep.data.nearestHome];
+                if (room) {
+                    let range = creep.pos.getRangeTo(room.controller);
+                    if (range > 1) creep.travelTo( room.controller.pos );
+                }
             }
         }
     }
