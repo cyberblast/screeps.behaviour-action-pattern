@@ -26,7 +26,7 @@ mod.run = function(creep) {
     }
 
     if( source ) {
-        if( !creep.action ) Population.registerAction(creep, Creep.action.harvesting, source);
+        if (!creep.action || creep.action.name !== 'harvesting') Population.registerAction(creep, Creep.action.harvesting, source);
         if( !creep.data.determinatedSpot ) {
             let args = {
                 spots: [{
