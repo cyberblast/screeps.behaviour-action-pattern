@@ -167,5 +167,4 @@ mod.run = function(creep, params = {approach: mod.approach}) {
             return Creep.action.travelling.assign(creep, flag);
         }
     }
-    return Creep.action.idle.assign(creep);
 };
