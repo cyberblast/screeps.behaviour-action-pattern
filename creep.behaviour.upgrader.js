@@ -26,6 +26,7 @@ mod.run = function(creep) {
     if( !creep.action ) Population.registerAction(creep, Creep.action.upgrading, creep.room.controller);
     if( !creep.data.determinatedSpot ) {
         let determineSpots = (ignoreSources=false) => {
+            let spots = [];
             let getSpots = s => {
                 let args = {
                     spots: [{
@@ -44,6 +45,7 @@ mod.run = function(creep) {
             };
             if (creep.room.structures.container.controller) creep.room.structures.container.controller.forEach(getSpots);
             if (creep.room.structures.links.controller) creep.room.structures.links.controller.forEach(getSpots);
+            return spots;
         };
         let spots = determineSpots();
         if( spots.length > 0 ){
