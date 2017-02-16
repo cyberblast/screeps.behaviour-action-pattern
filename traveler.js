@@ -334,10 +334,13 @@ module.exports = function(globalOpts = {}){
             global.travelerTick = Game.time;
         }
 
-        Creep.prototype.travelTo = function (destination, options) {
+        Creep.prototype.travelTo = function (destination, options = {}) {
             if(global.traveler && global.travelerTick !== Game.time){
                 global.traveler = new Traveler();
             }
+            const preferHighway = _.isUndefined(options.preferHighway) || options.preferHighway;
+            const allowHostile = _.isUndefined(options.allowHostile) ? false : options.allowHostile;
+            if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(destination.roomName, allowHostile, preferHighway);
             return traveler.travelTo(this, destination, options);
         };
     }
