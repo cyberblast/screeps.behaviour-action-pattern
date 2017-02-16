@@ -41,12 +41,16 @@ mod.run = function(creep) {
                     where: pos => !_.some(pos.lookFor(LOOK_CREEPS), invalidCreep) && (ignoreSources || pos.findInRange(creep.room.sources, 1).length === 0),
                     roomName: creep.pos.roomName
                 };
-                spots = spots.concat(Room.fieldsInRange(args));
+                return Room.fieldsInRange(args);
             };
-            if (creep.room.structures.links.controller) creep.room.structures.links.controller.forEach(getSpots);
-            if (spots.length) return spots; // prefer working next to a link
-            if (creep.room.structures.container.controller) creep.room.structures.container.controller.forEach(getSpots);
-            return spots; // containers are fine too
+            let linkSpots = creep.room.structures.links.controller ? _.flatten(_.map(creep.room.structures.links.controller, getSpots)) : [];
+            let containerSpots = creep.room.structures.container.controller ? _.flatten(_.map(creep.room.structures.container.controller, getSpots)) : [];
+            // priority = close to both > close to link only > close to container only
+            if (linkSpots.length && containerSpots.length) {
+                let both = _.filter(linkSpots, l => _.some(containerSpots, c => c.isEqualTo(l)));
+                return both.length ? both : linkSpots;
+            }
+            return linkSpots.length ? linkSpots : containerSpots;
         };
         let spots = determineSpots();
         if( spots.length > 0 ){
