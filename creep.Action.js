@@ -60,12 +60,11 @@ let Action = function(actionName){
                 creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
                 return;
             }
-            creep.target = null;
-            this.assign(creep);
-            range = creep.pos.getRangeTo(creep.target);
         }
-        if( creep.target )
+        if( creep.target ) {
+            range = creep.pos.getRangeTo(creep.target);
             creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
+        }
     };
     // order for the creep to execute when at target
     this.work = function(creep){

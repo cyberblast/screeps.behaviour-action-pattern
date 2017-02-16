@@ -25,7 +25,12 @@ action.newTarget = function(creep){
     });
 };
 action.work = function(creep){
-    return creep.transfer(creep.target, RESOURCE_ENERGY);
+    let result = creep.transfer(creep.target, RESOURCE_ENERGY);
+    if (result == OK) {
+        creep.target = null;
+        this.assign(creep);
+    }
+    return result;
 };
 action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
