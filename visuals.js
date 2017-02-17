@@ -286,7 +286,7 @@ module.exports = class Visuals {
 	static drawCreepPath(room) {
 		const vis = new RoomVisual(room.name);
 		room.creeps.forEach(creep => {
-			if (creep.memory && creep.memory._travel) {
+			if (creep.memory && creep.memory._travel && creep.memory._travel.path) {
 				const path = creep.memory._travel.path.substr(1);
 				const style = Visuals.creepPathStyle(creep);
 				let x = creep.pos.x;
