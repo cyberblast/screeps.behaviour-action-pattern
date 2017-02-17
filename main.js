@@ -218,8 +218,8 @@ global.install = () => {
     if( global.mainInjection.extend ) global.mainInjection.extend();
 };
 global.install();
-
 require('traveler')({exportTraveler: false, installTraveler: false, installPrototype: true, defaultStuckValue: 2, reportThreshold: TRAVELER_THRESHOLD});
+
 let cpuAtFirstLoop;
 module.exports.loop = function () {
     const cpuAtLoop = Game.cpu.getUsed();
