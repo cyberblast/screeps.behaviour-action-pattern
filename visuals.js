@@ -253,10 +253,16 @@ module.exports = class Visuals {
 			
 			transactions.forEach(transaction => {
 				const outgoing = transaction.sender.username === room.controller.owner.username;
+				const toSelf = transaction.sender.username === transaction.recipient.username;
 				const colour = outgoing ? '#00FF00' : '#FF0000';
 				const prefix = outgoing ? '+' : '-';
-				const text = `${prefix}${transaction.amount * transaction.order.price}`;
-				// const detailedText = `${prefix}${transaction.amount * transaction.order.price} : ${transaction.resourceType} * ${transaction.amount}`;
+				let text = '';
+				if ( toSelf ) {
+				    text = `${transaction.to} : ${transaction.amount} ${transaction.resourceType}`;
+				} else {
+				    text = `${prefix}${transaction.amount * transaction.order.price}`;
+				}
+				//const detailedText = `${prefix}${transaction.amount * transaction.order.price} : ${transaction.resourceType} * ${transaction.amount}`;
 				vis.text(text, x, y, {size: 0.4, color: colour,});
 				
 				y += 0.4;
