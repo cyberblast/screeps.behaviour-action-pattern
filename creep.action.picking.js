@@ -53,6 +53,16 @@ action.work = function(creep){
                 return result;
             }
         }
+        // Check for containers to uncharge
+        if( creep.sum < creep.carryCapacity) {
+            let containers = creep.pos.findInRange(creep.room.structures.container.in, 2, {
+               filter: (o) => Creep.action.uncharging.isValidTarget(o, creep)
+            });
+            if ( containers && containers.length > 0 ) {
+                Creep.action.uncharging.assign(creep, containers[0]);
+                return result;
+            }
+        }
         // unregister
         delete creep.data.actionName;
         delete creep.data.targetId;

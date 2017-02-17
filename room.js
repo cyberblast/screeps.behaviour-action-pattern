@@ -1216,8 +1216,10 @@ mod.extend = function(){
         _.forEach(this.hostiles, registerHostile);
 
         let registerHostileLeave = id => {
+            const creep = Game.getObjectById(id);
+            const stillHostile = !creep || Task.reputation.hostileOwner(creep);
             // for each known invader
-            if( !that.hostileIds.includes(id) ) { // not found anymore
+            if( !that.hostileIds.includes(id) && !stillHostile ) { // not found anymore or no longer hostile
                 // save to trigger subscribers later
                 that.goneInvader.push(id)
                 // update statistics
@@ -1297,7 +1299,7 @@ mod.execute = function() {
     let triggerNewInvaders = creep => {
         // create notification
         let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-        if( DEBUG || NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.room.my) || NOTIFICATE_HOSTILES ) logSystem(creep.pos.roomName, `Hostile intruder (${bodyCount}) from "${creep.owner.username}.`);
+        if( DEBUG || NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.room.my) || NOTIFICATE_HOSTILES ) logSystem(creep.pos.roomName, `Hostile intruder (${bodyCount}) from "${creep.owner.username}".`);
         if( NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.owner.username !== 'Invader' && creep.room.my) || (NOTIFICATE_HOSTILES && creep.owner.username !== 'Invader') ){
             Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${creep.pos.roomName} at ${toDateTimeString(toLocalDate(new Date()))}`);
         }

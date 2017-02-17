@@ -1,5 +1,7 @@
 # Open Collaboration Society
 
+VERSION 0.6.0 - February 2017
+
 [![slack](https://img.shields.io/badge/chat-on%20slack-blue.svg)](https://screeps.slack.com/messages/ocs/)
 
 We are also forming a [screeps game](https://screeps.com) player alliance, the Open Collaboration Society [OCS].  

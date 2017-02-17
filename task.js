@@ -1,8 +1,8 @@
 let mod = {};
 module.exports = mod;
-// register tasks (hook up into events)
-mod.register = function () {
-    let tasks = [
+// load task memory & flush caches
+mod.flush = function () {
+    const tasks = [
         Task.guard,
         Task.defense,
         Task.claim,
@@ -13,10 +13,30 @@ mod.register = function () {
         Task.robbing,
         Task.reputation,
     ];
-    var loop = task => {
-        task.register();
-    };
-    _.forEach(tasks, loop);
+    for (let i = tasks.length - 1; i >= 0; i--) {
+        if (tasks[i].flush) {
+            tasks[i].flush();
+        }
+    }
+};
+// register tasks (hook up into events)
+mod.register = function () {
+    const tasks = [
+        Task.guard,
+        Task.defense,
+        Task.claim,
+        Task.reserve,
+        Task.mining,
+        Task.pioneer,
+        Task.attackController,
+        Task.robbing,
+        Task.reputation,
+    ];
+    for (let i = tasks.length - 1; i >= 0; i--) {
+        if (tasks[i].register) {
+            tasks[i].register();
+        }
+    }
 };
 mod.memory = (task, s) => { // task:  (string) name of the task, s: (string) any selector for that task, could be room name, flag name, enemy name
     if( !Memory.tasks ) Memory.tasks = {};

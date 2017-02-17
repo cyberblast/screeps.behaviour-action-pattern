@@ -6,8 +6,12 @@ action.isValidAction = function(creep){
 };
 action.isValidTarget = function(target) {
     return (target !== null && target.energy !== null && target.energy > 0 &&
-        (target.targetOf === undefined || !_.some(target.targetOf,
-            c => (c.creepType === 'miner' || c.creepType === 'remoteMiner') && c.body.work >= 5)));
+        (target.targetOf === undefined || !_.some(target.targetOf, c =>
+            (c.creepType === 'miner' || c.creepType === 'remoteMiner')
+                && c.body.work >= 5
+                && (c.ticksToLive || CREEP_LIFE_TIME) >= (c.data && c.data.predictedRenewal || 0)
+            )
+        ));
 };
 action.isAddableTarget = function(target, creep){
     return (
