@@ -95,8 +95,13 @@ mod.run = function(creep) {
             if( creep.carry.energy <= carryThreshold ){
                 let store = _.find(creep.room.structures.links.controller, s => s.energy > 0 && creep.pos.isNearTo(s));
                 if( !store ) store = _.find(creep.room.structures.container.controller, s => s.store[RESOURCE_ENERGY] > 0 && creep.pos.isNearTo(s));
-                if( !store ) store = creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] > 0 && creep.pos.isNearTo(creep.room.storage);
-                if( !store ) store = creep.room.terminal && creep.room.terminal.store[RESOURCE_ENERGY] > 0 && creep.pos.isNearTo(creep.room.terminal);
+                if( !store ) {
+                    store = creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] > MIN_STORAGE_ENERGY[creep.room.controller.level] &&
+                        creep.pos.isNearTo(creep.room.storage);
+                }
+                if( !store ) {
+                    store = creep.room.terminal && creep.room.terminal.store[RESOURCE_ENERGY] > 0.5 * TERMINAL_ENERGY && creep.pos.isNearTo(creep.room.terminal);
+                }
                 if( store ) creep.withdraw(store, RESOURCE_ENERGY);
             }
             creep.controllerSign();
