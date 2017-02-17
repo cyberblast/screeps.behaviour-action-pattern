@@ -235,7 +235,8 @@ module.exports = class Visuals {
 			const x = room.terminal.pos.x;
 			let y = room.terminal.pos.y - 1;
 			
-			const transactions = _([...Game.market.incomingTransactions, ...Game.market.outgoingTransactions])
+			const transactions = _(Game.market.incomingTransactions)
+				.concat(Game.market.outgoingTransactions)
 				.filter(transaction => transaction.from === room.name || transaction.to === room.name)
 				.sortBy('time')
 				.reverse()
