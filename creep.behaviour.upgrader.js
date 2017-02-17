@@ -45,12 +45,18 @@ mod.run = function(creep) {
             };
             let linkSpots = creep.room.structures.links.controller ? _.flatten(_.map(creep.room.structures.links.controller, getSpots)) : [];
             let containerSpots = creep.room.structures.container.controller ? _.flatten(_.map(creep.room.structures.container.controller, getSpots)) : [];
-            // priority = close to both > close to link only > close to container only
-            if (linkSpots.length && containerSpots.length) {
-                let both = _.filter(linkSpots, l => _.some(containerSpots, c => c.isEqualTo(l)));
+            let storageSpots = creep.room.storage ? getSpots(creep.room.storage) : [];
+            let terminalSpots = creep.room.terminal ? getSpots(creep.room.terminal) : [];
+            // priority = close to both link and a form of storage > close to link only > close to a form of storage only
+            if (linkSpots.length) {
+                let both = [];
+                if (both.length === 0 && containerSpots.length) both = _.filter(linkSpots, l => _.some(containerSpots, c => c.isEqualTo(l)));
+                if (both.length === 0 && storageSpots.length) both = _.filter(linkSpots, l => _.some(storageSpots, c => c.isEqualTo(l)));
+                if (both.length === 0 && terminalSpots.length) both = _.filter(linkSpots, l => _.some(terminalSpots, c => c.isEqualTo(l)));
                 return both.length ? both : linkSpots;
             }
-            return linkSpots.length ? linkSpots : containerSpots;
+            // priority: containers > storage > terminal
+            return containerSpots.length ? containerSpots : (storageSpots.length ? storageSpots : terminalSpots);
         };
         let spots = determineSpots();
         if( spots.length > 0 ){
@@ -89,6 +95,8 @@ mod.run = function(creep) {
             if( creep.carry.energy <= carryThreshold ){
                 let store = _.find(creep.room.structures.links.controller, s => s.energy > 0 && creep.pos.isNearTo(s));
                 if( !store ) store = _.find(creep.room.structures.container.controller, s => s.store[RESOURCE_ENERGY] > 0 && creep.pos.isNearTo(s));
+                if( !store ) store = creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY] > 0 && creep.pos.isNearTo(creep.room.storage);
+                if( !store ) store = creep.room.terminal && creep.room.terminal.store[RESOURCE_ENERGY] > 0 && creep.pos.isNearTo(creep.room.terminal);
                 if( store ) creep.withdraw(store, RESOURCE_ENERGY);
             }
             creep.controllerSign();
