@@ -288,9 +288,10 @@ module.exports = class Visuals {
 	
 	static drawLabs(room) {
 		const vis = new RoomVisual(room.name);
-		for (let lab of room.labs) {
+		const labs = _.map(room.memory.labs, l => Game.getObjectById(l.id));
+		for (let lab of labs) {
 			if (lab.energy || lab.mineralAmount || lab.cooldown) {
-				const x = lab.pos.x;
+				const x = lab.pos.x + 0.8;
 				let y = lab.pos.y - 0.5;
 				if (lab.energy) {
 					vis.text(`E: ${formatNum(lab.energy)}`, x, y, {align: 'left', size: 0.4, color: getResourceColour(RESOURCE_ENERGY)});
