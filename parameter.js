@@ -22,7 +22,7 @@ let mod = {
         STORAGE: true, // displays storage contents
         TERMINAL: true, // displays terminal contents
         TRANSACTIONS: true, // displays 2 most recent transactions over room terminal
-	    LABS: true, // displays lab energy, mineral, or cooldown
+        LABS: true, // displays lab energy, mineral, or cooldown
         MINERAL: true, // displays mineral amount, or ticks to regen
         SOURCE: true, // displays energy amount, or ticks to regen
         CREEP: true, // draws creep paths
