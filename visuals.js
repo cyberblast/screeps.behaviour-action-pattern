@@ -53,6 +53,9 @@ module.exports = class Visuals {
 			if (VISUALS.TRANSACTIONS) {
 				Visuals.drawTransactions(room);
 			}
+			if (VISUALS.LABS) {
+				Visuals.drawLabs(room);
+			}
 			if (VISUALS.CREEP) {
 				Visuals.drawCreepPath(room);
 			}
@@ -202,7 +205,20 @@ module.exports = class Visuals {
 		let weakest = _(room.find(FIND_STRUCTURES)).filter(s => s.structureType === type).min(s => s.hits);
 		if (weakest && weakest.pos) {
 			vis.circle(weakest.pos.x, weakest.pos.y, {radius: 0.4, fill: '#FF0000', opacity: 0.3, strokeWidth: 0,});
-			vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, weakest.pos.y - 0.1, {align: 'left', size: 0.4,});
+			let y = weakest.pos.y - 0.5;
+			const look = weakest.pos.lookFor(LOOK_STRUCTURES);
+			const spawns = _.find(look, o => o instanceof StructureSpawn && o.spawning);
+			if (spawns) {
+				y += 0.4;
+			} else {
+				const labs = _.find(look, o => o instanceof StructureLab);
+				if (labs) {
+					if (labs.energy) y += 0.4;
+					if (labs.mineralAmount) y += 0.4;
+					if (labs.cooldown) y += 0.4;
+				}
+			}
+			vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, y, {align: 'left', size: 0.4,});
 		}
 	}
 	
@@ -267,6 +283,25 @@ module.exports = class Visuals {
 				
 				y += 0.4;
 			});
+		}
+	}
+	
+	static drawLabs(room) {
+		const vis = new RoomVisual(room.name);
+		for (let lab of room.labs) {
+			if (lab.energy || lab.mineralAmount || lab.cooldown) {
+				const x = lab.pos.x;
+				let y = lab.pos.y - 0.5;
+				if (lab.energy) {
+					vis.text(`E: ${formatNum(lab.energy)}`, x, y, {align: 'left', size: 0.4, color: getResourceColour(RESOURCE_ENERGY)});
+				}
+				if (lab.mineralAmount) {
+					vis.text(`M: ${lab.mineralType} (${formatNum(lab.mineralAmount)})`, x, y += 0.4, {align: 'left', size: 0.4, color: getResourceColour(lab.mineralType)});
+				}
+				if (lab.cooldown) {
+					vis.text(`C: ${lab.cooldown}`, x, y += 0.4, {align: 'left', size: 0.4, color: '#FF0000'});
+				}
+			}
 		}
 	}
 	
