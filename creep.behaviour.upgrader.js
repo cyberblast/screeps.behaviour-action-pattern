@@ -14,7 +14,7 @@ mod.approach = function(creep){
                 delete creep.data.determinatedSpot;
             }
         }
-        creep.traveTo( targetPos, {range:0} );
+        creep.travelTo( targetPos, {range:0} );
     }
     return range;
 };
