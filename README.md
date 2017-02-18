@@ -1,6 +1,6 @@
 # Open Collaboration Society
 
-VERSION 0.6.1 - February 2017
+VERSION 0.6.2 - February 2017
 
 [![slack](https://img.shields.io/badge/chat-on%20slack-blue.svg)](https://screeps.slack.com/messages/ocs/)
 
