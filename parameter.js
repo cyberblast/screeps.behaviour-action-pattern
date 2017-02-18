@@ -5,6 +5,7 @@ let mod = {
     SAY_ASSIGNMENT: true, // say a symbol representing the assiged action
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details, use false not undefined to unset
+    DEBUG_LOGISTICS: false, // console log notes from hauler creeps running action.reallocating
     TRACE: false, // use Memory.debugTrace for low-level information
     GRAFANA: false, // track for Grafana data
     GRAFANA_INTERVAL: 3, // loops between Grafana tracking - No lower than 3.
@@ -51,6 +52,7 @@ let mod = {
         8: 50000
     },
     MAX_STORAGE_MINERAL:200000, // keep a max of each type of minerals in store
+    ROOM_TRADING: false, // set this true to enable haulers within your colony to request resources from other rooms in your colony
     MIN_MINERAL_SELL_AMOUNT:20000,
     ENERGY_VALUE_CREDITS: 0.15, // assumed energy exchange rate (in credits) to determine best mineral sell offer
     //MAX_SELL_RANGE: 60,
