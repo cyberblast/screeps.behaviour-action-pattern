@@ -4,7 +4,7 @@ mod.name = 'privateer';
 mod.run = function(creep) {
     // Assign next Action
     let oldTargetId = creep.data.targetId;
-    if( creep.action == null  || creep.action.name == 'idle' ) {
+    if( creep.action === null  || creep.action.name == 'idle' ) {
         if( creep.data.destiny && creep.data.destiny.task && Task[creep.data.destiny.task] && Task[creep.data.destiny.task].nextAction )
         Task[creep.data.destiny.task].nextAction(creep);
                     
@@ -77,7 +77,7 @@ mod.nextAction = function(creep){
             // get some energy
             if( creep.sum < creep.carryCapacity*0.4 ) {
                 // sources depleted
-                if( creep.room.sourceEnergyAvailable == 0 ){
+                if( creep.room.sourceEnergyAvailable === 0 ){
                     // cloak flag
                     creep.flag.cloaking = _.max([creep.room.ticksToNextRegeneration-20,0]); // approach a bit earlier
                     // travelling
@@ -151,7 +151,9 @@ mod.exploitNextRoom = function(creep){
     // no new flag
     // go home
     Population.registerCreepFlag(creep, null);
-    creep.data.travelRoom = creep.data.homeRoom;
-    Creep.action.travelling.assign(creep, creep);
+    if (creep.room.name !== creep.data.homeRoom) {
+        creep.data.travelRoom = creep.data.homeRoom;
+        Creep.action.travelling.assign(creep, creep);
+    }
     return false;
 };

@@ -134,8 +134,14 @@ mod.mine = function(creep) {
                     creep.harvest(source);
                 }
             }
-        }
+        // move towards our source so we're ready to take over
+        } else if (creep.pos.getRangeTo(source) > 3) return Creep.action.travelling.assign(creep, source);
+    } else {
+        // move inside the room so we don't block the entrance
+        const flag = creep.data && creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
+        if (flag && creep.pos.getRangeTo(flag) > 3) Creep.action.travelling.assign(creep, flag);
     }
+    return Creep.action.idle.assign(creep);
 };
 mod.approach = function(creep){
     let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.destiny.room);
