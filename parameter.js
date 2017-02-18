@@ -7,7 +7,7 @@ let mod = {
     DEBUG: true, // gimme some more details, use false not undefined to unset
     TRACE: false, // use Memory.debugTrace for low-level information
     TRAVELER_THRESHOLD: 50, // CPU Usage before warning about pathing cost
-    USE_UNBUILT_ROADS: true,
+    USE_UNBUILT_ROADS: true, // enabling this will set the pathing cost of road construction sites to that of roads
     GRAFANA: false, // track for Grafana data
     GRAFANA_INTERVAL: 3, // loops between Grafana tracking - No lower than 3.
     CENSUS_ANNOUNCEMENTS: true, // log birth and death
