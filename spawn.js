@@ -60,7 +60,7 @@ mod.extend = function(){
         }
         var completeName;
         var stumb = params.name;
-        for (var son = 1; completeName == null || Game.creeps[completeName]; son++) {
+        for (var son = 1; (completeName == null) || Game.creeps[completeName] || Memory.population[completeName]; son++) {
             completeName = params.name + '-' + son;
         }
         params.name = completeName;
