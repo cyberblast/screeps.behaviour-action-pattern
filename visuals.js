@@ -253,7 +253,7 @@ module.exports = class Visuals {
 			
 			transactions.forEach(transaction => {
 				const outgoing = transaction.sender.username === room.controller.owner.username;
-				const toSelf = transaction.sender.username === transaction.recipient.username;
+				const toSelf = transaction.recipient ? transaction.sender.username === transaction.recipient.username : false;
 				const colour = outgoing ? '#00FF00' : '#FF0000';
 				const prefix = outgoing ? '+' : '-';
 				let text = '';
