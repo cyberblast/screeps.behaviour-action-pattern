@@ -22,6 +22,12 @@ module.exports = class Visuals {
 			if (VISUALS.ROOM) {
 				Visuals.drawRoomInfo(room, VISUALS.ROOM_GLOBAL);
 			}
+			if (VISUALS.ROOM_ORDERS) {
+				Visuals.drawRoomOrders(room);
+			}
+			if (VISUALS.ROOM_OFFERS) {
+				Visuals.drawRoomOffers(room);
+			}
 			if (VISUALS.CONTROLLER) {
 				Visuals.drawControllerInfo(room.controller);
 			}
@@ -219,6 +225,47 @@ module.exports = class Visuals {
 				}
 			}
 			vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, y, {align: 'left', size: 0.4,});
+		}
+	}
+	
+	static drawRoomOrders(room) {
+		const vis = new RoomVisual(room.name);
+		const x = 43;
+		let y = 4.5;
+		if (!room.memory.resources || !room.memory.resources.orders) {
+			return;
+		}
+		if (VISUALS.STORAGE && room.storage) {
+			y += 2 + _.size(room.storage.store) * 0.6;
+		}
+		if (VISUALS.TERMINAL && room.terminal) {
+			y += 2 + _.size(room.terminal.store) * 0.6;
+		}
+		vis.text('Room Orders', x, ++y, {align: 'left'});
+		for (let order of room.memory.resources.orders) {
+			vis.text(`${order.type}: ${formatNum(order.amount)}`, x, y += 0.6, {align: 'left', size: 0.4, color: getResourceColour(order.type)});
+		}
+	}
+	
+	static drawRoomOffers(room) {
+		const vis = new RoomVisual(room.name);
+		const x = 43;
+		let y = 4.5;
+		if (!room.memory.resources || !room.memory.resources.offers) {
+			return;
+		}
+		if (VISUALS.STORAGE && room.storage) {
+			y += 2 + _.size(room.storage.store) * 0.6;
+		}
+		if (VISUALS.TERMINAL && room.terminal) {
+			y += 2 + _.size(room.terminal.store) * 0.6;
+		}
+		if (VISUALS.ROOM_ORDERS && room.memory.resources.orders) {
+			y += 2 + _.size(room.memory.resources.orders) * 0.6;
+		}
+		vis.text('Room Offerings', x, ++y, {align: 'left'});
+		for (let offer of room.memory.resources.offers) {
+			vis.text(`${offer.type}: ${formatNum(offer.amount)} (to ${offer.room})`, x, y += 0.6, {align: 'left', size: 0.4, color: getResourceColour(offer.type)});
 		}
 	}
 	
