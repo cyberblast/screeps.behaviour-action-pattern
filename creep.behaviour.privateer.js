@@ -157,3 +157,22 @@ mod.exploitNextRoom = function(creep){
     }
     return false;
 };
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        moveOptions: function(options) {
+            // allow routing in and through hostile rooms
+            if (_.isUndefined(options.allowHostile)) options.allowHostile = true;
+            return options;
+        }
+    },
+    withdrawing: {
+        name: `withdrawing-${mod.name}`,
+        isValidAction: function(creep) {
+            return false;
+        },
+    },
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};

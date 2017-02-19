@@ -100,7 +100,10 @@ let Action = function(actionName){
     this.onAssignment = (creep, target) => {};
     // empty default strategy
     this.defaultStrategy = {
-        name: `default-${actionName}`
+        name: `default-${actionName}`,
+        moveOptions: function(options) {
+            return options || {};
+        }
     };
     // strategy accessor
     this.selectStrategies = function() {

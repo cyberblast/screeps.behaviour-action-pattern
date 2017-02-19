@@ -13,19 +13,19 @@ action.getFlaggedStructure = function(flagColor, pos){
             if( targets && targets.length > 0){
                 addTarget = structure => {
                     structure.destroyFlag = flag;
-                    target.push(structure)
-                }
+                    target.push(structure);
+                };
                 targets.forEach(addTarget);
             }
             else { // remove flag. try next flag
                 flag.remove();
             }
         }
-    }
+    };
     flagsEntries.forEach(checkFlag);
     if( target && target.length > 0 ) return pos.findClosestByRange(target);
     return null;
-}
+};
 action.newTarget = function(creep){
     var destroy = this.getFlaggedStructure(FLAG_COLOR.destroy, creep.pos);
     if( destroy ) {
@@ -55,7 +55,7 @@ action.newTarget = function(creep){
             return target;
         //attack attacker
         target = creep.pos.findClosestByRange(creep.room.hostiles, {
-            function(hostile){ return _.some(hostile.body, function(part){return part.type == ATTACK || part.type == RANGED_ATTACK}); }
+            function(hostile){ return _.some(hostile.body, function(part){return part.type == ATTACK || part.type == RANGED_ATTACK;}); }
         });
         if( target )
             return target;
@@ -102,7 +102,7 @@ action.step = function(creep){
     if( (creep.target instanceof Flag) && (creep.target.pos.roomName == creep.pos.roomName))
         this.assign(creep);
     this.run[creep.data.creepType](creep);
-}
+};
 action.run = {
     melee: function(creep){
         if( !creep.flee ){
@@ -119,6 +119,7 @@ action.run = {
             creep.attacking = creep.attack(creep.target) == OK;
     },
     ranger: function(creep){
+        var range = creep.pos.getRangeTo(creep.target);
         if( !creep.flee ){
             if( creep.target instanceof Flag ){
                 creep.travelTo( creep.target.pos );
@@ -127,7 +128,6 @@ action.run = {
                 creep.travelTo( creep.target.pos, {range:0});
                 return;
             }
-            var range = creep.pos.getRangeTo(creep.target);
             if( range > 3 ){
                 creep.moveTo(creep.target, {reusePath: 0});
             }
@@ -153,4 +153,9 @@ action.run = {
 };
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9876), SAY_PUBLIC);
+};
+action.defaultStrategy.moveOptions = function(options) {
+    // allow routing in and through hostile rooms
+    if (_.isUndefined(options.allowHostile)) options.allowHostile = true;
+    return options;
 };

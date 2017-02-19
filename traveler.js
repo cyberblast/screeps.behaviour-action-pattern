@@ -227,7 +227,7 @@ module.exports = function(globalOpts = {}){
                     console.log(`TRAVELER: heavy cpu use: ${creep.name}, cpu: ${_.round(travelData.cpu, 2)}, pos: ${creep.pos}`);
                 }
                 if (ret.incomplete) {
-                    console.log(`TRAVELER: incomplete path for ${creep.name}`);
+                    console.log(`TRAVELER: incomplete path for ${creep.name} from ${creep.pos} to ${destPos}`);
                     if (ret.ops < 2000 && options.useFindRoute === undefined && travelData.stuck < gOpts.defaultStuckValue) {
                         options.useFindRoute = false;
                         ret = this.findTravelPath(creep, destPos, options);
@@ -338,9 +338,10 @@ module.exports = function(globalOpts = {}){
             if(global.traveler && global.travelerTick !== Game.time){
                 global.traveler = new Traveler();
             }
-            const preferHighway = _.isUndefined(options.preferHighway) || options.preferHighway;
-            const allowHostile = _.isUndefined(options.allowHostile) ? false : options.allowHostile;
-            if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(destination.roomName, allowHostile, preferHighway);
+            options = this.getStrategyHandler([], 'moveOptions', options);
+            if (_.isUndefined(options.preferHighway)) options.preferHighway = true;
+            if (_.isUndefined(options.allowHostile)) options.allowHostile = false;
+            if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(destination.roomName, options.allowHostile, options.preferHighway);
             return traveler.travelTo(this, destination, options);
         };
     }
