@@ -57,10 +57,10 @@ mod.nextAction = function(creep){
     }
 };
 mod.gotoTargetRoom = function(creep){
-    Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.targetName]);
+    Creep.action.travelling.assignRoom(creep, Game.flags[creep.data.destiny.targetName].pos.roomName);
     return;
 };
 mod.goHome = function(creep){
-    Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+    Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
     return;
 };

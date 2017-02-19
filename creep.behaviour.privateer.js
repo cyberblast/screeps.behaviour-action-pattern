@@ -118,7 +118,7 @@ mod.nextAction = function(creep){
                         return;
                 }
                 Population.registerCreepFlag(creep, null);
-                Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+                Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
                 return;
             }
         }
@@ -152,8 +152,7 @@ mod.exploitNextRoom = function(creep){
     // go home
     Population.registerCreepFlag(creep, null);
     if (creep.room.name !== creep.data.homeRoom) {
-        creep.data.travelRoom = creep.data.homeRoom;
-        Creep.action.travelling.assign(creep, creep);
+        Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
     }
     return false;
 };

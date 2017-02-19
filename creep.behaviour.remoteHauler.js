@@ -61,7 +61,6 @@ mod.nextAction = function(creep){
         if ( creep.sum === 0 ) {
             let source = creep.pos.findClosestByRange(creep.room.sources);
             if (creep.room && source && creep.pos.getRangeTo(source) > 3) {
-                creep.moveTo(source);
                 return Creep.action.travelling.assign(creep, source);
             }
         }
@@ -90,8 +89,8 @@ mod.assign = function(creep, action, target){
     return (action.isValidAction(creep) && action.isAddableAction(creep) && action.assign(creep, target));
 };
 mod.gotoTargetRoom = function(creep){
-    return Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.targetName]);
+    return Creep.action.travelling.assignRoom(creep, Game.flags[creep.data.destiny.targetName].pos.roomName);
 };
 mod.goHome = function(creep){
-    return Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+    return Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
 };

@@ -9,7 +9,7 @@ mod.run = function(creep) {
         return;
     } else {
         // else go there
-        Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.targetName]);
+        Creep.action.travelling.assignRoom(creep, Game.flags[creep.data.destiny.targetName].pos.roomName);
     }
     
     // Do some work

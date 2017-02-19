@@ -17,7 +17,7 @@ mod.run = function(creep) {
 };
 mod.nextAction = function(creep){
     if( creep.pos.roomName != creep.data.homeRoom && Game.rooms[creep.data.homeRoom] && Game.rooms[creep.data.homeRoom].controller ) {
-        Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+        Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
         return;
     }
     let priority;
