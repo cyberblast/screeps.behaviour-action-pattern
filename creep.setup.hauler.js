@@ -45,9 +45,9 @@ setup.default = {
     multiBody: [CARRY, CARRY, MOVE],
     minAbsEnergyAvailable: 200,
     minEnergyAvailable: 0.4,
-    maxMulti: setup.maxMulti,
-    maxCount: setup.maxCount,
-    maxWeight: setup.maxWeight
+    maxMulti: room => setup.maxMulti(room),
+    maxCount: room => setup.maxCount(room),
+    maxWeight: room => setup.maxWeight(room),
 };
 setup.RCL = {
     1: setup.none,
