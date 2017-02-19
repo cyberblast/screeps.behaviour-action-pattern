@@ -36,10 +36,10 @@ action.assignRoom = function(creep, roomName) {
     if (_.isUndefined(creep.data.travelRange)) creep.data.travelRange = TRAVELLING_BORDER_RANGE;
     
     if (travelFlag) {
-        Creep.action.travelling.assign(creep, travelFlag);
+        return Creep.action.travelling.assign(creep, travelFlag);
     } else {
         creep.data.travelRoom = roomName;
-        Creep.action.travelling.assign(creep, creep);
+        return Creep.action.travelling.assign(creep, creep);
     }
 };
 action.unregister = function(creep) {
