@@ -285,7 +285,10 @@ module.exports = function(globalOpts = {}){
                 }
             }
             for (let site of room.find(FIND_CONSTRUCTION_SITES)) {
-                if (site.structureType === STRUCTURE_CONTAINER || site.structureType === STRUCTURE_ROAD) {
+                if (site.structureType === STRUCTURE_CONTAINER) {
+                    continue;
+                } else if (site.structureType === STRUCTURE_ROAD) {
+                    if (USE_UNBUILT_ROADS) matrix.set(site.pos.x, site.pos.y, roadCost);
                     continue;
                 }
                 matrix.set(site.pos.x, site.pos.y, 0xff);
