@@ -42,6 +42,9 @@ mod.extend = function(){
             if(!behaviour && this.data && this.data.creepType) {
                 behaviour = Creep.behaviour[this.data.creepType];
             }
+            if ( Game.cpu.bucket < CRITICAL_BUCKET_LEVEL && !CRITICAL_ROLES.includes(behaviour) ) {
+                return;
+            }
             this.repairNearby();
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Behaviour: behaviour && behaviour.name, Creep:'run'});
             if( behaviour ) behaviour.run(this);
