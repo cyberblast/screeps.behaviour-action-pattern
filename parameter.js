@@ -130,6 +130,6 @@ let mod = {
     // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
     DEFENSE_BLACKLIST: [], // Don't defend those rooms (add room names). Blocks spawning via defense task (will not prevent offensive actions at all)
     CRITICAL_BUCKET_LEVEL: 1000, // take action when the bucket drops below this value to prevent the bucket from actually running out
-    CRITICAL_ROLES: [ 'melee', 'ranger', 'healer', 'upgrader' ], // when the bucket drops below the critical bucket level only these creep roles will be executed
+    CRITICAL_ROLES: [ 'melee', 'ranger', 'healer', 'hauler', 'upgrader' ], // when the bucket drops below the critical bucket level only these creep roles will be executed
 };
 module.exports = mod;
