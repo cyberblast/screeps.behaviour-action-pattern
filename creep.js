@@ -42,7 +42,7 @@ mod.extend = function(){
             if(!behaviour && this.data && this.data.creepType) {
                 behaviour = Creep.behaviour[this.data.creepType];
             }
-            if ( Game.cpu.bucket < CRITICAL_BUCKET_LEVEL && !CRITICAL_ROLES.includes(behaviour) ) {
+            if ( Game.cpu.bucket < CRITICAL_BUCKET_LEVEL && !CRITICAL_ROLES.includes(creep.data.creepType) ) {
                 return;
             }
             this.repairNearby();
@@ -447,6 +447,7 @@ mod.extend = function(){
     Creep.prototype.customStrategy = function(actionName, behaviourName, taskName) {};
 };
 mod.execute = function(){
+    if ( DEBUG && Game.cpu.bucket < CRITICAL_BUCKET_LEVEL ) logSystem('system',`${Game.time}: CPU Bucket level is critical (${Game.cpu.bucket}). Skipping non critical creep roles.`);
     let run = creep => creep.run();
     _.forEach(Game.creeps, run);
 };
