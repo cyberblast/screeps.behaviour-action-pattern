@@ -62,7 +62,7 @@ let Action = function(actionName){
             }
         }
         if( creep.target )
-            creep.travelTo(creep.target.pos, {range: this.reachedRange});
+            creep.travelTo(creep.target, {range: this.reachedRange});
     };
     // order for the creep to execute when at target
     this.work = function(creep){

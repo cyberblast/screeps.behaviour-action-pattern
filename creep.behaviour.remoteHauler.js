@@ -61,6 +61,7 @@ mod.nextAction = function(creep){
         if ( creep.sum === 0 ) {
             let source = creep.pos.findClosestByRange(creep.room.sources);
             if (creep.room && source && creep.pos.getRangeTo(source) > 3) {
+                creep.data.travelRange = 3;
                 return Creep.action.travelling.assign(creep, source);
             }
         }

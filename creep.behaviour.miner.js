@@ -117,12 +117,15 @@ mod.run = function(creep) {
                 Creep.behaviour.worker.run(creep);
             }
         // move towards our source so we're ready to take over
-        } else if (creep.pos.getRangeTo(source) > 3) return Creep.action.travelling.assign(creep, source);
+        } else if (creep.pos.getRangeTo(source) > 3) {
+            creep.data.travelRange = 3;
+            return Creep.action.travelling.assign(creep, source);
+        }
     } else {
         // move inside the room so we don't block the entrance
         const flag = creep.data && creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
         if (flag && creep.pos.getRangeTo(flag) > 3) {
-            creep.moveTo(flag);
+            creep.data.travelRange = 3;
             return Creep.action.travelling.assign(creep, flag);
         }
     }
