@@ -21,7 +21,7 @@ action.step = function(creep){
         if( range <= targetRange ) {
             return Creep.action.travelling.unregister(creep);
         }
-        creep.travelTo(target, {range:targetRange});
+        creep.travelTo(target, {range:targetRange, ignoreCreeps:creep.data.ignoreCreeps || true});
     } else {
         action.unregister(creep);
     }
@@ -46,6 +46,7 @@ action.unregister = function(creep) {
     delete creep.action;
     delete creep.target;
     delete creep.data.actionName;
+    delete creep.data.ignoreCreeps;
     delete creep.data.targetId;
     delete creep.data.travelRoom;
     delete creep.data.travelRange;
