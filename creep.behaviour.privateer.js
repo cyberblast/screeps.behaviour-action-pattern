@@ -142,7 +142,7 @@ mod.exploitNextRoom = function(creep){
         // new flag found
         if( flag ) {
             // travelling
-            if( Creep.action.travelling.assign(creep, flag) ) {
+            if( Creep.action.travelling.assignRoom(creep, flag.pos.roomName) ) {
                 Population.registerCreepFlag(creep, flag);
                 return true;
             }

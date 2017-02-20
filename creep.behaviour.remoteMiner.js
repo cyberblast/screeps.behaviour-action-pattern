@@ -9,7 +9,7 @@ mod.run = function(creep) {
         return;
     } else {
         // else go there
-        Creep.action.travelling.assignRoom(creep, Game.flags[creep.data.destiny.targetName].pos.roomName);
+        this.gotoTargetRoom(creep);
     }
     
     // Do some work
@@ -135,11 +135,17 @@ mod.mine = function(creep) {
                 }
             }
         // move towards our source so we're ready to take over
-        } else if (creep.pos.getRangeTo(source) > 3) return Creep.action.travelling.assign(creep, source);
+        } else if (creep.pos.getRangeTo(source) > 3) {
+            creep.data.travelRange = 3;
+            return Creep.action.travelling.assign(creep, source);
+        }
     } else {
         // move inside the room so we don't block the entrance
         const flag = creep.data && creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
-        if (flag && creep.pos.getRangeTo(flag) > 3) Creep.action.travelling.assign(creep, flag);
+        if (flag && creep.pos.getRangeTo(flag) > 3) {
+            creep.data.travelRange = 3;
+            Creep.action.travelling.assign(creep, flag);
+        }
     }
     return Creep.action.idle.assign(creep);
 };
@@ -153,4 +159,8 @@ mod.approach = function(creep){
         }
     }
     return range;
+};
+mod.gotoTargetRoom = function(creep){
+    const targetFlag = creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
+    if (targetFlag) return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName);
 };
