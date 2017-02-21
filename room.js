@@ -358,7 +358,43 @@ mod.extend = function(){
                     }
                     return this._piles;
                 }
-            }
+            },
+            'observer': {
+                configurable: true,
+                get: function() {
+	                if (_.isUndefined(this.room.memory.observer)) {
+		                this.room.saveObserver();
+	                }
+                    if (_.isUndefined(this._observer)) {
+	                    this._observer = Game.getObjectById(this.room.memory.observer);
+                    }
+                    return this._observer;
+                },
+            },
+            'nuker': {
+                configurable: true,
+                get: function() {
+                    if (_.isUndefined(this.room.memory.nuker)) {
+                        this.room.saveNuker();
+                    }
+                    if (_.isUndefined(this._nuker)) {
+                        this._nuker = Game.getObjectById(this.room.memory.nuker);
+                    }
+                    return this._nuker;
+                },
+            },
+            'powerSpawn': {
+                configurable: true,
+                get: function() {
+                    if (_.isUndefined(this.room.memory.powerSpawn)) {
+                        this.room.savePowerSpawn();
+                    }
+                    if (_.isUndefined(this._powerSpawn)) {
+                        this._powerSpawn = Game.getObjectById(this.room.memory.powerSpawn);
+                    }
+                    return this._powerSpawn;
+                }
+            },
         });
     };
 
@@ -1003,6 +1039,21 @@ mod.extend = function(){
             let id = o => o.id;
             this.memory.spawns = _.map(spawns, id);
         } else this.memory.spawns = [];
+    };
+    Room.prototype.saveObserver = function() {
+        [this.memory.observer] = this.find(FIND_MY_STRUCTURESS, {
+            filter: s => s instanceof StructureObserver
+        }).map(s => s.id);
+    };
+    Room.prototype.saveNuker = function() {
+        [this.memory.nuker] = this.find(FIND_MY_STRUCTURES, {
+            filter: s => s instanceof StructureNuker
+        }).map(s => s.id);
+    };
+    Room.prototype.savePowerSpawn = function() {
+        [this.memory.powerSpawn] = this.find(FIND_MY_STRUCTURES, {
+            filter: s => s instanceof StructurePowerSpawn
+        }).map(s => s.id);
     };
     Room.prototype.saveContainers = function(){
         this.memory.container = [];
