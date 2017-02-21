@@ -2,24 +2,6 @@ let mod = {};
 module.exports = mod;
 mod.name = 'remoteHauler';
 mod.run = function(creep) {
-    if (creep.data.path) {
-        if (creep.data.lastPos) {
-            let last = new RoomPosition(creep.data.lastPos.x, creep.data.lastPos.y, creep.data.lastPos.roomName);
-            if (creep.pos.isEqualTo(last)) {
-                creep.data.stuck = creep.data.stuck++ || 1;
-                return;
-            } else {
-                creep.data.path = creep.data.path.substr(1);
-                if (creep.data.path.length) { // keep moving
-                    creep.data.lastPos = creep.pos;
-                    let next = creep.data.path[0];
-                    return creep.move(next);
-                } else { // arrived?
-                    let sourcePos = new RoomPosition(creep.data)
-                }
-            }
-        }
-    }
     // Assign next Action
     let oldTargetId = creep.data.targetId;
     if( creep.action == null || creep.action.name == 'idle' ) {
