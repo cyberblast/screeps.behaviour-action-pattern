@@ -9,7 +9,7 @@ mod.run = function(creep) {
                 creep.data.stuck = creep.data.stuck++ || 1;
                 return;
             } else {
-                creep.data.path.pop();
+                creep.data.path = creep.data.path.substr(1);
                 if (creep.data.path.length) { // keep moving
                     creep.data.lastPos = creep.pos;
                     let next = creep.data.path[0];

@@ -33,7 +33,7 @@ action.assignRoom = function(creep, roomName) {
         if (room) travelFlag = room.createFlag(25, 25, roomName + '-travel');
     }
 
-    if (_.isUndefined(creep.data.travelRange)) creep.data.travelRange = TRAVELLING_BORDER_RANGE;
+    if (_.isUndefined(creep.data.travelRange)) creep.data.travelRange = 22; // TRAVELLING_BORDER_RANGE;
 
     if (travelFlag) {
         return Creep.action.travelling.assign(creep, travelFlag);
