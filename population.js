@@ -210,6 +210,9 @@ mod.analyze = function(){
             }
             let action = ( entry.actionName && Creep.action[entry.actionName] ) ? Creep.action[entry.actionName] : null;
             let target = action && entry.targetId ? Game.getObjectById(entry.targetId) || Game.spawns[entry.targetId] || Game.flags[entry.targetId] : null;
+            if (target && target.id === creep.id) {
+                target = FlagDir.specialFlag();
+            }
             if( action && target ) this.registerAction( creep, action, target, entry );
             else {
                 delete entry.actionName;

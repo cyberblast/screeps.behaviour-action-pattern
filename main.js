@@ -250,7 +250,9 @@ module.exports.loop = function () {
     if( global.mainInjection.flush ) global.mainInjection.flush();
 
     // analyze environment
-    FlagDir.analyze();
+    if (!FlagDir.analyze()) {
+        return;
+    }
     Room.analyze();
     Population.analyze();
     // custom analyze

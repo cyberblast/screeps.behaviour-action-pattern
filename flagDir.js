@@ -143,7 +143,7 @@ mod.flush = function(){
     delete this._hasInvasionFlag;
 };
 mod.analyze = function(){
-    mod.specialFlag(true);
+    const specialFlag = mod.specialFlag(true);
     let register = flag => {
         flag.creeps = {};
         if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
@@ -165,6 +165,7 @@ mod.analyze = function(){
         }
     }
     _.forEach(Memory.flags, findStaleFlags);
+    return !!specialFlag;
 };
 mod.execute = function() {
     let triggerFound = entry => {
