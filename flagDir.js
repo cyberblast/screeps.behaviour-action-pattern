@@ -143,6 +143,7 @@ mod.flush = function(){
     delete this._hasInvasionFlag;
 };
 mod.analyze = function(){
+    mod.specialFlag(true);
     let register = flag => {
         flag.creeps = {};
         if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
@@ -178,4 +179,18 @@ mod.execute = function() {
 mod.cleanup = function(){
     let clearMemory = flagName => delete Memory.flags[flagName];
     this.stale.forEach(clearMemory);
+};
+mod.specialFlag = function(create) {
+    const name = '_OCS';
+    const flag = Game.flags[name];
+    if (create && !flag) {
+        _(Game.rooms).values().some(function(room) {
+            new RoomPosition(49, 49, room.name).createFlag(name, COLOR_WHITE, COLOR_PURPLE);
+            return true;
+        });
+    }
+    return flag;
+};
+mod.isSpecialFlag = function(object) {
+    return object.name === '_OCS';
 };

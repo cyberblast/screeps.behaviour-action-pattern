@@ -175,7 +175,7 @@ mod.nextAction = creep => {
     // travel to initial calling room
     let callingRoom = Game.rooms[creep.data.destiny.spottedIn];
     if( !callingRoom || callingRoom.hostiles.length > 0 ) {
-        Creep.action.travelling.assign(creep, creep);
+        Creep.action.travelling.assign(creep, FlagDir.specialFlag());
         creep.data.travelRoom = creep.data.destiny.spottedIn;
         return;
     }
@@ -183,7 +183,7 @@ mod.nextAction = creep => {
     let hasHostile = roomName => Game.rooms[roomName] && Game.rooms[roomName].hostiles.length > 0;
     let invasionRoom = creep.room.adjacentRooms.find(hasHostile);
     if( invasionRoom ) {
-        Creep.action.travelling.assign(creep, creep);
+        Creep.action.travelling.assign(creep, FlagDir.specialFlag());
         creep.data.travelRoom = invasionRoom;
         return;
     }

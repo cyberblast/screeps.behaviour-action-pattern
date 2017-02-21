@@ -9,7 +9,7 @@ action.step = function(creep){
     if( creep.target ){
         let pos;
         let targetRange = this.targetRange;
-        if( creep.target.id == creep.id ) {
+        if( FlagDir.isSpecialFlag(creep.target) ) {
             targetRange = 24;
             pos = new RoomPosition(25, 25, creep.data.travelRoom);
         }

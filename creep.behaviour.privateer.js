@@ -150,7 +150,7 @@ mod.exploitNextRoom = function(creep){
     Population.registerCreepFlag(creep, null);
     if (creep.room.name !== creep.data.homeRoom) {
         creep.data.travelRoom = creep.data.homeRoom;
-        Creep.action.travelling.assign(creep, creep);
+        Creep.action.travelling.assign(creep, FlagDir.specialFlag());
     }
     return false;
 };
