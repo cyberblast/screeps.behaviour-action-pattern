@@ -1934,6 +1934,9 @@ mod.analyze = function(){
                 room.saveMinerals();
                 room.saveTowers();
                 room.saveSpawns();
+                room.saveObserver();
+                room.saveNuker();
+                room.savePowerSpawn();
                 room.saveContainers();
                 room.saveLinks();
                 room.saveLabs();
