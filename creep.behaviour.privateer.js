@@ -20,9 +20,8 @@ mod.run = function(creep) {
     if( creep.hits < creep.hitsMax ) { // creep injured. move to next owned room
         if (!creep.data.nearestHome || !Game.rooms[creep.data.nearestHome]) creep.data.nearestHome = Room.bestSpawnRoomFor(creep.pos.roomName);
         if (creep.data.nearestHome) {
-            let c = Game.rooms[creep.data.nearestHome].controller;
-            let range = creep.pos.getRangeTo(c);
-            if (range > 1) creep.travelTo( c.pos );
+            Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
+            return;
         }
     }
 };
