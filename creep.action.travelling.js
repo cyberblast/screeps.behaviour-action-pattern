@@ -8,7 +8,7 @@ action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
     const targetRange = creep.data.travelRange || this.targetRange;
     let target = creep.target;
-    if (target.id === creep.id) {
+    if (FlagDir.isSpecialFlag(creep.target)) {
         if (creep.data.travelRoom) {
             target = new RoomPosition(25, 25, creep.data.travelRoom);
         } else if (creep.data.travelPos) {
@@ -32,14 +32,14 @@ action.assignRoom = function(creep, roomName) {
         const room = Game.rooms[roomName];
         if (room) travelFlag = room.createFlag(25, 25, roomName + '-travel');
     }
-    
+
     if (_.isUndefined(creep.data.travelRange)) creep.data.travelRange = TRAVELLING_BORDER_RANGE;
-    
+
     if (travelFlag) {
         return Creep.action.travelling.assign(creep, travelFlag);
     } else {
         creep.data.travelRoom = roomName;
-        return Creep.action.travelling.assign(creep, creep);
+        return Creep.action.travelling.assign(creep, FlagDir.specialFlag());
     }
 };
 action.unregister = function(creep) {
