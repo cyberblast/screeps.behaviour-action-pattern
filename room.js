@@ -1408,7 +1408,7 @@ mod.extend = function(){
                 !room._isReceivingEnergy
             )
             let targetRoom = _.min(_.filter(Game.rooms, requiresEnergy), 'storage.store.energy');
-            if( targetRoom && Game.market.calcTransactionCost(50000, this.name, targetRoom.name) < (this.terminal.store.energy-50000)) {
+            if( targetRoom instanceof Room && Game.market.calcTransactionCost(50000, this.name, targetRoom.name) < (this.terminal.store.energy-50000)) {
                 targetRoom._isReceivingEnergy = true;
                 let response = this.terminal.send('energy', 50000, targetRoom.name, 'have fun');
                 if( DEBUG ) logSystem(that.name, `Transferring 50k energy to ${targetRoom.name}: ${translateErrorCode(response)}`);
