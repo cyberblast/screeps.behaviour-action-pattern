@@ -388,6 +388,10 @@ action.work = function(creep) {
                 if (amount > 0) {
                     resource = res;
                     break;
+                } else if (storage && dat && dat.structure.structureType == STRUCTURE_STORAGE && res == RESOURCE_ENERGY) {
+                    amount = storage.storeCapacity-storage.sum;
+                    resource = res;
+                    break;
                 }
             }
         }
