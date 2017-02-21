@@ -3,7 +3,7 @@ module.exports = action;
 action.isValidAction = function(creep){ return true; };
 action.isValidTarget = function(target){  return target && (!target.reservation || target.reservation.ticksToEnd < 4999 ) };
 action.isAddableAction = function(){ return true; };
-action.isAddableTarget = function(){ return target &&
+action.isAddableTarget = function(target, creep){ return target &&
     ( target instanceof Flag || ( target.structureType === 'controller' && !target.owner ) );
 };
 action.newTarget = function(creep){
