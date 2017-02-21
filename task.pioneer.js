@@ -195,7 +195,6 @@ mod.creep = {
     },
     worker: {
         fixedBody: [MOVE, CARRY, WORK],
-        multiBody: [MOVE, CARRY, WORK], 
         behaviour: 'worker',
         queue: 'High'
     }

@@ -379,13 +379,17 @@ action.work = function(creep) {
         for (var res in target.store) {
             if (res) {
                 let dat = this.findNeeding(room, res);
-                if (dat.structure.id == target.id) dat = null;
+                if (dat && dat.structure.id == target.id) dat = null;
                 if (dat) {
                     if (DEBUG_LOGISTICS) console.log(creep,target,"found need for",dat.amount,res,"in",dat.structure);
                     amount = dat.amount;
                 }
                 //if (!amount) amount = -this.terminalNeeds(target, res);
                 if (amount > 0) {
+                    resource = res;
+                    break;
+                } else if (storage && dat && dat.structure.structureType == STRUCTURE_STORAGE && res == RESOURCE_ENERGY) {
+                    amount = storage.storeCapacity-storage.sum;
                     resource = res;
                     break;
                 }
@@ -402,7 +406,7 @@ action.work = function(creep) {
         for (var res in target.store) {
             if (res) {
                 let dat = this.findNeeding(room, res);
-                if (dat.structure.id == target.id) dat = null;
+                if (dat && dat.structure.id == target.id) dat = null;
                 if (dat) {
                     if (DEBUG_LOGISTICS) console.log(creep,target,"found need for",dat.amount,res,"in",dat.structure);
                     amount = dat.amount;

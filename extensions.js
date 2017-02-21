@@ -177,6 +177,24 @@ mod.extend = function(){
             return this._sum;
         }
     });
+    Object.defineProperty(StructureStorage.prototype, 'charge', { // fraction indicating charge % relative to constants
+        configurable: true,
+        get: function() {
+            // TODO per-room strategy
+            const max = MAX_STORAGE_ENERGY[this.room.controller.level];
+            const min = MIN_STORAGE_ENERGY[this.room.controller.level];
+            if (max === min) {
+                if (this.store.energy > max) {
+                    return Infinity;
+                } else {
+                    return -Infinity;
+                }
+            }
+            const chargeScale = 1 / (max - min); // TODO cache
+
+            return (this.store.energy - max) * chargeScale + 1;
+        },
+    });
     Object.defineProperty(StructureTerminal.prototype, 'sum', {
         configurable: true,
         get: function() {

@@ -27,13 +27,19 @@ action.newTarget = function(creep){
             filter: (o) => this.isAddableTarget(o, creep) && o.pos.findInRange(creep.room.sources, 1).length > 0
         });
     } else {
-        target = creep.pos.findClosestByPath(creep.room.droppedResources, {
-            filter: (o) => ( o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep))
-        });
+        if ( creep.room.storage && creep.room.storage.my ) {
+            target = creep.pos.findClosestByPath(creep.room.droppedResources, {
+                filter: (o) => ( o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep))
+            });
 
-        if( !target ) target = creep.pos.findClosestByPath(creep.room.droppedResources, {
-            filter: (o) => this.isAddableTarget(o, creep)
-        });
+            if( !target ) target = creep.pos.findClosestByPath(creep.room.droppedResources, {
+                filter: (o) => this.isAddableTarget(o, creep)
+            });
+        } else {
+            target = creep.pos.findClosestByPath(creep.room.droppedResources, {
+                filter: (o) => ( o.resourceType == RESOURCE_ENERGY && this.isAddableTarget(o, creep))
+            });
+        }
     }
     return target;
 };

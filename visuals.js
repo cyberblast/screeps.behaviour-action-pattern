@@ -22,6 +22,12 @@ module.exports = class Visuals {
 			if (VISUALS.ROOM) {
 				Visuals.drawRoomInfo(room, VISUALS.ROOM_GLOBAL);
 			}
+			if (VISUALS.ROOM_ORDERS) {
+				Visuals.drawRoomOrders(room);
+			}
+			if (VISUALS.ROOM_OFFERS) {
+				Visuals.drawRoomOffers(room);
+			}
 			if (VISUALS.CONTROLLER) {
 				Visuals.drawControllerInfo(room.controller);
 			}
@@ -53,6 +59,9 @@ module.exports = class Visuals {
 			if (VISUALS.TRANSACTIONS) {
 				Visuals.drawTransactions(room);
 			}
+			if (VISUALS.LABS) {
+				Visuals.drawLabs(room);
+			}
 			if (VISUALS.CREEP) {
 				Visuals.drawCreepPath(room);
 			}
@@ -81,9 +90,12 @@ module.exports = class Visuals {
 		} else if (room.controller.reservation) {
 			RCL_PERCENTAGE = 0;
 			text = `Reserved: ${room.controller.reservation.ticksToEnd}`;
-		} else {
+		} else if (room.controller.owner) {
 			RCL_PERCENTAGE = room.controller.progress / room.controller.progressTotal;
 			text = `RCL: ${room.controller.level} (${(RCL_PERCENTAGE * 100).toFixed(2)}%)`;
+		} else {
+			RCL_PERCENTAGE = 0;
+			text = `Unowned`;
 		}
 		vis.rect(x, y - 0.75, RCL_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(RCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
 		vis.text(text, x + sectionWidth / 2, y);
@@ -186,6 +198,8 @@ module.exports = class Visuals {
 			line0 = 'L: Reserved';
 			line1 = `P: ${controller.reservation.username}`;
 			line2 = `D: ${controller.reservation.ticksToEnd}`;
+		} else if (!controller.owner) {
+			return;
 		}
 		vis.text(line0, BASE_X, y, style);
 		if (line1) {
@@ -202,7 +216,61 @@ module.exports = class Visuals {
 		let weakest = _(room.find(FIND_STRUCTURES)).filter(s => s.structureType === type).min(s => s.hits);
 		if (weakest && weakest.pos) {
 			vis.circle(weakest.pos.x, weakest.pos.y, {radius: 0.4, fill: '#FF0000', opacity: 0.3, strokeWidth: 0,});
-			vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, weakest.pos.y - 0.1, {align: 'left', size: 0.4,});
+			let y = weakest.pos.y - 0.5;
+			const look = weakest.pos.lookFor(LOOK_STRUCTURES);
+			const spawns = _.find(look, o => o instanceof StructureSpawn && o.spawning);
+			if (spawns) {
+				y += 0.4;
+			} else {
+				const labs = _.find(look, o => o instanceof StructureLab);
+				if (labs) {
+					if (labs.energy) y += 0.4;
+					if (labs.mineralAmount) y += 0.4;
+					if (labs.cooldown) y += 0.4;
+				}
+			}
+			vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, y, {align: 'left', size: 0.4,});
+		}
+	}
+	
+	static drawRoomOrders(room) {
+		const vis = new RoomVisual(room.name);
+		const x = 43;
+		let y = 4.5;
+		if (!room.memory.resources || !room.memory.resources.orders) {
+			return;
+		}
+		if (VISUALS.STORAGE && room.storage) {
+			y += 2 + _.size(room.storage.store) * 0.6;
+		}
+		if (VISUALS.TERMINAL && room.terminal) {
+			y += 2 + _.size(room.terminal.store) * 0.6;
+		}
+		vis.text('Room Orders', x, ++y, {align: 'left'});
+		for (let order of room.memory.resources.orders) {
+			vis.text(`${order.type}: ${formatNum(order.amount)}`, x, y += 0.6, {align: 'left', size: 0.4, color: getResourceColour(order.type)});
+		}
+	}
+	
+	static drawRoomOffers(room) {
+		const vis = new RoomVisual(room.name);
+		const x = 43;
+		let y = 4.5;
+		if (!room.memory.resources || !room.memory.resources.offers) {
+			return;
+		}
+		if (VISUALS.STORAGE && room.storage) {
+			y += 2 + _.size(room.storage.store) * 0.6;
+		}
+		if (VISUALS.TERMINAL && room.terminal) {
+			y += 2 + _.size(room.terminal.store) * 0.6;
+		}
+		if (VISUALS.ROOM_ORDERS && room.memory.resources.orders) {
+			y += 2 + _.size(room.memory.resources.orders) * 0.6;
+		}
+		vis.text('Room Offerings', x, ++y, {align: 'left'});
+		for (let offer of room.memory.resources.offers) {
+			vis.text(`${offer.type}: ${formatNum(offer.amount)} (to ${offer.room})`, x, y += 0.6, {align: 'left', size: 0.4, color: getResourceColour(offer.type)});
 		}
 	}
 	
@@ -253,7 +321,7 @@ module.exports = class Visuals {
 			
 			transactions.forEach(transaction => {
 				const outgoing = transaction.sender.username === room.controller.owner.username;
-				const toSelf = transaction.sender.username === transaction.recipient.username;
+				const toSelf = transaction.recipient ? transaction.sender.username === transaction.recipient.username : false;
 				const colour = outgoing ? '#00FF00' : '#FF0000';
 				const prefix = outgoing ? '+' : '-';
 				let text = '';
@@ -267,6 +335,25 @@ module.exports = class Visuals {
 				
 				y += 0.4;
 			});
+		}
+	}
+	
+	static drawLabs(room) {
+		const vis = new RoomVisual(room.name);
+		for (let lab of room.structures.labs.all) {
+			if (lab.energy || lab.mineralAmount || lab.cooldown) {
+				const x = lab.pos.x + 0.8;
+				let y = lab.pos.y - 0.5;
+				if (lab.energy) {
+					vis.text(`E: ${formatNum(lab.energy)}`, x, y, {align: 'left', size: 0.4, color: getResourceColour(RESOURCE_ENERGY)});
+				}
+				if (lab.mineralAmount) {
+					vis.text(`M: ${lab.mineralType} (${formatNum(lab.mineralAmount)})`, x, y += 0.4, {align: 'left', size: 0.4, color: getResourceColour(lab.mineralType)});
+				}
+				if (lab.cooldown) {
+					vis.text(`C: ${lab.cooldown}`, x, y += 0.4, {align: 'left', size: 0.4, color: '#FF0000'});
+				}
+			}
 		}
 	}
 	
