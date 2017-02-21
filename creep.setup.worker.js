@@ -8,10 +8,10 @@ setup.maxWorker = room => {
         return 1;
     // constructionsites present & no strorage or storage > min
     if( room.constructionSites.length > 0 && (!room.storage
-        || room.storage.store && room.storage.store.charge > 0))
+        || room.storage.store && room.storage.charge > 0))
         return 1;
     // storage full & base fortifyable
-    if( room.storage && room.storage.store.charge > 1 && room.structures.fortifyable.length > 0 )
+    if( room.storage && room.storage.charge > 1 && room.structures.fortifyable.length > 0 )
         return 1;
     return 0;
 };
