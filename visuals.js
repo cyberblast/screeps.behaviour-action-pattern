@@ -90,9 +90,12 @@ module.exports = class Visuals {
 		} else if (room.controller.reservation) {
 			RCL_PERCENTAGE = 0;
 			text = `Reserved: ${room.controller.reservation.ticksToEnd}`;
-		} else {
+		} else if (room.controller.owner) {
 			RCL_PERCENTAGE = room.controller.progress / room.controller.progressTotal;
 			text = `RCL: ${room.controller.level} (${(RCL_PERCENTAGE * 100).toFixed(2)}%)`;
+		} else {
+			RCL_PERCENTAGE = 0;
+			text = `Unowned`;
 		}
 		vis.rect(x, y - 0.75, RCL_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(RCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
 		vis.text(text, x + sectionWidth / 2, y);
@@ -195,6 +198,8 @@ module.exports = class Visuals {
 			line0 = 'L: Reserved';
 			line1 = `P: ${controller.reservation.username}`;
 			line2 = `D: ${controller.reservation.ticksToEnd}`;
+		} else if (!controller.owner) {
+			return;
 		}
 		vis.text(line0, BASE_X, y, style);
 		if (line1) {
