@@ -20,7 +20,7 @@ setup.maxCount = function(room){
     if( miners > 0  || ( cont > 0 && workers > 2 )) {
         count += Creep.setup.upgrader.maxCount(room);
         if( room.structures.links.all.length < 3 ||
-           (room.storage && room.storage.store.energy > MAX_STORAGE_ENERGY[room.controller.level] &&
+           (room.storage && room.storage.store.charge > 1 &&
             room.structures.container.controller && _.sum(room.structures.container.controller, 'store.energy') == 0 )) count++;
         /* Add hauler when there is energy on the ground
         let dropped = 0;
