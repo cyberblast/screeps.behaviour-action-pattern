@@ -108,7 +108,7 @@ action.findNeeding = function(room, resourceType, amountMin, structureId){
 
     let data = room.memory;
     if (data) {
-        if (data.labs.length > 0) {
+        if (data.labs && data.labs.length > 0) {
             for (var i=0;i<data.labs.length;i++) {
                 let d = data.labs[i];
                 let lab = Game.getObjectById(d.id);
@@ -117,7 +117,7 @@ action.findNeeding = function(room, resourceType, amountMin, structureId){
                     return { structure: lab, amount: amount};
             }
         }
-        if (data.container.length > 0) {
+        if (data.container && data.container.length > 0) {
             for (var i=0;i<data.container.length;i++) {
                 let d = data.container[i];
                 let container = Game.getObjectById(d.id);

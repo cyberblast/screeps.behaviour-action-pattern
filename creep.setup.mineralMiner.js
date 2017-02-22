@@ -20,7 +20,7 @@ setup.default = {
     minEnergyAvailable: 0.3,
     maxMulti: 11,
     minMulti: 1,
-    maxCount: setup.maxCount
+    maxCount: room => setup.maxCount(room),
 };
 setup.RCL = {
     1: setup.none,

@@ -55,16 +55,16 @@ setup.default = {
     multiBody: [WORK, WORK, WORK, MOVE],
     minAbsEnergyAvailable: 400,
     minEnergyAvailable: 0.5,
-    maxMulti: setup.maxMulti,
-    maxCount: setup.maxCount
+    maxMulti: room => setup.maxMulti(room),
+    maxCount: room => setup.maxCount(room),
 };
 setup.low = {
     fixedBody: [WORK, WORK, CARRY, MOVE],
     multiBody: [WORK, WORK, MOVE],
     minAbsEnergyAvailable: 300,
     minEnergyAvailable: 1,
-    maxMulti: setup.maxMulti,
-    maxCount: setup.maxCount
+    maxMulti: room => setup.maxMulti(room),
+    maxCount: room => setup.maxCount(room),
 };
 setup.level8 = {
     fixedBody: [CARRY, MOVE, MOVE, MOVE],
