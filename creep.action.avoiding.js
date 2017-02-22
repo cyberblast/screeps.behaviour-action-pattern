@@ -1,6 +1,6 @@
 let action = new Creep.Action('avoiding');
 module.exports = action;
-action.lairDangerTime = 12;
+action.lairDangerTime = 24;
 action.targetRange = 0;
 action.reachedRange = 0;
 action.isActiveLair = function(target) {
@@ -9,10 +9,12 @@ action.isActiveLair = function(target) {
 action.isValidAction = function(creep){
     return creep.room.situation.invasion || Room.isSKRoom(creep.pos.roomName);
 };
-this.isValidTarget = function(target, creep){
+action.isValidTarget = function(target, creep){
     return Task.reputation.hostileOwner(target) && action.isActiveLair(target);
 };
 action.newTarget = function(creep) {
+    delete creep.data.determinatedSpot;
+
     if (Room.isSKRoom(creep.pos.roomName)) {
         const target = _.first(creep.room.find(FIND_STRUCTURES, {filter: function (t) {
             return !_.isUndefined(t.ticksToSpawn) && action.isActiveLair(t) && creep.pos.getRangeTo(t.pos) < 15;
@@ -44,28 +46,28 @@ action.newTarget = function(creep) {
     }
 };
 action.work = function(creep) {
-    if (!creep.data.determinatedSpot) {
-        let targets = _.chain(creep.room.hostiles).filter(function(c) {
-            return creep.pos.getRangeTo(c) < 15;
-        });
-
-        if (action.isActiveLair(creep.target) ) {
-            targets = targets.concat(creep.target);
+    if (!(creep.data.determinatedSpot && creep.data.determinatedSpot.roomName)) {
+        // find the route home, move toward the exit until out of danger
+        const exit = _.chain(creep.room.findRoute(creep.data.homeRoom)).first().get('exit').value();
+        if (exit) {
+            creep.data.determinatedSpot = creep.pos.findClosestByRange(exit);
+            creep.data.determinatedSpot.roomName = creep.pos.roomName;
         }
-
-        targets = targets.map(function(t) {
-            _.create(t,{
-                // move 4 away from keepers
-                // move 6 away from lairs
-                // run out of room away from invaders
-                range: t.ticksToSpawn !== undefined ? 4 : 6,
-            });
-        }).value();
-
-        // TODO pathfinder to pick a spot
     }
 
-    // TODO move to the spot
+    if (creep.data.determinatedSpot && creep.pos.getRangeTo(creep.target) < 10) {
+        creep.travelTo(creep.data.determinatedSpot);
+    }
+};
+action.run = function(creep) {
+    if( action.isValidAction(creep) ) {
+        if (creep.action === action && action.isValidTarget(creep.target, creep) ||
+            action.isAddableAction(creep) && action.assign(creep) ) {
+
+            action.work(creep);
+            return true;
+        }
+    }
 };
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(10532), SAY_PUBLIC);
