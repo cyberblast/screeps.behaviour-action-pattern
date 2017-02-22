@@ -89,7 +89,7 @@ mod.registerAction = function(creep, action, target, entry) {
     }
     // register target
     entry.targetId = targetId;
-    if( target ) {
+    if( target && !FlagDir.isSpecialFlag(target)) {
         if( target.targetOf === undefined )
             target.targetOf = [entry];
         else target.targetOf.push(entry);
