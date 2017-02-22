@@ -425,6 +425,23 @@ mod.extend = function(){
                 return this._sources;
             }
         },
+        'powerBank': {
+            configurable: true,
+            get: function() {
+                if (_.isUndefined(this.memory.powerBank)) {
+                    [this._powerBank] = this.find(FIND_STRUCTURES, {
+                        filter: s => s instanceof StructurePowerBank
+                    });
+                    if (this._powerBank) {
+                        this.memory.powerBank = this._powerBank.id;
+                    }
+                }
+                if (_.isUndefined(this._powerBank)) {
+                    this._powerBank = Game.getObjectById(this.memory.powerBank);
+                }
+                return this._powerBank;
+            },
+        },
         'droppedResources': {
             configurable: true,
             get: function() {
@@ -1041,7 +1058,7 @@ mod.extend = function(){
         } else this.memory.spawns = [];
     };
     Room.prototype.saveObserver = function() {
-        [this.memory.observer] = this.find(FIND_MY_STRUCTURESS, {
+        [this.memory.observer] = this.find(FIND_MY_STRUCTURES, {
             filter: s => s instanceof StructureObserver
         }).map(s => s.id);
     };
