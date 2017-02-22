@@ -184,11 +184,15 @@ mod.cleanup = function(){
 mod.specialFlag = function(create) {
     const name = '_OCS';
     const flag = Game.flags[name];
-    if (create && !flag) {
-        _(Game.rooms).values().some(function(room) {
-            new RoomPosition(49, 49, room.name).createFlag(name, COLOR_WHITE, COLOR_PURPLE);
-            return true;
-        });
+    if (create) {
+        if (!flag) {
+            _(Game.rooms).values().some(function (room) {
+                new RoomPosition(49, 49, room.name).createFlag(name, COLOR_WHITE, COLOR_PURPLE);
+                return true;
+            });
+        } else if (flag.roomName !== 'W0N0') {
+            flag.setPosition(new RoomPosition(49, 49, 'W0N0'));
+        }
     }
     return flag;
 };
