@@ -57,6 +57,9 @@ mod.registerAction = function(creep, action, target, entry) {
         if( this.actionWeight[creep.action.name] === undefined )
             this.actionWeight[creep.action.name] = 0;
         else this.actionWeight[creep.action.name] -= entry.weight;
+
+        delete creep.data.determinatedSpot;
+        delete creep.data.determinatedTarget;
     }
     // register action
     entry.actionName = action.name;
