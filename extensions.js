@@ -195,6 +195,24 @@ mod.extend = function(){
             return (this.store.energy - max) * chargeScale + 1;
         },
     });
+    StructureStorage.prototype.getNeeds = function(resourceType) {
+        var ret = 0;
+        if (!this.room.memory.resources) return 0;
+
+        let storageData = this.room.memory.resources.storage[0];
+        // look up resource and calculate needs
+        let order = null;
+        if (storageData) order = storageData.orders.find((o)=>{return o.type==resourceType;});
+        if (!order) order = { orderAmount: 0, orderRemaining: 0, storeAmount: 0 };
+        let rcl = this.room.controller.level;
+        let loadTarget = order.orderRemaining + order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? MIN_STORAGE_ENERGY[rcl] : MAX_STORAGE_MINERAL);
+        // storage always wants energy
+        let unloadTarget = (resourceType == RESOURCE_ENERGY) ? (this.storeCapacity-this.sum)+this.store.energy : order.orderAmount + order.storeAmount + MAX_STORAGE_MINERAL;
+        let store = this.store[resourceType]||0;
+        if (store < loadTarget) ret = Math.min(loadTarget-store,this.storeCapacity-this.sum);
+        else if (store > unloadTarget*1.05) ret = unloadTarget-store;
+        return ret;
+    };
     Object.defineProperty(StructureTerminal.prototype, 'sum', {
         configurable: true,
         get: function() {
@@ -205,6 +223,21 @@ mod.extend = function(){
             return this._sum;
         }
     });
+    StructureTerminal.prototype.getNeeds = function(resourceType) {
+        var ret = 0;
+        if (!this.room.memory.resources) return 0;
+        let terminalData = this.room.memory.resources.terminal[0];
+        // look up resource and calculate needs
+        let order = null;
+        if (terminalData) order = terminalData.orders.find((o)=>{return o.type==resourceType;});
+        if (!order) order = { orderAmount: 0, orderRemaining: 0, storeAmount: 0 };
+        let loadTarget = order.orderRemaining + order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0);
+        let unloadTarget = order.orderAmount + order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0);
+        let store = this.store[resourceType]||0;
+        if (store < loadTarget) ret = Math.min(loadTarget-store,this.storeCapacity-this.sum);
+        else if (store > unloadTarget*1.05) ret = unloadTarget-store;
+        return ret;
+    };
     Object.defineProperty(StructureContainer.prototype, 'sum', {
         configurable: true,
         get: function() {
@@ -215,6 +248,78 @@ mod.extend = function(){
             return this._sum;
         }
     });
+    StructureContainer.prototype.getNeeds = function(resourceType) {
+        if (!this.room.memory.resources) return 0;
+
+        // look up resource and calculate needs
+        let containerData = this.room.memory.resources.container.find( (s) => s.id == this.id );
+        if (containerData) {
+            let order = containerData.orders.find((o)=>{return o.type==resourceType;});
+            if (order) {
+                let loadTarget = order.orderRemaining + order.storeAmount;
+                let unloadTarget = order.orderAmount + order.storeAmount;
+                let store = this.store[resourceType] || 0;
+                if (store < loadTarget) return Math.min(loadTarget-store,this.storeCapacity-this.sum);
+                if (store > unloadTarget*1.05) return unloadTarget-store;
+            }
+        }
+        return 0;
+    };
+    StructureLab.prototype.getNeeds = function(resourceType) {
+        if (!this.room.memory.resources) return 0;
+        let loadTarget = 0;
+        let unloadTarget = 0;
+
+        // look up resource and calculate needs
+        let containerData = this.room.memory.resources.lab.find( (s) => s.id == this.id );
+        if (containerData) {
+            let order = containerData.orders.find((o)=>{return o.type==resourceType;});
+            if (order) {
+                loadTarget = order.orderRemaining + order.storeAmount;
+                unloadTarget = order.orderAmount + order.storeAmount;
+            }
+        }
+        let store = 0;
+        let space = 0;
+        if (resourceType == RESOURCE_ENERGY) {
+            store = this.energy;
+            space = this.energyCapacity-this.energy;
+        } else {
+            store = this.mineralType == resourceType ? this.mineralAmount : 0;
+            space = this.mineralCapacity-this.mineralAmount;
+        }
+        // lab requires precise loading
+        if (store < loadTarget) return Math.min(loadTarget-store,space);
+        if (store > unloadTarget) return unloadTarget-store;
+        return 0;
+    };
+    StructurePowerSpawn.prototype.getNeeds = function(resourceType) {
+        if (!this.room.memory.resources) return 0;
+        let loadTarget = 0;
+        let unloadTarget = 0;
+
+        // look up resource and calculate needs
+        let containerData = this.room.memory.resources.powerSpawn.find( (s) => s.id == this.id );
+        if (containerData) {
+            let order = containerData.orders.find((o)=>{return o.type==resourceType;});
+            if (order) {
+                loadTarget = order.orderRemaining + order.storeAmount;
+                unloadTarget = order.orderAmount + order.storeAmount;
+            }
+        }
+        let store = 0;
+        let space = 0;
+        if (resourceType == RESOURCE_ENERGY) {
+            store = this.energy;
+            space = this.energyCapacity-this.energy;
+        } else if (resourceType == RESOURCE_POWER) {
+            store = this.power;
+            space = this.powerCapacity-this.power;
+        }
+        if (store < loadTarget) return Math.min(loadTarget-store,space);
+        if (store > unloadTarget * 1.05) return unloadTarget-store;
+        return 0;
+    };
 
     if( Memory.pavementArt === undefined ) Memory.pavementArt = {};
 };
