@@ -191,7 +191,7 @@ let Setup = function(typeName){
 module.exports = Setup;
 Setup.isWorkingAge = function(creepData) {
     const c = Game.creeps[creepData.creepName];
-    return c && (creepData.predictedRenewal || creepData.spawningTime || 0 ) < (c.ticksToLive || 1500);
+    return c && (creepData.predictedRenewal || creepData.spawningTime || CREEP_LIFE_TIME ) < (c.ticksToLive || CREEP_LIFE_TIME);
 };
 Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
     if( !flagFilter ) {
