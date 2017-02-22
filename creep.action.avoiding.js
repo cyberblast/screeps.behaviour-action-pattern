@@ -1,9 +1,10 @@
 let action = new Creep.Action('avoiding');
 module.exports = action;
+action.lairDangerTime = 12;
 action.targetRange = 0;
 action.reachedRange = 0;
 action.isActiveLair = function(target) {
-    return !(target.ticksToSpawn > 12); // non-lair => true
+    return !(target.ticksToSpawn > action.lairDangerTime); // non-lair => true
 };
 action.isValidAction = function(creep){
     return creep.room.situation.invasion || Room.isSKRoom(creep.pos.roomName);
