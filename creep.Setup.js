@@ -187,8 +187,12 @@ let Setup = function(typeName){
         let rcl = c.RCL[room.controller.level];
         return (Creep.bodyCosts( c.SelfOrCall(rcl.multiBody, room) ) * c.SelfOrCall(rcl.maxMulti, room)) + (Creep.bodyCosts(c.SelfOrCall(rcl.fixedBody, room)));
     };
-}
+};
 module.exports = Setup;
+Setup.isWorkingAge = function(creepData) {
+    const c = Game.creeps[creepData.creepName];
+    return c && (creepData.predictedRenewal || creepData.spawningTime || 0 ) < (c.ticksToLive || 1500);
+};
 Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
     if( !flagFilter ) {
         throw new Error("undefined flagFilter");
@@ -206,7 +210,7 @@ Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
                 return;
             }
             flag = Game.flags[flagEntry.name];
-            if( !flag.targetOf || flag.targetOf.length == 0 ) {
+            if( _.every(flag.targetOf, Setup.isWorkingAge)) {
                 max++;
             } else if( _.some(flag.targetOf, 'homeRoom', room.name) ) {
                 max++;
