@@ -2,12 +2,6 @@ let action = new Creep.Action('reallocating');
 module.exports = action;
 action.maxPerTarget = 1;
 action.maxPerAction = 1;
-action.structurePriority = [
-    this.newTargetLab,
-    this.newTargetContainer,
-    this.newTargetTerminal,
-    this.newTargetStorage
-];
 // get<containerType>State functions return a positive value when they need filling, a negative value when they need emptying, and 0 when "close enough"
 /*
 action.terminalNeeds = function(terminal, resourceType){
@@ -398,14 +392,10 @@ action.newTarget = function(creep){
     if( creep.sum == 0) {
         let data = room.memory;
         if (data) {
-            for (var i=0;i<this.structurePriority.length;i++) {
-                target = this.structurePriority[i](creep);
-                if (target !== null) break;
-            }
-//            target = this.newTargetLab(creep);
-//            if (target === null) target = this.newTargetContainer(creep);
-//            if (target === null) target = this.newTargetTerminal(creep);
-//            if (target === null) target = this.newTargetStorage(creep);
+            target = this.newTargetLab(creep);
+            if (target === null) target = this.newTargetContainer(creep);
+            if (target === null) target = this.newTargetTerminal(creep);
+            if (target === null) target = this.newTargetStorage(creep);
         }
         return target;
     }
