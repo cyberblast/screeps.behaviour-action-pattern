@@ -6,9 +6,9 @@ setup.maxMulti = function(room){
     const charge = room.storage ? room.storage.charge : 0;
     if( !room.storage || charge > 0)
         multi++;
-    if( !room.storage || room.storage.store.energy > ((MAX_STORAGE_ENERGY[room.controller.level]-MIN_STORAGE_ENERGY[room.controller.level])/2)+MIN_STORAGE_ENERGY[room.controller.level])
+    if( !room.storage || charge > 0.5)
         multi++;
-    if( room.storage && room.storage.store.energy >= MAX_STORAGE_ENERGY[room.controller.level] )
+    if( room.storage && charge >= 1 )
     {
         let surplus = room.storage.store.energy - MAX_STORAGE_ENERGY[room.controller.level];
         multi += Math.ceil( surplus / 20000 ); // one more multi for each 20k surplus (+1)

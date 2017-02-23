@@ -5,7 +5,7 @@ action.isAddableAction = function(creep){
     // no storage
     return !creep.room.storage 
     // storage has surplus
-    || (creep.room.storage.store.energy > MAX_STORAGE_ENERGY[creep.room.controller.level])
+    || creep.room.storage.charge > 1
     // storage is leftover from invasion and has usable energy
     || (!creep.room.storage.my && creep.room.storage.store.energy > 0);
 };
