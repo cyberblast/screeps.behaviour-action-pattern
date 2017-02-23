@@ -481,6 +481,8 @@ action.unloadContainer = function(creep) {
 };
 action.unloadTerminal = function(creep) {
     let target = creep.target;
+    let room = creep.room;
+    let storage = room.storage;
     var workResult = null;
     var resource = null;
     var amount = 0;
@@ -514,6 +516,8 @@ action.unloadTerminal = function(creep) {
 };
 action.unloadStorage = function(creep) {
     let target = creep.target;
+    let room = creep.room;
+    let terminal = room.terminal;
     var workResult = null;
     var resource = null;
     var amount = 0;
@@ -570,6 +574,17 @@ action.loadLab = function(creep) {
     } else {
         this.cancelAction(creep);
     }
+    if (workResult == OK) {
+        // update order
+        let data = null;
+        if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
+        if (data) {
+            let order = data.orders.find(o=>o.type==resource);
+            if (order && order.orderRemaining > 0) {
+                order.orderRemaining -= amount;
+            }
+        }
+    }
     return workResult;
 };
 action.loadPowerSpawn = function(creep) {
@@ -595,6 +610,17 @@ action.loadPowerSpawn = function(creep) {
     } else {
         this.cancelAction(creep);
     }
+    if (workResult == OK) {
+        // update order
+        let data = null;
+        if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
+        if (data) {
+            let order = data.orders.find(o=>o.type==resource);
+            if (order && order.orderRemaining > 0) {
+                order.orderRemaining -= amount;
+            }
+        }
+    }
     return workResult;
 };
 action.loadContainer = function(creep) {
@@ -617,6 +643,17 @@ action.loadContainer = function(creep) {
         this.assignDropOff(creep, resource);
     } else {
         this.cancelAction(creep);
+    }
+    if (workResult == OK) {
+        // update order
+        let data = null;
+        if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
+        if (data) {
+            let order = data.orders.find(o=>o.type==resource);
+            if (order && order.orderRemaining > 0) {
+                order.orderRemaining -= amount;
+            }
+        }
     }
     return workResult;
 };
@@ -645,6 +682,17 @@ action.loadTerminal = function(creep) {
     } else {
         this.cancelAction(creep);
     }
+    if (workResult == OK) {
+        // update order
+        let data = null;
+        if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
+        if (data) {
+            let order = data.orders.find(o=>o.type==resource);
+            if (order && order.orderRemaining > 0) {
+                order.orderRemaining -= amount;
+            }
+        }
+    }
     return workResult;
 };
 action.loadStorage = function(creep) {
@@ -668,11 +716,23 @@ action.loadStorage = function(creep) {
     } else {
         this.cancelAction(creep);
     }
+    if (workResult == OK) {
+        // update order
+        let data = null;
+        if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
+        if (data) {
+            let order = data.orders.find(o=>o.type==resource);
+            if (order && order.orderRemaining > 0) {
+                order.orderRemaining -= amount;
+            }
+        }
+    }
     return workResult;
 };
 action.work = function(creep) {
     var workResult = null;
     let room = creep.room;
+    let target = creep.target;
     let storage = room.storage;
     let terminal = room.terminal;
 
@@ -717,17 +777,6 @@ action.work = function(creep) {
             default:
                 this.cancelAction(creep);
                 break;
-        }
-    }
-    if (workResult == OK && creep.sum > 0) {
-        // update order
-        let data = null;
-        if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
-        if (data) {
-            let order = data.orders.find(o=>o.type==resource);
-            if (order && order.orderRemaining > 0) {
-                order.orderRemaining -= amount;
-            }
         }
     }
     return workResult;

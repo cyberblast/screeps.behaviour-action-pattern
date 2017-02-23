@@ -1594,6 +1594,7 @@ mod.extend = function(){
         let container = Game.getObjectById(containerId);
         if (!this.my || !container || !container.room.name == this.name ||
                 !(container.structureType == STRUCTURE_LAB ||
+                container.structureType == STRUCTURE_POWER_SPAWN ||
                 container.structureType == STRUCTURE_CONTAINER ||
                 container.structureType == STRUCTURE_STORAGE ||
                 container.structureType == STRUCTURE_TERMINAL)) {
@@ -1605,11 +1606,13 @@ mod.extend = function(){
         if (this.memory.resources === undefined) {
             this.memory.resources = {
                 lab: [],
+                powerSpawn: [],
                 container: [],
                 terminal: [],
                 storage: []
             };
         }
+        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
         if (!this.memory.resources[container.structureType].find( (s) => s.id == containerId )) {
             this.memory.resources[container.structureType].push(container.structureType==STRUCTURE_LAB ? {
                 id: containerId,
