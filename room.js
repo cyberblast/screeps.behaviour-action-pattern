@@ -1293,13 +1293,28 @@ mod.extend = function(){
                         let amount = 0;
                         let cont = Game.getObjectById(structure.id);
                         if (cont && structureType == STRUCTURE_LAB) {
-                            // get lab amount
-                            if (cont.mineralType == order.type) {
-                                amount = cont.mineralAmount;
+                            switch (structureType) {
+                                case STRUCTURE_LAB:
+                                    // get lab amount
+                                    if (order.type == cont.mineralType) {
+                                        amount = cont.mineralAmount;
+                                    } else if (order.type == RESOURCE_ENERGY) {
+                                        amount = cont.energy;
+                                    }
+                                    break;
+                                case STRUCTURE_POWER_SPAWN:
+                                    // get power spawn amount
+                                    if (order.type == RESOURCE_POWER) {
+                                        amount = cont.power;
+                                    } else if (order.type == RESOURCE_ENERGY) {
+                                        amount = cont.energy;
+                                    }
+                                    break;
+                                default:
+                                    // get stored amount
+                                    amount = cont.store[order.type] || 0;
+                                    break;
                             }
-                        } else if (cont) {
-                            // get stored amount
-                            amount = cont.store[order.type] || 0;
                         }
                         if (amount < baseAmount) {
                             order.orderAmount = 0;
