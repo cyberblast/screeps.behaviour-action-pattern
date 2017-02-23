@@ -3,7 +3,7 @@ module.exports = setup;
 setup.minControllerLevel = 2;
 setup.maxMulti = function(room){
     let multi = 0;
-    const charge = room.storage.charge;
+    const charge = room.storage ? room.storage.charge : 0;
     if( !room.storage || charge > 0)
         multi++;
     if( !room.storage || charge > 0.5)
