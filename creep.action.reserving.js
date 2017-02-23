@@ -35,8 +35,7 @@ action.step = function(creep){
     if( creep.target.color ){ 
         if( creep.flag.pos.roomName == creep.pos.roomName ) // change target from flag to controller
             creep.data.targetId = null;
-        creep.travelTo( creep.target.pos );
-        return;
+        return creep.travelTo( creep.target.pos );
     }
 
     let range = creep.pos.getRangeTo(creep.target);
@@ -46,7 +45,7 @@ action.step = function(creep){
             creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
         }
     }
-    creep.travelTo( creep.target.pos );
+    return creep.travelTo( creep.target.pos );
 };
 action.work = function(creep){
     var workResult;

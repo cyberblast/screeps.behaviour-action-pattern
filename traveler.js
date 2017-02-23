@@ -203,10 +203,13 @@ module.exports = function(globalOpts = {}){
                     delete travelData.path;
                 }
             }
-            // handle case where creep wasn't traveling last tick and may have moved, but destination is still the same
-            if (Game.time - travelData.tick > 1 && hasMoved) {
-                delete travelData.path;
-            }
+            // FIXME: Do an actual calculation to see if we have moved, this is unneccesary and expensive when the creep hasn't moved for
+            // a few ticks and the path gets rebuilt.
+            // // handle case where creep wasn't traveling last tick and may have moved, but destination is still the same
+            // if (Game.time - travelData.tick > Memory.skippedTicks + 2 && hasMoved) {
+            //     console.log(creep.name, 'maybe moved, rebuilding');
+            //     delete travelData.path;
+            // }
             travelData.tick = Game.time;
             // delete path cache if destination is different
             if (!travelData.dest || travelData.dest.x !== destPos.x || travelData.dest.y !== destPos.y ||
@@ -223,8 +226,9 @@ module.exports = function(globalOpts = {}){
                 let ret = this.findTravelPath(creep, destPos, options);
                 travelData.cpu += (Game.cpu.getUsed() - cpu);
                 travelData.count++;
-                if (travelData.cpu > gOpts.reportThreshold) {
-                    console.log(`TRAVELER: heavy cpu use: ${creep.name}, cpu: ${_.round(travelData.cpu, 2)}, pos: ${creep.pos}`);
+                travelData.avg = _.round(travelData.cpu / travelData.count, 2);
+                if (travelData.count > 25 && travelData.avg > TRAVELER_THRESHOLD) {
+                    console.log(`TRAVELER: heavy cpu use: ${creep.name}, avg: ${travelData.cpu / travelData.count}, total: ${_.round(travelData.cpu, 2)}, pos: ${creep.pos}`);
                 }
                 if (ret.incomplete) {
                     console.log(`TRAVELER: incomplete path for ${creep.name} from ${creep.pos} to ${destPos}`);

@@ -34,14 +34,14 @@ mod.nextAction = function(creep){
             Creep.action.feeding,
             Creep.action.charging,
             Creep.action.fueling,
-            Creep.action.storing,
             Creep.action.idle];
-
+        if (creep.data.lastAction !== 'withdrawing' || !creep.room.storage || creep.data.lastTarget !== creep.room.storage.id) {
+            priority.push(Creep.action.storing);
+        }
         if ( creep.sum > creep.carry.energy ||
-            ( !creep.room.situation.invasion
-            && SPAWN_DEFENSE_ON_ATTACK
-            && creep.room.conserveForDefense && creep.room.relativeEnergyAvailable > 0.8)) {
-                priority.unshift(Creep.action.storing);
+            ( !creep.room.situation.invasion &&
+                SPAWN_DEFENSE_ON_ATTACK && creep.room.conserveForDefense && creep.room.relativeEnergyAvailable > 0.8)) {
+            priority.unshift(Creep.action.storing);
         }
         if (creep.room.structures.urgentRepairable.length > 0 ) {
             priority.unshift(Creep.action.fueling);
@@ -49,11 +49,13 @@ mod.nextAction = function(creep){
     }
 
     for(var iAction = 0; iAction < priority.length; iAction++) {
-        var action = priority[iAction];
-        if(action.isValidAction(creep) &&
-            action.isAddableAction(creep) &&
-            action.assign(creep)) {
-                return;
+        var a = priority[iAction];
+        if(a.isValidAction(creep) && a.isAddableAction(creep) && a.assign(creep)) {
+            if (a.name !== 'idle') {
+                creep.data.lastAction = a.name;
+                creep.data.lastTarget = creep.target.id;
+            }
+            return;
         }
     }
 };
