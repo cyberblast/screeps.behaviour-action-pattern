@@ -197,6 +197,60 @@ mod.extend = function(){
         });
     };
 
+    let PowerSpawn = function(room){
+        this.room = room;
+
+        Object.defineProperties(this, {
+            'all': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.room.memory.powerSpawn)) {
+                        this.room.savePowerSpawn();
+                    }
+                    if( _.isUndefined(this._all) ){
+                        this._all = [];
+                        let add = entry => {
+                            let o = Game.getObjectById(entry.id);
+                            if( o ) {
+                                _.assign(o, entry);
+                                this._all.push(o);
+                            }
+                        };
+                        _.forEach(this.room.memory.powerSpawn, add);
+                    }
+                    return this._all;
+                }
+            },
+        });
+    };
+
+    let Nuker = function(room){
+        this.room = room;
+
+        Object.defineProperties(this, {
+            'all': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.room.memory.nuker)) {
+                        this.room.saveNuker();
+                    }
+                    if( _.isUndefined(this._all) ){
+                        this._all = [];
+                        let add = entry => {
+                            let o = Game.getObjectById(entry.id);
+                            if( o ) {
+                                _.assign(o, entry);
+                                this._all.push(o);
+                            }
+                        };
+                        _.forEach(this.room.memory.nuker, add);
+                    }
+                    return this._all;
+                }
+            },
+        });
+    };
+
     let Structures = function(room){
         this.room = room;
 
@@ -327,13 +381,22 @@ mod.extend = function(){
                     return this._links;
                 }
             },
-            'labs' : {
+            'powerSpawn' : {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._labs) ){
-                        this._labs = new Labs(this.room);
+                    if( _.isUndefined(this._powerSpawn) ){
+                        this._powerSpawn = new PowerSpawn(this.room);
                     }
-                    return this._labs;
+                    return this._powerSpawn;
+                }
+            },
+            'nuker' : {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._nuker) ){
+                        this._nuker = new Nuker(this.room);
+                    }
+                    return this._nuker;
                 }
             },
             'virtual': {
@@ -1111,18 +1174,6 @@ mod.extend = function(){
         });
         let storageLabs = this.storage ? this.storage.pos.findInRange(labs, 2).map(l => l.id) : [];
 
-        // for each memory entry, keep if existing
-        /*
-        let kept = [];
-        let keep = (entry) => {
-            if( links.find( (c) => c.id == entry.id )){
-                entry.storage = storageLinks.includes(entry.id);
-                kept.push(entry);
-            }
-        };
-        this.memory.links.forEach(keep);
-        this.memory.links = kept;
-        */
         this.memory.labs = [];
 
         // for each entry add to memory ( if not contained )
@@ -1136,6 +1187,27 @@ mod.extend = function(){
             }
         };
         labs.forEach(add);
+    };
+    Room.prototype.savePowerSpawn = function(){
+        if( _.isUndefined(this.memory.powerSpawn) ){
+            this.memory.powerSpawn = [];
+        }
+        let powerSpawns = this.find(FIND_MY_STRUCTURES, {
+            filter: (structure) => ( structure.structureType == STRUCTURE_POWER_SPAWN )
+        });
+
+        this.memory.powerSpawn = [];
+
+        // for each entry add to memory ( if not contained )
+        let add = (powerSpawn) => {
+            let powerSpawnData = this.memory.powerSpawn.find( (s) => s.id == powerSpawn.id );
+            if( !powerSpawnData ) {
+                this.memory.powerSpawn.push({
+                    id: powerSpawn.id,
+                });
+            }
+        };
+        powerSpawns.forEach(add);
     };
     Room.prototype.saveMinerals = function() {
         let that = this;
@@ -1886,6 +1958,7 @@ mod.analyze = function(){
                 room.saveContainers();
                 room.saveLinks();
                 room.saveLabs();
+                room.savePowerSpawn();
                 room.updateResourceOrders();
                 room.updateRoomOrders();
                 room.terminalBroker();
