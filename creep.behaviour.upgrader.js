@@ -23,7 +23,7 @@ mod.run = function(creep) {
         creep.data.creepType='recycler';
         return;
     }
-    if( !creep.action ) Population.registerAction(creep, Creep.action.upgrading, creep.room.controller);
+    if( !creep.action || creep.action.name !== 'upgrading' ) Population.registerAction(creep, Creep.action.upgrading, creep.room.controller);
     if( !creep.data.determinatedSpot ) {
         let determineSpots = (ignoreSources=false) => {
             let spots = [];
