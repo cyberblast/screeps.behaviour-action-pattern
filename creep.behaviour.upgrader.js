@@ -109,3 +109,14 @@ mod.run = function(creep) {
         }
     }
 };
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        moveOptions: function(options) {
+            return options || {};
+        }
+    }
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};
