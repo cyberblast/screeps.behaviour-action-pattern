@@ -1218,6 +1218,27 @@ mod.extend = function(){
         };
         powerSpawns.forEach(add);
     };
+    Room.prototype.saveNuker = function(){
+        if( _.isUndefined(this.memory.nuker) ){
+            this.memory.nuker = [];
+        }
+        let nukers = this.find(FIND_MY_STRUCTURES, {
+            filter: (structure) => ( structure.structureType == STRUCTURE_NUKER )
+        });
+
+        this.memory.nuker = [];
+
+        // for each entry add to memory ( if not contained )
+        let add = (nuker) => {
+            let labData = this.memory.nuker.find( (l) => l.id == lab.id );
+            if( !labData ) {
+                this.memory.nuker.push({
+                    id: lab.id,
+                });
+            }
+        };
+        nukers.forEach(add);
+    };
     Room.prototype.saveMinerals = function() {
         let that = this;
         let toPos = o => {
@@ -1986,6 +2007,7 @@ mod.analyze = function(){
                 room.saveLinks();
                 room.saveLabs();
                 room.savePowerSpawn();
+                room.saveNuker();
                 room.updateResourceOrders();
                 room.updateRoomOrders();
                 room.terminalBroker();
