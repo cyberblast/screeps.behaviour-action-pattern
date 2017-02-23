@@ -290,6 +290,8 @@ module.exports = function(globalOpts = {}){
                 } else if (site.structureType === STRUCTURE_ROAD) {
                     if (USE_UNBUILT_ROADS) matrix.set(site.pos.x, site.pos.y, roadCost);
                     continue;
+                } else if (site.structureType === STRUCTURE_RAMPART) {
+                    continue;
                 }
                 matrix.set(site.pos.x, site.pos.y, 0xff);
             }
