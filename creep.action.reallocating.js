@@ -416,14 +416,22 @@ action.cancelAction = function(creep) {
     creep.target = null;
     delete creep.data.path;
 };
+action.unloadResource = function(creep, target, resource, amount) {
+    var amt = Math.min(amount,creep.carryCapacity-creep.sum);
+    let workResult = creep.withdraw(target, resource, amt);
+    if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: creep.room.name, creepName: creep.name, subAction: 'withdrawing', structureId: target.id, resourceType: resource, amount: amt, result: workResult });
+    return workResult;
+};
 action.loadResource = function(creep, target, resource, amount) {
-    let room = creep.room;
-    let workResult = creep.withdraw(target, resource, Math.min(amount,creep.carryCapacity-creep.sum));
+    var amt = Math.min(amount,creep.carry[resource]||0);
+    let workResult = creep.transfer(target, resource, amt);
+    if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: creep.room.name, creepName: creep.name, subAction: 'transfering', structureId: target.id, resourceType: resource, amount: amt, result: workResult });
     return workResult;
 };
 action.assignDropOff = function(creep, resource) {
     let data = this.findNeeding(creep.room, resource);
     if (data) {
+        if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: creep.room.name, creepName: creep.name, targetStructureId: data.structure.id, resourceType: resource, amount: data.amount });
         this.assign(creep, data.structure);
     }
     delete creep.data.path;
@@ -441,7 +449,7 @@ action.unloadLab = function(creep) {
         if (amount > 0) resource = target.mineralType;
     }
     if (resource) {
-        workResult = this.loadResource(creep, target, resource, amount);
+        workResult = this.unloadResource(creep, target, resource, amount);
         this.assignDropOff(creep, resource);
     } else this.cancelAction(creep);
     return workResult;
@@ -458,7 +466,7 @@ action.unloadPowerSpawn = function(creep) {
         if (amount > 0) resource = RESOURCE_POWER;
     }
     if (resource) {
-        workResult = this.loadResource(creep, target, resource, amount);
+        workResult = this.unloadResource(creep, target, resource, amount);
         this.assignDropOff(creep, resource);
     } else this.cancelAction(creep);
     return workResult;
@@ -474,7 +482,7 @@ action.unloadContainer = function(creep) {
         if (amount > 0) { resource = res; break; }
     }
     if (resource) {
-        workResult = this.loadResource(creep, target, resource, amount);
+        workResult = this.unloadResource(creep, target, resource, amount);
         this.assignDropOff(creep, resource);
     } else this.cancelAction(creep);
     return workResult;
@@ -509,7 +517,7 @@ action.unloadTerminal = function(creep) {
     if (resource) {
         amount = Math.min(amount,target.store[resource]||0,creep.carryCapacity-creep.sum);
         if (DEBUG_LOGISTICS) console.log(creep,"picking up", amount, resource, "from terminal");
-        workResult = this.loadResource(creep, target, resource, amount);
+        workResult = this.unloadResource(creep, target, resource, amount);
         this.assignDropOff(creep, resource);
     } else this.cancelAction(creep);
     return workResult;
@@ -544,7 +552,7 @@ action.unloadStorage = function(creep) {
     if (resource) {
         amount = Math.min(amount,target.store[resource]||0,creep.carryCapacity-creep.sum);
         if (DEBUG_LOGISTICS) console.log(creep,"picking up", amount, resource, "from storage");
-        workResult = this.loadResource(creep, target, resource, amount);
+        workResult = this.unloadResource(creep, target, resource, amount);
         this.assignDropOff(creep, resource);
     } else this.cancelAction(creep);
     return workResult;
@@ -567,7 +575,7 @@ action.loadLab = function(creep) {
         }
     }
     amount = Math.min(amount,creep.carry[resource]||0);
-    if (resource) workResult = creep.transfer(target, resource, amount);
+    if (resource) workResult = this.loadResource(creep, target, resource, amount);
 
     if ((creep.carry[resource]||0) > amount) {
         this.assignDropOff(creep, resource);
@@ -603,7 +611,7 @@ action.loadPowerSpawn = function(creep) {
         }
     }
     amount = Math.min(amount,creep.carry[resource]||0);
-    if (resource) workResult = creep.transfer(target, resource, amount);
+    if (resource) workResult = this.loadResource(creep, target, resource, amount);
 
     if ((creep.carry[resource]||0) > amount) {
         this.assignDropOff(creep, resource);
@@ -637,7 +645,7 @@ action.loadContainer = function(creep) {
         }
     }
     amount = Math.min(amount,creep.carry[resource]||0);
-    if (resource) workResult = creep.transfer(target, resource, amount);
+    if (resource) workResult = this.loadResource(creep, target, resource, amount);
 
     if ((creep.carry[resource]||0) > amount) {
         this.assignDropOff(creep, resource);
@@ -659,6 +667,7 @@ action.loadContainer = function(creep) {
 };
 action.loadTerminal = function(creep) {
     let target = creep.target;
+    let room = creep.room;
     var workResult = null;
     var resource = null;
     var amount = 0;
@@ -675,7 +684,7 @@ action.loadTerminal = function(creep) {
         }
     }
     amount = Math.min(amount,creep.carry[resource]||0);
-    if (resource) workResult = creep.transfer(target, resource, amount);
+    if (resource) workResult = this.loadResource(creep, target, resource, amount);
 
     if ((creep.carry[resource]||0) > amount) {
         this.assignDropOff(creep, resource);
@@ -697,6 +706,7 @@ action.loadTerminal = function(creep) {
 };
 action.loadStorage = function(creep) {
     let target = creep.target;
+    let room = creep.room;
     var workResult = null;
     var resource = null;
     var amount = 0;
@@ -709,7 +719,7 @@ action.loadStorage = function(creep) {
         }
     }
     amount = Math.min(amount,creep.carry[resource]||0);
-    if (resource) workResult = creep.transfer(target, resource, amount);
+    if (resource) workResult = this.loadResource(creep, target, resource, amount);
 
     if ((creep.carry[resource]||0) > amount) {
         this.assignDropOff(creep, resource);
