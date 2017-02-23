@@ -381,6 +381,15 @@ mod.extend = function(){
                     return this._links;
                 }
             },
+            'labs' : {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._labs) ){
+                        this._labs = new Labs(this.room);
+                    }
+                    return this._labs;
+                }
+            },
             'powerSpawn' : {
                 configurable: true,
                 get: function() {
