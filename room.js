@@ -1230,10 +1230,10 @@ mod.extend = function(){
 
         // for each entry add to memory ( if not contained )
         let add = (nuker) => {
-            let labData = this.memory.nuker.find( (l) => l.id == lab.id );
-            if( !labData ) {
+            let nukerData = this.memory.nuker.find( (s) => s.id == nuker.id );
+            if( !nukerData ) {
                 this.memory.nuker.push({
-                    id: lab.id,
+                    id: nuker.id,
                 });
             }
         };
