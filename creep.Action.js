@@ -60,9 +60,13 @@ let Action = function(actionName){
                 creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
                 return;
             }
+            if (creep.target && range > this.reachedRange) {
+                // low CPU pathfinding for last few steps.
+                creep.move(creep.pos.getDirectionTo(creep.target));
+            }
+        } else if( creep.target ) {
+            creep.travelTo(creep.target, {range: this.targetRange});
         }
-        if( creep.target )
-            creep.travelTo(creep.target, {range: this.reachedRange});
     };
     // order for the creep to execute when at target
     this.work = function(creep){
