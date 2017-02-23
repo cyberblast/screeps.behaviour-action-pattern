@@ -19,7 +19,7 @@ action.step = function(creep){
     if( target ){
         const range = creep.pos.getRangeTo(target);
         if( range <= targetRange ) {
-            return Creep.action.travelling.unregister(creep);
+            return action.unregister(creep);
         }
         creep.travelTo(target, {range:targetRange, ignoreCreeps:creep.data.ignoreCreeps || true});
     } else {

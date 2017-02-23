@@ -1,7 +1,7 @@
 let action = new Creep.Action('dropping');
 module.exports = action;
 action.targetRange = 1;
-action.reachedRange = 1;
+action.reachedRange = 0;
 action.isValidAction = function(creep){
     return creep.sum > 0;
 };
@@ -23,7 +23,6 @@ action.work = function(creep) {
         let range = creep.pos.getRangeTo(creep.target);
         if( range > 0 && creep.data.lastPos && creep.data.path && !_.eq(creep.pos, creep.data.lastPos) ) {
             // If the destination is walkable, try to move there before dropping
-            //FIXME: Check Walkable
             let invalidObject = o => {
                 return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
                      o.type == LOOK_CREEPS ||
@@ -31,7 +30,7 @@ action.work = function(creep) {
             };
             let look = creep.room.lookAt(target);
             if (!_.some(look, invalidObject)) {
-                return creep.travelTo(creep.target, {range: 0});
+                return ret;
             }
         }
     }

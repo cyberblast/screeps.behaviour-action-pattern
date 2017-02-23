@@ -7,7 +7,8 @@ action.isActiveLair = function(target) {
     return !(target.ticksToSpawn > action.lairDangerTime); // non-lair => true
 };
 action.isValidAction = function(creep){
-    return creep.room.situation.invasion || Room.isSKRoom(creep.pos.roomName);
+    return (creep.data.destiny && creep.data.destiny.room === creep.room.name) &&
+        (creep.room.situation.invasion || Room.isSKRoom(creep.room.name));
 };
 action.isValidTarget = function(target, creep){
     return Task.reputation.hostileOwner(target) && action.isActiveLair(target);

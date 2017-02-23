@@ -151,7 +151,10 @@ mod.handleCreepDied = name => {
 mod.nextAction = creep => {
     // override behaviours nextAction function
     // this could be a global approach to manipulate creep behaviour
-
+    if (creep.data.destiny && creep.data.destiny.room !== creep.room.name) {
+        // go to target room
+        return Creep.action.travelling.assignRoom(creep, creep.data.destiny.room);
+    }
     //Reserve if possible, if not (should be never) then recycle
     let priority = [
         Creep.action.reserving,

@@ -3,7 +3,8 @@ module.exports = setup;
 setup.minControllerLevel = 2;
 setup.maxMulti = function(room){
     let multi = 0;
-    if( !room.storage || room.storage.store.energy > MIN_STORAGE_ENERGY[room.controller.level])
+    const charge = room.storage ? room.storage.charge : 0;
+    if( !room.storage || charge > 0)
         multi++;
     if( !room.storage || room.storage.store.energy > ((MAX_STORAGE_ENERGY[room.controller.level]-MIN_STORAGE_ENERGY[room.controller.level])/2)+MIN_STORAGE_ENERGY[room.controller.level])
         multi++;
