@@ -114,7 +114,7 @@ let mod = {
     COST_MATRIX_VALIDITY: 1000,
     CONSTRUCTION_PRIORITY: [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_LINK,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_WALL,STRUCTURE_RAMPART],
     CONTROLLER_SIGN: false,
-    CONTROLLER_SIGN_MESSAGE: "Territory of the Open Collaboration Society! (https://github.com/ScreepsOCS)",
+    CONTROLLER_SIGN_MESSAGE: `Territory of ${_.chain(Game.spawns).values().first().get('owner.username').value()}, an Open Collaboration Society user! (https://github.com/ScreepsOCS)`,
     CONTROLLER_SIGN_UPDATE: false, // Update sign message if user changes CONTROLLER_SIGN_MESSAGE
     MINERS_AUTO_BUILD: false, // miners and remoteMiners will build their own containers if they are missing.
     REMOTE_HAULER_MULTIPLIER: 1, // Max number of haulers spawned per source in a remote mining room.
