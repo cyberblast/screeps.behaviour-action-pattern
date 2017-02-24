@@ -625,7 +625,7 @@ mod.extend = function(){
                     let that = this;
                     let distance, reserved, flag;
                     let rcl = this.controller.level;
-                    
+
                     let flagEntries = FlagDir.filter([FLAG_COLOR.claim, FLAG_COLOR.claim.reserve, FLAG_COLOR.invade.exploit]);
                     let calcWeight = flagEntry => {
                         // don't spawn claimer for reservation at RCL < 4 (claimer not big enough)
@@ -1380,7 +1380,7 @@ mod.extend = function(){
                 //o.ratio = (o.credits-o.transactionCost)/o.transactionAmount; // best offer assuming 1e == 1 credit
                 //o.ratio = o.credits/(o.transactionAmount+o.transactionCost); // best offer assuming 1e == 1 mineral
                 o.ratio = (o.credits - (o.transactionCost*ENERGY_VALUE_CREDITS)) / o.transactionAmount; // best offer assuming 1e == ENERGY_VALUE_CREDITS credits
-                
+
                 return (
                     (terminalFull || o.ratio >= MIN_SELL_RATIO[mineral]) &&
                     //o.range <= MAX_SELL_RANGE &&
@@ -1490,7 +1490,7 @@ mod.extend = function(){
             let slave_a = Game.getObjectById(data.slave_a);
             let slave_b = Game.getObjectById(data.slave_b);
             if (!slave_a || slave_a.mineralType != LAB_REACTIONS[compound][0] || !slave_b || slave_b.mineralType != LAB_REACTIONS[compound][1]) continue;
-            
+
             if (master.runReaction(slave_a, slave_b) == OK) {
                 data.reactionAmount -= 5;
                 console.log(master,"FU - SION - HA!",data.reactionAmount,compound,"remaining on order");
