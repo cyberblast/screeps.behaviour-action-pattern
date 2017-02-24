@@ -234,6 +234,9 @@ module.exports.loop = function () {
     if (Memory.debugTrace === undefined) {
         Memory.debugTrace = {error:true, no:{}};
     }
+    if (Memory.cloaked === undefined) {
+        Memory.cloaked = {};
+    }
 
     // ensure up to date parameters
     _.assign(global, load("parameter"));
