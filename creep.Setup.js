@@ -210,11 +210,12 @@ Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
                 return;
             }
             flag = Game.flags[flagEntry.name];
-            if( _.every(flag.targetOf, Setup.isWorkingAge)) {
-                max++;
-            } else if( _.some(flag.targetOf, 'homeRoom', room.name) ) {
-                max++;
-            }
+            max += _.sum(flag.targetOf, function(c) {
+                if (c.homeRoom === room.name) {
+                    return Setup.isWorkingAge(c) ? 1 : 2;
+                }
+                return 0;
+            });
         };
         let flagEntries = FlagDir.filter(flagFilter);
         flagEntries.forEach(calcMax);
