@@ -1841,9 +1841,9 @@ mod.extend = function(){
         const OBSERVER = this.observer;
         if (!this.memory.observer.rooms) this.initObserverRooms();
         const ROOMS = this.memory.observer.rooms;
-        let lastLookedIndex = this.memory.observer.lastLookedIndex || ROOMS.length;
+        let lastLookedIndex = this.memory.observer.lastLookedIndex || ROOMS.length; // if doesn't exist, default to array length as it's guaranteed to be > array.length - 1.
         let nextRoom;
-        do {
+        do { // look ma! my first ever do-while loop!
             if (lastLookedIndex >= ROOMS.length - 1) {
                 nextRoom = ROOMS[0];
             }  else {
@@ -1852,21 +1852,21 @@ mod.extend = function(){
             lastLookedIndex = ROOMS.indexOf(nextRoom);
             this.memory.observer.lastLookedIndex = lastLookedIndex;
         } while (Memory.observerSchedule.includes(nextRoom));
-        OBSERVER.observeRoom(nextRoom);
+        OBSERVER.observeRoom(nextRoom); // now we get to observe a room
     };
     Room.prototype.initObserverRooms = function() {
-        const OBSERVER_RANGE = 10;
-        const PRIORITISE_HIGHWAY = true;
-        const [x, y] = Room.calcCoordinates(this.name, (x,y) => [x,y]);
+        const OBSERVER_RANGE = 10; // should probably be in parameters
+        const PRIORITISE_HIGHWAY = true; // as should this
+        const [x, y] = Room.calcCoordinates(this.name, (x,y) => [x,y]); // hacky get x,y
         const [HORIZONTAL, VERTICAL] = Room.calcCardinalDirection(this.name);
         let ROOMS = [];
         
         for (let a = x - OBSERVER_RANGE; a < x + OBSERVER_RANGE; a++) {
             for (let b = y - OBSERVER_RANGE; b < b + OBSERVER_RANGE; b++) {
                 let hor, vert;
-                if (a < 0) {
+                if (a < 0) { // swap horizontal letter
                     if (HORIZONTAL === 'W') {
-                        hor = 'E' + (Math.abs(a) - 1);
+                        hor = 'E' + (Math.abs(a) - 1); // If a === -1, E0
                     } else {
                         hor = 'W' + (Math.abs(a) - 1);
                     }
@@ -1879,13 +1879,13 @@ mod.extend = function(){
                     }
                 }
                 const room = hor + vert;
-                if (room in Game.rooms && Game.rooms[room].my) continue;
+                if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
                 ROOMS.push(room);
             }
         }
         if (PRIORITISE_HIGHWAY) {
             ROOMS = _.sortBy(ROOMS, v => {
-                return Room.isHighwayRoom(v) ? 0 : 1;
+                return Room.isHighwayRoom(v) ? 0 : 1; // should work, I hope
             });
         }
         this.memory.observer.rooms = ROOMS;
