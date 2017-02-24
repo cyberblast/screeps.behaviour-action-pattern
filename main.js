@@ -132,7 +132,7 @@ global.install = () => {
         Tower: load("tower"),
         Events: load('events'),
         Grafana: GRAFANA ? load('grafana') : undefined,
-        Visuals: ROOM_VISUALS ? load('visuals') : undefined,
+        Visuals: ROOM_VISUALS && Game.cpu.bucket > CRITICAL_BUCKET_LEVEL ? load('visuals') : undefined,
     });
     _.assign(global.Task, {
         guard: load("task.guard"),
@@ -236,6 +236,9 @@ module.exports.loop = function () {
     if (Memory.debugTrace === undefined) {
         Memory.debugTrace = {error:true, no:{}};
     }
+    if (Memory.cloaked === undefined) {
+        Memory.cloaked = {};
+    }
 
     // ensure up to date parameters
     _.assign(global, load("parameter"));
@@ -285,7 +288,7 @@ module.exports.loop = function () {
     // custom cleanup
     if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
 	
-    if ( ROOM_VISUALS ) Visuals.run(); // At end to correctly display used CPU.
+    if ( ROOM_VISUALS && Game.cpu.bucket > CRITICAL_BUCKET_LEVEL ) Visuals.run(); // At end to correctly display used CPU.
     
     if ( GRAFANA && Game.time % GRAFANA_INTERVAL === 0 ) Grafana.run();
 

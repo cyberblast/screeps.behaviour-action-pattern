@@ -314,7 +314,7 @@ mod.isSummerTime = function(date){
 mod.addById = function(array, id){
     if(array == null) array = [];
     var obj = Game.getObjectById(id);
-    if( obj ) array.push(obj);
+    if( obj && !obj.cloak ) array.push(obj);
     return array;
 };
 // send up to REPORTS_PER_LOOP notify mails, which are cached in memory
