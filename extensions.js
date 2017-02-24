@@ -285,7 +285,7 @@ mod.extend = function(){
             store = this.energy;
             space = this.energyCapacity-this.energy;
         } else {
-            store = this.mineralType == resourceType ? this.mineralAmount : 0;
+            if (this.mineralType == resourceType) store = this.mineralAmount;
             space = this.mineralCapacity-this.mineralAmount;
         }
         // lab requires precise loading
@@ -294,7 +294,7 @@ mod.extend = function(){
         return 0;
     };
     StructurePowerSpawn.prototype.getNeeds = function(resourceType) {
-        if (!this.room.memory.resources) return 0;
+        if (!this.room.memory.resources || !this.room.memory.resources.powerSpawn) return 0;
         let loadTarget = 0;
         let unloadTarget = 0;
 

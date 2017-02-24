@@ -1308,6 +1308,7 @@ mod.extend = function(){
                     let order = structure.orders[j];
                     if (order.orderRemaining <= 0) {
                         let baseAmount = 0;
+                        let rcl = this.controller.level;
                         if (structureType == STRUCTURE_STORAGE) baseAmount = order.type == RESOURCE_ENERGY ? MIN_STORAGE_ENERGY[rcl] : MAX_STORAGE_MINERAL;
                         else if (structureType == STRUCTURE_TERMINAL) baseAmount = order.type == RESOURCE_ENERGY ? TERMINAL_ENERGY : 0;
                         baseAmount += order.storeAmount;

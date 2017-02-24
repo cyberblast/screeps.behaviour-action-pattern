@@ -419,8 +419,9 @@ action.unloadStructure = function(creep, target, resource, amount) {
     return workResult;
 };
 action.loadStructure = function(creep, target, resource, amount) {
+    var workResult = 0;
     var amt = Math.min(amount,creep.carry[resource]||0);
-    let workResult = creep.transfer(target, resource, amt);
+    if (amt > 0) workResult = creep.transfer(target, resource, amt);
     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: creep.room.name, creepName: creep.name, subAction: 'loadStructure', structureId: target.id, resourceType: resource, amount: amt, result: workResult });
     return workResult;
 };
@@ -430,7 +431,7 @@ action.assignDropOff = function(creep, resource) {
         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: creep.room.name, creepName: creep.name, subAction: 'assignDropOff', targetStructureId: data.structure.id, resourceType: resource, amount: data.amount });
         this.assign(creep, data.structure);
     }
-    delete creep.data.path;
+    //delete creep.data.path;
 };
 action.unloadLab = function(creep) {
     // load up from the lab
@@ -446,6 +447,8 @@ action.unloadLab = function(creep) {
     }
     if (resource) {
         workResult = this.unloadStructure(creep, target, resource, amount);
+    }
+    if (workResult == OK) {
         this.assignDropOff(creep, resource);
     } else this.cancelAction(creep);
     return workResult;
@@ -463,6 +466,8 @@ action.unloadPowerSpawn = function(creep) {
     }
     if (resource) {
         workResult = this.unloadStructure(creep, target, resource, amount);
+    }
+    if (workResult == OK) {
         this.assignDropOff(creep, resource);
     } else this.cancelAction(creep);
     return workResult;
@@ -479,6 +484,8 @@ action.unloadContainer = function(creep) {
     }
     if (resource) {
         workResult = this.unloadStructure(creep, target, resource, amount);
+    }
+    if (workResult == OK) {
         this.assignDropOff(creep, resource);
     } else this.cancelAction(creep);
     return workResult;
@@ -492,9 +499,9 @@ action.unloadTerminal = function(creep) {
     var amount = 0;
     // identify resource and load up from store
     for (var res in target.store) {
-        if (res) {
-            let dat = this.findNeeding(room, res);
-            if (dat && dat.structure.id == target.id) dat = null;
+        if (res && target.store[res] > 0) {
+            let dat = this.findNeeding(room, res, 1, target.id);
+            //if (dat && dat.structure.id == target.id) dat = null;
             if (dat) {
                 amount = dat.amount;
             }
@@ -512,6 +519,8 @@ action.unloadTerminal = function(creep) {
     if (resource) {
         amount = Math.min(amount,target.store[resource]||0,creep.carryCapacity-creep.sum);
         workResult = this.unloadStructure(creep, target, resource, amount);
+    }
+    if (workResult == OK) {
         this.assignDropOff(creep, resource);
     } else this.cancelAction(creep);
     return workResult;
@@ -525,7 +534,7 @@ action.unloadStorage = function(creep) {
     var amount = 0;
     // check for other container's needs and local excess
     for (var res in target.store) {
-        if (res) {
+        if (res && target.store[res] > 0) {
             let dat = this.findNeeding(room, res);
             if (dat && dat.structure.id == target.id) dat = null;
             if (dat) {
@@ -545,6 +554,8 @@ action.unloadStorage = function(creep) {
     if (resource) {
         amount = Math.min(amount,target.store[resource]||0,creep.carryCapacity-creep.sum);
         workResult = this.unloadStructure(creep, target, resource, amount);
+    }
+    if (workResult == OK) {
         this.assignDropOff(creep, resource);
     } else this.cancelAction(creep);
     return workResult;
@@ -567,7 +578,6 @@ action.loadLab = function(creep) {
             resource = null;
         }
     }
-    amount = Math.min(amount,creep.carry[resource]||0);
     if (resource) workResult = this.loadStructure(creep, target, resource, amount);
 
     if ((creep.carry[resource]||0) > amount) {
@@ -600,11 +610,10 @@ action.loadPowerSpawn = function(creep) {
         resource = RESOURCE_ENERGY;
     } else {
         amount = target.getNeeds(RESOURCE_POWER);
-        if (!(amount > 0 && (creep.carry[resource]||0) > 0)) {
+        if (!(amount > 0 && (creep.carry[RESOURCE_POWER]||0) > 0)) {
             resource = null;
         }
     }
-    amount = Math.min(amount,creep.carry[resource]||0);
     if (resource) workResult = this.loadStructure(creep, target, resource, amount);
 
     if ((creep.carry[resource]||0) > amount) {
@@ -633,13 +642,13 @@ action.loadContainer = function(creep) {
     var amount = 0;
     // drop off at store
     for (var res in creep.carry) {
+        if (res && creep.carry[res] == 0) continue;
         amount = target.getNeeds(res);
         if (amount > 0) {
             resource = res;
             break;
         }
     }
-    amount = Math.min(amount,creep.carry[resource]||0);
     if (resource) workResult = this.loadStructure(creep, target, resource, amount);
 
     if ((creep.carry[resource]||0) > amount) {
@@ -668,6 +677,7 @@ action.loadTerminal = function(creep) {
     var amount = 0;
     // drop off at store
     for (var res in creep.carry) {
+        if (res && creep.carry[res] == 0) continue;
         amount = target.getNeeds(res);
         if (amount > 0) {
             resource = res;
@@ -678,7 +688,6 @@ action.loadTerminal = function(creep) {
             break;
         }
     }
-    amount = Math.min(amount,creep.carry[resource]||0);
     if (resource) workResult = this.loadStructure(creep, target, resource, amount);
 
     if ((creep.carry[resource]||0) > amount) {
@@ -707,13 +716,13 @@ action.loadStorage = function(creep) {
     var amount = 0;
     // drop off at store
     for (var res in creep.carry) {
+        if (res && creep.carry[res] == 0) continue;
         amount = target.getNeeds(res);
         if (amount > 0) {
             resource = res;
             break;
         }
     }
-    amount = Math.min(amount,creep.carry[resource]||0);
     if (resource) workResult = this.loadStructure(creep, target, resource, amount);
 
     if ((creep.carry[resource]||0) > amount) {
