@@ -132,5 +132,7 @@ let mod = {
     DEFENSE_BLACKLIST: [], // Don't defend those rooms (add room names). Blocks spawning via defense task (will not prevent offensive actions at all)
     CRITICAL_BUCKET_LEVEL: 1000, // take action when the bucket drops below this value to prevent the bucket from actually running out
     CRITICAL_ROLES: [ 'melee', 'ranger', 'healer', 'miner', 'hauler', 'upgrader' ], // when the bucket drops below the critical bucket level only these creep roles will be executed
+    OBSERVER_OBSERVE_RANGE: 10, // the range for observers to look at
+    OBSERVER_PRIORITISE_HIGHWAY: true, // the observers will look at highways first
 };
 module.exports = mod;

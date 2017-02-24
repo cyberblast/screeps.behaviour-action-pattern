@@ -1855,8 +1855,8 @@ mod.extend = function(){
         OBSERVER.observeRoom(nextRoom); // now we get to observe a room
     };
     Room.prototype.initObserverRooms = function() {
-        const OBSERVER_RANGE = 10; // should probably be in parameters
-        const PRIORITISE_HIGHWAY = true; // as should this
+        const OBSERVER_RANGE = OBSERVER_OBSERVE_RANGE > 10 ? 10 : OBSERVER_OBSERVE_RANGE; // can't be > 10
+        const PRIORITISE_HIGHWAY = OBSERVER_PRIORITISE_HIGHWAY;
         const [x, y] = Room.calcCoordinates(this.name, (x,y) => [x,y]); // hacky get x,y
         const [HORIZONTAL, VERTICAL] = Room.calcCardinalDirection(this.name);
         let ROOMS = [];
