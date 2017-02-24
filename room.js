@@ -366,7 +366,7 @@ mod.extend = function(){
 		                this.room.saveObserver();
 	                }
                     if (_.isUndefined(this._observer)) {
-	                    this._observer = Game.getObjectById(this.room.memory.observer);
+	                    this._observer = Game.getObjectById(this.room.memory.observer.id);
                     }
                     return this._observer;
                 },
@@ -1058,7 +1058,8 @@ mod.extend = function(){
         } else this.memory.spawns = [];
     };
     Room.prototype.saveObserver = function() {
-        [this.memory.observer] = this.find(FIND_MY_STRUCTURES, {
+        this.memory.observer = {};
+        [this.memory.observer.id] = this.find(FIND_MY_STRUCTURES, {
             filter: s => s instanceof StructureObserver
         }).map(s => s.id);
     };
