@@ -7,14 +7,16 @@ action.isActiveLair = function(target) {
     return !(target.ticksToSpawn > action.lairDangerTime); // non-lair => true
 };
 action.isValidAction = function(creep){
-    return creep.room.situation.invasion || Room.isSKRoom(creep.pos.roomName);
+    return creep.data.destiny && creep.data.destiny.room === creep.room.name &&
+        (Room.isSKRoom(creep.room.name) || creep.room.situation.invasion);
+};
+action.isAddableAction = function(creep) {
+    return true;
 };
 action.isValidTarget = function(target, creep){
     return Task.reputation.hostileOwner(target) && action.isActiveLair(target);
 };
 action.newTarget = function(creep) {
-    delete creep.data.determinatedSpot;
-
     if (Room.isSKRoom(creep.pos.roomName)) {
         const target = _.first(creep.room.find(FIND_STRUCTURES, {filter: function (t) {
             return !_.isUndefined(t.ticksToSpawn) && action.isActiveLair(t) && creep.pos.getRangeTo(t.pos) < 15;
@@ -46,17 +48,21 @@ action.newTarget = function(creep) {
     }
 };
 action.work = function(creep) {
-    if (!(creep.data.determinatedSpot && creep.data.determinatedSpot.roomName)) {
+    if (!(creep.data.safeSpot && creep.data.safeSpot.roomName)) {
         // find the route home, move toward the exit until out of danger
         const exit = _.chain(creep.room.findRoute(creep.data.homeRoom)).first().get('exit').value();
         if (exit) {
-            creep.data.determinatedSpot = creep.pos.findClosestByRange(exit);
-            creep.data.determinatedSpot.roomName = creep.pos.roomName;
+            creep.data.safeSpot = creep.pos.findClosestByRange(exit);
+            creep.data.safeSpot.roomName = creep.pos.roomName;
         }
     }
 
-    if (creep.data.determinatedSpot && creep.pos.getRangeTo(creep.target) < 10) {
-        creep.travelTo(creep.data.determinatedSpot);
+    if (creep.data.safeSpot) {
+        if (creep.pos.getRangeTo(creep.target) < 10) {
+            creep.travelTo(creep.data.safeSpot);
+        } else {
+            creep.idleMove();
+        }
     }
 };
 action.run = function(creep) {
@@ -70,5 +76,6 @@ action.run = function(creep) {
     }
 };
 action.onAssignment = function(creep, target) {
+    delete creep.data.safeSpot;
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(10532), SAY_PUBLIC);
 };
