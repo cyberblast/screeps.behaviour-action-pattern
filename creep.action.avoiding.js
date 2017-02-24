@@ -1,4 +1,4 @@
-let action = new Creep.Action('avoiding');
+const action = new Creep.Action('avoiding');
 module.exports = action;
 action.lairDangerTime = 24;
 action.targetRange = 0;
