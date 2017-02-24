@@ -6,14 +6,14 @@ action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){ return null; };
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
-    const targetRange = creep.data.travelRange || this.targetRange;
+    let targetRange = creep.data.travelRange || this.targetRange;
     let target = creep.target;
     if (FlagDir.isSpecialFlag(creep.target)) {
         if (creep.data.travelRoom) {
+            targetRange = creep.data.travelRange || TRAVELLING_BORDER_RANGE || 22;
             target = new RoomPosition(25, 25, creep.data.travelRoom);
-        } else if (creep.data.travelPos) {
-            const p = creep.data.travelPos;
-            target = new RoomPosition(p.x, p.y, p.roomName);
+        } else {
+            logError(creep.name + 'Creep.action.travelling called with specialFlag target and travelRoom undefined.');
         }
     }
     if( target ){
@@ -27,20 +27,9 @@ action.step = function(creep){
     }
 };
 action.assignRoom = function(creep, roomName) {
-    let travelFlag = Game.flags[roomName + '-travel'];
-    if (!travelFlag) {
-        const room = Game.rooms[roomName];
-        if (room) travelFlag = room.createFlag(25, 25, roomName + '-travel');
-    }
-
-    if (_.isUndefined(creep.data.travelRange)) creep.data.travelRange = 22; // TRAVELLING_BORDER_RANGE;
-
-    if (travelFlag) {
-        return Creep.action.travelling.assign(creep, travelFlag);
-    } else {
-        creep.data.travelRoom = roomName;
-        return Creep.action.travelling.assign(creep, FlagDir.specialFlag());
-    }
+    if (_.isUndefined(creep.data.travelRange)) creep.data.travelRange = TRAVELLING_BORDER_RANGE || 22;
+    creep.data.travelRoom = roomName;
+    return Creep.action.travelling.assign(creep, FlagDir.specialFlag());
 };
 action.unregister = function(creep) {
     delete creep.action;

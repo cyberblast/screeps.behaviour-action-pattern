@@ -115,7 +115,7 @@ mod.run = function(creep, params = {approach: mod.approach}) {
                     if (creep.carry.energy === 0) return; // we need at least some energy to do both in the same tick.
                 }
                 const targets = params.remote ? creep.room.structures.repairable : creep.room.structures.fortifyable;
-                const repairs = creep.pos.findInRange(targets, 3);
+                const repairs = creep.pos.findInRange(_.filter(targets, s => s.structureType === STRUCTURE_ROAD || s.structureType === STRUCTURE_CONTAINER), 3);
                 if (repairs.length) {
                     if(CHATTY) creep.say('repairing', SAY_PUBLIC);
                     return creep.repair(repairs[0]);
@@ -161,13 +161,6 @@ mod.run = function(creep, params = {approach: mod.approach}) {
         } else if (creep.pos.getRangeTo(source) > 3) {
             creep.data.travelRange = 3;
             return Creep.action.travelling.assign(creep, source);
-        }
-    } else {
-        // move inside the room so we don't block the entrance
-        const flag = creep.data && creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
-        if (flag && creep.pos.getRangeTo(flag) > 3) {
-            creep.data.travelRange = 3;
-            return Creep.action.travelling.assign(creep, flag);
         }
     }
 };

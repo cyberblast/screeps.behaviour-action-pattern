@@ -5,17 +5,18 @@ mod.run = function(creep) {
     if (Creep.action.avoiding.run(creep)) {
         return;
     }
-
-    // assign Action
-    if( creep.room.name == creep.data.destiny.room || creep.data.determinatedTarget ){
-        // if we're there (or have been), be a miner.
-        this.mine(creep);
-        return;
-    } else {
-        // else go there
-        this.gotoTargetRoom(creep);
-    }
     
+    if (!creep.action || creep.action.name === 'idle') {   
+        // assign Action
+        if( creep.room.name === creep.data.destiny.room || creep.data.determinatedTarget ){
+            // if we're there (or have been), be a miner.
+            this.mine(creep);
+            return;
+        } else {
+            // else go there
+            this.gotoTargetRoom(creep);
+        }
+    }
     // Do some work
     if( creep.action && creep.target ) {
         creep.action.step(creep);
