@@ -118,7 +118,7 @@ action.newTargetLab = function(creep) {
                         return ret.structure;
                     }
                     if (ROOM_TRADING && !(lab.mineralType == RESOURCE_ENERGY || lab.mineralType == room.mineralType)) {
-                        if (DEBUG) logSystem(room.name, `${creep.name} started a room order of ${amount} ${mineralType} for structure ${lab.id}`);
+                        if (DEBUG) logSystem(room.name, `${creep.name} started a room order of ${amount} ${lab.mineralType} for structure ${lab.id}`);
                         room.placeRoomOrder(lab.id,lab.mineralType,amount);
                     }
                 }
@@ -145,7 +145,7 @@ action.newTargetLab = function(creep) {
                         return ret.structure;
                     }
                     if (ROOM_TRADING && !(resourceType == RESOURCE_ENERGY || resourceType == room.mineralType)) {
-                        if (DEBUG) logSystem(room.name, `${creep.name} started a room order of ${amount} ${mineralType} for lab ${lab.id}`);
+                        if (DEBUG) logSystem(room.name, `${creep.name} started a room order of ${amount} ${resourceType} for lab ${lab.id}`);
                         room.placeRoomOrder(lab.id,resourceType,order.orderRemaining);
                     }
                 }
@@ -377,7 +377,7 @@ action.isValidTarget = function(target){
 };
 action.isAddableAction = function(creep){
     let pop = creep.room.population;
-    return (!pop || !pop.actionCount[this.name] || pop.actionCount[this.name] < this.maxPerAction);
+    return (creep.sum == 0) && (!pop || !pop.actionCount[this.name] || pop.actionCount[this.name] < this.maxPerAction);
 };
 action.isAddableTarget = function(target){
     return true;
@@ -401,7 +401,7 @@ action.newTarget = function(creep){
         // find destination for carried resource
         let resourceType = Object.keys(creep.carry)[0];
         var needing = this.findNeeding(room, resourceType);
-        if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, subAction: 'assignDropOff', targetStructureId: needing.structure.id, resourceType: resource, targetNeeds: needing.amount });
+        if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, subAction: 'assignDropOff', targetStructureId: needing.structure.id, resourceType: resourceType, targetNeeds: needing.amount });
         return needing ? needing.structure : null;
     }
 };
