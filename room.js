@@ -1947,6 +1947,7 @@ mod.analyze = function(){
             room.linkDispatcher();
             room.processInvaders();
             room.processLabs();
+            room.controlObserver();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
