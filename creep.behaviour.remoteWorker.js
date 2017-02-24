@@ -22,6 +22,7 @@ mod.nextAction = function(creep){
         // get some energy
         if( creep.sum < creep.carryCapacity * 0.8 ) {
             priority = [
+                Creep.action.avoiding,
                 Creep.action.picking,
                 Creep.action.uncharging,
                 Creep.action.withdrawing,
@@ -29,6 +30,7 @@ mod.nextAction = function(creep){
                 Creep.action.idle];
         } else {
             priority = [
+                Creep.action.avoiding,
                 Creep.action.repairing,
                 Creep.action.building,
                 Creep.action.recycling
