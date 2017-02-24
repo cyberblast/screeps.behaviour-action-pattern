@@ -7,7 +7,7 @@ module.exports = mod;
 mod.extend = function(){
     let Container = function(room){
         this.room = room;
-        
+
         Object.defineProperties(this, {
             'all': {
                 configurable: true,
@@ -92,10 +92,10 @@ mod.extend = function(){
             }
         });
     };
-    
+
     let Links = function(room){
         this.room = room;
-        
+
         Object.defineProperties(this, {
             'all': {
                 configurable: true,
@@ -159,10 +159,10 @@ mod.extend = function(){
             }
         });
     };
-    
+
     let Labs = function(room){
         this.room = room;
-        
+
         Object.defineProperties(this, {
             'all': {
                 configurable: true,
@@ -196,10 +196,10 @@ mod.extend = function(){
             }
         });
     };
-    
+
     let Structures = function(room){
         this.room = room;
-        
+
         Object.defineProperties(this, {
             'all': {
                 configurable: true,
@@ -361,7 +361,7 @@ mod.extend = function(){
             }
         });
     };
-    
+
     Object.defineProperties(Room.prototype, {
         'structures': {
             configurable: true,
@@ -484,7 +484,7 @@ mod.extend = function(){
                 return this._constructionSites;
             }
         },
-        
+
         'creeps': {
             configurable: true,
             get: function() {
@@ -535,7 +535,7 @@ mod.extend = function(){
             get: function() {
                 if( _.isUndefined(this._casualties) ){
                     var isInjured = creep => creep.hits < creep.hitsMax &&
-                    (creep.towers === undefined || creep.towers.length == 0);
+                        (creep.towers === undefined || creep.towers.length == 0);
                     this._casualties = _.sortBy(_.filter(this.creeps, isInjured), 'hits');
                 }
                 return this._casualties;
@@ -589,7 +589,7 @@ mod.extend = function(){
                         let base = this.controller.level * 1000;
                         let that = this;
                         let adjacent, ownNeighbor, room, mult;
-                        
+
                         let flagEntries = FlagDir.filter([FLAG_COLOR.invade.robbing, FLAG_COLOR.invade.exploit]);
                         let countOwn = roomName => {
                             if( roomName == that.name ) return;
@@ -636,7 +636,7 @@ mod.extend = function(){
                             flag = Game.flags[flagEntry.name];
                             if( flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)
                                 return;
-                            
+
                             reserved = flag.targetOf && flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepType == 'claimer' ? t.weight : 0 )) : 0;
                             that._claimerMaxWeight += (base - reserved);
                         };
@@ -716,13 +716,13 @@ mod.extend = function(){
             get: function () {
                 if( _.isUndefined(Memory.pathfinder)) Memory.pathfinder = {};
                 if( _.isUndefined(Memory.pathfinder[this.name])) Memory.pathfinder[this.name] = {};
-                
+
                 const ttl = Game.time - Memory.pathfinder[this.name].updated;
                 if( Memory.pathfinder[this.name].costMatrix && ttl < COST_MATRIX_VALIDITY) {
                     if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
                     return PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
                 }
-                
+
                 if( DEBUG ) logSystem(this.name, 'Calulating cost matrix');
                 var costMatrix = new PathFinder.CostMatrix;
                 let setCosts = structure => {
@@ -733,7 +733,7 @@ mod.extend = function(){
                     }
                 };
                 this.structures.all.forEach(setCosts);
-                
+
                 const prevTime = Memory.pathfinder[this.name].updated;
                 Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
                 Memory.pathfinder[this.name].updated = Game.time;
@@ -880,7 +880,7 @@ mod.extend = function(){
             }
         },
     });
-    
+
     Room.prototype.find = function (c, opt) {
         if (_.isArray(c)) {
             return _(c)
@@ -890,10 +890,10 @@ mod.extend = function(){
         } else
             return find.apply(this, arguments);
     };
-    
+
     Room.prototype.findRoute = function(targetRoomName, checkOwner = true, preferHighway = true){
         if (this.name == targetRoomName)  return [];
-        
+
         return Game.map.findRoute(this, targetRoomName, {
             routeCallback(roomName) {
                 if( roomName !== targetRoomName && ROUTE_ROOM_COST[roomName]) {
@@ -912,7 +912,7 @@ mod.extend = function(){
                         (room.controller.my ||
                         (room.controller.owner === undefined));
                 }
-                
+
                 if (isMyOrNeutralRoom || roomName == targetRoomName)
                     return 1;
                 else if (isHighway)
@@ -923,7 +923,7 @@ mod.extend = function(){
             }
         });
     };
-    
+
     Room.prototype.getBestConstructionSiteFor = function(pos, filter = null) {
         let sites;
         if( filter ) sites = this.constructionSites.filter(filter);
@@ -938,12 +938,12 @@ mod.extend = function(){
         };
         return _.min(sites, rangeOrder);
     };
-    
+
     Room.prototype.roadConstruction = function( minDeviation = ROAD_CONSTRUCTION_MIN_DEVIATION ) {
-        
+
         if( !ROAD_CONSTRUCTION_ENABLE || Game.time % ROAD_CONSTRUCTION_INTERVAL != 0 ) return;
         if( _.isNumber(ROAD_CONSTRUCTION_ENABLE) && (!this.my || ROAD_CONSTRUCTION_ENABLE > this.controller.level)) return;
-        
+
         let data = Object.keys(this.roadConstructionTrace)
             .map( k => {
                 return { // convert to [{key,n,x,y}]
@@ -952,7 +952,7 @@ mod.extend = function(){
                     'y': k.charCodeAt(1)-32 // extraxt y from key
                 };
             });
-        
+
         let min = Math.max(ROAD_CONSTRUCTION_ABS_MIN, (data.reduce( (_sum, b) => _sum + b.n, 0 ) / data.length) * minDeviation);
         data = data.filter( e => {
             if (e.n >= min) {
@@ -963,14 +963,14 @@ mod.extend = function(){
                 return false;
             }
         });
-        
+
         // build roads on all most frequent used fields
         let setSite = pos => {
             if( DEBUG ) logSystem(this.name, `Constructing new road at ${pos.x}'${pos.y} (${pos.n} traces)`);
             this.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD);
         };
         _.forEach(data, setSite);
-        
+
         // clear old data
         this.roadConstructionTrace = {};
     };
@@ -981,13 +981,13 @@ mod.extend = function(){
         if ( x == 0 || y == 0 || x == 49 || y == 49 ||
             creep.carry.energy == 0 || creep.data.actionName == 'building' )
             return;
-        
+
         let key = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
         if( !this.roadConstructionTrace[key] )
             this.roadConstructionTrace[key] = 1;
         else this.roadConstructionTrace[key]++;
     };
-    
+
     Room.prototype.saveTowers = function(){
         let towers = this.find(FIND_MY_STRUCTURES, {
             filter: {structureType: STRUCTURE_TOWER}
@@ -1024,7 +1024,7 @@ mod.extend = function(){
             mineral.forEach(assignContainer);
         };
         containers.forEach(add);
-        
+
         if( this.terminal ) {
             // terminal in range <= 2 is too simplistic for certain room placements near sources. See #681
             // This solution finds all walkable source fields in a room, then compares adjacency with the terminal
@@ -1041,7 +1041,7 @@ mod.extend = function(){
                     source.push( sourceField.isNearTo(this.sources[0]) ? this.sources[0] : this.sources[1] );
                 }
             }
-            
+
             let mineral = this.terminal.pos.findInRange(this.minerals, 2);
             let assignTerminal = s => s.memory.terminal = this.terminal.id;
             source.forEach(assignTerminal);
@@ -1053,7 +1053,7 @@ mod.extend = function(){
             let assignStorage = s => s.memory.storage = this.storage.id;
             source.forEach(assignStorage);
             mineral.forEach(assignStorage);
-            
+
             if( this.storage.pos.getRangeTo(this.controller) < 4 )
                 this.controller.memory.storage = this.storage.id;
         }
@@ -1066,21 +1066,21 @@ mod.extend = function(){
             filter: (structure) => ( structure.structureType == STRUCTURE_LINK )
         });
         let storageLinks = this.storage ? this.storage.pos.findInRange(links, 2).map(l => l.id) : [];
-        
+
         // for each memory entry, keep if existing
         /*
-         let kept = [];
-         let keep = (entry) => {
-         if( links.find( (c) => c.id == entry.id )){
-         entry.storage = storageLinks.includes(entry.id);
-         kept.push(entry);
-         }
-         };
-         this.memory.links.forEach(keep);
-         this.memory.links = kept;
-         */
+        let kept = [];
+        let keep = (entry) => {
+            if( links.find( (c) => c.id == entry.id )){
+                entry.storage = storageLinks.includes(entry.id);
+                kept.push(entry);
+            }
+        };
+        this.memory.links.forEach(keep);
+        this.memory.links = kept;
+        */
         this.memory.links = [];
-        
+
         // for each link add to memory ( if not contained )
         let add = (link) => {
             if( !this.memory.links.find( (l) => l.id == link.id ) ) {
@@ -1110,21 +1110,21 @@ mod.extend = function(){
             filter: (structure) => ( structure.structureType == STRUCTURE_LAB )
         });
         let storageLabs = this.storage ? this.storage.pos.findInRange(labs, 2).map(l => l.id) : [];
-        
+
         // for each memory entry, keep if existing
         /*
-         let kept = [];
-         let keep = (entry) => {
-         if( links.find( (c) => c.id == entry.id )){
-         entry.storage = storageLinks.includes(entry.id);
-         kept.push(entry);
-         }
-         };
-         this.memory.links.forEach(keep);
-         this.memory.links = kept;
-         */
+        let kept = [];
+        let keep = (entry) => {
+            if( links.find( (c) => c.id == entry.id )){
+                entry.storage = storageLinks.includes(entry.id);
+                kept.push(entry);
+            }
+        };
+        this.memory.links.forEach(keep);
+        this.memory.links = kept;
+        */
         this.memory.labs = [];
-        
+
         // for each entry add to memory ( if not contained )
         let add = (lab) => {
             let labData = this.memory.labs.find( (l) => l.id == lab.id );
@@ -1158,16 +1158,16 @@ mod.extend = function(){
             this.memory.minerals = _.map(that._minerals, id);
         } else this.memory.minerals = [];
     };
-    
+
     Room.prototype.linkDispatcher = function () {
         let filled = l => l.cooldown == 0 && l.energy >= (l.energyCapacity * (l.source ? 0.85 : 0.5));
         let empty = l =>  l.energy < l.energyCapacity * 0.15;
         let filledIn = this.structures.links.in.filter(filled);
         let emptyController = this.structures.links.controller.filter(empty);
-        
+
         if( filledIn.length > 0  ){
             let emptyStorage = this.structures.links.storage.filter(empty);
-            
+
             let handleFilledIn = f => { // first fill controller, then storage
                 if( emptyController.length > 0 ){
                     f.transferEnergy(emptyController[0]);
@@ -1179,7 +1179,7 @@ mod.extend = function(){
             }
             filledIn.forEach(handleFilledIn);
         }
-        
+
         if( emptyController.length > 0 ){ // controller still empty, send from storage
             let filledStorage = this.structures.links.storage.filter(filled);
             let handleFilledStorage = f => {
@@ -1194,7 +1194,7 @@ mod.extend = function(){
     Room.prototype.updateResourceOrders = function () {
         let data = this.memory.resources;
         if (!this.my || !data) return;
-        
+
         // go through reallacation orders and reset completed orders
         for(var structureType in data) {
             for(var i=0;i<data[structureType].length;i++) {
@@ -1308,7 +1308,7 @@ mod.extend = function(){
             let order = targetRoom.memory.resources.orders.find((o)=>{ return o.id==offer.id && o.type==offer.type; });
             if (!order) continue;
             let targetOfferIdx = order.offers.indexOf((o)=>{ return o.room==this.name; });
-            
+
             if (!targetRoom.terminal) continue;
             let store = this.terminal.store[offer.type]||0;
             let onOrder = 0;
@@ -1324,10 +1324,10 @@ mod.extend = function(){
             let space = targetRoom.terminal.storeCapacity-targetRoom.terminal.sum;
             amount = Math.min(amount,space);
             if (amount < 100) continue;
-            
+
             let cost = Game.market.calcTransactionCost(amount, this.name, targetRoom.name);
             if (cost > (this.terminal.store.energy||0)) continue;
-            
+
             let ret = this.terminal.send(offer.type,amount,targetRoom.name,order.id);
             if (ret == OK) {
                 console.log(this.name,'sent',amount,offer.type,'to',targetRoom.name,'referencing order id',order.id);
@@ -1344,7 +1344,7 @@ mod.extend = function(){
                 return true;
             }
         }
-        
+
         return false;
     };
     Room.prototype.terminalBroker = function () {
@@ -1359,7 +1359,7 @@ mod.extend = function(){
                     o.resourceType != mineral ||
                     o.type != 'buy' ||
                     o.amount < MIN_MINERAL_SELL_AMOUNT ) return false;
-                
+
                 o.range = Game.map.getRoomLinearDistance(o.roomName, that.name, true);
                 o.transactionAmount = Math.min(o.amount, that.terminal.store[mineral]);
                 o.transactionCost = Game.market.calcTransactionCost(
@@ -1374,7 +1374,7 @@ mod.extend = function(){
                         that.name,
                         o.roomName);
                 }
-                
+
                 o.credits = o.transactionAmount*o.price;
                 //o.ratio = o.credits/o.transactionCost; // old formula
                 //o.ratio = (o.credits-o.transactionCost)/o.transactionAmount; // best offer assuming 1e == 1 credit
@@ -1382,11 +1382,11 @@ mod.extend = function(){
                 o.ratio = (o.credits - (o.transactionCost*ENERGY_VALUE_CREDITS)) / o.transactionAmount; // best offer assuming 1e == ENERGY_VALUE_CREDITS credits
                 
                 return (
-                (terminalFull || o.ratio >= MIN_SELL_RATIO[mineral]) &&
-                //o.range <= MAX_SELL_RANGE &&
-                o.transactionCost <= that.terminal.store.energy);
+                    (terminalFull || o.ratio >= MIN_SELL_RATIO[mineral]) &&
+                    //o.range <= MAX_SELL_RANGE &&
+                    o.transactionCost <= that.terminal.store.energy);
             });
-            
+
             if( orders.length > 0 ){
                 let order = _.max(orders, 'ratio');
                 let result = Game.market.deal(order.id, order.transactionAmount, that.name);
@@ -1425,7 +1425,7 @@ mod.extend = function(){
             this.memory.hostileIds = [];
         if( this.memory.statistics === undefined)
             this.memory.statistics = {};
-        
+
         let registerHostile = creep => {
             if (Room.isCenterNineRoom(this.name)) return;
             // if invader id unregistered
@@ -1451,7 +1451,7 @@ mod.extend = function(){
             }
         }
         _.forEach(this.hostiles, registerHostile);
-        
+
         let registerHostileLeave = id => {
             const creep = Game.getObjectById(id);
             const stillHostile = !creep || Task.reputation.hostileOwner(creep);
@@ -1468,7 +1468,7 @@ mod.extend = function(){
             }
         }
         _.forEach(this.memory.hostileIds, registerHostileLeave);
-        
+
         this.memory.hostileIds = this.hostileIds;
     };
     Room.prototype.processLabs = function() {
@@ -1503,7 +1503,7 @@ mod.extend = function(){
     Room.prototype.findContainerWith = function(resourceType, amountMin) {
         if (!amountMin) amountMin = 1;
         //if (!RESOURCES_ALL.find((r)=>{r==resourceType;})) return null;
-        
+
         let data = this.memory;
         if (data && data.container && data.container.length > 0) {
             for (var i=0;i<data.container.length;i++) {
@@ -1515,16 +1515,16 @@ mod.extend = function(){
                 }
             }
         }
-        
+
         return null;
     }
     Room.prototype.prepareResourceOrder = function(containerId, resourceType, amount) {
         let container = Game.getObjectById(containerId);
         if (!this.my || !container || !container.room.name == this.name ||
-            !(container.structureType == STRUCTURE_LAB ||
-            container.structureType == STRUCTURE_CONTAINER ||
-            container.structureType == STRUCTURE_STORAGE ||
-            container.structureType == STRUCTURE_TERMINAL)) {
+                !(container.structureType == STRUCTURE_LAB ||
+                container.structureType == STRUCTURE_CONTAINER ||
+                container.structureType == STRUCTURE_STORAGE ||
+                container.structureType == STRUCTURE_TERMINAL)) {
             return ERR_INVALID_TARGET;
         }
         if (!RESOURCES_ALL.includes(resourceType)) {
@@ -1540,13 +1540,13 @@ mod.extend = function(){
         }
         if (!this.memory.resources[container.structureType].find( (s) => s.id == containerId )) {
             this.memory.resources[container.structureType].push(container.structureType==STRUCTURE_LAB ? {
-                    id: containerId,
-                    orders: [],
-                    reactionState: LAB_IDLE
-                } : {
-                    id: containerId,
-                    orders: []
-                });
+                id: containerId,
+                orders: [],
+                reactionState: LAB_IDLE
+            } : {
+                id: containerId,
+                orders: []
+            });
         }
         if (container.structureType == STRUCTURE_LAB && resourceType != RESOURCE_ENERGY && amount > 0) {
             // clear other resource types since labs only hold one at a time
@@ -1567,7 +1567,7 @@ mod.extend = function(){
         if (ret != OK) {
             return ret;
         }
-        
+
         let containerData = this.memory.resources[container.structureType].find( (s) => s.id == containerId );
         if ( containerData ) {
             let existingOrder = containerData.orders.find( (r) => r.type == resourceType );
@@ -1597,7 +1597,7 @@ mod.extend = function(){
         if (ret != OK) {
             return ret;
         }
-        
+
         let containerData = this.memory.resources[container.structureType].find( (s) => s.id == containerId );
         if ( containerData ) {
             let existingOrder = containerData.orders.find( (r) => r.type == resourceType );
@@ -1641,7 +1641,7 @@ mod.extend = function(){
                 offers: []
             });
         }
-        
+
         return OK;
     };
     Room.prototype.cancelReactionOrder = function(labId) {
@@ -1650,7 +1650,7 @@ mod.extend = function(){
             // clear slave reaction orders
             if (labData.slave_a) this.cancelReactionOrder(labData.slave_a);
             if (labData.slave_b) this.cancelReactionOrder(labData.slave_b);
-            
+
             // clear reaction orders
             labData.reactionState = LAB_IDLE;
             delete labData.reactionType;
@@ -1658,7 +1658,7 @@ mod.extend = function(){
             delete labData.master;
             delete labData.slave_a;
             delete labData.slave_b;
-            
+
             if (this.memory.resources === undefined) {
                 this.memory.resources = {
                     lab: [],
@@ -1670,7 +1670,7 @@ mod.extend = function(){
             if (this.memory.resources.orders === undefined) {
                 this.memory.resources.orders = [];
             }
-            
+
             let orders = this.memory.resources.orders;
             // clear local resource orders
             for (var i=0;i<labData.orders.length;i++) {
@@ -1681,7 +1681,7 @@ mod.extend = function(){
                 order.storeAmount = 0;
             }
         }
-        
+
         return OK;
     };
     Room.prototype.prepareReactionOrder = function(labId, resourceType, amount) {
@@ -1699,7 +1699,7 @@ mod.extend = function(){
                 storage: []
             };
         }
-        
+
         let labData = this.memory.resources.lab.find( (l) => l.id == labId );
         if ( !labData ) {
             this.memory.resources.lab.push({
@@ -1709,9 +1709,9 @@ mod.extend = function(){
             });
             labData = this.memory.resources.lab.find( (l) => l.id == labId );
         }
-        
+
         this.cancelReactionOrder(labId);
-        
+
         return OK;
     };
     Room.prototype.placeReactionOrder = function(labId, resourceType, amount) {
@@ -1732,7 +1732,7 @@ mod.extend = function(){
         let component_b = LAB_REACTIONS[resourceType][1];
         var lab_slave_a = null;
         var lab_slave_b = null;
-        
+
         // find slave labs
         let nearbyLabs = lab_master.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: (s)=>{ return s.structureType==STRUCTURE_LAB && s.id != lab_master.id; }});
         //console.log(lab_master,"found",nearbyLabs.length,"potential slave labs");
@@ -1750,7 +1750,7 @@ mod.extend = function(){
             }
             if (lab_slave_a && lab_slave_b) break;
         }
-        
+
         // qualify labs and prepare states
         if (lab_slave_a == null || lab_slave_b == null) return ERR_NOT_FOUND;
         let ret = this.prepareReactionOrder(labId, resourceType, amount);
@@ -1765,7 +1765,7 @@ mod.extend = function(){
         if (ret != OK) {
             return ret;
         }
-        
+
         // place reaction order with master lab
         let labData = this.memory.resources.lab.find( (l) => l.id == labId );
         let state = LAB_MASTER;
@@ -1778,7 +1778,7 @@ mod.extend = function(){
             labData.slave_a = lab_slave_a.id;
             labData.slave_b = lab_slave_b.id;
         }
-        
+
         // place orders with slave labs
         labData = this.memory.resources.lab.find( (l) => l.id == lab_slave_a.id );
         let slaveState = LAB_SLAVE_1;
@@ -1788,7 +1788,7 @@ mod.extend = function(){
             labData.reactionState = slaveState;
             labData.master = lab_master.id;
             this.placeOrder(lab_slave_a.id, component_a, amount);
-            
+
             let available = 0;
             if (this.memory.container) {
                 for (var i=0;i<this.memory.container.length;i++) {
@@ -1813,7 +1813,7 @@ mod.extend = function(){
             labData.reactionState = slaveState;
             labData.master = lab_master.id;
             this.placeOrder(lab_slave_b.id, component_b, amount);
-            
+
             let available = 0;
             if (this.memory.container) {
                 for (var i=0;i<this.memory.container.length;i++) {
@@ -1833,7 +1833,7 @@ mod.extend = function(){
                 }
             }
         }
-        
+
         //console.log(lab_master,"found slave labs",lab_slave_a,"for",component_a,"and",lab_slave_b,"for",component_b);
         return OK;
     };
@@ -2112,11 +2112,11 @@ mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = fal
     }
     let invalidObject = o => {
         return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
-        // o.type == LOOK_CONSTRUCTION_SITES ||
-        (o.type == LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType) ));
+            // o.type == LOOK_CONSTRUCTION_SITES ||
+            (o.type == LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType) ));
     };
     let isWalkable = (posX, posY) => look[posY][posX].filter(invalidObject).length == 0;
-    
+
     let fields = [];
     for( let x = minX; x <= maxX; x++) {
         for( let y = minY; y <= maxY; y++){
