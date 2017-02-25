@@ -41,3 +41,12 @@ Game.market.deal(orderId, amount, roomName);
 
 //flush visuals heatmap
 _.forEach(Memory.rooms, r => delete r.heatmap);
+
+//resource management  - stat labs
+Game.rooms[<roomName>].placeReactionOrder(<labId>, <resourceId>, <amount>)
+
+//resource management - maintain set amount in container
+Game.rooms[<roomName>].setStore(<structure>, <resource>, <amount>)
+
+//resource management - one off amount in container
+Game.rooms[<roomName>].placeOrder(<structure>, <resource>, <amount>)
