@@ -37,9 +37,23 @@ mod.extend = function(){
             return params;
         return null;
     };
-    Spawn.prototype.createCreepByQueue = function(queue){
+    Spawn.prototype.createCreepByQueue = function(queue) {
         if( !queue || queue.length == 0 ) return null;
-        let params = queue.shift();
+        for( let position = 0; position < queue.length; position++ ) {
+            const params = queue[position];
+            const result = this.createCreepByParams(params);
+            switch( result ) {
+                case ERR_NOT_ENOUGH_ENERGY:
+                    // halt, try again later
+                    return result;
+                case ERR_NOT_ENOUGH_EXTENSIONS:
+                    // throw it away
+                    queue.splice(position, 1);
+                    return result;
+            }
+        }
+    };
+    Spawn.prototype.createCreepByParams = function(params){
         let cost = 0;
         params.parts.forEach(function(part){
             cost += BODYPART_COST[part];
@@ -53,10 +67,9 @@ mod.extend = function(){
         if (cost > this.room.remainingEnergyAvailable) {
             if (cost > this.room.energyCapacityAvailable || (cost > 300 && !this.room.creeps.length)) {
                 global.logSystem(this.pos.roomName, dye(CRAYON.error, 'Queued creep too big for room: ' + JSON.stringify(params) ));
-                return false;
+                return ERR_NOT_ENOUGH_EXTENSIONS;
             }
-            queue.unshift(params);
-            return true;
+            return ERR_NOT_ENOUGH_ENERGY;
         }
         var completeName;
         var stumb = params.name;
