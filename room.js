@@ -881,6 +881,12 @@ mod.extend = function(){
         },
     });
 
+    Room.prototype.getBorder = function(roomName) {
+        return _.findKey(Game.map.describeExits(this.name), function(name) {
+            return this.name === name;
+        }, {name: roomName});
+    };
+
     Room.prototype.find = function (c, opt) {
         if (_.isArray(c)) {
             return _(c)

@@ -49,11 +49,16 @@ action.newTarget = function(creep) {
 };
 action.work = function(creep) {
     if (!(creep.data.safeSpot && creep.data.safeSpot.roomName)) {
-        // find the route home, move toward the exit until out of danger
-        const exit = _.chain(creep.room.findRoute(creep.data.homeRoom)).first().get('exit').value();
-        if (exit) {
-            creep.data.safeSpot = creep.pos.findClosestByRange(exit);
-            creep.data.safeSpot.roomName = creep.pos.roomName;
+        const flag = creep.data.destiny && Game.flags[creep.data.destiny.targetName];
+        if (flag) {
+            creep.data.safeSpot = flag.pos;
+        } else {
+            // find the route home, move toward the exit until out of danger
+            const exit = _.chain(creep.room.findRoute(creep.data.homeRoom)).first().get('exit').value();
+            if (exit) {
+                creep.data.safeSpot = creep.pos.findClosestByRange(exit);
+                creep.data.safeSpot.roomName = creep.pos.roomName;
+            }
         }
     }
 
