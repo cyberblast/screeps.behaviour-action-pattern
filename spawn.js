@@ -16,11 +16,13 @@ mod.extend = function(){
         let that = this;
         let probe = setup => {
             return setup.isValidSetup(room) && that.createCreepBySetup(setup);
-        }
+        };
+
+        const forceProbe = this.forceProbe || Game.time % SPAWN_INTERVAL === 0;
 
         let busy = this.createCreepByQueue(room.spawnQueueHigh);
         // don't spawn lower if there is one waiting in the higher queue 
-        if( !busy && room.spawnQueueHigh.length == 0 && Game.time % SPAWN_INTERVAL == 0 ) {
+        if( !busy && room.spawnQueueHigh.length == 0 && forceProbe ) {
             busy = _.some(Spawn.priorityHigh, probe);
             if( !busy ) busy = this.createCreepByQueue(room.spawnQueueMedium);
             if( !busy && room.spawnQueueMedium.length == 0 ) {

@@ -1931,6 +1931,7 @@ mod.execute = function() {
             if( room.collapsed ) Room.collapsed.trigger(room);
         }
         else { // no sight
+            // TODO does this spam every room with non-relevant ids?
             if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
         }
     };

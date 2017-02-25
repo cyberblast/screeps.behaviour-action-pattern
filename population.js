@@ -257,10 +257,8 @@ mod.execute = function(){
     let triggerRenewal = name => Creep.predictedRenewal.trigger(Game.creeps[name]);
     this.predictedRenewal.forEach(triggerRenewal);
 
-    if( Game.time % SPAWN_INTERVAL != 0 ) {
-        let probeSpawn = spawnName => Game.spawns[spawnName].execute();
-        this.spawnsToProbe.forEach(probeSpawn);
-    }
+    let probeSpawn = spawnName => Game.spawns[spawnName].forceProbe = true;
+    this.spawnsToProbe.forEach(probeSpawn);
 };
 mod.cleanup = function(){
     let unregister = name => Population.unregisterCreep(name);
