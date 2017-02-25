@@ -1309,12 +1309,12 @@ mod.extend = function(){
                     if (order.orderRemaining <= 0) {
                         let baseAmount = 0;
                         let rcl = this.controller.level;
-                        if (structureType == STRUCTURE_STORAGE) baseAmount = order.type == RESOURCE_ENERGY ? MIN_STORAGE_ENERGY[rcl] : MAX_STORAGE_MINERAL;
-                        else if (structureType == STRUCTURE_TERMINAL) baseAmount = order.type == RESOURCE_ENERGY ? TERMINAL_ENERGY : 0;
+                        if (structureType == STRUCTURE_STORAGE) baseAmount = (order.type == RESOURCE_ENERGY) ? MIN_STORAGE_ENERGY[rcl] : MAX_STORAGE_MINERAL;
+                        else if (structureType == STRUCTURE_TERMINAL) baseAmount = (order.type == RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0;
                         baseAmount += order.storeAmount;
                         let amount = 0;
                         let cont = Game.getObjectById(structure.id);
-                        if (cont && structureType == STRUCTURE_LAB) {
+                        if (cont) {
                             switch (structureType) {
                                 case STRUCTURE_LAB:
                                     // get lab amount
@@ -1338,7 +1338,7 @@ mod.extend = function(){
                                     break;
                             }
                         }
-                        if (amount < baseAmount) {
+                        if (amount <= baseAmount) {
                             order.orderAmount = 0;
                             order.orderRemaining = 0;
                         }
@@ -1349,30 +1349,30 @@ mod.extend = function(){
     };
     Room.prototype.updateRoomOrders = function () {
         if (!this.memory.resources || !this.memory.resources.orders) return;
-        let rooms = _.filter(Game.rooms, (room) => { return room.my && room.storage && room.terminal; });
+        let rooms = _.filter(Game.rooms, (room) => { return room.my && room.storage && room.terminal && room.name !== this.name; });
         let orders = this.memory.resources.orders;
         for (var i=0;i<orders.length;i++) {
             let order = orders[i];
             let amountRemaining = order.amount;
-            if (amountRemaining <= 0) {
-                delete orders[i];
-                orders.splice(i,1);
-                continue;
-            }
             for (var j=0;j<order.offers.length;j++) {
                 let offer = order.offers[j];
-                if (amountRemaining > 0) {
-                    amountRemaining -= offer.amount;
-                } else {
+                //if (amountRemaining > 0) {
+                //    amountRemaining -= offer.amount;
+                //} else {
                     if (Memory.rooms[offer.room] && Memory.rooms[offer.room].resources && Memory.rooms[offer.room].resources.offers) {
                         let remoteOffers = Memory.rooms[offer.room].resources.offers;
                         let idx = remoteOffers.indexOf((o)=>{ return o.room==this.name && o.id==order.id && o.type==order.type; });
                         remoteOffers = remoteOffers.splice(idx,1);
                     }
-                    orders = orders.splice[i--,1];
-                }
+                //    order.offers.splice[j--,1];
+                //}
             }
-            if (amountRemaining > 0) {
+            order.offers = [];
+            if (amountRemaining <= 0) {
+                delete orders[i];
+                orders.splice(i--,1);
+                continue;
+            } else {
                 rooms.sort((a,b)=>{ return Game.map.getRoomLinearDistance(this.name,a.name,true) - Game.map.getRoomLinearDistance(this.name,b.name,true); });
                 for (var j=0;j<rooms.length;j++) {
                     let room = rooms[j];
@@ -1381,20 +1381,24 @@ mod.extend = function(){
                             lab: [],
                             container: [],
                             terminal: [],
-                            storage: []
+                            storage: [],
+                            powerSpawn: [],
                         };
                     }
                     let available = (room.storage.store[order.type]||0) + (room.terminal.store[order.type]||0);
                     if (available < 100) continue;
                     available = Math.min(available,amountRemaining);
                     if (!room.memory.resources.offers) room.memory.resources.offers = [];
-                    let existingOffer = order.offers.find((o)=>o.room==this.name);
+                    let existingOffer = order.offers.find((o)=>o.room==room.name);
                     let remoteOffers = room.memory.resources.offers;
                     let existingRemoteOffer = remoteOffers.find((o)=>{ return o.room==this.name && o.id==order.id && o.type==order.type; });
                     if (existingOffer) {
+                        if (DEBUG && TRACE) trace("Room", { roomName: this.name, remoteRoom: room.name, actionName: 'updateRoomOrders', subAction: 'update', orderId: order.id, resourceType: order.type, amount: available })
                         amountRemaining -= (available - existingOffer.amount);
                         existingOffer.amount = available;
                     } else {
+                        if (DEBUG && TRACE) trace("Room", { roomName: this.name, remoteRoom: room.name, actionName: 'updateRoomOrders', subAction: 'new', orderId: order.id, resourceType: order.type, amount: available })
+                        else if (DEBUG) logSystem(this.name, `New room offer to ${room.name} with id ${orderId} placed for ${amount} ${resourceType}.`);
                         amountRemaining -= available;
                         order.offers.push({
                             room: room.name,
@@ -1427,28 +1431,34 @@ mod.extend = function(){
             if (!order) continue;
             let targetOfferIdx = order.offers.indexOf((o)=>{ return o.room==this.name; });
 
-            if (!targetRoom.terminal) continue;
             let store = this.terminal.store[offer.type]||0;
             let onOrder = 0;
             let terminalOrder = null;
             if (this.memory.resources.terminal[0]) terminalOrder = this.memory.resources.terminal[0].orders.find((o)=>{ return o.type==offer.type; });
             if (terminalOrder) onOrder = terminalOrder.orderRemaining;
             let amount = Math.max(offer.amount,100);
-            if (amount > store + onOrder) {
-                this.placeOrder(this.terminal.id, offer.type, amount - store);
+            if (amount > (store + onOrder)) {
+                let amt = amount - (store + onOrder);
+                if (DEBUG && TRACE) trace("Room", { actionName: 'fillARoomOrder', subAction: 'terminalOrder', roomName: this.name, targetRoomName: targetRoom.name, resourceType: offer.type, amount: amt });
+                this.placeOrder(this.terminal.id, offer.type, amt);
                 continue;
             }
-            if (amount > store) continue;
+            if (!targetRoom.terminal) continue;
             let space = targetRoom.terminal.storeCapacity-targetRoom.terminal.sum;
             amount = Math.min(amount,space);
-            if (amount < 100) continue;
 
             let cost = Game.market.calcTransactionCost(amount, this.name, targetRoom.name);
+            if (offer.type == RESOURCE_ENERGY) {
+                amount -= cost;
+                cost += amount;
+            }
             if (cost > (this.terminal.store.energy||0)) continue;
+            if (amount < 100) continue;
 
             let ret = this.terminal.send(offer.type,amount,targetRoom.name,order.id);
             if (ret == OK) {
-                console.log(this.name,'sent',amount,offer.type,'to',targetRoom.name,'referencing order id',order.id);
+                if (DEBUG && TRACE) trace("Room", { actionName: 'fillARoomOrder', roomName: this.name, targetRoomName: targetRoom.name, resourceType: offer.type, amount: amount });
+                else if (DEBUG) logSystem(this.name, `Room order filled to ${targetRoom.name} for ${amount} ${offer.type}.`);
                 offer.amount -= amount;
                 if (offer.amount > 0) {
                     order.offers[targetOfferIdx].amount = offer.amount;
@@ -1456,7 +1466,7 @@ mod.extend = function(){
                     delete order.offers[targetOfferIdx];
                     order.offers.splice(targetOfferIdx,1);
                     delete offers[i];
-                    offers.splice(i,1);
+                    offers.splice(i--,1);
                 }
                 order.amount -= amount;
                 return true;
@@ -1756,8 +1766,8 @@ mod.extend = function(){
             existingOrder.amount = amount;
         } else {
             // create new order
-            if (DEBUG) logSystem(this.name, `New room order with id ${orderId} placed for ${amount} ${resourceType}.`);
             if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'new', orderId: orderId, resourceType: resourceType, amount: amount })
+            else if (DEBUG) logSystem(this.name, `New room order with id ${orderId} placed for ${amount} ${resourceType}.`);
             orders.push({
                 id: orderId,
                 type: resourceType,
