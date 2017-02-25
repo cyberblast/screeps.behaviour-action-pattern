@@ -42,6 +42,7 @@ Game.market.deal(orderId, amount, roomName);
 //flush visuals heatmap
 _.forEach(Memory.rooms, r => delete r.heatmap);
 
+// https://github.com/ScreepsOCS/screeps.behaviour-action-pattern/wiki/Resource-Management
 //resource management  - stat labs
 Game.rooms[<roomName>].placeReactionOrder(<labId>, <resourceId>, <amount>)
 
