@@ -187,12 +187,11 @@ mod.specialFlag = function(create) {
     if (create) {
         if (!flag) {
             return _(Game.rooms).values().some(function (room) {
-                console.log('create flag');
+                room.createFlag()
                 new RoomPosition(49, 49, room.name).createFlag(name, COLOR_WHITE, COLOR_PURPLE);
                 return true;
             });
         } else if (flag.pos.roomName !== 'W0N0') {
-            console.log('move flag');
             flag.setPosition(new RoomPosition(49, 49, 'W0N0'));
         }
     }
