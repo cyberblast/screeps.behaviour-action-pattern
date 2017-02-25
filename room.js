@@ -1752,9 +1752,12 @@ mod.extend = function(){
         let existingOrder = orders.find((o)=>{ return o.id==orderId && o.type==resourceType; });
         if (existingOrder) {
             // update existing order
+            if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'update', orderId: orderId, resourceType: resourceType, amount: amount })
             existingOrder.amount = amount;
         } else {
             // create new order
+            if (DEBUG) logSystem(this.name, `New room order with id ${orderId} placed for ${amount} ${resourceType}.`);
+            if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'new', orderId: orderId, resourceType: resourceType, amount: amount })
             orders.push({
                 id: orderId,
                 type: resourceType,

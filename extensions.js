@@ -205,9 +205,10 @@ mod.extend = function(){
         if (storageData) order = storageData.orders.find((o)=>{return o.type==resourceType;});
         if (!order) order = { orderAmount: 0, orderRemaining: 0, storeAmount: 0 };
         let rcl = this.room.controller.level;
-        let loadTarget = order.orderRemaining + order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? MIN_STORAGE_ENERGY[rcl] : MAX_STORAGE_MINERAL);
+        let loadTarget = Math.max(order.orderRemaining + (this.store[resourceType]||0), order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? MIN_STORAGE_ENERGY[rcl] : MAX_STORAGE_MINERAL));
         // storage always wants energy
         let unloadTarget = (resourceType == RESOURCE_ENERGY) ? (this.storeCapacity-this.sum)+this.store.energy : order.orderAmount + order.storeAmount + MAX_STORAGE_MINERAL;
+        if (unloadTarget < 0) unloadTarget = 0;
         let store = this.store[resourceType]||0;
         if (store < loadTarget) ret = Math.min(loadTarget-store,this.storeCapacity-this.sum);
         else if (store > unloadTarget*1.05) ret = unloadTarget-store;
@@ -231,8 +232,9 @@ mod.extend = function(){
         let order = null;
         if (terminalData) order = terminalData.orders.find((o)=>{return o.type==resourceType;});
         if (!order) order = { orderAmount: 0, orderRemaining: 0, storeAmount: 0 };
-        let loadTarget = order.orderRemaining + order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0);
+        let loadTarget = Math.max(order.orderRemaining + (this.store[resourceType]||0), order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0));
         let unloadTarget = order.orderAmount + order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0);
+        if (unloadTarget < 0) unloadTarget = 0;
         let store = this.store[resourceType]||0;
         if (store < loadTarget) ret = Math.min(loadTarget-store,this.storeCapacity-this.sum);
         else if (store > unloadTarget*1.05) ret = unloadTarget-store;
@@ -256,8 +258,9 @@ mod.extend = function(){
         if (containerData) {
             let order = containerData.orders.find((o)=>{return o.type==resourceType;});
             if (order) {
-                let loadTarget = order.orderRemaining + order.storeAmount;
+                let loadTarget = Math.max(order.orderRemaining + (this.store[resourceType]||0), order.storeAmount);
                 let unloadTarget = order.orderAmount + order.storeAmount;
+                if (unloadTarget < 0) unloadTarget = 0;
                 let store = this.store[resourceType] || 0;
                 if (store < loadTarget) return Math.min(loadTarget-store,this.storeCapacity-this.sum);
                 if (store > unloadTarget*1.05) return unloadTarget-store;
@@ -275,8 +278,12 @@ mod.extend = function(){
         if (containerData) {
             let order = containerData.orders.find((o)=>{return o.type==resourceType;});
             if (order) {
-                loadTarget = order.orderRemaining + order.storeAmount;
+                let amt = 0;
+                if (resourceType == RESOURCE_ENERGY) amt = this.energy;
+                else if (resourceType == this.mineralType) amt = this.mineralAmount;
+                loadTarget = Math.max(order.orderRemaining + amt, order.storeAmount);
                 unloadTarget = order.orderAmount + order.storeAmount;
+                if (unloadTarget < 0) unloadTarget = 0;
             }
         }
         let store = 0;
@@ -303,8 +310,12 @@ mod.extend = function(){
         if (containerData) {
             let order = containerData.orders.find((o)=>{return o.type==resourceType;});
             if (order) {
-                loadTarget = order.orderRemaining + order.storeAmount;
+                let amt = 0;
+                if (resourceType == RESOURCE_ENERGY) amt = this.energy;
+                else if (resourceType == RESOURCE_POWER) amt = this.power;
+                loadTarget = Math.max(order.orderRemaining + amt, order.storeAmount);
                 unloadTarget = order.orderAmount + order.storeAmount;
+                if (unloadTarget < 0) unloadTarget = 0;
             }
         }
         let store = 0;

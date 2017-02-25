@@ -104,11 +104,11 @@ action.newTargetLab = function(creep) {
                 if (amount > 0) {
                     // lab needs more resource so find a lower priority container with some
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: lab.id, resourceType: lab.mineralType, needs: amount });
-                    if (room.storage.store[lab.mineralType]) {
+                    if (room.storage && room.storage.store[lab.mineralType]) {
                         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: lab.mineralType, targetNeeds: room.storage.store[lab.mineralType] });
                         return room.storage;
                     }
-                    if (room.terminal.store[lab.mineralType]) {
+                    if (room.terminal && room.terminal.store[lab.mineralType]) {
                         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: lab.mineralType, targetNeeds: room.terminal.store[lab.mineralType] });
                         return room.terminal;
                     }
@@ -118,7 +118,6 @@ action.newTargetLab = function(creep) {
                         return ret.structure;
                     }
                     if (ROOM_TRADING && !(lab.mineralType == RESOURCE_ENERGY || lab.mineralType == room.mineralType)) {
-                        if (DEBUG) logSystem(room.name, `${creep.name} started a room order of ${amount} ${lab.mineralType} for structure ${lab.id}`);
                         room.placeRoomOrder(lab.id,lab.mineralType,amount);
                     }
                 }
@@ -131,11 +130,11 @@ action.newTargetLab = function(creep) {
                     resourceType = order.type;
                     var amount = order.orderRemaining+order.storeAmount;
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: lab.id, resourceType: resourceType, needs: amount });
-                    if (room.storage.store[resourceType]) {
+                    if (room.storage && room.storage.store[resourceType]) {
                         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: resourceType, targetNeeds: room.storage.store[resourceType] });
                         return room.storage;
                     }
-                    if (room.terminal.store[resourceType]) {
+                    if (room.terminal && room.terminal.store[resourceType]) {
                         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: resourceType, targetNeeds: room.terminal.store[resourceType] });
                         return room.terminal;
                     }
@@ -145,7 +144,6 @@ action.newTargetLab = function(creep) {
                         return ret.structure;
                     }
                     if (ROOM_TRADING && !(resourceType == RESOURCE_ENERGY || resourceType == room.mineralType)) {
-                        if (DEBUG) logSystem(room.name, `${creep.name} started a room order of ${amount} ${resourceType} for lab ${lab.id}`);
                         room.placeRoomOrder(lab.id,resourceType,order.orderRemaining);
                     }
                 }
@@ -163,11 +161,11 @@ action.newTargetLab = function(creep) {
             if (amount > 0) {
                 // lab needs energy so find a lower priority container with some
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: lab.id, resourceType: RESOURCE_ENERGY, needs: amount });
-                if (room.storage.store[RESOURCE_ENERGY]) {
+                if (room.storage && room.storage.store[RESOURCE_ENERGY]) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: RESOURCE_ENERGY, targetNeeds: room.storage.store[RESOURCE_ENERGY] });
                     return room.storage;
                 }
-                if (room.terminal.store[RESOURCE_ENERGY]) {
+                if (room.terminal && room.terminal.store[RESOURCE_ENERGY]) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: RESOURCE_ENERGY, targetNeeds: room.terminal.store[RESOURCE_ENERGY] });
                     return room.terminal;
                 }
@@ -204,11 +202,11 @@ action.newTargetPowerSpawn = function(creep) {
             if (amount > 0) {
                 // powerSpawn needs energy so find a lower priority container with some
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: powerSpawn.id, resourceType: RESOURCE_ENERGY, needs: amount });
-                if (room.storage.store[RESOURCE_ENERGY]) {
+                if (room.storage && room.storage.store[RESOURCE_ENERGY]) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: RESOURCE_ENERGY, targetNeeds: room.storage.store[RESOURCE_ENERGY] });
                     return room.storage;
                 }
-                if (room.terminal.store[RESOURCE_ENERGY]) {
+                if (room.terminal && room.terminal.store[RESOURCE_ENERGY]) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: RESOURCE_ENERGY, targetNeeds: room.terminal.store[RESOURCE_ENERGY] });
                     return room.terminal;
                 }
@@ -231,11 +229,11 @@ action.newTargetPowerSpawn = function(creep) {
             if (amount > 0) {
                 // powerSpawn needs energy so find a lower priority container with some
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: powerSpawn.id, resourceType: RESOURCE_POWER, needs: amount });
-                if (room.storage.store[RESOURCE_POWER]) {
+                if (room.storage && room.storage.store[RESOURCE_POWER]) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.storage.id, resourceType: RESOURCE_POWER, targetNeeds: room.storage.store[RESOURCE_POWER] });
                     return room.storage;
                 }
-                if (room.terminal.store[RESOURCE_POWER]) {
+                if (room.terminal && room.terminal.store[RESOURCE_POWER]) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: RESOURCE_POWER, targetNeeds: room.terminal.store[RESOURCE_POWER] });
                     return room.terminal;
                 }
@@ -338,7 +336,7 @@ action.newTargetTerminal = function(creep) {
             if (amount > 0) {
                 // found a needed resource so check lower priority containers
                 if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, structureId: terminal.id, resourceType: type, needs: amount });
-                if (room.storage.store[type]) {
+                if (room.storage && room.storage.store[type]) {
                     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, targetStructureId: room.terminal.id, resourceType: type, targetNeeds: room.terminal.store[type] });
                     return room.storage;
                 }
