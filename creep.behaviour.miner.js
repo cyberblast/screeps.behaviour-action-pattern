@@ -114,16 +114,40 @@ mod.run = function(creep, params = {approach: mod.approach}) {
                     }
                     if (creep.carry.energy === 0) return; // we need at least some energy to do both in the same tick.
                 }
-                const targets = params.remote ? creep.room.structures.repairable : creep.room.structures.fortifyable;
-                const repairs = creep.pos.findInRange(targets, 3);
-                if (repairs.length) {
-                    if(CHATTY) creep.say('repairing', SAY_PUBLIC);
-                    return creep.repair(repairs[0]);
+                if (!creep.data.repairChecked || Game.time - creep.data.repairChecked > MINER_WORK_THRESHOLD) {
+                    let repairTarget = Game.getObjectById(creep.data.repairTarget);
+                    if (!repairTarget) {
+                        const targets = params.remote ? creep.room.structures.repairable : creep.room.structures.fortifyable;
+                        const repairs = creep.pos.findInRange(targets, 3);
+                        if (repairs.length) {
+                            repairTarget = repairs[0];
+                            creep.data.repairTarget = repairTarget.id;
+                        }
+                    }
+                    if (repairTarget) {
+                        if(CHATTY) creep.say('repairing', SAY_PUBLIC);
+                        return creep.repair(repairTarget);
+                    } else {
+                        delete creep.data.repairTarget;
+                        creep.data.repairChecked = Game.time;
+                    }
                 }
-                const sites = creep.pos.findInRange(creep.room.constructionSites, 3);
-                if (sites.length) {
-                    if(CHATTY) creep.say('building', SAY_PUBLIC);
-                    return creep.build(sites[0]);
+                if (!creep.data.buildChecked || Game.time - creep.data.buildChecked > MINER_WORK_THRESHOLD) {
+                    let buildTarget = Game.getObjectById(creep.data.buildTarget);
+                    if (!buildTarget) {
+                        const sites = creep.pos.findInRange(creep.room.constructionSites, 3);
+                        if (sites.length) {
+                            buildTarget = sites[0];
+                            creep.data.buildTarget = buildTarget.id;
+                        }
+                    }
+                    if (buildTarget) {
+                        if(CHATTY) creep.say('building', SAY_PUBLIC);
+                        return creep.build(buildTarget);
+                    } else {
+                        delete creep.data.buildTarget;
+                        creep.data.buildChecked = Game.time;
+                    }
                 }
                 if(CHATTY) creep.say('waiting', SAY_PUBLIC);
                 return; // idle
