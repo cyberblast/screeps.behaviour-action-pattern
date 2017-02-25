@@ -6,8 +6,14 @@ action.isValidAction = function(creep){
 };
 action.isValidTarget = function(target) {
     return (target !== null && target.energy !== null && target.energy > 0 &&
-        (target.targetOf === undefined || !_.some(target.targetOf,
-            c => (c.creepType === 'miner' || c.creepType === 'remoteMiner') && c.body.work >= 5)));
+        (target.targetOf === undefined || 
+            (target.targetOf.length < target.accessibleFields &&
+                !_.some(target.targetOf, c => (c.creepType === 'miner' || c.creepType === 'remoteMiner')
+                    && c.body.work >= 5
+                    && (c.ticksToLive || CREEP_LIFE_TIME) >= (c.data && c.data.predictedRenewal || 0)
+                )
+            )
+        ));
 };
 action.isAddableTarget = function(target, creep){
     return (
@@ -22,8 +28,9 @@ action.isAddableTarget = function(target, creep){
 action.newTarget = function(creep){
     let target = null;
     let sourceGuests = 999;
-    for( var iSource = 0; iSource < creep.room.sources.length; iSource++ ){
-        let source = creep.room.sources[iSource];
+    var roomSources = _.sortBy(creep.room.sources, s => creep.pos.getRangeTo(s));
+    for( var iSource = 0; iSource < roomSources.length; iSource++ ){
+        let source = roomSources[iSource];
         if( this.isValidTarget(source) && this.isAddableTarget(source, creep) ){
             if( source.targetOf === undefined ) {
                 sourceGuests = 0;

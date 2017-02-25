@@ -4,7 +4,7 @@ action.maxPerTarget = 1;
 action.maxPerAction = 1;
 action.targetRange = 3;
 action.isValidAction = function(creep){
-    return (creep.carry.energy > 0 && ( !creep.room.storage || creep.room.storage.store.energy > MAX_STORAGE_ENERGY[creep.room.controller.level] ));
+    return (creep.carry.energy > 0 && ( !creep.room.storage || creep.room.storage.charge > 1 ));
 };
 action.isValidTarget = function(target){
     return ( target != null && target.hits && target.hits < target.hitsMax);

@@ -73,7 +73,7 @@ mod.checkForRequiredCreeps = (flag) => {
             }, 
             { // spawn room selection params
                 targetRoom: flag.pos.roomName, 
-                minEnergyCapacity: 200, 
+                minEnergyCapacity: 400, // weight of fixedBody
                 rangeRclRatio: 2 // stronger preference of higher RCL rooms
             },
             creepSetup => { // callback onQueued
@@ -195,7 +195,6 @@ mod.creep = {
     },
     worker: {
         fixedBody: [MOVE, CARRY, WORK],
-        multiBody: [MOVE, CARRY, WORK], 
         behaviour: 'worker',
         queue: 'High'
     }

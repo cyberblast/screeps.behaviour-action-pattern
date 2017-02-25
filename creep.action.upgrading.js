@@ -5,11 +5,15 @@ action.isAddableAction = function(creep){
     // no storage
     return !creep.room.storage 
     // storage has surplus
-    || (creep.room.storage.store.energy > MAX_STORAGE_ENERGY[creep.room.controller.level])
+    || creep.room.storage.charge > 1
     // storage is leftover from invasion and has usable energy
     || (!creep.room.storage.my && creep.room.storage.store.energy > 0);
 };
-action.isAddableTarget = function(target){ return true; };
+action.isAddableTarget = function(target, creep){ 
+    // Limit to upgraders only at RCL8
+    if( target.level === 8 && (!creep.data || creep.data.creepType != 'upgrader') ) return false;
+    return true;
+};
 action.isValidAction = function(creep){
     return creep.carry.energy > 0;
 };

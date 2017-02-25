@@ -41,6 +41,9 @@ mod.extend = function(){
         if( !this.spawning ){
             if(!behaviour && this.data && this.data.creepType) {
                 behaviour = Creep.behaviour[this.data.creepType];
+                if ( Game.cpu.bucket < CRITICAL_BUCKET_LEVEL && !CRITICAL_ROLES.includes(this.data.creepType) ) {
+                    return;
+                }
             }
             this.repairNearby();
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Behaviour: behaviour && behaviour.name, Creep:'run'});
@@ -136,6 +139,10 @@ mod.extend = function(){
         if( !range ) range = this.pos.getRangeTo(targetPos);
         if( range <= intentionRange ) {
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, range, intentionRange, drive: 'arrived', Creep:'drive'}, 'arrived');
+            return;
+        }
+        if (this.getActiveBodyparts(MOVE) === 0) {
+            if ( DEBUG && TRACE ) trace('Creep', {creepName:this.name, moveParts: this.getActiveBodyparts(MOVE), drive: 'no move parts'}, 'no move parts');
             return;
         }
         if( this.fatigue > 0 ) {
@@ -311,12 +318,10 @@ mod.extend = function(){
     Creep.prototype.repairNearby = function( ) {
         // if it has energy and a work part, remoteMiners do repairs once the source is exhausted.
         if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK) && this.data && this.data.creepType !== 'remoteMiner') {
-            let nearby = this.pos.findInRange(this.room.structures.repairable, 3);
+            let nearby = this.pos.findInRange(this.room.structures.repairable, DRIVE_BY_REPAIR_RANGE);
             if( nearby && nearby.length ){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
-                if( this.repair(nearby[0]) === OK && this.carry.energy <= this.getActiveBodyparts(WORK) * REPAIR_POWER / REPAIR_COST ) {
-                    Creep.action.idle.assign(this);
-                }
+                this.repair(nearby[0]);
             } else {
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'none');
                 // enable remote haulers to build their own roads and containers
@@ -343,7 +348,7 @@ mod.extend = function(){
     };
     
     Creep.prototype.controllerSign = function() {
-        if(CONTROLLER_SIGN && (!this.room.controller.sign || this.room.controller.sign.username != this.owner.username)) {
+        if(CONTROLLER_SIGN && (!this.room.controller.sign || this.room.controller.sign.username != this.owner.username || (CONTROLLER_SIGN_UPDATE && this.room.controller.sign.text != CONTROLLER_SIGN_MESSAGE))) {
             this.signController(this.room.controller, CONTROLLER_SIGN_MESSAGE);
         }
     };
@@ -440,6 +445,7 @@ mod.extend = function(){
     Creep.prototype.customStrategy = function(actionName, behaviourName, taskName) {};
 };
 mod.execute = function(){
+    if ( DEBUG && Game.cpu.bucket < CRITICAL_BUCKET_LEVEL ) logSystem('system',`${Game.time}: CPU Bucket level is critical (${Game.cpu.bucket}). Skipping non critical creep roles.`);
     let run = creep => creep.run();
     _.forEach(Game.creeps, run);
 };
