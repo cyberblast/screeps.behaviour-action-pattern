@@ -5,25 +5,30 @@ mod.approach = function(creep){
     let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.homeRoom);
     let range = creep.pos.getRangeTo(targetPos);
     if( range > 0 )
-        creep.drive( targetPos, 0, 0, range );
+        creep.travelTo( targetPos, {range:0} );
     return range;
 };
-mod.run = function(creep, params = {approach: mod.approach}) {
+mod.determineTarget = creep => {
+    let notDeterminated = source => {
+        let hasThisSource = data => {
+            const predictedRenewal = data.predictedRenewal ? data.predictedRenewal : data.spawningTime;
+            return data.determinatedTarget == source.id && data.ttl > predictedRenewal;
+        };
+        let existingBranding = _.find(Memory.population, hasThisSource);
+            return !existingBranding;
+    };
+    source = _.find(creep.room.sources, notDeterminated);
+    if( source ) {
+        creep.data.determinatedTarget = source.id;
+    }
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9935), SAY_PUBLIC);
+};
+mod.run = function(creep, params = {}) {
+    if (_.isUndefined(params.approach)) params.approach = mod.approach;
+    if (_.isUndefined(params.determineTarget)) params.determineTarget = mod.determineTarget;
     let source;
     if( !creep.data.determinatedTarget ) { // select source
-        let notDeterminated = source => {
-            let hasThisSource = data => {
-                const predictedRenewal = data.predictedRenewal ? data.predictedRenewal : data.spawningTime;
-                return data.determinatedTarget == source.id && data.ttl > predictedRenewal;
-            };
-            let existingBranding = _.find(Memory.population, hasThisSource);
-            return !existingBranding;
-        };
-        source = _.find(creep.room.sources, notDeterminated);
-        if( source ) {
-            creep.data.determinatedTarget = source.id;
-        }
-        if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9935), SAY_PUBLIC);
+        params.determineTarget(creep);
     } else { // get dedicated source
         source = Game.getObjectById(creep.data.determinatedTarget);
     }
@@ -115,7 +120,7 @@ mod.run = function(creep, params = {approach: mod.approach}) {
                     if (creep.carry.energy === 0) return; // we need at least some energy to do both in the same tick.
                 }
                 const targets = params.remote ? creep.room.structures.repairable : creep.room.structures.fortifyable;
-                const repairs = creep.pos.findInRange(targets, 3);
+                const repairs = creep.pos.findInRange(_.filter(targets, s => s.structureType === STRUCTURE_ROAD || s.structureType === STRUCTURE_CONTAINER), 3);
                 if (repairs.length) {
                     if(CHATTY) creep.say('repairing', SAY_PUBLIC);
                     return creep.repair(repairs[0]);
@@ -158,13 +163,9 @@ mod.run = function(creep, params = {approach: mod.approach}) {
                 }
             }
         // move towards our source so we're ready to take over
-        } else if (creep.pos.getRangeTo(source) > 3) return Creep.action.travelling.assign(creep, source);
-    } else {
-        // move inside the room so we don't block the entrance
-        const flag = creep.data && creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
-        if (flag && creep.pos.getRangeTo(flag) > 3) {
-            creep.moveTo(flag);
-            return Creep.action.travelling.assign(creep, flag);
+        } else if (creep.pos.getRangeTo(source) > 3) {
+            creep.data.travelRange = 3;
+            return Creep.action.travelling.assign(creep, source);
         }
     }
 };
