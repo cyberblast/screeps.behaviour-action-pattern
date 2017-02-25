@@ -390,24 +390,6 @@ mod.extend = function(){
                     return this._labs;
                 }
             },
-            'powerSpawn' : {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._powerSpawn) ){
-                        this._powerSpawn = new PowerSpawn(this.room);
-                    }
-                    return this._powerSpawn;
-                }
-            },
-            'nuker' : {
-                configurable: true,
-                get: function() {
-                    if( _.isUndefined(this._nuker) ){
-                        this._nuker = new Nuker(this.room);
-                    }
-                    return this._nuker;
-                }
-            },
             'virtual': {
                 configurable: true,
                 get: function() {
@@ -1266,48 +1248,6 @@ mod.extend = function(){
         };
         labs.forEach(add);
     };
-    Room.prototype.savePowerSpawn = function(){
-        if( _.isUndefined(this.memory.powerSpawn) ){
-            this.memory.powerSpawn = [];
-        }
-        let powerSpawns = this.find(FIND_MY_STRUCTURES, {
-            filter: (structure) => ( structure.structureType == STRUCTURE_POWER_SPAWN )
-        });
-
-        this.memory.powerSpawn = [];
-
-        // for each entry add to memory ( if not contained )
-        let add = (powerSpawn) => {
-            let powerSpawnData = this.memory.powerSpawn.find( (s) => s.id == powerSpawn.id );
-            if( !powerSpawnData ) {
-                this.memory.powerSpawn.push({
-                    id: powerSpawn.id,
-                });
-            }
-        };
-        powerSpawns.forEach(add);
-    };
-    Room.prototype.saveNuker = function(){
-        if( _.isUndefined(this.memory.nuker) ){
-            this.memory.nuker = [];
-        }
-        let nukers = this.find(FIND_MY_STRUCTURES, {
-            filter: (structure) => ( structure.structureType == STRUCTURE_NUKER )
-        });
-
-        this.memory.nuker = [];
-
-        // for each entry add to memory ( if not contained )
-        let add = (nuker) => {
-            let nukerData = this.memory.nuker.find( (s) => s.id == nuker.id );
-            if( !nukerData ) {
-                this.memory.nuker.push({
-                    id: nuker.id,
-                });
-            }
-        };
-        nukers.forEach(add);
-    };
     Room.prototype.saveMinerals = function() {
         let that = this;
         let toPos = o => {
@@ -2095,8 +2035,6 @@ mod.analyze = function(){
                 room.saveContainers();
                 room.saveLinks();
                 room.saveLabs();
-                room.savePowerSpawn();
-                room.saveNuker();
                 room.updateResourceOrders();
                 room.updateRoomOrders();
                 room.terminalBroker();
