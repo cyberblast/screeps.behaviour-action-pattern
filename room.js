@@ -1921,7 +1921,7 @@ mod.flush = function(){
         delete room._currentCostMatrix;
         delete room._isReceivingEnergy;
         delete room._reservedSpawnEnergy;
-        delete room._creeps
+        delete room._creeps;
         delete room._privateerMaxWeight;
         delete room._claimerMaxWeight;
         delete room._combatCreeps;
@@ -1939,6 +1939,9 @@ mod.flush = function(){
             delete room.structures._urgentRepairableSites;
             delete room.structures._fortifyableSites;
             delete room.structures._fuelables;
+        }
+        if (!room._powerBank) {
+            delete room.memory.powerBank;
         }
         room.newInvader = [];
         room.goneInvader = [];
