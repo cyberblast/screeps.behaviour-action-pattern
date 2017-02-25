@@ -417,9 +417,20 @@ action.unloadStructure = function(creep, target, resource, amount) {
     return workResult;
 };
 action.loadStructure = function(creep, target, resource, amount) {
-    var workResult = 0;
+    var workResult = null;
     var amt = Math.min(amount,creep.carry[resource]||0);
     if (amt > 0) workResult = creep.transfer(target, resource, amt);
+    if (workResult == OK) {
+        // update order
+        let data = null;
+        if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
+        if (data) {
+            let order = data.orders.find(o=>o.type==resource);
+            if (order && order.orderRemaining > 0) {
+                order.orderRemaining -= amount;
+            }
+        }
+    }
     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: creep.room.name, creepName: creep.name, subAction: 'loadStructure', structureId: target.id, resourceType: resource, amount: amt, result: workResult });
     return workResult;
 };
@@ -583,17 +594,6 @@ action.loadLab = function(creep) {
     } else {
         this.cancelAction(creep);
     }
-    if (workResult == OK) {
-        // update order
-        let data = null;
-        if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
-        if (data) {
-            let order = data.orders.find(o=>o.type==resource);
-            if (order && order.orderRemaining > 0) {
-                order.orderRemaining -= amount;
-            }
-        }
-    }
     return workResult;
 };
 action.loadPowerSpawn = function(creep) {
@@ -619,17 +619,6 @@ action.loadPowerSpawn = function(creep) {
     } else {
         this.cancelAction(creep);
     }
-    if (workResult == OK) {
-        // update order
-        let data = null;
-        if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
-        if (data) {
-            let order = data.orders.find(o=>o.type==resource);
-            if (order && order.orderRemaining > 0) {
-                order.orderRemaining -= amount;
-            }
-        }
-    }
     return workResult;
 };
 action.loadContainer = function(creep) {
@@ -653,17 +642,6 @@ action.loadContainer = function(creep) {
         this.assignDropOff(creep, resource);
     } else {
         this.cancelAction(creep);
-    }
-    if (workResult == OK) {
-        // update order
-        let data = null;
-        if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
-        if (data) {
-            let order = data.orders.find(o=>o.type==resource);
-            if (order && order.orderRemaining > 0) {
-                order.orderRemaining -= amount;
-            }
-        }
     }
     return workResult;
 };
@@ -693,17 +671,6 @@ action.loadTerminal = function(creep) {
     } else {
         this.cancelAction(creep);
     }
-    if (workResult == OK) {
-        // update order
-        let data = null;
-        if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
-        if (data) {
-            let order = data.orders.find(o=>o.type==resource);
-            if (order && order.orderRemaining > 0) {
-                order.orderRemaining -= amount;
-            }
-        }
-    }
     return workResult;
 };
 action.loadStorage = function(creep) {
@@ -727,17 +694,6 @@ action.loadStorage = function(creep) {
         this.assignDropOff(creep, resource);
     } else {
         this.cancelAction(creep);
-    }
-    if (workResult == OK) {
-        // update order
-        let data = null;
-        if (room.memory.resources) data = room.memory.resources[target.structureType].find((s)=>s.id==target.id);
-        if (data) {
-            let order = data.orders.find(o=>o.type==resource);
-            if (order && order.orderRemaining > 0) {
-                order.orderRemaining -= amount;
-            }
-        }
     }
     return workResult;
 };
