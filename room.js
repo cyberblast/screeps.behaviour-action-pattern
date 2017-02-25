@@ -2005,7 +2005,7 @@ mod.isControllerRoom = function(roomName){
 };
 mod.isSKRoom = function(roomName){
     return Room.calcCoordinates(roomName, (x,y) => {
-        return (x > 3 || x < 7) && (y > 3 || y < 7) && (x !== 5 || y !== 5);
+        return x > 3 && x < 7 && y > 3 && y < 7 && (x !== 5 || y !== 5);
     });
 };
 mod.isHighwayRoom = function(roomName){

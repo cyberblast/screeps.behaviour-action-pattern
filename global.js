@@ -88,8 +88,12 @@ mod.FLAG_COLOR = {
             color: COLOR_GREEN,
             secondaryColor: COLOR_BROWN,
             filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_BROWN}
-        }
-
+        },
+        delivery: { // rob energy from friendly rooms and deliver here
+            color: COLOR_GREEN,
+            secondaryColor: COLOR_YELLOW,
+            filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_YELLOW}
+        },
     },
     //COLOR_YELLOW
     defense: { // point to gather troops

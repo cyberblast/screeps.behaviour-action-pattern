@@ -113,5 +113,11 @@ let Action = function(actionName){
     this.selectStrategies = function() {
         return [this.defaultStrategy];
     };
+    // get member with this action's name
+    this.isMember = function(collection) {
+        return _.find(collection, function(a) {
+            return a.name === this.name;
+        }, this);
+    };
 };
 module.exports = Action;

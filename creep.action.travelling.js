@@ -3,7 +3,10 @@ module.exports = action;
 action.isValidTarget = function(target){ return target !== null; };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
-action.newTarget = function(creep){ return null; };
+action.newTarget = function(creep){
+    // TODO trace it: console.log(creep.strategy([action.name]).key);
+    return creep.getStrategyHandler([action.name], 'newTarget', creep);
+};
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
     let targetRange = creep.data.travelRange || this.targetRange;
@@ -42,4 +45,11 @@ action.unregister = function(creep) {
 };
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9784), SAY_PUBLIC);
+};
+action.defaultStrategy.newTarget = function(creep) {
+    if( creep.data.travelPos || creep.data.travelRoom ) {
+        // TODO create flag and place in room
+        return FlagDir.getSpecialFlag();
+    }
+    return null;
 };

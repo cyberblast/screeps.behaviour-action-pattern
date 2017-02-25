@@ -31,6 +31,7 @@ mod.register = function () {
         Task.attackController,
         Task.robbing,
         Task.reputation,
+        Task.delivery,
     ];
     for (let i = tasks.length - 1; i >= 0; i--) {
         if (tasks[i].register) {
@@ -89,5 +90,74 @@ mod.spawn = (creepDefinition, destiny, roomParams, onQueued) => {
     // save queued creep to task memory
     if( onQueued ) onQueued(creepSetup);
     return creepSetup;
+};
+mod.handleCreepDied = function(task) {
+    return function(creepName) {
+        const entry = Population.getCreep(creepName);
+        if( !(entry && entry.destiny && entry.destiny.task === task.name) ) {
+            return;
+        }
+        const memoryKey = task.memoryKey(entry);
+        if (memoryKey) {
+            const running = task.memory(memoryKey).running;
+            const index = _.indexOf(running, creepName);
+            running.splice(index, 1);
+        }
+    }
+};
+mod.validateMemoryQueued = function(task, memory) {
+    // clean/validate task memory queued creeps
+    let queued = [];
+    let invalid = [];
+    let validateQueued = entry => {
+        let room = Game.rooms[entry.room];
+        if( (room.spawnQueueMedium.some( c => c.name == entry.name)) || (room.spawnQueueLow.some( c => c.name == entry.name)) ){
+            queued.push(entry);
+        } else {
+            invalid.push(entry);
+        }
+    };
+    memory.queued.forEach(validateQueued);
+    if (memory.queued.length !== queued.length) {
+        logError('Creep queued list contained invalid entries', {taskName: task.name});
+    }
+    memory.queued = queued;
+};
+mod.validateMemorySpawning = function(task, memory) {
+    // clean/validate task memory spawning creeps
+    let spawning = [];
+    let invalid = [];
+    let validateSpawning = entry => {
+        let spawn = Game.spawns[entry.spawn];
+        if( spawn && ((spawn.spawning && spawn.spawning.name == entry.name) || (spawn.newSpawn && spawn.newSpawn.name == entry.name))) {
+            spawning.push(entry);
+        } else {
+            invalid.push(entry);
+        }
+    };
+    memory.spawning.forEach(validateSpawning);
+    if (memory.spawning.length !== spawning.length) {
+        logError('Creep spawning list contained invalid entries', {taskName: task.name});
+    }
+    memory.spawning = spawning;
+};
+mod.validateMemoryRunning = function(task, memory, isValidCallback = (creep => true)) {
+    // clean/validate task memory running creeps
+    let running = [];
+    let invalid = [];
+    let validateRunning = entry => {
+        let creep = Game.creeps[entry];
+        if( !creep || !creep.data ) return;
+        if( isValidCallback(creep) ) {
+            running.push(entry);
+        } else {
+            invalid.push(entry);
+        }
+    };
+    memory.running.forEach(validateRunning);
+    if (memory.running.length !== running.length) {
+        logError('Creep running list contained invalid entries', {taskName: task.name});
+    }
+    memory.running = running;
 };
 const cache = {};

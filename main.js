@@ -144,6 +144,7 @@ global.install = () => {
         attackController: load("task.attackController"),
         robbing: load("task.robbing"),
         reputation: load("task.reputation"),
+        delivery: load("task.delivery"),
     });
     Creep.Action = load("creep.Action");
     Creep.Setup = load("creep.Setup");

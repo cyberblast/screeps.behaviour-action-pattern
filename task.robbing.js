@@ -24,6 +24,11 @@ mod.handleFlagFound = flag => {
 };
 // check if a new creep has to be spawned
 mod.checkForRequiredCreeps = (flag) => {
+    if( flag.room && flag.room.my ) {
+        // robbing own rooms is handled by Task.delivery
+        return;
+    }
+
     // get task memory
     let memory = Task.robbing.memory(flag);
     // count creeps assigned to task
@@ -225,7 +230,7 @@ mod.exploitNextRoom = creep => {
         );
         var flag;
         if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.flagName];
-        if( !flag ) flag = FlagDir.find(validColor, Game.rooms[creep.data.homeRoom].controller.pos, false);
+        if( !flag ) flag = FlagDir.find(validColor, Game.rooms[creep.data.homeRoom].controller.pos, false, FlagDir.exploitMod, creep.name);
         // new flag found
         if( flag ) {
             return mod.gotoTargetRoom(creep, flag);
