@@ -205,17 +205,16 @@ Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
             if( distance > maxRoomRange ) {
                 return;
             }
-            if( !measureByHome ) {
-                max++;
-                return;
-            }
+            // for each flag in range
             flag = Game.flags[flagEntry.name];
-            max += _.sum(flag.targetOf, function(c) {
-                if (c.homeRoom === room.name) {
-                    return Setup.isWorkingAge(c) ? 1 : 2;
-                }
-                return 0;
-            });
+            // if someone is dying then allow 2 per flag
+            if (_.chain(flag.targetOf).filter(function (c) {
+                return !measureByHome || c.homeRoom === room.name;
+            }).every(Setup.isWorkingAge).value()) {
+                max++;
+            } else {
+                max = max + 2;
+            }
         };
         let flagEntries = FlagDir.filter(flagFilter);
         flagEntries.forEach(calcMax);
