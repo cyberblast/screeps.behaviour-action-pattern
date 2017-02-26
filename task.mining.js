@@ -223,10 +223,16 @@ mod.checkForRequiredCreeps = (flag) => {
 
             // haulers set homeRoom if closer storage exists
             const storageRoom = REMOTE_HAULER_REHOME && mod.strategies.hauler.homeRoom(roomName) || spawnRoom;
-            const maxWeight = mod.strategies.hauler.maxWeight(roomName, storageRoom, memory); // TODO Task.strategies
+            let maxWeight = mod.strategies.hauler.maxWeight(roomName, storageRoom, memory); // TODO Task.strategies
             if( !maxWeight || (!REMOTE_HAULER_ALLOW_OVER_CAPACITY && maxWeight < minWeight)) {
                 memory.capacityLastChecked = Game.time;
                 break;
+            }
+
+            if (_.isNumber(REMOTE_HAULER_ALLOW_OVER_CAPACITY)) {
+                maxWeight = Math.max(maxWeight, REMOTE_HAULER_ALLOW_OVER_CAPACITY);
+            } else if (REMOTE_HAULER_ALLOW_OVER_CAPACITY) {
+                maxWeight = Math.max(maxWeight, REMOTE_HAULER_MIN_WEIGHT);
             }
 
             // spawning a new hauler
