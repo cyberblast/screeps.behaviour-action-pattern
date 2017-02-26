@@ -64,7 +64,7 @@ action.work = function(creep) {
 
     if (creep.data.safeSpot) {
         if (creep.pos.getRangeTo(creep.target) < 10) {
-            creep.travelTo(creep.data.safeSpot);
+            creep.drive(creep.data.safeSpot, 0, 1);
         } else {
             creep.idleMove();
         }
