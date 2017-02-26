@@ -1857,7 +1857,7 @@ mod.extend = function(){
     Room.prototype.initObserverRooms = function() {
         const OBSERVER_RANGE = OBSERVER_OBSERVE_RANGE > 10 ? 10 : OBSERVER_OBSERVE_RANGE; // can't be > 10
         const PRIORITISE_HIGHWAY = OBSERVER_PRIORITISE_HIGHWAY;
-        const [x, y] = Room.calcCoordinates(this.name, (x,y) => [x,y]); // hacky get x,y
+        const [x, y] = Room.calcGlobalCoordinates(this.name, (x,y) => [x,y]); // hacky get x,y
         const [HORIZONTAL, VERTICAL] = Room.calcCardinalDirection(this.name);
         let ROOMS = [];
         
@@ -2029,12 +2029,18 @@ mod.calcCardinalDirection = function(roomName) {
     const parsed = /^([WE])[0-9]{1,2}([NS])[0-9]{1,2}$/.exec(roomName);
     return [parsed[1], parsed[2]];
 };
+mod.calcGlobalCoordinates = function(roomName, callBack) {
+	const parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+	const x = +parsed[1];
+	const y = +parsed[2];
+	if (callBack) return callBack(x, y);
+	return null;
+};
 mod.calcCoordinates = function(roomName, callBack){
-    let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
-    let x = parsed[1] % 10;
-    let y = parsed[2] % 10;
-    if( callBack ) return callBack(x,y);
-    return null;
+    if (!callBack) return null;
+    return Room.calcGlobalCoordinates(roomName, (x, y) => {
+    	return callBack(x % 10, y % 10);
+    });
 };
 mod.isCenterRoom = function(roomName){
     return Room.calcCoordinates(roomName, (x,y) => {
