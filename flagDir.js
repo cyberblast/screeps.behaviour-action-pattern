@@ -187,7 +187,6 @@ mod.specialFlag = function(create) {
     if (create) {
         if (!flag) {
             return _(Game.rooms).values().some(function (room) {
-                room.createFlag()
                 new RoomPosition(49, 49, room.name).createFlag(name, COLOR_WHITE, COLOR_PURPLE);
                 return true;
             });
