@@ -215,7 +215,7 @@ mod.checkForRequiredCreeps = (flag) => {
     const maxHaulers = Math.ceil(memory.running.remoteMiner.length * REMOTE_HAULER_MULTIPLIER);
     if(haulerCount < maxHaulers && (!memory.capacityLastChecked || Game.time - memory.capacityLastChecked > REMOTE_HAULER_CHECK_INTERVAL)) {
         for(let i = haulerCount; i < maxHaulers; i++) {
-            const minWeight = i >= 1 && REMOTE_HAULER_MIN_WEIGHT;
+            let minWeight = i >= 1 && REMOTE_HAULER_MIN_WEIGHT;
             const spawnRoom = mod.strategies.hauler.spawnRoom({roomName, minWeight});
             if( !spawnRoom ) {
                 break;
@@ -231,8 +231,10 @@ mod.checkForRequiredCreeps = (flag) => {
 
             if (_.isNumber(REMOTE_HAULER_ALLOW_OVER_CAPACITY)) {
                 maxWeight = Math.max(maxWeight, REMOTE_HAULER_ALLOW_OVER_CAPACITY);
+                minWeight = minWeight && Math.min(REMOTE_HAULER_MIN_WEIGHT, maxWeight);
             } else if (REMOTE_HAULER_ALLOW_OVER_CAPACITY) {
                 maxWeight = Math.max(maxWeight, REMOTE_HAULER_MIN_WEIGHT);
+                minWeight = minWeight && Math.min(REMOTE_HAULER_MIN_WEIGHT, maxWeight);
             }
 
             // spawning a new hauler
