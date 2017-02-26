@@ -21,7 +21,7 @@ mod.run = function(creep) {
         if( nextHome )
             creep.drive( nextHome.controller.pos, 3, 5);
     }
-    if( DEBUG && TRACE ) trace('Behaviour', {creepName:creep.name, run:creep.action.name, [mod.name]: 'run', Behaviour:mod.name});
+    if( DEBUG && TRACE ) trace('Behaviour', {creepName:creep.name, run:creep.action && creep.action.name || 'none', [mod.name]: 'run', Behaviour:mod.name});
 };
 mod.nextAction = function(creep){
     let priority = [

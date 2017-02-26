@@ -756,7 +756,7 @@ mod.extend = function(){
         'conserveForDefense': {
             configurable: true,
             get: function () {
-                return (this.my && this.storage && this.storage.store.energy < MIN_STORAGE_ENERGY[this.controller.level]);
+                return (this.my && this.storage && this.storage.charge < 0);
             }
         },
         'hostileThreatLevel': {
@@ -987,6 +987,12 @@ mod.extend = function(){
             }
         },
     });
+
+    Room.prototype.getBorder = function(roomName) {
+        return _.findKey(Game.map.describeExits(this.name), function(name) {
+            return this.name === name;
+        }, {name: roomName});
+    };
 
     Room.prototype.find = function (c, opt) {
         if (_.isArray(c)) {
@@ -1568,7 +1574,7 @@ mod.extend = function(){
             }
         }
         if( this.controller.level == 8 && !transacting &&
-            this.storage.store.energy > MAX_STORAGE_ENERGY[this.controller.level] * 0.8 &&
+            this.storage.charge > 0.8 &&
             this.terminal.store[mineral] < 150000 &&
             this.terminal.store.energy > 55000 ){
             let requiresEnergy = room => (
@@ -2179,7 +2185,7 @@ mod.isControllerRoom = function(roomName){
 };
 mod.isSKRoom = function(roomName){
     return Room.calcCoordinates(roomName, (x,y) => {
-        return (x > 3 || x < 7) && (y > 3 || y < 7) && (x !== 5 || y !== 5);
+        return x > 3 && x < 7 && y > 3 && y < 7 && (x !== 5 || y !== 5);
     });
 };
 mod.isHighwayRoom = function(roomName){

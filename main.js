@@ -132,7 +132,7 @@ global.install = () => {
         Tower: load("tower"),
         Events: load('events'),
         Grafana: GRAFANA ? load('grafana') : undefined,
-        Visuals: ROOM_VISUALS ? load('visuals') : undefined,
+        Visuals: ROOM_VISUALS && Game.cpu.bucket > CRITICAL_BUCKET_LEVEL ? load('visuals') : undefined,
     });
     _.assign(global.Task, {
         guard: load("task.guard"),
@@ -149,6 +149,8 @@ global.install = () => {
     Creep.Setup = load("creep.Setup");
     _.assign(Creep, {
         action: {
+            attackController: load("creep.action.attackController"),
+            avoiding: load("creep.action.avoiding"),
             building: load("creep.action.building"), 
             charging: load("creep.action.charging"),
             claiming: load("creep.action.claiming"),
@@ -163,18 +165,17 @@ global.install = () => {
             healing: load("creep.action.healing"),
             idle: load("creep.action.idle"),
             invading: load("creep.action.invading"),
-            picking: load("creep.action.picking"), 
-            repairing: load("creep.action.repairing"), 
+            picking: load("creep.action.picking"),
+            reallocating:load("creep.action.reallocating"),
+            recycling:load("creep.action.recycling"),
+            repairing: load("creep.action.repairing"),
             reserving: load("creep.action.reserving"),
-            travelling: load("creep.action.travelling"), 
-            storing: load("creep.action.storing"), 
+            robbing:load("creep.action.robbing"),
+            storing: load("creep.action.storing"),
+            travelling: load("creep.action.travelling"),
             uncharging: load("creep.action.uncharging"),
             upgrading: load("creep.action.upgrading"), 
             withdrawing: load("creep.action.withdrawing"),
-            robbing:load("creep.action.robbing"),
-            reallocating:load("creep.action.reallocating"),
-            recycling:load("creep.action.recycling"),
-            attackController:load("creep.action.attackController")
         },
         behaviour: {
             claimer: load("creep.behaviour.claimer"),
@@ -234,6 +235,9 @@ module.exports.loop = function () {
     if (Memory.debugTrace === undefined) {
         Memory.debugTrace = {error:true, no:{}};
     }
+    if (Memory.cloaked === undefined) {
+        Memory.cloaked = {};
+    }
 
     // ensure up to date parameters
     _.assign(global, load("parameter"));
@@ -281,7 +285,7 @@ module.exports.loop = function () {
     // custom cleanup
     if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
 	
-    if ( ROOM_VISUALS ) Visuals.run(); // At end to correctly display used CPU.
+    if ( ROOM_VISUALS && Game.cpu.bucket > CRITICAL_BUCKET_LEVEL ) Visuals.run(); // At end to correctly display used CPU.
     
     if ( GRAFANA && Game.time % GRAFANA_INTERVAL === 0 ) Grafana.run();
 

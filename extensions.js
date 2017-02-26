@@ -63,6 +63,33 @@ mod.extend = function(){
             }
         }
     });
+    Object.defineProperty(RoomObject.prototype, 'cloak', {
+        configurable: true,
+        get: function() {
+            const value = Memory.cloaked[this.id];
+            if (!value) {
+                return false;
+            } else if (_.isNumber(value) && Game.time > value) {
+                delete Memory.cloaked[this.id];
+                return false;
+            } else {
+                return value;
+            }
+        },
+        set: function(value) {
+            if (!value) {
+                delete Memory.cloaked[this.id];
+                return undefined;
+            } else if (_.isNumber(value)) {
+                    if (value < Game.time) {
+                        value = Game.time + value;
+                    }
+            } else {
+                value = true;
+            }
+            return Memory.cloaked[this.id] = value;
+        }
+    });
     Object.defineProperty(Source.prototype, 'container', {
         configurable: true,
         get: function() {
