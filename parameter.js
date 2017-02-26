@@ -134,5 +134,6 @@ let mod = {
     CRITICAL_ROLES: [ 'melee', 'ranger', 'healer', 'miner', 'hauler', 'upgrader' ], // when the bucket drops below the critical bucket level only these creep roles will be executed
     OBSERVER_OBSERVE_RANGE: 10, // the range for observers to look at
     OBSERVER_PRIORITISE_HIGHWAY: true, // the observers will look at highways first
+    OBSERVER_OBSERVE_HIGHWAYS_ONLY: true, // the observers will only look at highways - changing this will require you to clear cached rooms
 };
 module.exports = mod;

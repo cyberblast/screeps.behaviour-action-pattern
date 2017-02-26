@@ -1880,6 +1880,7 @@ mod.extend = function(){
                 }
                 const room = hor + vert;
                 if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
+                if (OBSERVER_OBSERVE_HIGHWAYS_ONLY && !Room.isHighwayRoom(room)) continue; // we only want highway rooms
                 ROOMS.push(room);
             }
         }
