@@ -1371,7 +1371,7 @@ mod.extend = function(){
                     if (Memory.rooms[offer.room] && Memory.rooms[offer.room].resources && Memory.rooms[offer.room].resources.offers) {
                         let remoteOffers = Memory.rooms[offer.room].resources.offers;
                         let idx = remoteOffers.indexOf((o)=>{ return o.room==this.name && o.id==order.id && o.type==order.type; });
-                        remoteOffers = remoteOffers.splice(idx,1);
+                        if (idx !== -1) remoteOffers.splice(idx,1);
                     }
                 //    order.offers.splice[j--,1];
                 //}

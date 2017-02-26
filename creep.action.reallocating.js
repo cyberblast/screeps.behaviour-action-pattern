@@ -418,6 +418,7 @@ action.unloadStructure = function(creep, target, resource, amount) {
 };
 action.loadStructure = function(creep, target, resource, amount) {
     var workResult = null;
+    let room = creep.room;
     var amt = Math.min(amount,creep.carry[resource]||0);
     if (amt > 0) workResult = creep.transfer(target, resource, amt);
     if (workResult == OK) {
