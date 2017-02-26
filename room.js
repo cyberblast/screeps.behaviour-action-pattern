@@ -1862,22 +1862,21 @@ mod.extend = function(){
         let ROOMS = [];
         
         for (let a = x - OBSERVER_RANGE; a < x + OBSERVER_RANGE; a++) {
-            for (let b = y - OBSERVER_RANGE; b < b + OBSERVER_RANGE; b++) {
-                let hor, vert;
+            for (let b = y - OBSERVER_RANGE; b < y + OBSERVER_RANGE; b++) {
+                let hor = HORIZONTAL;
+                let vert = VERTICAL;
+                let n = a;
                 if (a < 0) { // swap horizontal letter
-                    if (HORIZONTAL === 'W') {
-                        hor = 'E' + (Math.abs(a) - 1); // If a === -1, E0
-                    } else {
-                        hor = 'W' + (Math.abs(a) - 1);
-                    }
+                    hor = hor === 'W' ? 'E' : 'W';
+                    n = Math.abs(a) - 1;
                 }
+                hor += n;
+                n = b;
                 if (b < 0) {
-                    if (VERTICAL === 'N') {
-                        vert = 'S' + (Math.abs(b) - 1);
-                    } else {
-                        vert = 'N' + (Math.abs(b) - 1);
-                    }
+                    vert = vert === 'N' ? 'S' : 'N';
+                    n = Math.abs(b) - 1;
                 }
+                vert += n;
                 const room = hor + vert;
                 if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
                 if (OBSERVER_OBSERVE_HIGHWAYS_ONLY && !Room.isHighwayRoom(room)) continue; // we only want highway rooms
