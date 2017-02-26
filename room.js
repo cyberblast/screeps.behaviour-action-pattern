@@ -2030,11 +2030,11 @@ mod.calcCardinalDirection = function(roomName) {
     return [parsed[1], parsed[2]];
 };
 mod.calcGlobalCoordinates = function(roomName, callBack) {
+    if (!callBack) return null;
 	const parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
 	const x = +parsed[1];
 	const y = +parsed[2];
-	if (callBack) return callBack(x, y);
-	return null;
+	return callBack(x, y);
 };
 mod.calcCoordinates = function(roomName, callBack){
     if (!callBack) return null;
