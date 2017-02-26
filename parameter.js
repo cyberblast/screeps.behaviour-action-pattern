@@ -120,6 +120,7 @@ let mod = {
     MINERS_AUTO_BUILD: false, // miners and remoteMiners will build their own containers if they are missing.
     REMOTE_HAULER_MULTIPLIER: 1, // Max number of haulers spawned per source in a remote mining room.
     REMOTE_HAULER_CHECK_INTERVAL: 5, // how many ticks before we check to see if new haulers need spawninig?
+    REMOTE_RESERVE_HAUL_CAPACITY: 0.1, // Percent of allocated haul capacity before sending reservers.
     REMOTE_HAULER_REHOME: false, // May haulers choose closer storage for delivery?
     REMOTE_HAULER_MIN_LOAD: 0.75, // Haulers will return home as long as their ratio of carrying/capacity is above this amount.
     REMOTE_HAULER_MIN_WEIGHT: 800, // Small haulers are a CPU drain.

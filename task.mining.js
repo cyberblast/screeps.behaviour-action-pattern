@@ -421,14 +421,27 @@ function haulerCarryToWeight(carry) {
 }
 mod.carryPopulation = function(roomName, travelRoom) {
     // how much more do we need to meet our goals
-    const neededWeight = Task.mining.strategies.hauler.maxWeight(roomName, travelRoom, undefined, false);
+    const neededWeight = Task.mining.strategies.hauler.maxWeight(roomName, travelRoom, undefined, false, true);
     // how much do we need for this room in total
-    const totalWeight = Task.mining.strategies.hauler.maxWeight(roomName, travelRoom, undefined, true);
+    const totalWeight = Task.mining.strategies.hauler.maxWeight(roomName, travelRoom, undefined, true, true);
     return 1 - neededWeight / totalWeight;
 };
 mod.strategies = {
     defaultStrategy: {
         name: `default-${mod.name}`,
+    },
+    reserve: {
+        spawnParams: function(flag) {
+            const population = mod.carryPopulation(flag.pos.roomName);
+
+            if( population < REMOTE_RESERVE_HAUL_CAPACITY ) {
+                // TODO if this room & all exits are currently reserved (by anyone) then use default to prevent Invaders?
+                if( DEBUG && TRACE ) trace('Task', {flagName:flag.name, pos:flag.pos, population, spawnParams:'population', [mod.name]:'spawnParams', Task:mod.name});
+                return {count: 0, priority: 'Low'};
+            }
+
+            return Task.reserve.strategies.defaultStrategy.spawnParams(flag);
+        }
     },
     hauler: {
         name: `hauler-${mod.name}`,
@@ -445,11 +458,11 @@ mod.strategies = {
                 minEnergyCapacity: 500
             });
         },
-        maxWeight: function(roomName, travelRoom, memory, ignorePopulation) {
+        maxWeight: function(roomName, travelRoom, memory, ignorePopulation, ignoreQueue) {
             if( !memory ) memory = Task.mining.memory(roomName);
             if( !travelRoom ) travelRoom = mod.strategies.hauler.homeRoom(roomName);
             const existingHaulers = ignorePopulation ? [] : _.map(memory.running.remoteHauler, n=>Game.creeps[n]);
-            const queuedHaulers = ignorePopulation ? [] : _.union(memory.queued.remoteHauler, memory.spawning.remoteHauler);
+            const queuedHaulers = ignoreQueue ? [] : _.union(memory.queued.remoteHauler, memory.spawning.remoteHauler);
             const room = Game.rooms[roomName];
             // TODO loop per-source, take pinned delivery for route calc
             const travel = routeRange(roomName, travelRoom.name);
