@@ -1118,14 +1118,49 @@ mod.extend = function(){
         }).map(s => s.id);
     };
     Room.prototype.saveNuker = function() {
-        [this.memory.nuker] = this.find(FIND_MY_STRUCTURES, {
-            filter: s => s instanceof StructureNuker
-        }).map(s => s.id);
+        if( _.isUndefined(this.memory.nukers) ){
+            this.memory.nukers = [];
+        }
+        let nukers = this.find(FIND_MY_STRUCTURES, {
+            filter: (structure) => ( structure.structureType == STRUCTURE_NUKER )
+        });
+        let storageNukers = this.storage ? this.storage.pos.findInRange(nukers, 2).map(l => l.id) : [];
+
+        this.memory.nukers = [];
+
+        // for each entry add to memory ( if not contained )
+        let add = (nuker) => {
+            let nukerData = this.memory.nukers.find( (l) => l.id == nuker.id );
+            if( !nukerData ) {
+                this.memory.nukers.push({
+                    id: nuker.id,
+                });
+            }
+        };
+        nukers.forEach(add);
     };
     Room.prototype.savePowerSpawn = function() {
-        [this.memory.powerSpawn] = this.find(FIND_MY_STRUCTURES, {
-            filter: s => s instanceof StructurePowerSpawn
-        }).map(s => s.id);
+        if( _.isUndefined(this.memory.powerSpawns) ){
+            this.memory.powerSpawns = [];
+        }
+        let powerSpawns = this.find(FIND_MY_STRUCTURES, {
+            filter: (structure) => ( structure.structureType == STRUCTURE_POWER_SPAWN )
+        });
+        let storagePowerSpawns = this.storage ? this.storage.pos.findInRange(powerSpawns, 2).map(l => l.id) : [];
+
+        this.memory.powerSpawns = [];
+
+        // for each entry add to memory ( if not contained )
+        let add = (powerSpawn) => {
+            let powerSpawnData = this.memory.powerSpawns.find( (l) => l.id == powerSpawn.id );
+            if( !powerSpawnData ) {
+                this.memory.powerSpawns.push({
+                    id: powerSpawn.id,
+                    storage: storagepowerSpawns.includes(powerSpawn.id),
+                });
+            }
+        };
+        powerSpawns.forEach(add);
     };
     Room.prototype.saveContainers = function(){
         this.memory.container = [];
