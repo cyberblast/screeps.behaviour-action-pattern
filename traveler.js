@@ -22,7 +22,7 @@ module.exports = function(globalOpts = {}){
         exportTraveler:    true,
         installTraveler:   false,
         installPrototype:  true,
-        hostileLocation:   'empire',
+        hostileLocation:   'rooms',
         maxOps:            20000,
         defaultStuckValue: 3,
         reportThreshold:   50,
