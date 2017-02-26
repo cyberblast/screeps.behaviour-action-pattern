@@ -35,31 +35,18 @@ mod.handleFlagFound = flag => {
 };
 // check if a new creep has to be spawned
 mod.checkForRequiredCreeps = (flag) => {
-    const myName = _.find(Game.spawns).owner.username;
-    // Don't spawn if...
-    if( // Flag was removed
-        !flag || 
-        // No controller in room
-        !Room.isControllerRoom(flag.pos.roomName) ||  (flag.room && !flag.room.controller) || 
-        // My reservation is already sufficiently high or reserved by another player
-        (flag.room && flag.room.controller && flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 2500 || flag.room.controller.reservation.username != myName) ) ||
-        // Room is owned
-        (flag.room && flag.room.controller && flag.room.controller.owner) )
-        return;
+    let spawnParams;
+    if( flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor ) {
+        spawnParams = Task.mining.strategies.reserve.spawnParams(flag);
+    } else {
+        spawnParams = mod.strategies.defaultStrategy.spawnParams(flag);
+    }
 
     // get task memory
     let memory = Task.reserve.memory(flag);
 
-    // count creeps assigned to task
-    let count = memory.queued.length + memory.spawning.length + memory.running.length;
-    
-    // check reservation level
-    let lowReservation = ( !flag.room ||
-            (flag.room.controller && !flag.room.controller.reservation) ||
-            (flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd < 250)); 
-    
     // if low & creep in low queue => move to medium queue
-    if( lowReservation && memory.queued.length == 1 ) {
+    if( spawnParams.queue !== 'Low' && memory.queued.length == 1 ) {
         let spawnRoom = Game.rooms[memory.queued[0].room];
         let elevate = (entry, index) => {
             if( entry.targetName == memory.queued[0].targetName ){
@@ -72,9 +59,12 @@ mod.checkForRequiredCreeps = (flag) => {
         spawnRoom.spawnQueueLow.find(elevate);
     }
 
-    // if creep count below requirement spawn a new creep creep 
-    if( count < 1 ) {
-        Task.reserve.creep.reserver.queue = lowReservation ? 'Medium' : 'Low';
+    // count creeps assigned to task
+    let count = memory.queued.length + memory.spawning.length + memory.running.length;
+
+    // if creep count below requirement spawn a new creep creep
+    if( count < spawnParams.count ) {
+        Task.reserve.creep.reserver.queue = spawnParams.queue;
         Task.spawn(
             Task.reserve.creep.reserver, // creepDefinition
             { // destiny
@@ -237,3 +227,38 @@ mod.validateMemory = memory => {
     Task.reserve.validateMemoryRunning(memory);
     memory.valid = Game.time;
 };
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        spawnParams: function(flag) { //:{count:number, priority:string}
+            let count = 1;
+
+            const myName = _.find(Game.spawns).owner.username;
+            // Don't spawn if...
+            const hasFlag = !!flag;
+            const hasController = Room.isControllerRoom(flag.pos.roomName) || (flag.room && flag.room.controller);
+            const hasReservation = (flag.room && flag.room.controller && flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 2500 || flag.room.controller.reservation.username != myName) );
+            const isOwned = (flag.room && flag.room.controller && flag.room.controller.owner);
+            if( // Flag was removed
+                !hasFlag ||
+                // No controller in room
+                !hasController ||
+                // My reservation is already sufficiently high or reserved by another player
+                hasReservation ||
+                // Room is owned
+                isOwned ) {
+                if( DEBUG && TRACE ) trace('Task', {hasFlag, hasController, hasReservation, isOwned, checkForRequiredCreeps:'skipping room', [mod.name]:'checkForRequiredCreeps', Task:mod.name});
+                count = 0;
+            }
+
+            // check reservation level
+            let lowReservation = (count > 0 && flag.room &&
+                ((flag.room.controller && !flag.room.controller.reservation) ||
+                (flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd < 250)));
+
+            const queue = lowReservation ? 'Medium' : 'Low';
+
+            return {count, queue};
+        },
+    },
+}

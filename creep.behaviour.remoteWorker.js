@@ -2,10 +2,6 @@ let mod = {};
 module.exports = mod;
 mod.name = 'remoteWorker';
 mod.run = function(creep) {
-    if (Creep.action.avoiding.run(creep)) {
-        return;
-    }
-
     // Assign next Action
     let oldTargetId = creep.data.targetId;
     if( creep.action == null || creep.action.name == 'idle' ) {

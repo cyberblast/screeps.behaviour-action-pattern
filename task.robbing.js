@@ -215,7 +215,7 @@ mod.nextAction = creep => {
         }
     }
     // fallback
-    Creep.action.recycle.assign(creep);
+    Creep.action.recycling.assign(creep);
 };
 mod.exploitNextRoom = creep => {
     if( creep.sum < creep.carryCapacity*0.4 ) {
