@@ -1839,6 +1839,7 @@ mod.extend = function(){
     };
     Room.prototype.controlObserver = function() {
         const OBSERVER = this.observer;
+        if (!OBSERVER) return;
         if (!this.memory.observer.rooms) this.initObserverRooms();
         const ROOMS = this.memory.observer.rooms;
         let lastLookedIndex = this.memory.observer.lastLookedIndex || ROOMS.length; // if doesn't exist, default to array length as it's guaranteed to be > array.length - 1.
