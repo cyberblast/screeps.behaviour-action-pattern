@@ -26,6 +26,7 @@ module.exports = function(globalOpts = {}){
         maxOps:            20000,
         defaultStuckValue: 3,
         reportThreshold:   50,
+        roomRange:         22,
     });
     class Traveler {
         constructor() {
@@ -79,6 +80,7 @@ module.exports = function(globalOpts = {}){
             for (let value of ret) {
                 allowedRooms[value.room] = true;
             }
+            allowedRooms.route = ret;
             return allowedRooms;
         }
         findTravelPath(origin, destination, options = {}) {
@@ -130,12 +132,14 @@ module.exports = function(globalOpts = {}){
                 }
                 return matrix;
             };
-            return PathFinder.search(origPos, { pos: destPos, range: options.range }, {
+            const ret = PathFinder.search(origPos, { pos: destPos, range: options.range }, {
                 swampCost: options.ignoreRoads ? 5 : 10,
                 plainCost: options.ignoreRoads ? 1 : 2,
                 maxOps: options.maxOps,
                 roomCallback: callback
             });
+            ret.route = allowedRooms && allowedRooms.route;
+            return ret;
         }
         travelTo(creep, destination, options = {}) {
             // register hostile rooms entered
@@ -231,8 +235,17 @@ module.exports = function(globalOpts = {}){
                     console.log(`TRAVELER: heavy cpu use: ${creep.name}, avg: ${travelData.cpu / travelData.count}, total: ${_.round(travelData.cpu, 2)}, pos: ${creep.pos}`);
                 }
                 if (ret.incomplete) {
-                    console.log(`TRAVELER: incomplete path for ${creep.name} from ${creep.pos} to ${destPos}`);
-                    if (ret.ops < 2000 && options.useFindRoute === undefined && travelData.stuck < gOpts.defaultStuckValue) {
+                    const route = ret.route && ret.route.length;
+                    console.log(`TRAVELER: incomplete path for ${creep.name} from ${creep.pos} to ${destPos}. Route length ${route}.`);
+                    if (route > 1) {
+                        ret = this.findTravelPath(creep, new RoomPosition(25, 25, ret.route[1].room),
+                            _.create(options, {
+                                range: gOpts.roomRange,
+                                useFindRoute: false,
+                            }));
+                        console.log(`attempting path through next room using known route was ${ret.incomplete ? "not" : ""} successful`);
+                    }
+                    if (ret.incomplete && ret.ops < 2000 && options.useFindRoute === undefined && travelData.stuck < gOpts.defaultStuckValue) {
                         options.useFindRoute = false;
                         ret = this.findTravelPath(creep, destPos, options);
                         console.log(`attempting path without findRoute was ${ret.incomplete ? "not" : ""} successful`);
@@ -328,7 +341,7 @@ module.exports = function(globalOpts = {}){
             let offsetY = [0, -1, -1, 0, 1, 1, 1, 0, -1];
             return new RoomPosition(origin.x + offsetX[direction], origin.y + offsetY[direction], origin.roomName);
         }
-    }    
+    }
 
     if(gOpts.installTraveler){
         global.Traveler = Traveler;
@@ -351,6 +364,7 @@ module.exports = function(globalOpts = {}){
             if (_.isUndefined(options.preferHighway)) options.preferHighway = true;
             if (_.isUndefined(options.allowHostile)) options.allowHostile = false;
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(destination.roomName, options.allowHostile, options.preferHighway);
+            if (_.isUndefined(options.useFindRoute)) options.useFindRoute = global.ROUTE_PRECALCULATION;
             return traveler.travelTo(this, destination, options);
         };
     }
