@@ -1270,6 +1270,8 @@ mod.extend = function(){
         let data = this.memory.resources;
         if (!this.my || !data) return;
 
+        let rcl = this.controller.level;
+
         // go through reallacation orders and reset completed orders
         for(var structureType in data) {
             for(var i=0;i<data[structureType].length;i++) {
