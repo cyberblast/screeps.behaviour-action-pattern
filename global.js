@@ -144,9 +144,9 @@ mod.LAB_SLAVE_1 = 'slave_1';
 mod.LAB_SLAVE_2 = 'slave_2';
 mod.LAB_SLAVE_3 = 'slave_3';
 mod.LAB_REACTIONS = {};
-for(var a in REACTIONS){
-    for(var b in REACTIONS[a]){
-        mod.LAB_RECIPES[REACTIONS[a][b]] = [a,b];
+for(let a in REACTIONS){
+    for(let b in REACTIONS[a]){
+        mod.LAB_REACTIONS[REACTIONS[a][b]] = [a,b];
     }
 }
 // used to log something meaningful instead of numbers
