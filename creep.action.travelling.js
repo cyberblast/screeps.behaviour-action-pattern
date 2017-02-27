@@ -20,6 +20,7 @@ action.step = function(creep){
             }
         } else {
             logError(creep.name + 'Creep.action.travelling called with specialFlag target and travelRoom undefined.');
+            target = null;
         }
     }
     if( target ){
@@ -33,6 +34,10 @@ action.step = function(creep){
     }
 };
 action.assignRoom = function(creep, roomName) {
+    if (!roomName) {
+        logError(creep.name + 'Creep.action.travelling.assignRoom called with no room.');
+        return;
+    }
     if (_.isUndefined(creep.data.travelRange)) creep.data.travelRange = TRAVELLING_BORDER_RANGE || 22;
     creep.data.travelRoom = roomName;
     return Creep.action.travelling.assign(creep, FlagDir.specialFlag());
