@@ -1162,7 +1162,6 @@ mod.extend = function(){
             if( !powerSpawnData ) {
                 this.memory.powerSpawns.push({
                     id: powerSpawn.id,
-                    storage: storagepowerSpawns.includes(powerSpawn.id),
                 });
             }
         };
