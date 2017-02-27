@@ -10,8 +10,14 @@ action.step = function(creep){
     let target = creep.target;
     if (FlagDir.isSpecialFlag(creep.target)) {
         if (creep.data.travelRoom) {
-            targetRange = creep.data.travelRange || TRAVELLING_BORDER_RANGE || 22;
-            target = new RoomPosition(25, 25, creep.data.travelRoom);
+            const room = Game.rooms[creep.data.travelRoom];
+            if (room && (room.name === creep.pos.roomName)) { // TODO || room.getBorder(creep.pos.roomName))) {
+                creep.leaveBorder(); // TODO unregister / return false? and immediately acquire new action & target
+                target = null;
+            } else {
+                targetRange = creep.data.travelRange || TRAVELLING_BORDER_RANGE || 22;
+                target = new RoomPosition(25, 25, creep.data.travelRoom);
+            }
         } else {
             logError(creep.name + 'Creep.action.travelling called with specialFlag target and travelRoom undefined.');
         }
