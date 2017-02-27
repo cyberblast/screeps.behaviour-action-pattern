@@ -1474,7 +1474,7 @@ mod.extend = function(){
         }
         if( this.controller.level == 8 && !transacting &&
             this.storage.charge > 0.8 &&
-            this.terminal.store[mineral] < 150000 &&
+            (this.terminal.store[mineral]||0) < 150000 &&
             this.terminal.store.energy > 55000 ){
             let requiresEnergy = room => (
                 room.my &&
