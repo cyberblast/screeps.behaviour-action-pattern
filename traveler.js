@@ -145,7 +145,7 @@ module.exports = function(globalOpts = {}){
             // register hostile rooms entered
             let creepPos = creep.pos, destPos = (destination.pos || destination);
             if (creep.room.controller) {
-                if (creep.room.controller.owner && !creep.room.controller.my && creep.room.ally) {
+                if (creep.room.controller.owner && !creep.room.controller.my && !creep.room.ally) {
                     this.memory.hostileRooms[creep.room.name] = creep.room.controller.level;
                 }
                 else {
