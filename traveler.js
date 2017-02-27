@@ -361,7 +361,6 @@ module.exports = function(globalOpts = {}){
                 global.traveler = new Traveler();
             }
             options = this.getStrategyHandler([], 'moveOptions', options);
-            if (_.isUndefined(options.preferHighway)) options.preferHighway = true;
             if (_.isUndefined(options.allowHostile)) options.allowHostile = false;
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(destination.roomName, options.allowHostile, options.preferHighway);
             if (_.isUndefined(options.useFindRoute)) options.useFindRoute = global.ROUTE_PRECALCULATION;
