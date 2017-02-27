@@ -59,6 +59,11 @@ mod.FLAG_COLOR = {
             color: COLOR_RED,
             secondaryColor: COLOR_CYAN,
             filter: {'color': COLOR_RED, 'secondaryColor': COLOR_CYAN },
+        },
+        powerMining: { // triggers power mining task. Place ON the Power Bank. 
+            color: COLOR_RED,
+            secondaryColor: COLOR_BROWN,
+            filter: {'color': COLOR_RED, 'secondaryColor': COLOR_BROWN },
         }
     },
     //COLOR_PURPLE,
@@ -314,7 +319,7 @@ mod.isSummerTime = function(date){
 mod.addById = function(array, id){
     if(array == null) array = [];
     var obj = Game.getObjectById(id);
-    if( obj && !obj.cloak ) array.push(obj);
+    if( obj ) array.push(obj);
     return array;
 };
 // send up to REPORTS_PER_LOOP notify mails, which are cached in memory
