@@ -97,6 +97,7 @@ mod.extend = function(){
             }
             if( this.flee ) {
                 this.fleeMove();
+                Creep.behaviour.ranger.heal(this);
                 if( SAY_ASSIGNMENT ) this.say(String.fromCharCode(10133), SAY_PUBLIC);
             }
         }
