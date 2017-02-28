@@ -230,7 +230,7 @@ mod.checkForRequiredCreeps = (flag) => {
     // (flag && flag.room.powerBank && flag.room.powerBank.hits < 100000)
     if (!flag.room || !flag.room.powerBank) return;
     if(flag.room){
-    	 let maxHaulers = Math.ceil(flag.room.powerBank.power / 1250);
+    	 let maxHaulers = Math.round(flag.room.powerBank.power / 1250);
         if((POWER_MINE_LOG && Game.time % 20 == 0) || room.name == 'sim'){
             console.log('Power Mining - Target: '+flag+' | '+flag.pos.roomName+' | Power: '+flag.room.powerBank.power+ ' | Hits Left: '+flag.room.powerBank.hits+' Haulers: '+haulerCount+'/'+maxHaulers+' Time left: '+flag.room.powerBank.ticksToDecay)
         }
