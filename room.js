@@ -1124,26 +1124,25 @@ mod.extend = function(){
         }).map(s => s.id);
     };
     Room.prototype.saveNuker = function() {
-        if( _.isUndefined(this.memory.nukers) ){
-            this.memory.nukers = [];
+        if( _.isUndefined(this.memory.nuker) ){
+            this.memory.nuker = [];
         }
-        let nukers = this.find(FIND_MY_STRUCTURES, {
+        let nuker = this.find(FIND_MY_STRUCTURES, {
             filter: (structure) => ( structure.structureType == STRUCTURE_NUKER )
         });
-        let storageNukers = this.storage ? this.storage.pos.findInRange(nukers, 2).map(l => l.id) : [];
 
-        this.memory.nukers = [];
+        this.memory.nuker = [];
 
         // for each entry add to memory ( if not contained )
         let add = (nuker) => {
-            let nukerData = this.memory.nukers.find( (l) => l.id == nuker.id );
+            let nukerData = this.memory.nuker.find( (l) => l.id == nuker.id );
             if( !nukerData ) {
-                this.memory.nukers.push({
+                this.memory.nuker.push({
                     id: nuker.id,
                 });
             }
         };
-        nukers.forEach(add);
+        nuker.forEach(add);
     };
     Room.prototype.savePowerSpawn = function() {
         if( _.isUndefined(this.memory.powerSpawns) ){
@@ -1152,7 +1151,6 @@ mod.extend = function(){
         let powerSpawns = this.find(FIND_MY_STRUCTURES, {
             filter: (structure) => ( structure.structureType == STRUCTURE_POWER_SPAWN )
         });
-        let storagePowerSpawns = this.storage ? this.storage.pos.findInRange(powerSpawns, 2).map(l => l.id) : [];
 
         this.memory.powerSpawns = [];
 
