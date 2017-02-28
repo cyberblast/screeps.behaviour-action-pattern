@@ -1048,8 +1048,8 @@ mod.extend = function(){
     };
     Room.prototype.checkPowerBank = function() {
     if (!this.powerBank) return; // no power bank in room
-        //Highway ROom + power > 2500 + ticksToDecay > 4500
-        if(this.isHighwayRoom && this.powerBank && this.powerBank.power > 2500 && this.powerBank.ticksToDecay > 4500){
+        //power > 2500 + ticksToDecay > 4500
+        if(this.powerBank && this.powerBank.power > 2500 && this.powerBank.ticksToDecay > 4500){
             // Place a flag
             this.createFlag(this.powerBank.pos, null, FLAG_COLOR.invade.powerMining.color, FLAG_COLOR.invade.powerMining.secondaryColor);
         }
