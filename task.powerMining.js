@@ -228,7 +228,7 @@ mod.checkForRequiredCreeps = (flag) => {
 
     // only spawn haulers when powerbank hits are lower than 650k
     // (flag && flag.room.powerBank && flag.room.powerBank.hits < 100000)
-   
+    if (!flag.room || !flag.room.powerBank) return;
     if(flag.room){
     	 let maxHaulers = Math.ceil(flag.room.powerBank.power / 1250);
         if((POWER_MINE_LOG && Game.time % 20 == 0) || room.name == 'sim'){
