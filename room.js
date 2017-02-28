@@ -1577,6 +1577,19 @@ mod.extend = function(){
             }
         }
     };
+    Room.prototype.processPower = function() {
+        // run lab reactions WOO!
+        let powerSpawns = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_POWER_SPAWN; } } );
+        if (!this.memory.resources) return;
+        for (var i=0;i<powerSpawns.length;i++) {
+            // see if the reaction is possible
+            let powerSpawn = powerSpawns[i];
+            if (powerSpawn.energy > 0 && powerSpawn.power > POWER_SPAWN_ENERGY_RATIO) {
+                if (DEBUG && TRACE) trace('Room', { roomName: this.name, actionName: 'processPower' });
+                powerSpawn.processPower();
+            }
+        }
+    };
     Room.prototype.findContainerWith = function(resourceType, amountMin) {
         if (!amountMin) amountMin = 1;
         //if (!RESOURCES_ALL.find((r)=>{r==resourceType;})) return null;
@@ -1977,6 +1990,7 @@ mod.analyze = function(){
             room.linkDispatcher();
             room.processInvaders();
             room.processLabs();
+            room.processPower();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
