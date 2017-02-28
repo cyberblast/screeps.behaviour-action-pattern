@@ -1274,6 +1274,8 @@ mod.extend = function(){
         let data = this.memory.resources;
         if (!this.my || !data) return;
 
+        let rcl = this.controller.level;
+
         // go through reallacation orders and reset completed orders
         for(var structureType in data) {
             for(var i=0;i<data[structureType].length;i++) {
@@ -1476,14 +1478,14 @@ mod.extend = function(){
         }
         if( this.controller.level == 8 && !transacting &&
             this.storage.charge > 0.8 &&
-            this.terminal.store[mineral] < 150000 &&
+            (this.terminal.store[mineral]||0) < 150000 &&
             this.terminal.store.energy > 55000 ){
             let requiresEnergy = room => (
                 room.my &&
-                room.controller.level < 8 &&
+                //room.controller.level < 8 &&
                 room.storage && room.terminal &&
                 room.terminal.sum < room.terminal.storeCapacity - 50000 &&
-                room.storage.sum < room.storage.storeCapacity * 0.8 &&
+                room.storage.sum < room.storage.storeCapacity * 0.6 &&
                 !room._isReceivingEnergy
             )
             let targetRoom = _.min(_.filter(Game.rooms, requiresEnergy), 'storage.store.energy');
