@@ -357,14 +357,28 @@ module.exports = function(globalOpts = {}){
         }
 
         Creep.prototype.travelTo = function (destination, options = {}) {
-            if(global.traveler && global.travelerTick !== Game.time){
-                global.traveler = new Traveler();
-            }
             options = this.getStrategyHandler([], 'moveOptions', options);
             if (_.isUndefined(options.allowHostile)) options.allowHostile = false;
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(destination.roomName, options.allowHostile, options.preferHighway);
             if (_.isUndefined(options.useFindRoute)) options.useFindRoute = global.ROUTE_PRECALCULATION;
-            return traveler.travelTo(this, destination, options);
+            if (options.routeCache) {
+                const destID = destination.id || dest.x + ',' + dest.y;
+                const path = creep.room.getPath(creep.pos, destination);
+                if (path){
+                    const next = path[creep.pos.x + ',' + creep.pos.y];
+                    if (next) return creep.move(next); // take next step
+                    else { // TODO:find closest place to get on the path
+                        console.log('could not generate or use cached route, falling back to traveler.');
+                        options.routeCache = false;
+                        return creep.travelTo(dest, options);
+                    }
+                }
+            } else {
+                if(global.traveler && global.travelerTick !== Game.time){
+                    global.traveler = new Traveler();
+                }
+                return traveler.travelTo(this, destination, options);                
+            }
         };
     }
 

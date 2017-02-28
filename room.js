@@ -987,6 +987,24 @@ mod.extend = function(){
         });
     };
 
+    Room.prototype.getPath = (start, finish, options) => {
+        let path = this.memory.paths[creep.pos.x + ',' + creep.pos.y][destID];
+        if (!path) {
+            if(global.traveler && global.travelerTick !== Game.time){
+                global.traveler = new Traveler();
+            }
+            const ret = traveler.findTravelPath(start, finish, options);
+            if (!ret || ret.incomplete) {
+                logError('Room.getPath incomplete path from' + start + finish);
+                return;
+            } else {
+                path = Traveler.serializePath(start, ret.path);
+            }
+            this.memory.paths[creep.pos.x + ',' + creep.pos.y][destID] = path;
+        }
+        return path;
+    };
+
     Room.prototype.getBestConstructionSiteFor = function(pos, filter = null) {
         let sites;
         if( filter ) sites = this.constructionSites.filter(filter);
