@@ -28,10 +28,9 @@ mod.nextAction = function(creep) {
         });
         if (invalidEntry) {
             Task.powerMining.validateRunning(roomName, type);
-            running = _.map(memory.running[type], n => Game.creeps[n]);
+            running = _.map(memory.running[type], n => Game.creeps[n].length);
         }
-        let runningCount = _.filter(running, c => !Task.powerMining.needsReplacement(c)).length;
-        return runningCount;
+        return running;
     };
 
     let healerCount = countExisting('powerHealer');
