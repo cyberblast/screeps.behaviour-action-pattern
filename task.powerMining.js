@@ -12,6 +12,10 @@ mod.register = () => {
     Creep.spawningCompleted.on( creep => Task.powerMining.handleSpawningCompleted(creep) );
     Creep.died.on( name => Task.powerMining.handleCreepDied(name));
 };
+mod.analyze = (room) => {
+    //If Highway room, analyze room, place flag if required
+    if(room.isHighwayRoom(room.name)) room.checkPowerBank();
+};
 mod.checkFlag = (flag) => {
     if( flag.color == FLAG_COLOR.invade.powerMining.color && flag.secondaryColor == FLAG_COLOR.invade.powerMining.secondaryColor ) {
         flag.memory.roomName = flag.pos.roomName;
