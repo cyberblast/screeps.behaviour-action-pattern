@@ -1145,25 +1145,25 @@ mod.extend = function(){
         nuker.forEach(add);
     };
     Room.prototype.savePowerSpawn = function() {
-        if( _.isUndefined(this.memory.powerSpawns) ){
-            this.memory.powerSpawns = [];
+        if( _.isUndefined(this.memory.powerSpawn) ){
+            this.memory.powerSpawn = [];
         }
         let powerSpawns = this.find(FIND_MY_STRUCTURES, {
             filter: (structure) => ( structure.structureType == STRUCTURE_POWER_SPAWN )
         });
 
-        this.memory.powerSpawns = [];
+        this.memory.powerSpawn = [];
 
         // for each entry add to memory ( if not contained )
         let add = (powerSpawn) => {
-            let powerSpawnData = this.memory.powerSpawns.find( (l) => l.id == powerSpawn.id );
+            let powerSpawnData = this.memory.powerSpawn.find( (l) => l.id == powerSpawn.id );
             if( !powerSpawnData ) {
-                this.memory.powerSpawns.push({
+                this.memory.powerSpawn.push({
                     id: powerSpawn.id,
                 });
             }
         };
-        powerSpawns.forEach(add);
+        powerSpawn.forEach(add);
     };
     Room.prototype.saveContainers = function(){
         this.memory.container = [];
