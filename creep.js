@@ -298,9 +298,13 @@ mod.extend = function(){
         if( here && here.length > 0 ) {
             let path;
             if( !this.data.idlePath || this.data.idlePath.length < 2 || this.data.idlePath[0].x != this.pos.x || this.data.idlePath[0].y != this.pos.y || this.data.idlePath[0].roomName != this.pos.roomName ) {
-                let goals = _.map(this.room.structures.all, function(o) {
+                let goals = this.room.structures.all.map(function(o) {
                     return { pos: o.pos, range: 1 };
-                });
+                }).concat(this.room.sources.map(function (s) {
+                    return { pos: s.pos, range: 2 };
+                })).concat(this.pos.findInRange(FIND_EXIT, 2).map(function (e) {
+                    return { pos: e, range: 1 };
+                }));
 
                 let ret = PathFinder.search(
                     this.pos, goals, {
