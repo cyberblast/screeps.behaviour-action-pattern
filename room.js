@@ -1047,11 +1047,14 @@ mod.extend = function(){
         else this.roadConstructionTrace[key]++;
     };
     Room.prototype.checkPowerBank = function() {
-        if (!this.powerBank) return; // no power bank in room
-        //power > 2500 + ticksToDecay > 4500
-        if(this.powerBank.power > 2500 && this.powerBank.ticksToDecay > 4500){
-            // Place a flag
-            this.createFlag(this.powerBank.pos, null, FLAG_COLOR.invade.powerMining.color, FLAG_COLOR.invade.powerMining.secondaryColor);
+    if (!this.powerBank) return; // no power bank in room
+    	//power > 2500, and ticksToDecay > 4500
+    	const flagged = FlagDir.find(FLAG_COLOR.invade.powerMining, this.powerBank.pos, true);
+    	if(!flagged){
+    	    if(this.powerBank.power > 2500 && this.powerBank.ticksToDecay > 4500){
+    		    // Place a flag
+    		    this.createFlag(this.powerBank.pos, null, FLAG_COLOR.invade.powerMining.color, FLAG_COLOR.invade.powerMining.secondaryColor);
+    	    }
         }
     };
     Room.prototype.saveTowers = function(){
