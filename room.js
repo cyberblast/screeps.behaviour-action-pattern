@@ -1927,6 +1927,46 @@ mod.extend = function(){
         //console.log(lab_master,"found slave labs",lab_slave_a,"for",component_a,"and",lab_slave_b,"for",component_b);
         return OK;
     };
+    Room.prototype.exits = function(findExit, point) {
+        if (point === true) point = 0.5;
+        let positions;
+        if (findExit === 0) {
+            // portals
+            positions = _.chain(this.find(FIND_STRUCTURES)).filter(function(s) {
+                return s.structureType === STRUCTURE_PORTAL;
+            }).map('pos').value();
+        } else {
+            positions = this.find(findExit);
+        }
+
+        // assuming in-order
+        let maxX, maxY;
+        let map = {};
+        let limit = -1;
+        const ret = [];
+        for (let i = 0; i < positions.length; i++) {
+            const pos = positions[i];
+            if (!(_.get(map,[pos.x-1, pos.y]) || _.get(map,[pos.x,pos.y-1]))) {
+                if (point && limit !== -1) {
+                    ret[limit].x += Math.ceil(point * (maxX - ret[limit].x));
+                    ret[limit].y += Math.ceil(point * (maxY - ret[limit].y));
+                }
+                limit++;
+                ret[limit] = _.pick(pos, ['x','y']);
+                maxX = pos.x;
+                maxY = pos.y;
+                map = {};
+            }
+            _.set(map, [pos.x, pos.y], true);
+            maxX = Math.max(maxX, pos.x);
+            maxY = Math.max(maxY, pos.y);
+        }
+        if (point && limit !== -1) {
+            ret[limit].x += Math.ceil(point * (maxX - ret[limit].x));
+            ret[limit].y += Math.ceil(point * (maxY - ret[limit].y));
+        }
+        return ret;
+    }
 };
 mod.flush = function(){
     let clean = room => {
