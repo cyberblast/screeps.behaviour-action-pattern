@@ -60,12 +60,12 @@ let Action = function(actionName){
                 creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
                 return;
             }
-            if (creep.target && range > this.reachedRange) {
-                // low CPU pathfinding for last few steps.
-                creep.move(creep.pos.getDirectionTo(creep.target));
-            }
-        } else if( creep.target ) {
-            creep.travelTo(creep.target, {range: this.targetRange});
+            range = creep.pos.getRangeTo(creep.target); // target may have changed (eg. hauler feed+move/tick)
+        }
+        if( creep.target ) {
+            if (range > this.targetRange) creep.travelTo(creep.target, {range: this.targetRange});
+            // low CPU pathfinding for last few steps.
+            else if (range > this.reachedRange) creep.move(creep.pos.getDirectionTo(creep.target));
         }
     };
     // order for the creep to execute when at target
