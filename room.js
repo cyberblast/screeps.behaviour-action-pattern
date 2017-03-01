@@ -2095,7 +2095,7 @@ mod.analyze = function(){
             room.processInvaders();
             room.processLabs();
             room.processPower();
-            room.checkPowerBank();
+            if(AUTO_POWER_MINING) room.checkPowerBank();
             room.controlObserver();
         }
         catch(err) {
