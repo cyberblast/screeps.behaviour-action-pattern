@@ -713,7 +713,7 @@ action.work = function(creep) {
                 break;
             case STRUCTURE_POWER_SPAWN:
                 // cannot unload a powerSpawn
-                //workResult = this.unloadPowerSpawn(creep);
+                this.cancelAction(creep);
                 break;
             case STRUCTURE_CONTAINER:
                 workResult = this.unloadContainer(creep);
