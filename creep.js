@@ -32,16 +32,27 @@ mod.extend = function(){
     // Check if a creep has body parts of a certain type anf if it is still active. 
     // Accepts a single part type (like RANGED_ATTACK) or an array of part types. 
     // Returns true, if there is at least any one part with a matching type present and active.
-    Creep.prototype.hasActiveBodyparts = function(partTypes){
-        if(Array.isArray(partTypes))
-            return (this.body.some((part) => ( partTypes.includes(part.type) && part.hits > 0 )));
-        else return (this.body.some((part) => ( part.type === partTypes && part.hits > 0 )));
+    Creep.prototype.hasActiveBodyparts = function(partTypes) {
+        return this.hasBodyparts(partTypes, this.body.length - Math.ceil(this.hits * 0.01));
+    };
+    Creep.prototype.hasBodyparts = function(partTypes, start = 0) {
+        const body = this.body;
+        const limit = body.length;
+        if (!Array.isArray(partTypes)) {
+            partTypes = [partTypes];
+        }
+        for (let i = start; i < limit; i++) {
+            if (partTypes.includes(body[i].type)) {
+                return true;
+            }
+        }
+        return false;
     };
     Creep.prototype.run = function(behaviour){
         if( !this.spawning ){
             if(!behaviour && this.data && this.data.creepType) {
                 behaviour = Creep.behaviour[this.data.creepType];
-                if ( Game.cpu.bucket < CRITICAL_BUCKET_LEVEL && !CRITICAL_ROLES.includes(this.data.creepType) ) {
+                if ( Memory.CPU_CRITICAL && !CRITICAL_ROLES.includes(this.data.creepType) ) {
                     return;
                 }
             }
@@ -97,6 +108,7 @@ mod.extend = function(){
             }
             if( this.flee ) {
                 this.fleeMove();
+                Creep.behaviour.ranger.heal(this);
                 if( SAY_ASSIGNMENT ) this.say(String.fromCharCode(10133), SAY_PUBLIC);
             }
         }
@@ -445,7 +457,7 @@ mod.extend = function(){
     Creep.prototype.customStrategy = function(actionName, behaviourName, taskName) {};
 };
 mod.execute = function(){
-    if ( DEBUG && Game.cpu.bucket < CRITICAL_BUCKET_LEVEL ) logSystem('system',`${Game.time}: CPU Bucket level is critical (${Game.cpu.bucket}). Skipping non critical creep roles.`);
+    if ( DEBUG && Memory.CPU_CRITICAL ) logSystem('system',`${Game.time}: CPU Bucket level is critical (${Game.cpu.bucket}). Skipping non critical creep roles.`);
     let run = creep => creep.run();
     _.forEach(Game.creeps, run);
 };

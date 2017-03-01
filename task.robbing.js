@@ -201,7 +201,9 @@ mod.nextAction = creep => {
                         return;
                 }
                 // no targets in current room
-                creep.flag.cloaking = 50;
+                if (creep.flag) {
+                    creep.flag.cloaking = 50;
+                }
                 Task[creep.data.destiny.task].exploitNextRoom(creep);
                 return;
             }
@@ -219,7 +221,7 @@ mod.nextAction = creep => {
         }
     }
     // fallback
-    Creep.action.recycle.assign(creep);
+    Creep.action.recycling.assign(creep);
 };
 mod.exploitNextRoom = creep => {
     if( creep.sum < creep.carryCapacity*0.4 ) {
