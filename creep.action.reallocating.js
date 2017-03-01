@@ -428,7 +428,7 @@ action.loadStructure = function(creep, target, resource, amount) {
         if (data) {
             let order = data.orders.find(o=>o.type==resource);
             if (order && order.orderRemaining > 0) {
-                order.orderRemaining -= amount;
+                order.orderRemaining -= amt;
             }
         }
     }
@@ -545,6 +545,7 @@ action.unloadStorage = function(creep) {
     // check for other container's needs and local excess
     for (var res in target.store) {
         if (res && target.store[res] > 0) {
+            if (res == RESOURCE_ENERGY && target.store[res] < MIN_STORAGE_ENERGY[room.controller.level]) continue;
             let dat = this.findNeeding(room, res);
             if (dat && dat.structure.id == target.id) dat = null;
             if (dat) {
