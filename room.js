@@ -1163,7 +1163,7 @@ mod.extend = function(){
                 });
             }
         };
-        powerSpawn.forEach(add);
+        powerSpawns.forEach(add);
     };
     Room.prototype.saveContainers = function(){
         this.memory.container = [];
