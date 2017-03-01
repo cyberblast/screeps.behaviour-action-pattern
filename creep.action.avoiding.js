@@ -14,7 +14,12 @@ action.isAddableAction = function(creep) {
     return true;
 };
 action.isValidTarget = function(target, creep){
-    return Task.reputation.hostileOwner(target) && action.isActiveLair(target);
+    if (Task.reputation.npcOwner(target)) {
+        return action.isActiveLair(target);
+    } else if (Task.reputation.hostileOwner(target) && target.hasActiveBodyparts) {
+        return target.hasActiveBodyparts([ATTACK,RANGED_ATTACK]);
+    }
+    return false;
 };
 action.newTarget = function(creep) {
     if (Room.isSKRoom(creep.pos.roomName)) {
@@ -64,7 +69,7 @@ action.work = function(creep) {
 
     if (creep.data.safeSpot) {
         if (creep.pos.getRangeTo(creep.target) < 10) {
-            creep.travelTo(creep.data.safeSpot);
+            creep.drive(creep.data.safeSpot, 0, 1);
         } else {
             creep.idleMove();
         }

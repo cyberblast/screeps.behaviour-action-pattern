@@ -358,7 +358,43 @@ mod.extend = function(){
                     }
                     return this._piles;
                 }
-            }
+            },
+            'observer': {
+                configurable: true,
+                get: function() {
+                    if (_.isUndefined(this.room.memory.observer)) {
+                        this.room.saveObserver();
+                    }
+                    if (_.isUndefined(this._observer)) {
+                        this._observer = Game.getObjectById(this.room.memory.observer.id);
+                    }
+                    return this._observer;
+                },
+            },
+            'nuker': {
+                configurable: true,
+                get: function() {
+                    if (_.isUndefined(this.room.memory.nuker)) {
+                        this.room.saveNuker();
+                    }
+                    if (_.isUndefined(this._nuker)) {
+                        this._nuker = Game.getObjectById(this.room.memory.nuker);
+                    }
+                    return this._nuker;
+                },
+            },
+            'powerSpawn': {
+                configurable: true,
+                get: function() {
+                    if (_.isUndefined(this.room.memory.powerSpawn)) {
+                        this.room.savePowerSpawn();
+                    }
+                    if (_.isUndefined(this._powerSpawn)) {
+                        this._powerSpawn = Game.getObjectById(this.room.memory.powerSpawn);
+                    }
+                    return this._powerSpawn;
+                }
+            },
         });
     };
 
@@ -388,6 +424,23 @@ mod.extend = function(){
                 }
                 return this._sources;
             }
+        },
+        'powerBank': {
+            configurable: true,
+            get: function() {
+                if (_.isUndefined(this.memory.powerBank)) {
+                    [this._powerBank] = this.find(FIND_STRUCTURES, {
+                        filter: s => s instanceof StructurePowerBank
+                    });
+                    if (this._powerBank) {
+                        this.memory.powerBank = this._powerBank.id;
+                    }
+                }
+                if (_.isUndefined(this._powerBank)) {
+                    this._powerBank = Game.getObjectById(this.memory.powerBank);
+                }
+                return this._powerBank;
+            },
         },
         'droppedResources': {
             configurable: true,
@@ -1010,6 +1063,22 @@ mod.extend = function(){
             this.memory.spawns = _.map(spawns, id);
         } else this.memory.spawns = [];
     };
+    Room.prototype.saveObserver = function() {
+        this.memory.observer = {};
+        [this.memory.observer.id] = this.find(FIND_MY_STRUCTURES, {
+            filter: s => s instanceof StructureObserver
+        }).map(s => s.id);
+    };
+    Room.prototype.saveNuker = function() {
+        [this.memory.nuker] = this.find(FIND_MY_STRUCTURES, {
+            filter: s => s instanceof StructureNuker
+        }).map(s => s.id);
+    };
+    Room.prototype.savePowerSpawn = function() {
+        [this.memory.powerSpawn] = this.find(FIND_MY_STRUCTURES, {
+            filter: s => s instanceof StructurePowerSpawn
+        }).map(s => s.id);
+    };
     Room.prototype.saveContainers = function(){
         this.memory.container = [];
         let containers = this.structures.all.filter(
@@ -1200,6 +1269,8 @@ mod.extend = function(){
     Room.prototype.updateResourceOrders = function () {
         let data = this.memory.resources;
         if (!this.my || !data) return;
+
+        let rcl = this.controller.level;
 
         // go through reallacation orders and reset completed orders
         for(var structureType in data) {
@@ -1403,14 +1474,14 @@ mod.extend = function(){
         }
         if( this.controller.level == 8 && !transacting &&
             this.storage.charge > 0.8 &&
-            this.terminal.store[mineral] < 150000 &&
+            (this.terminal.store[mineral]||0) < 150000 &&
             this.terminal.store.energy > 55000 ){
             let requiresEnergy = room => (
                 room.my &&
-                room.controller.level < 8 &&
+                //room.controller.level < 8 &&
                 room.storage && room.terminal &&
                 room.terminal.sum < room.terminal.storeCapacity - 50000 &&
-                room.storage.sum < room.storage.storeCapacity * 0.8 &&
+                room.storage.sum < room.storage.storeCapacity * 0.6 &&
                 !room._isReceivingEnergy
             )
             let targetRoom = _.min(_.filter(Game.rooms, requiresEnergy), 'storage.store.energy');
@@ -1503,6 +1574,19 @@ mod.extend = function(){
                 if (data.reactionAmount <= 0) {
                     this.cancelReactionOrder(master.id);
                 }
+            }
+        }
+    };
+    Room.prototype.processPower = function() {
+        // run lab reactions WOO!
+        let powerSpawns = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_POWER_SPAWN; } } );
+        if (!this.memory.resources) return;
+        for (var i=0;i<powerSpawns.length;i++) {
+            // see if the reaction is possible
+            let powerSpawn = powerSpawns[i];
+            if (powerSpawn.energy > 0 && powerSpawn.power > POWER_SPAWN_ENERGY_RATIO) {
+                if (DEBUG && TRACE) trace('Room', { roomName: this.name, actionName: 'processPower' });
+                powerSpawn.processPower();
             }
         }
     };
@@ -1843,6 +1927,46 @@ mod.extend = function(){
         //console.log(lab_master,"found slave labs",lab_slave_a,"for",component_a,"and",lab_slave_b,"for",component_b);
         return OK;
     };
+    Room.prototype.exits = function(findExit, point) {
+        if (point === true) point = 0.5;
+        let positions;
+        if (findExit === 0) {
+            // portals
+            positions = _.chain(this.find(FIND_STRUCTURES)).filter(function(s) {
+                return s.structureType === STRUCTURE_PORTAL;
+            }).map('pos').value();
+        } else {
+            positions = this.find(findExit);
+        }
+
+        // assuming in-order
+        let maxX, maxY;
+        let map = {};
+        let limit = -1;
+        const ret = [];
+        for (let i = 0; i < positions.length; i++) {
+            const pos = positions[i];
+            if (!(_.get(map,[pos.x-1, pos.y]) || _.get(map,[pos.x,pos.y-1]))) {
+                if (point && limit !== -1) {
+                    ret[limit].x += Math.ceil(point * (maxX - ret[limit].x));
+                    ret[limit].y += Math.ceil(point * (maxY - ret[limit].y));
+                }
+                limit++;
+                ret[limit] = _.pick(pos, ['x','y']);
+                maxX = pos.x;
+                maxY = pos.y;
+                map = {};
+            }
+            _.set(map, [pos.x, pos.y], true);
+            maxX = Math.max(maxX, pos.x);
+            maxY = Math.max(maxY, pos.y);
+        }
+        if (point && limit !== -1) {
+            ret[limit].x += Math.ceil(point * (maxX - ret[limit].x));
+            ret[limit].y += Math.ceil(point * (maxY - ret[limit].y));
+        }
+        return ret;
+    }
 };
 mod.flush = function(){
     let clean = room => {
@@ -1858,7 +1982,7 @@ mod.flush = function(){
         delete room._currentCostMatrix;
         delete room._isReceivingEnergy;
         delete room._reservedSpawnEnergy;
-        delete room._creeps
+        delete room._creeps;
         delete room._privateerMaxWeight;
         delete room._claimerMaxWeight;
         delete room._combatCreeps;
@@ -1877,6 +2001,9 @@ mod.flush = function(){
             delete room.structures._fortifyableSites;
             delete room.structures._fuelables;
         }
+        if (!room._powerBank) {
+            delete room.memory.powerBank;
+        }
         room.newInvader = [];
         room.goneInvader = [];
     };
@@ -1889,6 +2016,9 @@ mod.analyze = function(){
                 room.saveMinerals();
                 room.saveTowers();
                 room.saveSpawns();
+                room.saveObserver();
+                room.saveNuker();
+                room.savePowerSpawn();
                 room.saveContainers();
                 room.saveLinks();
                 room.saveLabs();
@@ -1900,6 +2030,7 @@ mod.analyze = function(){
             room.linkDispatcher();
             room.processInvaders();
             room.processLabs();
+            room.processPower();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
