@@ -139,6 +139,7 @@ let mod = {
     OBSERVER_OBSERVE_RANGE: 10, // the range for observers to look at
     OBSERVER_PRIORITISE_HIGHWAY: true, // the observers will look at highways first
     OBSERVER_OBSERVE_HIGHWAYS_ONLY: true, // the observers will only look at highways - changing this will require you to clear cached rooms
+    AUTO_POWER_MINING: true, //set to false to disable power mining (recomended until 1-2 RCL7+ rooms)
     POWER_MINE_LOG: true, //displays power mining info in console
 };
 module.exports = mod;
