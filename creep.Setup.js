@@ -30,7 +30,7 @@ let Setup = function(typeName){
     this.SelfOrCall = function(obj, param) {
         if( obj == null ) return null;
         if (typeof obj === 'function' )
-            return obj(param);
+            return obj.apply(this, [param]);
         else return obj;
     };
     this.fixedBody = this.rclProperty('fixedBody');
