@@ -32,13 +32,14 @@ let Setup = function(typeName){
             return obj(param);
         else return obj;
     };
-    this.fixedBody = function(room){ return this.SelfOrCall(this.RCL[room.controller.level].fixedBody, room); };
-    this.multiBody = function(room){ return this.SelfOrCall(this.RCL[room.controller.level].multiBody, room); };
-    this.minAbsEnergyAvailable = function(room){ return this.SelfOrCall(this.RCL[room.controller.level].minAbsEnergyAvailable, room); };
-    this.minEnergyAvailable = function(room){ return this.SelfOrCall(this.RCL[room.controller.level].minEnergyAvailable, room); }; // 1 = full
-    this.maxMulti = function(room){ return this.SelfOrCall(this.RCL[room.controller.level].maxMulti, room); };
-    this.maxCount = function(room){ return this.SelfOrCall(this.RCL[room.controller.level].maxCount, room); };
-    this.maxWeight = function(room){ return this.SelfOrCall(this.RCL[room.controller.level].maxWeight, room); };
+    this.fixedBody = Setup.rclProperty(this, 'fixedBody');
+    this.multiBody = Setup.rclProperty(this, 'multiBody');
+    this.minAbsEnergyAvailable = Setup.rclProperty(this, 'minAbsEnergyAvailable');
+    this.minEnergyAvailable = Setup.rclProperty(this, 'minEnergyAvailable'); // 1 = full
+    this.minMulti = Setup.rclProperty(this, 'minMulti');
+    this.maxMulti = Setup.rclProperty(this, 'maxMulti');
+    this.maxCount = Setup.rclProperty(this, 'maxCount');
+    this.maxWeight = Setup.rclProperty(this, 'maxWeight');
 
     this.buildParams = function(spawn){
         var memory = {
@@ -61,15 +62,13 @@ let Setup = function(typeName){
         return memory;
     };
     this.isValidSetup = function(room){
-        let rcl = room.controller.level;
-        if( rcl < this.minControllerLevel ) {
-            if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, rcl, Setup:'isValidSetup'}, 'low RCL');
+        if( room.controller.level < this.minControllerLevel ) {
+            if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, rcl: room.controller.level, Setup:'isValidSetup'}, 'low RCL');
             return false;
         }
 
-        rcl = this.RCL[room.controller.level];
-        let minAbsEnergyAvailable = this.SelfOrCall(rcl.minAbsEnergyAvailable, room);
-        let minEnergyAvailable = this.SelfOrCall(rcl.minEnergyAvailable, room);
+        let minAbsEnergyAvailable = this.SelfOrCall(this.minAbsEnergyAvailable, room);
+        let minEnergyAvailable = this.SelfOrCall(this.minEnergyAvailable, room);
         const absEnergy = room.remainingEnergyAvailable;
         const energy = room.relativeRemainingEnergyAvailable;
         if( absEnergy < minAbsEnergyAvailable ||
@@ -78,8 +77,8 @@ let Setup = function(typeName){
             return false;
         }
 
-        let maxCount = this.SelfOrCall(rcl.maxCount, room);
-        let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
+        let maxCount = this.SelfOrCall(this.maxCount, room);
+        let maxWeight = this.SelfOrCall(this.maxWeight, room);
         if( maxCount == 0 || maxWeight == 0 ) {
             if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, maxCount, maxWeight, Setup:'isValidSetup'}, 'too many creeps');
             return false;
@@ -128,13 +127,12 @@ let Setup = function(typeName){
         return existingWeight;
     };
     this.parts = function(room){
-        let rcl = this.RCL[room.controller.level];
-        let fixedBody = this.SelfOrCall(rcl.fixedBody, room);
-        let multiBody = this.SelfOrCall(rcl.multiBody, room);
+        let fixedBody = this.SelfOrCall(this.fixedBody, room);
+        let multiBody = this.SelfOrCall(this.multiBody, room);
         var parts = [];
-        let min = this.SelfOrCall(rcl.minMulti, room);
-        let maxMulti = this.SelfOrCall(rcl.maxMulti, room);
-        let maxWeight = this.SelfOrCall(rcl.maxWeight, room);
+        let min = this.SelfOrCall(this.minMulti, room);
+        let maxMulti = this.SelfOrCall(this.maxMulti, room);
+        let maxWeight = this.SelfOrCall(this.maxWeight, room);
         let maxMultiWeight;
         if( maxWeight ){
             let existingWeight = this.existingWeight(room);
@@ -184,8 +182,7 @@ let Setup = function(typeName){
     };
     this.maxCost = function(room){
         let c = this;
-        let rcl = c.RCL[room.controller.level];
-        return (Creep.bodyCosts( c.SelfOrCall(rcl.multiBody, room) ) * c.SelfOrCall(rcl.maxMulti, room)) + (Creep.bodyCosts(c.SelfOrCall(rcl.fixedBody, room)));
+        return (Creep.bodyCosts( c.SelfOrCall(this.multiBody, room) ) * c.SelfOrCall(this.maxMulti, room)) + (Creep.bodyCosts(c.SelfOrCall(this.fixedBody, room)));
     };
 }
 module.exports = Setup;
@@ -216,4 +213,24 @@ Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
         flagEntries.forEach(calcMax);
         return max;
     };
+};
+Setup.rclProperty = function(creepSetup, property) {
+    let rcl;
+    if (typeof creepSetup.RCL === 'function') {
+        rcl = function(room) {
+            return creepSetup.RCL(room.controller.level);
+        };
+    } else {
+        rcl = function(room) {
+            return creepSetup.RCL[room.controller.level];
+        };
+    }
+
+    if (property === undefined) {
+        return rcl;
+    }
+
+    return function(room) {
+        return creepSetup.SelfOrCall(rcl(room)[property], room);
+    }
 };
