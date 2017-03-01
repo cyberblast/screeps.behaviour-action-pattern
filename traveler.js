@@ -358,19 +358,22 @@ module.exports = function(globalOpts = {}){
 
         Creep.prototype.travelTo = function (destination, options = {}) {
             options = this.getStrategyHandler([], 'moveOptions', options);
+            if (_.isUndefined(options.cacheRoutes)) options.cacheRoutes = true;
             if (_.isUndefined(options.allowHostile)) options.allowHostile = false;
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(destination.roomName, options.allowHostile, options.preferHighway);
             if (_.isUndefined(options.useFindRoute)) options.useFindRoute = global.ROUTE_PRECALCULATION;
             if (options.cacheRoutes) {
-                const destID = destination.id || dest.x + ',' + dest.y;
-                const path = creep.room.getPath(creep.pos, destination);
+                const path = this.room.getPath(this.pos, destination);
                 if (path){
-                    const next = path[creep.pos.x + ',' + creep.pos.y];
-                    if (next) return creep.move(next); // take next step
+                    const next = path[this.pos.x + ',' + this.pos.y];
+                    if (next) {
+                        //console.log(this.name, this.pos, 'cached', next);
+                        return this.move(next); // take next step
+                    }
                     else { // TODO:find closest place to get on the path
-                        console.log('could not generate or use cached route, falling back to traveler.');
+                        console.log(this.name, 'could not generate or use cached route, falling back to traveler.');
                         options.cacheRoutes = false;
-                        return creep.travelTo(dest, options);
+                        return this.travelTo(destination, options);
                     }
                 }
             } else {

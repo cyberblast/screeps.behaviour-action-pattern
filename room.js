@@ -987,20 +987,29 @@ mod.extend = function(){
         });
     };
 
-    Room.prototype.getPath = (start, finish, options) => {
-        let path = this.memory.paths[creep.pos.x + ',' + creep.pos.y][destID];
-        if (!path) {
-            if(global.traveler && global.travelerTick !== Game.time){
-                global.traveler = new Traveler();
-            }
-            const ret = traveler.findTravelPath(start, finish, options);
+    Room.prototype.getPath = function(startPos, destination, options) {
+        if (_.isUndefined(this.memory.paths)) this.memory.paths = {};
+        const startID = startPos.x + ',' + startPos.y;
+        const destPos = destination.pos || destination;
+        const destID = destination.id || destination.x + ',' + destination.y;
+        if (_.isUndefined(this.memory.paths[destID])) this.memory.paths[destID] = {};
+        let path = this.memory.paths[destID];
+        if (!path || !path[startID]) {
+            const ret = traveler.findTravelPath(startPos, destPos, options);
             if (!ret || ret.incomplete) {
-                logError('Room.getPath incomplete path from' + start + finish);
+                logError('Room.getPath incomplete path', 'from ' + startPos + ' to ' + destPos);
                 return;
             } else {
-                path = Traveler.serializePath(start, ret.path);
+                const directions = Traveler.serializePath(startPos, ret.path);
+                path[startID] = directions[0];
+                for (let i = 0; i < ret.path.length; i++) {
+                    const id = ret.path[i].x+','+ret.path[i].y;
+                    // use existing path
+                    if (_.isUndefined(path[id])) path[id] = directions[i+1];
+                    else break; // we've hit an existing path
+                }
             }
-            this.memory.paths[creep.pos.x + ',' + creep.pos.y][destID] = path;
+            this.memory.paths[destID] = path;
         }
         return path;
     };
