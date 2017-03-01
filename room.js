@@ -2169,15 +2169,15 @@ mod.calcCardinalDirection = function(roomName) {
 };
 mod.calcGlobalCoordinates = function(roomName, callBack) {
     if (!callBack) return null;
-	const parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
-	const x = +parsed[1];
-	const y = +parsed[2];
-	return callBack(x, y);
+    const parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+    const x = +parsed[1];
+    const y = +parsed[2];
+    return callBack(x, y);
 };
 mod.calcCoordinates = function(roomName, callBack){
     if (!callBack) return null;
     return Room.calcGlobalCoordinates(roomName, (x, y) => {
-    	return callBack(x % 10, y % 10);
+        return callBack(x % 10, y % 10);
     });
 };
 mod.isCenterRoom = function(roomName){
