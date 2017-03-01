@@ -361,7 +361,7 @@ module.exports = function(globalOpts = {}){
             if (_.isUndefined(options.allowHostile)) options.allowHostile = false;
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(destination.roomName, options.allowHostile, options.preferHighway);
             if (_.isUndefined(options.useFindRoute)) options.useFindRoute = global.ROUTE_PRECALCULATION;
-            if (options.routeCache) {
+            if (options.cacheRoutes) {
                 const destID = destination.id || dest.x + ',' + dest.y;
                 const path = creep.room.getPath(creep.pos, destination);
                 if (path){
@@ -369,7 +369,7 @@ module.exports = function(globalOpts = {}){
                     if (next) return creep.move(next); // take next step
                     else { // TODO:find closest place to get on the path
                         console.log('could not generate or use cached route, falling back to traveler.');
-                        options.routeCache = false;
+                        options.cacheRoutes = false;
                         return creep.travelTo(dest, options);
                     }
                 }
