@@ -30,7 +30,8 @@ mod.run = function(creep) {
     }
 };
 mod.nextAction = function(creep){
-    const flag = FlagDir.find(FLAG_COLOR.invade.powerMining, creep.pos, false);
+    if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.targetName || creep.data.destiny.flagName || creep.data.flagName];
+    if ( !flag ) flag = FlagDir.find(FLAG_COLOR.invade.powerMining, creep.pos, false);
     const homeRoom = creep.data.homeRoom;
 
     Population.registerCreepFlag(creep, flag);

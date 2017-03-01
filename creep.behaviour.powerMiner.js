@@ -1,4 +1,4 @@
-let mod = {};
+const mod = {};
 module.exports = mod;
 mod.name = 'powerMiner';
 mod.run = function(creep) {
@@ -13,16 +13,17 @@ mod.run = function(creep) {
     }
 };
 mod.nextAction = function(creep) {
-    let target = FlagDir.find(FLAG_COLOR.invade.powerMining, creep.pos, false);
-    let attackTarget = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, { filter: (structure) => { return structure.structureType == STRUCTURE_POWER_BANK;}});
+    if( creep.data.destiny ) target = Game.flags[creep.data.destiny.targetName || creep.data.destiny.flagName || creep.data.flagName];
+    if ( !target ) target = FlagDir.find(FLAG_COLOR.invade.powerMining, creep.pos, false);
+    const attackTarget = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, { filter: (structure) => { return structure.structureType == STRUCTURE_POWER_BANK;}});
     const roomName = creep.data.destiny.room;
-    let memory = Task.powerMining.memory(roomName);
+    const memory = Task.powerMining.memory(roomName);
     Population.registerCreepFlag(creep, target);
 
-    let countExisting = type => {
-        let invalidEntry = false;
-        let running = _.map(memory.running[type], n => {
-            let c = Game.creeps[n];
+    const countExisting = type => {
+        const invalidEntry = false;
+        const running = _.map(memory.running[type], n => {
+            const c = Game.creeps[n];
             if (!c) invalidEntry = true;
             return c;
         });
