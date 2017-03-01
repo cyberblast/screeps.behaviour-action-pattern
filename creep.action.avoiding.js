@@ -14,7 +14,12 @@ action.isAddableAction = function(creep) {
     return true;
 };
 action.isValidTarget = function(target, creep){
-    return Task.reputation.hostileOwner(target) && action.isActiveLair(target);
+    if (Task.reputation.npcOwner(target)) {
+        return action.isActiveLair(target);
+    } else if (Task.reputation.hostileOwner(target) && target.hasActiveBodyparts) {
+        return target.hasActiveBodyparts([ATTACK,RANGED_ATTACK]);
+    }
+    return false;
 };
 action.newTarget = function(creep) {
     if (Room.isSKRoom(creep.pos.roomName)) {
