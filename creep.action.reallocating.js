@@ -610,8 +610,8 @@ action.loadPowerSpawn = function(creep) {
         resource = RESOURCE_ENERGY;
     } else {
         amount = target.getNeeds(RESOURCE_POWER);
-        if (!(amount > 0 && (creep.carry[RESOURCE_POWER]||0) > 0)) {
-            resource = null;
+        if (amount > 0 && (creep.carry[RESOURCE_POWER]||0) > 0) {
+            resource = RESOURCE_POWER;
         }
     }
     if (resource) workResult = this.loadStructure(creep, target, resource, amount);
