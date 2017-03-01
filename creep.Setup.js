@@ -26,20 +26,21 @@ let Setup = function(typeName){
     this.sortedParts = true;
     this.mixMoveParts = false;
 
+    this.rclProperty = Setup.rclProperty;
     this.SelfOrCall = function(obj, param) {
         if( obj == null ) return null;
         if (typeof obj === 'function' )
             return obj(param);
         else return obj;
     };
-    this.fixedBody = Setup.rclProperty(this, 'fixedBody');
-    this.multiBody = Setup.rclProperty(this, 'multiBody');
-    this.minAbsEnergyAvailable = Setup.rclProperty(this, 'minAbsEnergyAvailable');
-    this.minEnergyAvailable = Setup.rclProperty(this, 'minEnergyAvailable'); // 1 = full
-    this.minMulti = Setup.rclProperty(this, 'minMulti');
-    this.maxMulti = Setup.rclProperty(this, 'maxMulti');
-    this.maxCount = Setup.rclProperty(this, 'maxCount');
-    this.maxWeight = Setup.rclProperty(this, 'maxWeight');
+    this.fixedBody = this.rclProperty('fixedBody');
+    this.multiBody = this.rclProperty('multiBody');
+    this.minAbsEnergyAvailable = this.rclProperty('minAbsEnergyAvailable');
+    this.minEnergyAvailable = this.rclProperty('minEnergyAvailable'); // 1 = full
+    this.minMulti = this.rclProperty('minMulti');
+    this.maxMulti = this.rclProperty('maxMulti');
+    this.maxCount = this.rclProperty('maxCount');
+    this.maxWeight = this.rclProperty('maxWeight');
 
     this.buildParams = function(spawn){
         var memory = {
@@ -214,23 +215,24 @@ Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
         return max;
     };
 };
-Setup.rclProperty = function(creepSetup, property) {
-    let rcl;
-    if (typeof creepSetup.RCL === 'function') {
-        rcl = function(room) {
-            return creepSetup.RCL(room.controller.level);
-        };
-    } else {
-        rcl = function(room) {
-            return creepSetup.RCL[room.controller.level];
-        };
-    }
-
-    if (property === undefined) {
-        return rcl;
-    }
-
+Setup.rclProperty = function(property) {
     return function(room) {
+        const creepSetup = this;
+        let rcl;
+        if (typeof creepSetup.RCL === 'function') {
+            rcl = function(room) {
+                return creepSetup.RCL(room.controller.level);
+            };
+        } else {
+            rcl = function(room) {
+                return creepSetup.RCL[room.controller.level];
+            };
+        }
+
+        if (property === undefined) {
+            return rcl;
+        }
+
         return creepSetup.SelfOrCall(rcl(room)[property], room);
     }
 };
