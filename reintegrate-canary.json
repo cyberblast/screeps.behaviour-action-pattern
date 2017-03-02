@@ -1,0 +1,31 @@
+{
+  "ocs.internal": {
+    "reset": "upstream/dev",
+    "merge": [
+      "upstream/feature/healAlly",
+      "upstream/change/skRenewal",
+      "upstream/major/traveler",
+      "upstream/feature/actionRenewing",
+      "upstream/change/hopperRoute",
+      "upstream/wip-train",
+      "upstream/wip-creepBody"
+    ]
+  },
+  "ocs.public": {
+    "reset": "upstream/dev",
+    "merge": [
+      "upstream/change/renewalForAll",
+      "upstream/major/traveler",
+      "upstream/change/noSelfTarget",
+      "upstream/fix/defendersTravel",
+      "upstream/feature/haulerRoundUp",
+      "upstream/task/powerMiningDev",
+      "upstream/feature/sortPopulation",
+      "upstream/change/unifyMineralMiner",
+      "upstream/feature/observer",
+      "upstream/major/setupRclRefactor",
+      "upstream/feature/processPower",
+      "upstream/change/minersRelax"
+    ]
+  }
+}
