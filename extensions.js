@@ -334,7 +334,7 @@ mod.extend = function(){
             if( this.power < this.powerCapacity * 0.25 ) {
                 return this.powerCapacity - this.power;
             }
-            if( this.power < this.energyCapacity * 0.75 ) {
+            if( this.energy < this.energyCapacity * 0.75 ) {
                 return this.energyCapacity - this.energy;
             }
         }
