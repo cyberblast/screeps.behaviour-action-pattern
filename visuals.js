@@ -66,6 +66,100 @@ module.exports = class Visuals {
 				Visuals.drawCreepPath(room);
 			}
 		}
+		if (VISUALS.ROOM_GLOBAL) {
+			if (VISUALS.CPU) {
+				Visuals.collectSparklineStats();
+			}
+			Visuals.drawGlobal();
+		}
+	}
+	
+	static drawGlobal() {
+		const vis = new RoomVisual();
+		const bufferWidth = 1;
+		const sectionWidth = 49 / 5;
+		const BAR_STYLE = {fill: '#2B2B2B', opacity: 0.8, stroke: '#000000',};
+		
+		let x = bufferWidth;
+		const y = 2;
+		if (VISUALS.ROOM) {
+			// GCL
+			x = bufferWidth * 2 + sectionWidth;
+			vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
+			const GCL_PERCENTAGE = Game.gcl.progress / Game.gcl.progressTotal;
+			vis.rect(x, y - 0.75, GCL_PERCENTAGE * sectionWidth, 1, {
+				fill: getColourByPercentage(GCL_PERCENTAGE, true),
+				opacity: BAR_STYLE.opacity
+			});
+			vis.text(`GCL: ${Game.gcl.level} (${(GCL_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
+			
+			// CPU
+			x += sectionWidth + bufferWidth;
+			vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
+			const CPU_PERCENTAGE = Game.cpu.getUsed() / Game.cpu.limit;
+			const FUNCTIONAL_CPU_PERCENTAGE = CPU_PERCENTAGE > 1 ? 1 : CPU_PERCENTAGE;
+			vis.rect(x, y - 0.75, FUNCTIONAL_CPU_PERCENTAGE * sectionWidth, 1, {
+				fill: getColourByPercentage(FUNCTIONAL_CPU_PERCENTAGE),
+				opacity: BAR_STYLE.opacity
+			});
+			vis.text(`CPU: ${(CPU_PERCENTAGE * 100).toFixed(2)}%`, x + sectionWidth / 2, y);
+			
+			// Bucket
+			x += sectionWidth + bufferWidth;
+			vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
+			const BUCKET_PERCENTAGE = Game.cpu.bucket / 10000;
+			vis.rect(x, y - 0.75, BUCKET_PERCENTAGE * sectionWidth, 1, {
+				fill: getColourByPercentage(BUCKET_PERCENTAGE, true),
+				opacity: BAR_STYLE.opacity
+			});
+			vis.text(`Bucket: ${Game.cpu.bucket}`, x + sectionWidth / 2, y);
+			
+			// Tick
+			x += sectionWidth + bufferWidth;
+			vis.text(`Tick: ${Game.time}`, x, y, {align: 'left'});
+		}
+		if (VISUALS.CPU) {
+			Visuals.drawSparkline(undefined, 1.5, 46.5, 20, 2, _.map(Memory.visualStats.cpu, (v, i) => Memory.visualStats.cpu[i]), [{
+				key: 'limit',
+				min: Game.cpu.limit * 0.5,
+				max: Game.cpu.limit * 1.5,
+				stroke: '#808080',
+				opacity: 0.25,
+			}, {
+				key: 'cpu',
+				min: Game.cpu.limit * 0.5,
+				max: Game.cpu.limit * 1.5,
+				stroke: '#FFFF00',
+				opacity: 0.5,
+			}, {
+				key: 'bucket',
+				min: 0,
+				max: 10000,
+				stroke: '#00FFFF',
+				opacity: 0.5,
+			}]);
+		}
+	}
+	
+	static drawSparkline(room, x, y, w, h, values, options) {
+		const vis = room ? new RoomVisual(room) : new RoomVisual();
+		_.forEach(options, option => {
+			vis.poly(_.map(values, (v, i) => [x + w * (i / (values.length - 1)), y + h * (1 - (v[option.key] - option.min) / (option.max - option.min))]), option);
+		});
+	}
+	
+	static collectSparklineStats() {
+		if (!_.get(Memory, 'visualStats.cpu')) {
+			_.set(Memory, 'visualStats.cpu', []);
+		}
+		Memory.visualStats.cpu.push({
+			limit: Game.cpu.limit,
+			bucket: Game.cpu.bucket,
+			cpu: Game.cpu.getUsed(),
+		});
+		if (Memory.visualStats.cpu.length >= 100) {
+			Memory.visualStats.cpu.shift();
+		}
 	}
 	
 	static drawRoomInfo(room) {
@@ -101,41 +195,6 @@ module.exports = class Visuals {
 		vis.text(text, x + sectionWidth / 2, y);
 		
 		if (VISUALS.ROOM_GLOBAL) {
-			// GCL
-			x = bufferWidth * 2 + sectionWidth;
-			vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
-			const GCL_PERCENTAGE = Game.gcl.progress / Game.gcl.progressTotal;
-			vis.rect(x, y - 0.75, GCL_PERCENTAGE * sectionWidth, 1, {
-				fill: getColourByPercentage(GCL_PERCENTAGE, true),
-				opacity: BAR_STYLE.opacity
-			});
-			vis.text(`GCL: ${Game.gcl.level} (${(GCL_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
-			
-			// CPU
-			x += sectionWidth + bufferWidth;
-			vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
-			const CPU_PERCENTAGE = Game.cpu.getUsed() / Game.cpu.limit;
-			const FUNCTIONAL_CPU_PERCENTAGE = CPU_PERCENTAGE > 1 ? 1 : CPU_PERCENTAGE;
-			vis.rect(x, y - 0.75, FUNCTIONAL_CPU_PERCENTAGE * sectionWidth, 1, {
-				fill: getColourByPercentage(FUNCTIONAL_CPU_PERCENTAGE),
-				opacity: BAR_STYLE.opacity
-			});
-			vis.text(`CPU: ${(CPU_PERCENTAGE * 100).toFixed(2)}%`, x + sectionWidth / 2, y);
-			
-			// Bucket
-			x += sectionWidth + bufferWidth;
-			vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
-			const BUCKET_PERCENTAGE = Game.cpu.bucket / 10000;
-			vis.rect(x, y - 0.75, BUCKET_PERCENTAGE * sectionWidth, 1, {
-				fill: getColourByPercentage(BUCKET_PERCENTAGE, true),
-				opacity: BAR_STYLE.opacity
-			});
-			vis.text(`Bucket: ${Game.cpu.bucket}`, x + sectionWidth / 2, y);
-			
-			// Tick
-			x += sectionWidth + bufferWidth;
-			vis.text(`Tick: ${Game.time}`, x, y, {align: 'left'});
-			
 			// New line
 			y += 1.5;
 			
@@ -159,7 +218,7 @@ module.exports = class Visuals {
 	static drawSpawnInfo(spawn) {
 		if (!spawn.spawning) return;
 		const vis = new RoomVisual(spawn.room.name);
-		vis.text(`${spawn.spawning.name} (${((spawn.spawning.needTime - spawn.spawning.remainingTime) / spawn.spawning.needTime * 100).toFixed(1)}%)`, spawn.pos.x + 1, spawn.pos.y - 0.5, {align: 'left', size: 0.4,});
+		vis.text(`${spawn.spawning.name} (${((spawn.spawning.needTime - spawn.spawning.remainingTime) / spawn.spawning.needTime * 100).toFixed(1)}%)`, spawn.pos.x + 1, spawn.pos.y - 0.5, {align: 'left', font: 0.4,});
 	}
 	
 	static drawMineralInfo(mineral) {
@@ -167,9 +226,9 @@ module.exports = class Visuals {
 		let x = mineral.pos.x + 1;
 		let y = mineral.pos.y - 0.5;
 		if (mineral.mineralAmount) {
-			vis.text(`Amount: ${formatNum(mineral.mineralAmount)}`, x, y, {align: 'left', size: 0.4,});
+			vis.text(`Amount: ${formatNum(mineral.mineralAmount)}`, x, y, {align: 'left', font: 0.4,});
 		} else {
-			vis.text(`Regen: ${formatNum(mineral.ticksToRegeneration)}`, x, y, {align: 'left', size: 0.4,});
+			vis.text(`Regen: ${formatNum(mineral.ticksToRegeneration)}`, x, y, {align: 'left', font: 0.4,});
 		}
 	}
 	
@@ -178,9 +237,9 @@ module.exports = class Visuals {
 		let x = source.pos.x + 0.5;
 		let y = source.pos.y - 0.5;
 		if (source.energy) {
-			vis.text(`Amount: ${source.energy}`, x, y, {align: 'left', size: 0.4,});
+			vis.text(`Amount: ${source.energy}`, x, y, {align: 'left', font: 0.4,});
 		} else {
-			vis.text(`Regen: ${source.ticksToRegeneration}`, x, y, {align: 'left', size: 0.4,});
+			vis.text(`Regen: ${source.ticksToRegeneration}`, x, y, {align: 'left', font: 0.4,});
 		}
 	}
 	
@@ -188,7 +247,7 @@ module.exports = class Visuals {
 		const vis = new RoomVisual(controller.room.name);
 		const BASE_X = controller.pos.x + 1;
 		let y = controller.pos.y - 0.5;
-		const style = {align: 'left', size: 0.4,};
+		const style = {align: 'left', font: 0.4,};
 		let line0 = `L: ${controller.level}`;
 		let line1 = `P: ${formatNum(controller.progress)}/${formatNum(controller.progressTotal)} (${(controller.progress / controller.progressTotal * 100).toFixed(2)}%)`;
 		let line2 = `D: ${formatNum(controller.ticksToDowngrade)}`;
@@ -229,7 +288,7 @@ module.exports = class Visuals {
 					if (labs.cooldown) y += 0.4;
 				}
 			}
-			vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, y, {align: 'left', size: 0.4,});
+			vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, y, {align: 'left', font: 0.4,});
 		}
 	}
 	
@@ -248,7 +307,7 @@ module.exports = class Visuals {
 		}
 		vis.text('Room Orders', x, ++y, {align: 'left'});
 		for (let order of room.memory.resources.orders) {
-			vis.text(`${order.type}: ${formatNum(order.amount)}`, x, y += 0.6, {align: 'left', size: 0.4, color: getResourceColour(order.type)});
+			vis.text(`${order.type}: ${formatNum(order.amount)}`, x, y += 0.6, {align: 'left', font: 0.4, color: getResourceColour(order.type)});
 		}
 	}
 	
@@ -270,7 +329,7 @@ module.exports = class Visuals {
 		}
 		vis.text('Room Offerings', x, ++y, {align: 'left'});
 		for (let offer of room.memory.resources.offers) {
-			vis.text(`${offer.type}: ${formatNum(offer.amount)} (to ${offer.room})`, x, y += 0.6, {align: 'left', size: 0.4, color: getResourceColour(offer.type)});
+			vis.text(`${offer.type}: ${formatNum(offer.amount)} (to ${offer.room})`, x, y += 0.6, {align: 'left', font: 0.4, color: getResourceColour(offer.type)});
 		}
 	}
 	
@@ -331,7 +390,7 @@ module.exports = class Visuals {
 				    text = `${prefix}${transaction.amount * transaction.order.price}`;
 				}
 				//const detailedText = `${prefix}${transaction.amount * transaction.order.price} : ${transaction.resourceType} * ${transaction.amount}`;
-				vis.text(text, x, y, {size: 0.4, color: colour,});
+				vis.text(text, x, y, {font: 0.4, color: colour,});
 				
 				y += 0.4;
 			});
@@ -345,13 +404,13 @@ module.exports = class Visuals {
 				const x = lab.pos.x + 0.8;
 				let y = lab.pos.y - 0.5;
 				if (lab.energy) {
-					vis.text(`E: ${formatNum(lab.energy)}`, x, y, {align: 'left', size: 0.4, color: getResourceColour(RESOURCE_ENERGY)});
+					vis.text(`E: ${formatNum(lab.energy)}`, x, y, {align: 'left', font: 0.4, color: getResourceColour(RESOURCE_ENERGY)});
 				}
 				if (lab.mineralAmount) {
-					vis.text(`M: ${lab.mineralType} (${formatNum(lab.mineralAmount)})`, x, y += 0.4, {align: 'left', size: 0.4, color: getResourceColour(lab.mineralType)});
+					vis.text(`M: ${lab.mineralType} (${formatNum(lab.mineralAmount)})`, x, y += 0.4, {align: 'left', font: 0.4, color: getResourceColour(lab.mineralType)});
 				}
 				if (lab.cooldown) {
-					vis.text(`C: ${lab.cooldown}`, x, y += 0.4, {align: 'left', size: 0.4, color: '#FF0000'});
+					vis.text(`C: ${lab.cooldown}`, x, y += 0.4, {align: 'left', font: 0.4, color: '#FF0000'});
 				}
 			}
 		}
@@ -486,7 +545,7 @@ function formatNum(n) {
 }
 
 function storageObject(vis, store, x, startY) {
-	Object.keys(store).forEach(resource => vis.text(`${resource}: ${formatNum(store[resource])}`, x, startY += 0.6, {align: 'left', size: 0.5, color: getResourceColour(resource)}));
+	Object.keys(store).forEach(resource => vis.text(`${resource}: ${formatNum(store[resource])}`, x, startY += 0.6, {align: 'left', font: 0.5, color: getResourceColour(resource)}));
 }
 
 function getResourceColour(resourceType) {
