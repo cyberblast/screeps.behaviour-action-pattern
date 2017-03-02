@@ -3,7 +3,7 @@ module.exports = action;
 action.isValidAction = function(creep){ return true; };
 action.isValidTarget = function(target){  return target && (!target.reservation || target.reservation.ticksToEnd < 4999 ) };
 action.isAddableAction = function(){ return true; };
-action.isAddableTarget = function(){ return target &&
+action.isAddableTarget = function(target, creep){ return target &&
     ( target instanceof Flag || ( target.structureType === 'controller' && !target.owner ) );
 };
 action.newTarget = function(creep){
@@ -32,11 +32,10 @@ action.newTarget = function(creep){
 
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
-    if( creep.target.color ){
-        if( creep.flag.pos.roomName == creep.pos.roomName )
+    if( creep.target.color ){ 
+        if( creep.flag.pos.roomName == creep.pos.roomName ) // change target from flag to controller
             creep.data.targetId = null;
-        creep.drive( creep.target.pos, 0, 1, Infinity );
-        return;
+        return creep.travelTo( creep.target.pos );
     }
 
     let range = creep.pos.getRangeTo(creep.target);
@@ -45,8 +44,9 @@ action.step = function(creep){
         if( workResult != OK ) {
             creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
         }
+        return workResult;
     }
-    creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
+    return creep.travelTo( creep.target.pos );
 };
 action.work = function(creep){
     var workResult;
