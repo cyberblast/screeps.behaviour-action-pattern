@@ -38,3 +38,8 @@ mod.approach = function(creep){
     }
     return range;
 };
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+    },
+};
