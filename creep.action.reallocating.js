@@ -382,8 +382,9 @@ action.isAddableTarget = function(target){
 };
 action.newTarget = function(creep){
     let room = creep.room;
+    if (room.energyAvailable < room.energyCapacityAvailable) return null;
     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, subAction: 'newTarget' });
-    var target = null;
+    let target = null;
     if( creep.sum == 0) {
         let data = room.memory;
         if (data) {
@@ -398,7 +399,7 @@ action.newTarget = function(creep){
     else {
         // find destination for carried resource
         let resourceType = Object.keys(creep.carry)[0];
-        var needing = this.findNeeding(room, resourceType);
+        let needing = this.findNeeding(room, resourceType);
         if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, subAction: 'assignDropOff', targetStructureId: needing.structure.id, resourceType: resourceType, targetNeeds: needing.amount });
         return needing ? needing.structure : null;
     }
