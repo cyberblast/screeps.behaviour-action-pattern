@@ -322,9 +322,9 @@ mod.extend = function(){
             if (this.mineralType == resourceType) store = this.mineralAmount;
             space = this.mineralCapacity-this.mineralAmount;
         }
-        // lab requires precise loading
-        if (store < loadTarget) return Math.min(loadTarget-store,space);
-        if (store > unloadTarget) return unloadTarget-store;
+        if( store < loadTarget / 2 ) return Math.min( loadTarget-store,space );
+        if( containerData.reactionState === 'idle' && store > unloadTarget ) return unloadTarget-store;
+        if( store > unloadTarget + ( this.energyCapacity - Math.min(unloadTarget,this.energyCapacity) ) / 2 ) return unloadTarget-store;
         return 0;
     };
     StructurePowerSpawn.prototype.getNeeds = function(resourceType) {
