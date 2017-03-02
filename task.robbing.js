@@ -209,6 +209,7 @@ mod.nextAction = creep => {
             // carrier full
             else {
                 mod.goHome(creep);
+                return;
             }
         } else { // not at target room
             return Task[creep.data.destiny.task].exploitNextRoom(creep);
