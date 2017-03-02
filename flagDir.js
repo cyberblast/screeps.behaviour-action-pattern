@@ -143,7 +143,6 @@ mod.flush = function(){
     delete this._hasInvasionFlag;
 };
 mod.analyze = function(){
-    const specialFlag = mod.specialFlag(true);
     let register = flag => {
         flag.creeps = {};
         if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
@@ -165,6 +164,7 @@ mod.analyze = function(){
         }
     };
     _.forEach(Memory.flags, findStaleFlags);
+    const specialFlag = mod.specialFlag(true);
     return !!specialFlag;
 };
 mod.execute = function() {
@@ -203,11 +203,15 @@ mod.flagType = function(flag) {
 mod.specialFlag = function(create) {
     const name = '_OCS';
     const flag = Game.flags[name];
-    if (create && !flag) {
-        _(Game.rooms).values().some(function(room) {
-            new RoomPosition(49, 49, room.name).createFlag(name, COLOR_WHITE, COLOR_PURPLE);
-            return true;
-        });
+    if (create) {
+        if (!flag) {
+            return _(Game.rooms).values().some(function (room) {
+                new RoomPosition(49, 49, room.name).createFlag(name, COLOR_WHITE, COLOR_PURPLE);
+                return true;
+            });
+        } else if (flag.pos.roomName !== 'W0N0') {
+            flag.setPosition(new RoomPosition(49, 49, 'W0N0'));
+        }
     }
     return flag;
 };
