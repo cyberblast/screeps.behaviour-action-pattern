@@ -1894,7 +1894,7 @@ mod.extend = function(){
 
         return OK;
     };
-    Room.prototype.placeReactionOrder = function(labId, resourceType, amount) {
+    Room.prototype.placeReactionOrder = function(labId, resourceType, amount, tier = 1) {
         if (amount <= 0) return OK;
         let lab_master = Game.getObjectById(labId);
         if (!LAB_REACTIONS.hasOwnProperty(resourceType)) {
@@ -1920,15 +1920,23 @@ mod.extend = function(){
             let lab = nearbyLabs[i];
             let data = this.memory.resources.lab.find( (l) => l.id == lab.id );
             //console.log(lab_master,"potential slave",i,"has",lab.mineralType,"and is currently",data?data.reactionState:"idle");
-            if (lab_slave_a == null && lab.mineralType == component_a) {
+            if (lab_slave_a == null && data && data.reactionType == component_a) {
                 lab_slave_a = lab;
-            } else if (lab_slave_b == null && lab.mineralType == component_b) {
+            } else if (lab_slave_b == null && data && data.reactionType == component_b) {
                 lab_slave_b = lab;
-            } else if (!data || !data.reactionState || data.reactionState == LAB_IDLE) {
-                if (lab_slave_a == null) lab_slave_a = lab;
-                else if (lab_slave_b == null) lab_slave_b = lab;
             }
             if (lab_slave_a && lab_slave_b) break;
+        }
+        if (!lab_slave_a || !lab_slave_b) {
+            nearbyLabs.sort( (a,b) => { lab_master.pos.getRangeTo(a) - lab_master.pos.getRangeTo(b); } );
+            for (let i=0;i<nearbyLabs.length;i++) {
+                let lab = nearbyLabs[i];
+                let data = this.memory.resources.lab.find( (l) => l.id == lab.id );
+                if (!data || !data.reactionState || data.reactionState == LAB_IDLE) {
+                    if (lab_slave_a == null) lab_slave_a = lab;
+                    else if (lab_slave_b == null) lab_slave_b = lab;
+                }
+            }
         }
 
         // qualify labs and prepare states
@@ -1962,10 +1970,17 @@ mod.extend = function(){
         // place orders with slave labs
         labData = this.memory.resources.lab.find( (l) => l.id == lab_slave_a.id );
         let slaveState = LAB_SLAVE_1;
-        if (state == LAB_SLAVE_1) slaveState = LAB_SLAVE_2;
-        if (state == LAB_SLAVE_2) slaveState = LAB_SLAVE_3;
+        let slaveDepth = 1;
+        if (state == LAB_SLAVE_1) {
+            slaveState = LAB_SLAVE_2;
+            slaveDepth = 2;
+        } else if (state == LAB_SLAVE_2) {
+            slaveState = LAB_SLAVE_3;
+            slaveDepth = 3;
+        }
         if ( labData ) {
             labData.reactionState = slaveState;
+            labData.reactionType = component_a;
             labData.master = lab_master.id;
             this.placeOrder(lab_slave_a.id, component_a, amount);
 
@@ -1981,7 +1996,7 @@ mod.extend = function(){
             }
             if (this.storage) available += this.storage.store[component_a]||0;
             if (this.terminal) available += this.terminal.store[component_a]||0;
-            if (available < amount) {
+            if (tier > slaveDepth && slaveDepth < 3 && available < amount) {
                 if (this.placeReactionOrder(lab_slave_a.id,component_a,amount-available) == OK) {
                     let order = labData.orders.find((o)=>o.type==component_a);
                     if (order) order.orderRemaining = available;
@@ -1991,6 +2006,7 @@ mod.extend = function(){
         labData = this.memory.resources.lab.find( (l) => l.id == lab_slave_b.id );
         if ( labData ) {
             labData.reactionState = slaveState;
+            labData.reactionType = component_b;
             labData.master = lab_master.id;
             this.placeOrder(lab_slave_b.id, component_b, amount);
 
@@ -2006,7 +2022,7 @@ mod.extend = function(){
             }
             if (this.storage) available += this.storage.store[component_b]||0;
             if (this.terminal) available += this.terminal.store[component_b]||0;
-            if (available < amount) {
+            if (tier > slaveDepth && slaveDepth < 3 && available < amount) {
                 if (this.placeReactionOrder(lab_slave_a.id,component_a,amount-available) == OK) {
                     let order = labData.orders.find((o)=>o.type==component_b);
                     if (order) order.orderRemaining = available;
