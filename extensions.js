@@ -337,6 +337,7 @@ mod.extend = function(){
             if( this.power < this.powerCapacity * 0.25 ) {
                 return this.powerCapacity - this.power;
             }
+            return 0;
         }
         let loadTarget = 0;
         let unloadTarget = 0;
