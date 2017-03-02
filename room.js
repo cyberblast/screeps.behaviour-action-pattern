@@ -1476,7 +1476,7 @@ mod.extend = function(){
             if (!(targetRoom && targetRoom.memory && targetRoom.memory.resources && targetRoom.memory.resources.orders)) continue;
             let order = targetRoom.memory.resources.orders.find((o)=>{ return o.id==offer.id && o.type==offer.type; });
             if (!order) continue;
-            let targetOfferIdx = order.offers.indexOf((o)=>{ return o.room==this.name; });
+            let targetOfferIdx = order.offers.findIndex((o)=>{ return o.room==this.name; });
 
             let store = this.terminal.store[offer.type]||0;
             let onOrder = 0;
@@ -1488,11 +1488,10 @@ mod.extend = function(){
                 let amt = amount - (store + onOrder);
                 if (DEBUG && TRACE) trace("Room", { actionName: 'fillARoomOrder', subAction: 'terminalOrder', roomName: this.name, targetRoomName: targetRoom.name, resourceType: offer.type, amount: amt });
                 this.placeOrder(this.terminal.id, offer.type, amt);
-                continue;
             }
             if (!targetRoom.terminal) continue;
             let space = targetRoom.terminal.storeCapacity-targetRoom.terminal.sum;
-            amount = Math.min(amount,space);
+            amount = Math.min(amount,space,store);
 
             let cost = Game.market.calcTransactionCost(amount, this.name, targetRoom.name);
             if (offer.type == RESOURCE_ENERGY) {
