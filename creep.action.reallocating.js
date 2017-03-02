@@ -382,7 +382,6 @@ action.isAddableTarget = function(target){
 };
 action.newTarget = function(creep){
     let room = creep.room;
-    if (room.energyAvailable < room.energyCapacityAvailable) return null;
     if (DEBUG && TRACE) trace('Action', { actionName: 'reallocating', roomName: room.name, creepName: creep.name, subAction: 'newTarget' });
     let target = null;
     if( creep.sum == 0) {
