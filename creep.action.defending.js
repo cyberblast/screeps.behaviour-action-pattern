@@ -21,6 +21,7 @@ action.newTarget = function(creep){
 };
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
+    if (creep.target.pos.roomName !== creep.room.name) return Creep.action.travelling.assignRoom(creep, creep.target.pos.roomName);
     this.run[creep.data.creepType](creep);
 };
 action.run = {
