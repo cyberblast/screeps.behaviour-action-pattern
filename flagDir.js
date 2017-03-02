@@ -216,5 +216,11 @@ mod.specialFlag = function(create) {
     return flag;
 };
 mod.isSpecialFlag = function(object) {
-    return object.name === '_OCS';
+    if (object.name) {
+        return object.name === '_OCS';
+    } else if (object.pos) {
+        return object.pos.x === 49 && object.pos.y === 49 && object.pos.roomName === 'W0N0';
+    } else {
+        return object.x === 49 && object.y === 49 && object.roomName === 'W0N0';
+    }
 };

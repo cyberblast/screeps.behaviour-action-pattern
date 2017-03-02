@@ -357,6 +357,13 @@ module.exports = function(globalOpts = {}){
         }
 
         Creep.prototype.travelTo = function (destination, options = {}) {
+            if (FlagDir.isSpecialFlag(destination)) {
+                const action = this.action && this.action.name;
+                const target = this.target && this.target.toString();
+                Creep.action.idle.assign(this);
+                throw new Error('poisoned target: ' + target + ' from ' + action);
+            }
+
             if(global.traveler && global.travelerTick !== Game.time){
                 global.traveler = new Traveler();
             }
