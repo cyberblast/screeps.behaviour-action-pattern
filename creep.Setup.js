@@ -187,8 +187,12 @@ let Setup = function(typeName){
         let rcl = c.RCL[room.controller.level];
         return (Creep.bodyCosts( c.SelfOrCall(rcl.multiBody, room) ) * c.SelfOrCall(rcl.maxMulti, room)) + (Creep.bodyCosts(c.SelfOrCall(rcl.fixedBody, room)));
     };
-}
+};
 module.exports = Setup;
+Setup.isWorkingAge = function(creepData) {
+    const c = Game.creeps[creepData.creepName];
+    return c && (creepData.predictedRenewal || creepData.spawningTime || CREEP_LIFE_TIME ) <= (c.ticksToLive || CREEP_LIFE_TIME);
+};
 Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
     if( !flagFilter ) {
         throw new Error("undefined flagFilter");
@@ -201,15 +205,15 @@ Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
             if( distance > maxRoomRange ) {
                 return;
             }
-            if( !measureByHome ) {
-                max++;
-                return;
-            }
+            // for each flag in range
             flag = Game.flags[flagEntry.name];
-            if( !flag.targetOf || flag.targetOf.length == 0 ) {
+            // if someone is dying then allow 2 per flag
+            if (_.chain(flag.targetOf).filter(function (c) {
+                return !measureByHome || c.homeRoom === room.name;
+            }).every(Setup.isWorkingAge).value()) {
                 max++;
-            } else if( _.some(flag.targetOf, 'homeRoom', room.name) ) {
-                max++;
+            } else {
+                max = max + 2;
             }
         };
         let flagEntries = FlagDir.filter(flagFilter);
