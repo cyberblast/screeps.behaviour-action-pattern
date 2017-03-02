@@ -270,6 +270,11 @@ mod.cleanup = function(){
     let unregister = name => Population.unregisterCreep(name);
     this.died.forEach(unregister);
 };
+mod.sortEntries = function() {
+    let temp = {};
+    _.map(_.sortBy(Memory.population, p => p.creepName), c => temp[c.creepName] = c);
+    Memory.population = temp;
+};
 mod.stats = {
     creep: {
         coreParts: {
