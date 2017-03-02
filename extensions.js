@@ -329,6 +329,15 @@ mod.extend = function(){
     };
     StructurePowerSpawn.prototype.getNeeds = function(resourceType) {
         if (!this.room.memory.resources || !this.room.memory.resources.powerSpawn) return 0;
+        // if parameter is enabled then autofill powerSpawns
+        if( FILL_POWERSPAWN ) {
+            if( this.power < this.powerCapacity / 4 ) {
+                return this.powerCapacity - this.power;
+            }
+            if( this.power < this.energyCapacity / 4 ) {
+                return this.energyCapacity - this.energy;
+            }
+        }
         let loadTarget = 0;
         let unloadTarget = 0;
 
