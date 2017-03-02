@@ -331,10 +331,10 @@ mod.extend = function(){
         if (!this.room.memory.resources || !this.room.memory.resources.powerSpawn) return 0;
         // if parameter is enabled then autofill powerSpawns
         if( FILL_POWERSPAWN ) {
-            if( this.energy < this.energyCapacity * 0.75 ) {
+            if( resourceType == RESOURCE_ENERGY && this.energy < this.energyCapacity * 0.75 ) {
                 return this.energyCapacity - this.energy;
             }
-            if( this.power < this.powerCapacity * 0.25 ) {
+            if( resourceType == RESOURCE_POWER && this.power < this.powerCapacity * 0.25 ) {
                 return this.powerCapacity - this.power;
             }
             return 0;
