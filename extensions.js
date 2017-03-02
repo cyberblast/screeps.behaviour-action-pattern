@@ -323,7 +323,7 @@ mod.extend = function(){
             space = this.mineralCapacity-this.mineralAmount;
         }
         if( store < loadTarget / 2 ) return Math.min( loadTarget-store,space );
-        if( containerData.reactionState === 'idle' && store > unloadTarget ) return unloadTarget-store;
+        if( containerData && containerData.reactionState === 'idle' && store > unloadTarget ) return unloadTarget-store;
         if( store > unloadTarget + ( this.energyCapacity - Math.min(unloadTarget,this.energyCapacity) ) / 2 ) return unloadTarget-store;
         return 0;
     };
