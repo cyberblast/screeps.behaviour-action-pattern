@@ -144,6 +144,7 @@ global.install = () => {
         attackController: load("task.attackController"),
         robbing: load("task.robbing"),
         reputation: load("task.reputation"),
+        powerMining: load("task.powerMining"),
     });
     Creep.Action = load("creep.Action");
     Creep.Setup = load("creep.Setup");
@@ -166,6 +167,7 @@ global.install = () => {
             idle: load("creep.action.idle"),
             invading: load("creep.action.invading"),
             picking: load("creep.action.picking"),
+            pickPower: load("creep.action.pickPower"),
             reallocating:load("creep.action.reallocating"),
             recycling:load("creep.action.recycling"),
             repairing: load("creep.action.repairing"),
@@ -188,6 +190,9 @@ global.install = () => {
             remoteHauler: load("creep.behaviour.remoteHauler"),
             remoteWorker: load("creep.behaviour.remoteWorker"),
             pioneer: load("creep.behaviour.pioneer"),
+            powerMiner: load("creep.behaviour.powerMiner"),
+            powerHauler: load("creep.behaviour.powerHauler"),
+            powerHealer: load("creep.behaviour.powerHealer"), 
             privateer: load("creep.behaviour.privateer"),
             recycler: load("creep.behaviour.recycler"),
             ranger: load("creep.behaviour.ranger"),
@@ -242,6 +247,7 @@ module.exports.loop = function () {
     if (Memory.cloaked === undefined) {
         Memory.cloaked = {};
     }
+    Memory.observerSchedule = [];
 
     // ensure up to date parameters
     _.assign(global, load("parameter"));
