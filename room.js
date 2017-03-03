@@ -197,6 +197,60 @@ mod.extend = function(){
         });
     };
 
+    let PowerSpawn = function(room){
+        this.room = room;
+
+        Object.defineProperties(this, {
+            'all': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.room.memory.powerSpawn)) {
+                        this.room.savePowerSpawn();
+                    }
+                    if( _.isUndefined(this._all) ){
+                        this._all = [];
+                        let add = entry => {
+                            let o = Game.getObjectById(entry.id);
+                            if( o ) {
+                                _.assign(o, entry);
+                                this._all.push(o);
+                            }
+                        };
+                        _.forEach(this.room.memory.powerSpawn, add);
+                    }
+                    return this._all;
+                }
+            },
+        });
+    };
+
+    let Nuker = function(room){
+        this.room = room;
+
+        Object.defineProperties(this, {
+            'all': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.room.memory.nuker)) {
+                        this.room.saveNuker();
+                    }
+                    if( _.isUndefined(this._all) ){
+                        this._all = [];
+                        let add = entry => {
+                            let o = Game.getObjectById(entry.id);
+                            if( o ) {
+                                _.assign(o, entry);
+                                this._all.push(o);
+                            }
+                        };
+                        _.forEach(this.room.memory.nuker, add);
+                    }
+                    return this._all;
+                }
+            },
+        });
+    };
+
     let Structures = function(room){
         this.room = room;
 
@@ -362,11 +416,11 @@ mod.extend = function(){
             'observer': {
                 configurable: true,
                 get: function() {
-                    if (_.isUndefined(this.room.memory.observer)) {
-                        this.room.saveObserver();
-                    }
+	                if (_.isUndefined(this.room.memory.observer)) {
+		                this.room.saveObserver();
+	                }
                     if (_.isUndefined(this._observer)) {
-                        this._observer = Game.getObjectById(this.room.memory.observer.id);
+	                    this._observer = Game.getObjectById(this.room.memory.observer.id);
                     }
                     return this._observer;
                 },
@@ -1074,14 +1128,46 @@ mod.extend = function(){
         }).map(s => s.id);
     };
     Room.prototype.saveNuker = function() {
-        [this.memory.nuker] = this.find(FIND_MY_STRUCTURES, {
-            filter: s => s instanceof StructureNuker
-        }).map(s => s.id);
+        if( _.isUndefined(this.memory.nuker) ){
+            this.memory.nuker = [];
+        }
+        let nuker = this.find(FIND_MY_STRUCTURES, {
+            filter: (structure) => ( structure.structureType == STRUCTURE_NUKER )
+        });
+
+        this.memory.nuker = [];
+
+        // for each entry add to memory ( if not contained )
+        let add = (nuker) => {
+            let nukerData = this.memory.nuker.find( (l) => l.id == nuker.id );
+            if( !nukerData ) {
+                this.memory.nuker.push({
+                    id: nuker.id,
+                });
+            }
+        };
+        nuker.forEach(add);
     };
     Room.prototype.savePowerSpawn = function() {
-        [this.memory.powerSpawn] = this.find(FIND_MY_STRUCTURES, {
-            filter: s => s instanceof StructurePowerSpawn
-        }).map(s => s.id);
+        if( _.isUndefined(this.memory.powerSpawn) ){
+            this.memory.powerSpawn = [];
+        }
+        let powerSpawns = this.find(FIND_MY_STRUCTURES, {
+            filter: (structure) => ( structure.structureType == STRUCTURE_POWER_SPAWN )
+        });
+
+        this.memory.powerSpawn = [];
+
+        // for each entry add to memory ( if not contained )
+        let add = (powerSpawn) => {
+            let powerSpawnData = this.memory.powerSpawn.find( (l) => l.id == powerSpawn.id );
+            if( !powerSpawnData ) {
+                this.memory.powerSpawn.push({
+                    id: powerSpawn.id,
+                });
+            }
+        };
+        powerSpawns.forEach(add);
     };
     Room.prototype.saveContainers = function(){
         this.memory.container = [];
@@ -1190,18 +1276,6 @@ mod.extend = function(){
         });
         let storageLabs = this.storage ? this.storage.pos.findInRange(labs, 2).map(l => l.id) : [];
 
-        // for each memory entry, keep if existing
-        /*
-        let kept = [];
-        let keep = (entry) => {
-            if( links.find( (c) => c.id == entry.id )){
-                entry.storage = storageLinks.includes(entry.id);
-                kept.push(entry);
-            }
-        };
-        this.memory.links.forEach(keep);
-        this.memory.links = kept;
-        */
         this.memory.labs = [];
 
         // for each entry add to memory ( if not contained )
@@ -1277,31 +1351,47 @@ mod.extend = function(){
         let rcl = this.controller.level;
 
         // go through reallacation orders and reset completed orders
-        for(var structureType in data) {
-            for(var i=0;i<data[structureType].length;i++) {
+        for(let structureType in data) {
+            for(let i=0;i<data[structureType].length;i++) {
                 let structure = data[structureType][i];
                 // don't reset busy labs
                 if (structureType == STRUCTURE_LAB && structure.reactionState != LAB_IDLE) continue;
                 if (!structure.orders) continue;
-                for(var j=0;j<structure.orders.length;j++) {
+                for(let j=0;j<structure.orders.length;j++) {
                     let order = structure.orders[j];
                     if (order.orderRemaining <= 0) {
                         let baseAmount = 0;
-                        if (structureType == STRUCTURE_STORAGE) baseAmount = order.type == RESOURCE_ENERGY ? MIN_STORAGE_ENERGY[rcl] : MAX_STORAGE_MINERAL;
-                        else if (structureType == STRUCTURE_TERMINAL) baseAmount = order.type == RESOURCE_ENERGY ? TERMINAL_ENERGY : 0;
+                        let rcl = this.controller.level;
+                        if (structureType == STRUCTURE_STORAGE) baseAmount = (order.type == RESOURCE_ENERGY) ? MIN_STORAGE_ENERGY[rcl] : MAX_STORAGE_MINERAL;
+                        else if (structureType == STRUCTURE_TERMINAL) baseAmount = (order.type == RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0;
                         baseAmount += order.storeAmount;
                         let amount = 0;
                         let cont = Game.getObjectById(structure.id);
-                        if (cont && structureType == STRUCTURE_LAB) {
-                            // get lab amount
-                            if (cont.mineralType == order.type) {
-                                amount = cont.mineralAmount;
+                        if (cont) {
+                            switch (structureType) {
+                                case STRUCTURE_LAB:
+                                    // get lab amount
+                                    if (order.type == cont.mineralType) {
+                                        amount = cont.mineralAmount;
+                                    } else if (order.type == RESOURCE_ENERGY) {
+                                        amount = cont.energy;
+                                    }
+                                    break;
+                                case STRUCTURE_POWER_SPAWN:
+                                    // get power spawn amount
+                                    if (order.type == RESOURCE_POWER) {
+                                        amount = cont.power;
+                                    } else if (order.type == RESOURCE_ENERGY) {
+                                        amount = cont.energy;
+                                    }
+                                    break;
+                                default:
+                                    // get stored amount
+                                    amount = cont.store[order.type] || 0;
+                                    break;
                             }
-                        } else if (cont) {
-                            // get stored amount
-                            amount = cont.store[order.type] || 0;
                         }
-                        if (amount < baseAmount) {
+                        if (amount <= baseAmount) {
                             order.orderAmount = 0;
                             order.orderRemaining = 0;
                         }
@@ -1312,52 +1402,56 @@ mod.extend = function(){
     };
     Room.prototype.updateRoomOrders = function () {
         if (!this.memory.resources || !this.memory.resources.orders) return;
-        let rooms = _.filter(Game.rooms, (room) => { return room.my && room.storage && room.terminal; });
+        let rooms = _.filter(Game.rooms, (room) => { return room.my && room.storage && room.terminal && room.name !== this.name; });
         let orders = this.memory.resources.orders;
-        for (var i=0;i<orders.length;i++) {
+        for (let i=0;i<orders.length;i++) {
             let order = orders[i];
             let amountRemaining = order.amount;
-            if (amountRemaining <= 0) {
-                delete orders[i];
-                orders.splice(i,1);
-                continue;
-            }
-            for (var j=0;j<order.offers.length;j++) {
+            for (let j=0;j<order.offers.length;j++) {
                 let offer = order.offers[j];
-                if (amountRemaining > 0) {
-                    amountRemaining -= offer.amount;
-                } else {
+                //if (amountRemaining > 0) {
+                //    amountRemaining -= offer.amount;
+                //} else {
                     if (Memory.rooms[offer.room] && Memory.rooms[offer.room].resources && Memory.rooms[offer.room].resources.offers) {
                         let remoteOffers = Memory.rooms[offer.room].resources.offers;
                         let idx = remoteOffers.indexOf((o)=>{ return o.room==this.name && o.id==order.id && o.type==order.type; });
-                        remoteOffers = remoteOffers.splice(idx,1);
+                        if (idx !== -1) remoteOffers.splice(idx,1);
                     }
-                    orders = orders.splice[i--,1];
-                }
+                //    order.offers.splice[j--,1];
+                //}
             }
-            if (amountRemaining > 0) {
+            order.offers = [];
+            if (amountRemaining <= 0) {
+                delete orders[i];
+                orders.splice(i--,1);
+                continue;
+            } else {
                 rooms.sort((a,b)=>{ return Game.map.getRoomLinearDistance(this.name,a.name,true) - Game.map.getRoomLinearDistance(this.name,b.name,true); });
-                for (var j=0;j<rooms.length;j++) {
+                for (let j=0;j<rooms.length;j++) {
                     let room = rooms[j];
                     if (room.memory.resources === undefined) {
                         room.memory.resources = {
                             lab: [],
                             container: [],
                             terminal: [],
-                            storage: []
+                            storage: [],
+                            powerSpawn: [],
                         };
                     }
                     let available = (room.storage.store[order.type]||0) + (room.terminal.store[order.type]||0);
                     if (available < 100) continue;
                     available = Math.min(available,amountRemaining);
                     if (!room.memory.resources.offers) room.memory.resources.offers = [];
-                    let existingOffer = order.offers.find((o)=>o.room==this.name);
+                    let existingOffer = order.offers.find((o)=>o.room==room.name);
                     let remoteOffers = room.memory.resources.offers;
                     let existingRemoteOffer = remoteOffers.find((o)=>{ return o.room==this.name && o.id==order.id && o.type==order.type; });
                     if (existingOffer) {
+                        if (DEBUG && TRACE) trace("Room", { roomName: this.name, remoteRoom: room.name, actionName: 'updateRoomOrders', subAction: 'update', orderId: order.id, resourceType: order.type, amount: available })
                         amountRemaining -= (available - existingOffer.amount);
                         existingOffer.amount = available;
                     } else {
+                        if (DEBUG && TRACE) trace("Room", { roomName: this.name, remoteRoom: room.name, actionName: 'updateRoomOrders', subAction: 'new', orderId: order.id, resourceType: order.type, amount: available })
+                        else if (DEBUG) logSystem(this.name, `New room offer offer ${room.name} with id ${order.id} placed for ${available} ${order.type}.`);
                         amountRemaining -= available;
                         order.offers.push({
                             room: room.name,
@@ -1382,36 +1476,41 @@ mod.extend = function(){
     Room.prototype.fillARoomOrder = function () {
         if (!(this.terminal && this.memory && this.memory.resources && this.memory.resources.offers)) return false;
         let offers = this.memory.resources.offers;
-        for (var i=0;i<offers.length;i++) {
+        for (let i=0;i<offers.length;i++) {
             let offer = offers[i];
             let targetRoom = Game.rooms[offer.room];
             if (!(targetRoom && targetRoom.memory && targetRoom.memory.resources && targetRoom.memory.resources.orders)) continue;
             let order = targetRoom.memory.resources.orders.find((o)=>{ return o.id==offer.id && o.type==offer.type; });
             if (!order) continue;
-            let targetOfferIdx = order.offers.indexOf((o)=>{ return o.room==this.name; });
+            let targetOfferIdx = order.offers.findIndex((o)=>{ return o.room==this.name; });
 
-            if (!targetRoom.terminal) continue;
             let store = this.terminal.store[offer.type]||0;
             let onOrder = 0;
             let terminalOrder = null;
             if (this.memory.resources.terminal[0]) terminalOrder = this.memory.resources.terminal[0].orders.find((o)=>{ return o.type==offer.type; });
             if (terminalOrder) onOrder = terminalOrder.orderRemaining;
             let amount = Math.max(offer.amount,100);
-            if (amount > store + onOrder) {
-                this.placeOrder(this.terminal.id, offer.type, amount - store);
-                continue;
+            if (amount > (store + onOrder)) {
+                let amt = amount - (store + onOrder);
+                if (DEBUG && TRACE) trace("Room", { actionName: 'fillARoomOrder', subAction: 'terminalOrder', roomName: this.name, targetRoomName: targetRoom.name, resourceType: offer.type, amount: amt });
+                this.placeOrder(this.terminal.id, offer.type, amt);
             }
-            if (amount > store) continue;
+            if (!targetRoom.terminal) continue;
             let space = targetRoom.terminal.storeCapacity-targetRoom.terminal.sum;
-            amount = Math.min(amount,space);
-            if (amount < 100) continue;
+            amount = Math.min(amount,space,store);
 
             let cost = Game.market.calcTransactionCost(amount, this.name, targetRoom.name);
+            if (offer.type == RESOURCE_ENERGY) {
+                amount -= cost;
+                cost += amount;
+            }
             if (cost > (this.terminal.store.energy||0)) continue;
+            if (amount < 100) continue;
 
             let ret = this.terminal.send(offer.type,amount,targetRoom.name,order.id);
             if (ret == OK) {
-                console.log(this.name,'sent',amount,offer.type,'to',targetRoom.name,'referencing order id',order.id);
+                if (DEBUG && TRACE) trace("Room", { actionName: 'fillARoomOrder', roomName: this.name, targetRoomName: targetRoom.name, resourceType: offer.type, amount: amount });
+                else if (DEBUG) logSystem(this.name, `Room order filled to ${targetRoom.name} for ${amount} ${offer.type}.`);
                 offer.amount -= amount;
                 if (offer.amount > 0) {
                     order.offers[targetOfferIdx].amount = offer.amount;
@@ -1419,7 +1518,7 @@ mod.extend = function(){
                     delete order.offers[targetOfferIdx];
                     order.offers.splice(targetOfferIdx,1);
                     delete offers[i];
-                    offers.splice(i,1);
+                    offers.splice(i--,1);
                 }
                 order.amount -= amount;
                 return true;
@@ -1560,7 +1659,7 @@ mod.extend = function(){
             let data = this.memory.resources.lab.find( (s) => s.id == l.id );
             return data ? (data.slave_a && data.slave_b) : false;
         } );
-        for (var i=0;i<master_labs.length;i++) {
+        for (let i=0;i<master_labs.length;i++) {
             // see if the reaction is possible
             let master = master_labs[i];
             if (master.cooldown > 0) continue;
@@ -1600,7 +1699,7 @@ mod.extend = function(){
 
         let data = this.memory;
         if (data && data.container && data.container.length > 0) {
-            for (var i=0;i<data.container.length;i++) {
+            for (let i=0;i<data.container.length;i++) {
                 let d = data.container[i];
                 let container = Game.getObjectById(d.id);
                 if (container && container.store[resourceType]) {
@@ -1616,6 +1715,7 @@ mod.extend = function(){
         let container = Game.getObjectById(containerId);
         if (!this.my || !container || !container.room.name == this.name ||
                 !(container.structureType == STRUCTURE_LAB ||
+                container.structureType == STRUCTURE_POWER_SPAWN ||
                 container.structureType == STRUCTURE_CONTAINER ||
                 container.structureType == STRUCTURE_STORAGE ||
                 container.structureType == STRUCTURE_TERMINAL)) {
@@ -1627,11 +1727,13 @@ mod.extend = function(){
         if (this.memory.resources === undefined) {
             this.memory.resources = {
                 lab: [],
+                powerSpawn: [],
                 container: [],
                 terminal: [],
                 storage: []
             };
         }
+        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
         if (!this.memory.resources[container.structureType].find( (s) => s.id == containerId )) {
             this.memory.resources[container.structureType].push(container.structureType==STRUCTURE_LAB ? {
                 id: containerId,
@@ -1645,7 +1747,7 @@ mod.extend = function(){
         if (container.structureType == STRUCTURE_LAB && resourceType != RESOURCE_ENERGY && amount > 0) {
             // clear other resource types since labs only hold one at a time
             let orders = this.memory.resources[STRUCTURE_LAB].find((s)=>s.id==containerId).orders;
-            for (var i=0;i<orders.length;i++) {
+            for (let i=0;i<orders.length;i++) {
                 if (orders[i].type != resourceType && orders[i].type != RESOURCE_ENERGY) {
                     orders[i].orderAmount = 0;
                     orders[i].orderRemaining = 0;
@@ -1725,9 +1827,12 @@ mod.extend = function(){
         let existingOrder = orders.find((o)=>{ return o.id==orderId && o.type==resourceType; });
         if (existingOrder) {
             // update existing order
+            if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'update', orderId: orderId, resourceType: resourceType, amount: amount })
             existingOrder.amount = amount;
         } else {
             // create new order
+            if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'new', orderId: orderId, resourceType: resourceType, amount: amount })
+            else if (DEBUG) logSystem(this.name, `New room order with id ${orderId} placed for ${amount} ${resourceType}.`);
             orders.push({
                 id: orderId,
                 type: resourceType,
@@ -1767,7 +1872,7 @@ mod.extend = function(){
 
             let orders = this.memory.resources.orders;
             // clear local resource orders
-            for (var i=0;i<labData.orders.length;i++) {
+            for (let i=0;i<labData.orders.length;i++) {
                 let order = labData.orders[i];
                 if (order.type == RESOURCE_ENERGY) continue;
                 order.orderAmount = 0;
@@ -1808,7 +1913,7 @@ mod.extend = function(){
 
         return OK;
     };
-    Room.prototype.placeReactionOrder = function(labId, resourceType, amount) {
+    Room.prototype.placeReactionOrder = function(labId, resourceType, amount, tier = 1) {
         if (amount <= 0) return OK;
         let lab_master = Game.getObjectById(labId);
         if (!LAB_REACTIONS.hasOwnProperty(resourceType)) {
@@ -1824,25 +1929,33 @@ mod.extend = function(){
         }
         let component_a = LAB_REACTIONS[resourceType][0];
         let component_b = LAB_REACTIONS[resourceType][1];
-        var lab_slave_a = null;
-        var lab_slave_b = null;
+        let lab_slave_a = null;
+        let lab_slave_b = null;
 
         // find slave labs
         let nearbyLabs = lab_master.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: (s)=>{ return s.structureType==STRUCTURE_LAB && s.id != lab_master.id; }});
         //console.log(lab_master,"found",nearbyLabs.length,"potential slave labs");
-        for (var i=0;i<nearbyLabs.length;i++) {
+        for (let i=0;i<nearbyLabs.length;i++) {
             let lab = nearbyLabs[i];
             let data = this.memory.resources.lab.find( (l) => l.id == lab.id );
             //console.log(lab_master,"potential slave",i,"has",lab.mineralType,"and is currently",data?data.reactionState:"idle");
-            if (lab_slave_a == null && lab.mineralType == component_a) {
+            if (lab_slave_a == null && data && data.reactionType == component_a) {
                 lab_slave_a = lab;
-            } else if (lab_slave_b == null && lab.mineralType == component_b) {
+            } else if (lab_slave_b == null && data && data.reactionType == component_b) {
                 lab_slave_b = lab;
-            } else if (!data || !data.reactionState || data.reactionState == LAB_IDLE) {
-                if (lab_slave_a == null) lab_slave_a = lab;
-                else if (lab_slave_b == null) lab_slave_b = lab;
             }
             if (lab_slave_a && lab_slave_b) break;
+        }
+        if (!lab_slave_a || !lab_slave_b) {
+            nearbyLabs.sort( (a,b) => { lab_master.pos.getRangeTo(a) - lab_master.pos.getRangeTo(b); } );
+            for (let i=0;i<nearbyLabs.length;i++) {
+                let lab = nearbyLabs[i];
+                let data = this.memory.resources.lab.find( (l) => l.id == lab.id );
+                if (!data || !data.reactionState || data.reactionState == LAB_IDLE) {
+                    if (lab_slave_a == null) lab_slave_a = lab;
+                    else if (lab_slave_b == null) lab_slave_b = lab;
+                }
+            }
         }
 
         // qualify labs and prepare states
@@ -1876,16 +1989,23 @@ mod.extend = function(){
         // place orders with slave labs
         labData = this.memory.resources.lab.find( (l) => l.id == lab_slave_a.id );
         let slaveState = LAB_SLAVE_1;
-        if (state == LAB_SLAVE_1) slaveState = LAB_SLAVE_2;
-        if (state == LAB_SLAVE_2) slaveState = LAB_SLAVE_3;
+        let slaveDepth = 1;
+        if (state == LAB_SLAVE_1) {
+            slaveState = LAB_SLAVE_2;
+            slaveDepth = 2;
+        } else if (state == LAB_SLAVE_2) {
+            slaveState = LAB_SLAVE_3;
+            slaveDepth = 3;
+        }
         if ( labData ) {
             labData.reactionState = slaveState;
+            labData.reactionType = component_a;
             labData.master = lab_master.id;
             this.placeOrder(lab_slave_a.id, component_a, amount);
 
             let available = 0;
             if (this.memory.container) {
-                for (var i=0;i<this.memory.container.length;i++) {
+                for (let i=0;i<this.memory.container.length;i++) {
                     let d = this.memory.container[i];
                     let container = Game.getObjectById(d.id);
                     if (container && container.store[component_a]) {
@@ -1895,7 +2015,7 @@ mod.extend = function(){
             }
             if (this.storage) available += this.storage.store[component_a]||0;
             if (this.terminal) available += this.terminal.store[component_a]||0;
-            if (available < amount) {
+            if (tier > slaveDepth && slaveDepth < 3 && available < amount) {
                 if (this.placeReactionOrder(lab_slave_a.id,component_a,amount-available) == OK) {
                     let order = labData.orders.find((o)=>o.type==component_a);
                     if (order) order.orderRemaining = available;
@@ -1905,12 +2025,13 @@ mod.extend = function(){
         labData = this.memory.resources.lab.find( (l) => l.id == lab_slave_b.id );
         if ( labData ) {
             labData.reactionState = slaveState;
+            labData.reactionType = component_b;
             labData.master = lab_master.id;
             this.placeOrder(lab_slave_b.id, component_b, amount);
 
             let available = 0;
             if (this.memory.container) {
-                for (var i=0;i<this.memory.container.length;i++) {
+                for (let i=0;i<this.memory.container.length;i++) {
                     let d = this.memory.container[i];
                     let container = Game.getObjectById(d.id);
                     if (container) {
@@ -1920,7 +2041,7 @@ mod.extend = function(){
             }
             if (this.storage) available += this.storage.store[component_b]||0;
             if (this.terminal) available += this.terminal.store[component_b]||0;
-            if (available < amount) {
+            if (tier > slaveDepth && slaveDepth < 3 && available < amount) {
                 if (this.placeReactionOrder(lab_slave_a.id,component_a,amount-available) == OK) {
                     let order = labData.orders.find((o)=>o.type==component_b);
                     if (order) order.orderRemaining = available;

@@ -24,20 +24,20 @@ mod.nextAction = function(creep){
     if( creep.sum < creep.carryCapacity/2 ) {
         priority = [
             Creep.action.uncharging,
-            Creep.action.picking,
-            Creep.action.reallocating,
-            Creep.action.withdrawing,
-            Creep.action.idle];
+            Creep.action.picking];
+            if( creep.data.lastAction !== 'storing' || !creep.room.storage || creep.data.lastTarget !== creep.room.storage.id ) {
+                priority.push(Creep.action.withdrawing);
+            }
+            priority.push(Creep.action.reallocating);
+            priority.push(Creep.action.idle);
     }
     else {
         priority = [
             Creep.action.feeding,
             Creep.action.charging,
-            Creep.action.fueling];
-        if (creep.data.lastAction !== 'withdrawing' || !creep.room.storage || creep.data.lastTarget !== creep.room.storage.id) {
-            priority.push(Creep.action.storing);           
-        }
-        priority.push(Creep.action.idle);
+            Creep.action.fueling,
+            Creep.action.storing,
+            Creep.action.idle];
         if ( creep.sum > creep.carry.energy ||
             ( !creep.room.situation.invasion &&
                 SPAWN_DEFENSE_ON_ATTACK && creep.room.conserveForDefense && creep.room.relativeEnergyAvailable > 0.8)) {

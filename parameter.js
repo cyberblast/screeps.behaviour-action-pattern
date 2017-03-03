@@ -5,7 +5,6 @@ let mod = {
     SAY_ASSIGNMENT: true, // say a symbol representing the assiged action
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details, use false not undefined to unset
-    DEBUG_LOGISTICS: false, // console log notes from hauler creeps running action.reallocating
     TRACE: false, // use Memory.debugTrace for low-level information
     TRAVELER_STUCK_TICKS: 2, // Number of ticks not moving to be considered stuck by the Traveler API
     TRAVELER_THRESHOLD: 5, // Average creep CPU usage/tick before warning about pathing cost, starts after 25 ticks
@@ -61,6 +60,7 @@ let mod = {
     },
     MAX_STORAGE_MINERAL:200000, // keep a max of each type of minerals in store
     ROOM_TRADING: false, // set this true to enable haulers within your colony to request resources from other rooms in your colony
+    FILL_POWERSPAWN: true,
     MIN_MINERAL_SELL_AMOUNT:20000,
     ENERGY_VALUE_CREDITS: 0.15, // assumed energy exchange rate (in credits) to determine best mineral sell offer
     //MAX_SELL_RANGE: 60,
