@@ -6,7 +6,6 @@ action.isValidAction = function(creep){
         creep.room.storage.store.energy > 0  &&
         creep.data.creepType != 'privateer' &&
         creep.sum < creep.carryCapacity &&
-        ( creep.room.relativeEnergyAvailable < 1.0 || Creep.action.charging.newTarget || creep.room.towerFreeCapacity > 0 ) &&
         (!creep.room.conserveForDefense || creep.room.relativeEnergyAvailable < 0.8)
     );
 };
