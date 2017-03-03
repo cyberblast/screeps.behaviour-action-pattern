@@ -105,6 +105,9 @@ global.load = (modName) => {
         // load viral overrides 
         mod = infect(mod, 'internalViral', modName);
         mod = infect(mod, 'viral', modName);
+        if( mod.install ) {
+            mod.install();
+        }
     }
     return mod;
 };
