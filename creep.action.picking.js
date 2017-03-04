@@ -12,7 +12,7 @@ action.isAddableAction = function(creep){
     return creep.getStrategyHandler([action.name], 'isAddableAction', creep);
 };
 action.isAddableTarget = function(target, creep){
-    const max = creep.getStrategyHandler([action.name], 'maxPerTarget');
+    const max = creep.getStrategyHandler([action.name], 'maxPerTarget', creep);
     let pickers = target.targetOf ? _.filter(target.targetOf, {actionName: 'picking'}) : [];
     return (!target.targetOf || !pickers.length || ((pickers.length < max) && target.amount > _.sum( pickers.map( t => t.carryCapacityLeft))));
 };
@@ -59,7 +59,7 @@ action.work = function(creep){
         // Check for containers to uncharge
         if( creep.sum < creep.carryCapacity) {
             let containers = creep.pos.findInRange(creep.room.structures.container.in, 2, {
-               filter: (o) => Creep.action.uncharging.isValidTarget(o, creep)
+                filter: (o) => Creep.action.uncharging.isValidTarget(o, creep)
             });
             if ( containers && containers.length > 0 ) {
                 Creep.action.uncharging.assign(creep, containers[0]);
