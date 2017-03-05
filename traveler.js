@@ -145,11 +145,13 @@ module.exports = function(globalOpts = {}){
             // register hostile rooms entered
             let creepPos = creep.pos, destPos = (destination.pos || destination);
             if (creep.room.controller) {
-                if (creep.room.controller.owner && !creep.room.controller.my && !creep.room.ally) {
-                    this.memory.hostileRooms[creep.room.name] = creep.room.controller.level;
-                }
-                else {
-                    this.memory.hostileRooms[creep.room.name] = undefined;
+                const mem = this.memory.hostileRooms[creep.room.name];
+                if (_.isUndefined(mem) || typeof mem === 'number') { // not overridden by user
+                    if (creep.room.controller.owner && !creep.room.controller.my && !creep.room.ally) {
+                        this.memory.hostileRooms[creep.room.name] = creep.room.controller.level;
+                    } else {
+                        this.memory.hostileRooms[creep.room.name] = undefined;
+                    }
                 }
             }
             // initialize data object
