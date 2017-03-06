@@ -71,6 +71,7 @@ module.exports = function(globalOpts = {}){
                         roomName !== destination && roomName !== origin) {
                         return Number.POSITIVE_INFINITY;
                     }
+                    return 2.5;
                 }
             });
             if (!_.isArray(ret)) {
@@ -363,9 +364,8 @@ module.exports = function(globalOpts = {}){
                 global.traveler = new Traveler();
             }
             options = this.getStrategyHandler([], 'moveOptions', options);
-            if (_.isUndefined(options.allowHostile)) options.allowHostile = false;
-            if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(destination.roomName, options.allowHostile, options.preferHighway);
             if (_.isUndefined(options.useFindRoute)) options.useFindRoute = global.ROUTE_PRECALCULATION;
+            if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
             return traveler.travelTo(this, destination, options);
         };
     }
