@@ -168,7 +168,7 @@ mod.nextAction = creep => {
     }
     // travel to invader
     let invader = Game.getObjectById(creep.data.destiny.invaderId);
-    if( invader ) {
+    if( invader && creep.pos.roomName === invader.pos.roomName ) {
         Creep.action.travelling.assign(creep, invader);
         return;
     }
