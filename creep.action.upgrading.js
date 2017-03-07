@@ -1,6 +1,7 @@
 let action = new Creep.Action('upgrading');
 module.exports = action;
 action.targetRange = 3;
+action.reachedRange = 3;
 action.isAddableAction = function(creep){
     // no storage
     return !creep.room.storage 

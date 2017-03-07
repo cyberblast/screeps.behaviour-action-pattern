@@ -2099,6 +2099,15 @@ mod.extend = function(){
         }
         return ret;
     }
+    Room.prototype.isWalkable = function(x, y, look) {
+        if (!look) look = this.lookAt(x,y);
+        else look = look[y][x];
+        let invalidObject = o => {
+            return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
+                ((o.type == LOOK_CONSTRUCTION_SITES || o.type == LOOK_STRUCTURES) && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType)));
+        };
+        return look.filter(invalidObject).length == 0;
+    };
 };
 mod.flush = function(){
     let clean = room => {
@@ -2313,22 +2322,13 @@ mod.roomDistance = function(roomName1, roomName2, diagonal, continuous){
     return xDif + yDif; // count diagonal as 2
 };
 mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
-    let look;
-    if( checkWalkable ) {
-        look = Game.rooms[roomName].lookAtArea(minY,minX,maxY,maxX);
-    }
-    let invalidObject = o => {
-        return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
-            // o.type == LOOK_CONSTRUCTION_SITES ||
-            (o.type == LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType) ));
-    };
-    let isWalkable = (posX, posY) => look[posY][posX].filter(invalidObject).length == 0;
-
+    const room = Game.rooms[roomName];
+    const look = checkWalkable ? room.lookAtArea(minY,minX,maxY,maxX) : null;
     let fields = [];
     for( let x = minX; x <= maxX; x++) {
         for( let y = minY; y <= maxY; y++){
             if( x > 1 && x < 48 && y > 1 && y < 48 ){
-                if( !checkWalkable || isWalkable(x,y) ){
+                if( !checkWalkable || room.isWalkable(x, y, look) ){
                     let p = new RoomPosition(x, y, roomName);
                     if( !where || where(p) )
                         fields.push(p);
