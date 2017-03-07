@@ -49,8 +49,8 @@ mod.strategies = {
     defaultStrategy: {
         name: `default-${mod.name}`,
         moveOptions: function(options) {
-            // allow routing in and through hostile rooms
-            if (_.isUndefined(options.allowHostile)) options.allowHostile = true;
+            // // allow routing in and through hostile rooms
+            // if (_.isUndefined(options.allowHostile)) options.allowHostile = true;
             return options;
         }
     }
