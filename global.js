@@ -62,8 +62,8 @@ mod.FLAG_COLOR = {
         }
     },
     //COLOR_PURPLE,
-    //COLOR_BLUE,
-    //COLOR_CYAN - Reserved
+    //COLOR_BLUE - Reserved (internal use)
+    //COLOR_CYAN - Reserved (build related)
     //COLOR_GREEN
     claim: { // claim this room, then build spawn at flag
         color: COLOR_GREEN,
