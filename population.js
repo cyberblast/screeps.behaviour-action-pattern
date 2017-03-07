@@ -196,7 +196,7 @@ mod.analyze = function(){
 
             if( entry.creepType &&
                 ( creep.ticksToLive === undefined ||
-                creep.ticksToLive > entry.spawningTime )) {
+                Creep.Setup.isWorkingAge(entry) )) {
                     this.countCreep(creep.room, entry);
             }
 
