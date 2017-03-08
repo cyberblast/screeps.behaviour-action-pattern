@@ -2104,7 +2104,7 @@ mod.extend = function(){
         else look = look[y][x];
         let invalidObject = o => {
             return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
-                ((o.type == LOOK_CONSTRUCTION_SITES || o.type == LOOK_STRUCTURES) && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType)));
+                OBSTACLE_OBJECT_TYPES.includes(o[o.type].structureType));
         };
         return look.filter(invalidObject).length == 0;
     };
