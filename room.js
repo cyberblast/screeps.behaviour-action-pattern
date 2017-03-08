@@ -2059,6 +2059,15 @@ mod.extend = function(){
         //console.log(lab_master,"found slave labs",lab_slave_a,"for",component_a,"and",lab_slave_b,"for",component_b);
         return OK;
     };
+    Room.prototype.isWalkable = function(x, y, look) {
+        if (!look) look = this.lookAt(x,y);
+        else look = look[y][x];
+        let invalidObject = o => {
+            return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
+                OBSTACLE_OBJECT_TYPES.includes(o[o.type].structureType));
+        };
+        return look.filter(invalidObject).length == 0;
+    };
     Room.prototype.exits = function(findExit, point) {
         if (point === true) point = 0.5;
         let positions;
@@ -2099,15 +2108,6 @@ mod.extend = function(){
         }
         return ret;
     }
-    Room.prototype.isWalkable = function(x, y, look) {
-        if (!look) look = this.lookAt(x,y);
-        else look = look[y][x];
-        let invalidObject = o => {
-            return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
-                OBSTACLE_OBJECT_TYPES.includes(o[o.type].structureType));
-        };
-        return look.filter(invalidObject).length == 0;
-    };
 };
 mod.flush = function(){
     let clean = room => {
