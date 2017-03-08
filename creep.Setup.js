@@ -94,7 +94,7 @@ let Setup = function(typeName){
         if( this.measureByHome ){
             let home = room.name;
             let count = entry => {
-                if( entry.creepType == this.type && entry.homeRoom == home && Setup.isWorkingAge(entry) ){
+                if( entry.creepType == this.type && entry.homeRoom == home && Population.isWorkingAge(entry) ){
                     existingCount++;
                     existingWeight += entry.weight;
                 }
@@ -102,10 +102,10 @@ let Setup = function(typeName){
             _.forEach(Memory.population, count);
         } else {
             let population = this.globalMeasurement ? Population : room.population;
-            if( !population || !population.typeCount[this.type] )
+            if( !population || !(population.typeCount[this.type] > population.retiredCount[this.type]) )
                 return true;
-            existingCount = population.typeCount[this.type] || 0;
-            existingWeight = population.typeWeight[this.type] || 0;
+            existingCount = (population.typeCount[this.type] || 0) - (population.retiredCount[this.type] || 0);
+            existingWeight = (population.typeWeight[this.type] || 0) - (population.retiredWeight[this.type] || 0);
         }
         const returnVal = existingCount < maxCount && existingWeight < maxWeight;
         if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, returnVal, Setup:'isValidSetup'}, 'count:', existingCount, '<', maxCount, 'weight:', existingWeight, '<', maxWeight);
@@ -189,10 +189,6 @@ let Setup = function(typeName){
     };
 };
 module.exports = Setup;
-Setup.isWorkingAge = function(creepData) {
-    const c = Game.creeps[creepData.creepName];
-    return !c || (creepData.predictedRenewal || creepData.spawningTime || CREEP_LIFE_TIME ) <= (c.ticksToLive || CREEP_LIFE_TIME);
-};
 Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
     if( !flagFilter ) {
         throw new Error("undefined flagFilter");
@@ -207,13 +203,10 @@ Setup.maxPerFlag = function(flagFilter, maxRoomRange, measureByHome) {
             }
             // for each flag in range
             flag = Game.flags[flagEntry.name];
-            // if someone is dying then allow 2 per flag
-            if (_.chain(flag.targetOf).filter(function (c) {
+            if (_.some(flag.targetOf, function (c) {
                 return !measureByHome || c.homeRoom === room.name;
-            }).every(Setup.isWorkingAge).value()) {
+            })) {
                 max++;
-            } else {
-                max = max + 2;
             }
         };
         let flagEntries = FlagDir.filter(flagFilter);

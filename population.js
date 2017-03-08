@@ -128,6 +128,9 @@ mod.registerCreepFlag = function(creep, flag) {
         creep.data.flagName = flag.name;
     }
 };
+mod.addCreepCount = function(index, key, amount) {
+    index[key] = (index[key] || 0) + amount;
+};
 mod.countCreep = function(room, entry){
     entry.roomName = room.name;
     if( room.population === undefined ) {
@@ -135,7 +138,9 @@ mod.countCreep = function(room, entry){
             typeCount: {},
             typeWeight: {},
             actionCount: {},
-            actionWeight: {}
+            actionWeight: {},
+            retiredCount: {},
+            retiredWeight: {},
         };
     }
 
@@ -151,6 +156,12 @@ mod.countCreep = function(room, entry){
     if( this.typeWeight[entry.creepType] === undefined )
         this.typeWeight[entry.creepType] = entry.weight;
     else this.typeWeight[entry.creepType] += entry.weight;
+    if( !this.isWorkingAge(entry) ) {
+        this.addCreepCount(room.population.retiredCount, entry.creepType, 1);
+        this.addCreepCount(room.population.retiredWeight, entry.creepType, entry.weight);
+        this.addCreepCount(this.retiredCount, entry.creepType, 1);
+        this.addCreepCount(this.retiredWeight, entry.creepType, entry.weight);
+    }
 };
 
 mod.flush = function() {
@@ -158,6 +169,8 @@ mod.flush = function() {
     this.typeWeight = {};
     this.actionCount = {};
     this.actionWeight = {};
+    this.retiredCount = {};
+    this.retiredWeight = {};
     this.died = [];
     this.predictedRenewal = [];
     this.spawned = [];
@@ -196,7 +209,7 @@ mod.analyze = function(){
 
             if( entry.creepType &&
                 ( creep.ticksToLive === undefined ||
-                Creep.Setup.isWorkingAge(entry) )) {
+                Population.isWorkingAge(entry) )) {
                     this.countCreep(creep.room, entry);
             }
 
@@ -303,4 +316,8 @@ mod.getCombatStats = function(body) {
         hull, // damage needed to impede movement
         coreHits // if (hits < coreHits) missing moves!
     };
+};
+mod.isWorkingAge = function(creepData) {
+    const c = Game.creeps[creepData.creepName];
+    return !c || (creepData.predictedRenewal || creepData.spawningTime || CREEP_LIFE_TIME ) <= (c.ticksToLive || CREEP_LIFE_TIME);
 };
