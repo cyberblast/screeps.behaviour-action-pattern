@@ -61,7 +61,7 @@ mod.FLAG_COLOR = {
             filter: {'color': COLOR_RED, 'secondaryColor': COLOR_CYAN },
         }
     },
-    //COLOR_PURPLE,
+    //COLOR_PURPLE - Reserved labs
     //COLOR_BLUE - Reserved (internal use)
     //COLOR_CYAN - Reserved (build related)
     //COLOR_GREEN
