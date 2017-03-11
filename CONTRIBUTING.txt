@@ -1,0 +1,22 @@
+                 I AM NOT A LAWYER CONTRIBUTOR LICENSE v1.0
+
+ALL CONTRIBUTIONS TO THIS SOFTWARE ARE MADE UNDER THE TERMS OF THE LICENSE FOR
+THIS SOFTWARE
+
+AS A CONTRIBUTOR TO THIS SOFTWARE YOU AGREE TO ASSIGN YOUR HELD COPYRIGHTS
+TO THE LICENSOR OF THIS SOFTWARE.
+
+                                EXEMPTIONS
+
+Changes to this software which were not submitted by their original author are
+exempt from this copyright assignment.
+
+                                 SURVIVAL
+
+Any part of a change submitted to this software which has been exempted from
+this agreement does not invalidate the assignment of rights of the non-exempt
+changes in that submission.
+
+Legal requirements for copyright assignment do not invalidate the remaining
+terms of this contributor license.
+
