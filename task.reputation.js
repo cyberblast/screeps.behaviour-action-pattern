@@ -14,13 +14,13 @@ const mod = {
     name: 'reputation',
     myName: () => _.values(Game.spawns)[0].owner.username,
     isNPC: username => NPC[username] === true,
-    npcOwner: creep => mod.isNPC(creep.owner.username),
+    npcOwner: creep => creep.owner && mod.isNPC(creep.owner.username),
     isAlly: username => mod.score(username) >= CONST.ALLY,
     notAlly: username => !mod.isAlly(username),
-    allyOwner: creep => mod.isAlly(creep.owner.username),
+    allyOwner: creep => creep.owner && mod.isAlly(creep.owner.username),
     isHostile: username => mod.score(username) < CONST.NEUTRAL,
     notHostile: username => !mod.isHostile(username),
-    hostileOwner: creep => mod.isHostile(creep.owner.username),
+    hostileOwner: creep => creep.owner && mod.isHostile(creep.owner.username),
     whitelist: () => mod.cache('whitelist'),
     score: username => {
         const reps = mod.cache('score');
