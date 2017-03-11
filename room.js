@@ -532,7 +532,7 @@ mod.extend = function(){
             configurable: true,
             get: function() {
                 if( _.isUndefined(this._constructionSites) ) {
-                    this._constructionSites = this.find(FIND_MY_CONSTRUCTION_SITES);
+                    this._constructionSites = this.find(FIND_CONSTRUCTION_SITES);
                 }
                 return this._constructionSites;
             }
