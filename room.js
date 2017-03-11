@@ -1583,7 +1583,7 @@ mod.extend = function(){
         for (var i=0;i<powerSpawns.length;i++) {
             // see if the reaction is possible
             let powerSpawn = powerSpawns[i];
-            if (powerSpawn.energy > 0 && powerSpawn.power > POWER_SPAWN_ENERGY_RATIO) {
+            if (powerSpawn.energy >= POWER_SPAWN_ENERGY_RATIO && powerSpawn.power >= 1) {
                 if (DEBUG && TRACE) trace('Room', { roomName: this.name, actionName: 'processPower' });
                 powerSpawn.processPower();
             }
