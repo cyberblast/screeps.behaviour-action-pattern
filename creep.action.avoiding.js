@@ -33,7 +33,9 @@ action.newTarget = function(creep) {
     }
 
     if (creep.room.situation.invasion) {
-        const target = _.chain(creep.room.hostiles).map(function(target) {
+        const target = _.chain(creep.room.hostiles).filter(function(target) {
+            return action.isValidTarget(target);
+        }).map(function(target) {
             // TODO react to players? getStrategyHandler
             let score = 0;
             const range = creep.pos.getRangeTo(target);
