@@ -7,7 +7,11 @@ mod.run = function(creep) {
     creep.attackingRanged = false;
     // Assign next Action
     let oldTargetId = creep.data.targetId;
-    if( creep.action == null || creep.action.name == 'idle' || ( creep.action.name == 'guarding' && (!creep.flag || creep.flag.pos.roomName == creep.pos.roomName ) ) ) {
+    if (!creep.action || creep.action.name === 'idle' ||
+        (creep.action.name === 'guarding' &&
+            (!creep.flag || creep.flag.pos.roomName === creep.pos.roomName || creep.leaveBorder())
+        )
+    ) {
         if( creep.data.destiny && creep.data.destiny.task && Task[creep.data.destiny.task] && Task[creep.data.destiny.task].nextAction ) 
             Task[creep.data.destiny.task].nextAction(creep);
         else this.nextAction(creep);
