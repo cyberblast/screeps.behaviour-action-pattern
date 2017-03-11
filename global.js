@@ -62,6 +62,10 @@ mod.FLAG_COLOR = {
         }
     },
     //COLOR_PURPLE,
+    economy: {
+        color: COLOR_PURPLE,
+        secondaryColor: COLOR_PURPLE,
+    },
     //COLOR_BLUE,
     //COLOR_CYAN - Reserved
     //COLOR_GREEN
