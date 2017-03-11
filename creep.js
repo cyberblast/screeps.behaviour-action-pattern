@@ -56,7 +56,9 @@ mod.extend = function(){
                     return;
                 }
             }
-            this.repairNearby();
+            if (this.data && !_.contains(['remoteMiner', 'miner', 'upgrader'], this.data.creepType)) {
+                this.repairNearby();
+            }
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Behaviour: behaviour && behaviour.name, Creep:'run'});
             if( behaviour ) behaviour.run(this);
             else if(!this.data){
@@ -333,7 +335,7 @@ mod.extend = function(){
     };
     Creep.prototype.repairNearby = function( ) {
         // if it has energy and a work part, remoteMiners do repairs once the source is exhausted.
-        if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK) && this.data && this.data.creepType !== 'remoteMiner') {
+        if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
             let nearby = this.pos.findInRange(this.room.structures.repairable, DRIVE_BY_REPAIR_RANGE);
             if( nearby && nearby.length ){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
