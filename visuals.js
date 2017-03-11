@@ -191,7 +191,7 @@ module.exports = class Visuals {
 			RCL_PERCENTAGE = 0;
 			text = `Unowned`;
 		}
-		vis.rect(x, y - 0.75, RCL_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(RCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
+		vis.rect(x, y - 0.75, Math.min(1, RCL_PERCENTAGE) * sectionWidth, 1, {fill: getColourByPercentage(RCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
 		vis.text(text, x + sectionWidth / 2, y);
 		
 		if (VISUALS.ROOM_GLOBAL) {
