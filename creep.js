@@ -333,7 +333,14 @@ mod.extend = function(){
                 this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
         }
     };
-    Creep.prototype.repairNearby = function( ) {
+    Creep.prototype.repairNearby = function() {
+        // only repair in rooms that we own, have reserved, or belong to our allies, also SK rooms and highways.
+        if (!(this.room.my ||
+            this.room.reserved ||
+            this.room.ally ||
+            Room.isCenterNineRoom(this.room.name) ||
+            Room.isHighwayRoom(this.room.name))) return;
+
         // if it has energy and a work part, remoteMiners do repairs once the source is exhausted.
         if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
             let nearby = this.pos.findInRange(this.room.structures.repairable, DRIVE_BY_REPAIR_RANGE);
