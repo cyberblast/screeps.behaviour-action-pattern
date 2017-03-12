@@ -7,7 +7,7 @@ setup.maxWorker = room => {
     if (room.controller.level < 4) {
         if (room.situation.invasion) return 1;
         let max = room.controller.level === 2 ? 6 : 4;
-        const numPioneers = room.population ? room.population.typeCount.pioneer : 0;
+        const numPioneers = room.population && room.population.typeCount.pioneer || 0;
         return max - numPioneers;
     }
     if( !setup.hasMinerOrHauler(room))
