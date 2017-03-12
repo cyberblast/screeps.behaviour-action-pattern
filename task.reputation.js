@@ -12,7 +12,7 @@ const CONST = {
 
 const mod = {
     name: 'reputation',
-    myName: () => _.values(Game.spawns)[0].owner.username,
+    myName: () => _.chain(Game.rooms).map('controller').flatten().filter('my').map('owner.username').first().value(),
     isNPC: username => NPC[username] === true,
     npcOwner: creep => creep.owner && mod.isNPC(creep.owner.username),
     isAlly: username => mod.score(username) >= CONST.ALLY,
