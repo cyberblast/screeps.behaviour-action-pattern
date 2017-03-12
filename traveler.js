@@ -309,7 +309,6 @@ module.exports = function(globalOpts = {}){
                 if (site.structureType === STRUCTURE_CONTAINER) {
                     continue;
                 } else if (site.structureType === STRUCTURE_ROAD) {
-                    if (USE_UNBUILT_ROADS) matrix.set(site.pos.x, site.pos.y, roadCost);
                     continue;
                 } else if (site.structureType === STRUCTURE_RAMPART) {
                     continue;
