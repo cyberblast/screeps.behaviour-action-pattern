@@ -123,10 +123,10 @@ module.exports = function(globalOpts = {}){
                     }
                 }
                 else if (options.ignoreCreeps || roomName !== origin.pos.roomName) {
-                    matrix = this.getStructureMatrix(room);
+                    matrix = this.getStructureMatrix(room, options);
                 }
                 else {
-                    matrix = this.getCreepMatrix(room);
+                    matrix = this.getCreepMatrix(room, options);
                 }
                 for (let obstacle of options.obstacles) {
                     matrix.set(obstacle.pos.x, obstacle.pos.y, 0xff);
@@ -281,7 +281,8 @@ module.exports = function(globalOpts = {}){
                 this.creepMatrixCache = {};
             }
         }
-        getStructureMatrix(room) {
+        getStructureMatrix(room, options) {
+            if (options.getStructureMatrix) return options.getStructureMatrix(room);
             this.refreshMatrices();
             if (!this.structureMatrixCache[room.name]) {
                 let matrix = new PathFinder.CostMatrix();
@@ -317,10 +318,11 @@ module.exports = function(globalOpts = {}){
             }
             return matrix;
         }
-        getCreepMatrix(room) {
+        getCreepMatrix(room, options) {
+            if (options.getCreepMatrix) return options.getCreepMatrix(room);
             this.refreshMatrices();
             if (!this.creepMatrixCache[room.name]) {
-                this.creepMatrixCache[room.name] = Traveler.addCreepsToMatrix(room, this.getStructureMatrix(room).clone());
+                this.creepMatrixCache[room.name] = Traveler.addCreepsToMatrix(room, this.getStructureMatrix(room, options).clone());
             }
             return this.creepMatrixCache[room.name];
         }
@@ -366,6 +368,8 @@ module.exports = function(globalOpts = {}){
             options = this.getStrategyHandler([], 'moveOptions', options);
             if (_.isUndefined(options.useFindRoute)) options.useFindRoute = global.ROUTE_PRECALCULATION;
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
+            if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.currentCostMatrix;
+            if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => room.costMatrix;
             return traveler.travelTo(this, destination, options);
         };
     }

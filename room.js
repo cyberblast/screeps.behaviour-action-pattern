@@ -831,16 +831,21 @@ mod.extend = function(){
                 }
 
                 if( DEBUG ) logSystem(this.name, 'Calulating cost matrix');
-                var costMatrix = new PathFinder.CostMatrix;
+                var costMatrix = new PathFinder.CostMatrix();
                 let setCosts = structure => {
-                    if(structure.structureType == STRUCTURE_ROAD) {
-                        costMatrix.set(structure.pos.x, structure.pos.y, 1);
-                    } else if(structure.structureType !== STRUCTURE_RAMPART || !structure.isPublic ) {
+                    const site = structure instanceof ConstructionSite;
+                    if (structure.structureType === STRUCTURE_ROAD) {
+                        if (!site || USE_UNBUILT_ROADS)
+                            return costMatrix.set(structure.pos.x, structure.pos.y, 1);
+                    } else if (OBSTACLE_OBJECT_TYPES.includes(structure.structureType)) {
+                        if (!site || Task.reputation.allyOwner(structure))
+                            costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                    } else if (structure.structureType === STRUCTURE_RAMPART && !(structure.my || structure.isPublic)) {
                         costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
                     }
                 };
                 this.structures.all.forEach(setCosts);
-
+                this.constructionSites.forEach(setCosts);
                 const prevTime = Memory.pathfinder[this.name].updated;
                 Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
                 Memory.pathfinder[this.name].updated = Game.time;
