@@ -1966,6 +1966,65 @@ mod.extend = function(){
         }
         return ret;
     }
+    Room.prototype.controlObserver = function() {
+        const OBSERVER = this.structures.observer;
+        if (!OBSERVER) return;
+        if (!this.memory.observer.rooms) this.initObserverRooms();
+        const ROOMS = this.memory.observer.rooms;
+        let lastLookedIndex = Number.isInteger(this.memory.observer.lastLookedIndex) ? this.memory.observer.lastLookedIndex : ROOMS.length;
+        let nextRoom;
+        let i = 0;
+        do { // look ma! my first ever do-while loop!
+            if (lastLookedIndex >= ROOMS.length) {
+                nextRoom = ROOMS[0];
+            }  else {
+                nextRoom = ROOMS[lastLookedIndex + 1];
+            }
+            lastLookedIndex = ROOMS.indexOf(nextRoom);
+            if (++i >= ROOMS.length) { // safety check - prevents an infinite loop
+                break;
+            }
+        } while (Memory.observerSchedule.includes(nextRoom) || nextRoom in Game.rooms);
+        this.memory.observer.lastLookedIndex = lastLookedIndex;
+        Memory.observerSchedule.push(nextRoom);
+        OBSERVER.observeRoom(nextRoom); // now we get to observe a room
+    };
+    Room.prototype.initObserverRooms = function() {
+        const OBSERVER_RANGE = OBSERVER_OBSERVE_RANGE > 10 ? 10 : OBSERVER_OBSERVE_RANGE; // can't be > 10
+        const PRIORITISE_HIGHWAY = OBSERVER_PRIORITISE_HIGHWAY;
+        const [x, y] = Room.calcGlobalCoordinates(this.name, (x,y) => [x,y]); // hacky get x,y
+        const [HORIZONTAL, VERTICAL] = Room.calcCardinalDirection(this.name);
+        let ROOMS = [];
+
+        for (let a = x - OBSERVER_RANGE; a < x + OBSERVER_RANGE; a++) {
+            for (let b = y - OBSERVER_RANGE; b < y + OBSERVER_RANGE; b++) {
+                let hor = HORIZONTAL;
+                let vert = VERTICAL;
+                let n = a;
+                if (a < 0) { // swap horizontal letter
+                    hor = hor === 'W' ? 'E' : 'W';
+                    n = Math.abs(a) - 1;
+                }
+                hor += n;
+                n = b;
+                if (b < 0) {
+                    vert = vert === 'N' ? 'S' : 'N';
+                    n = Math.abs(b) - 1;
+                }
+                vert += n;
+                const room = hor + vert;
+                if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
+                if (OBSERVER_OBSERVE_HIGHWAYS_ONLY && !Room.isHighwayRoom(room)) continue; // we only want highway rooms
+                ROOMS.push(room);
+            }
+        }
+        if (PRIORITISE_HIGHWAY) {
+            ROOMS = _.sortBy(ROOMS, v => {
+                return Room.isHighwayRoom(v) ? 0 : 1; // should work, I hope
+            });
+        }
+        this.memory.observer.rooms = ROOMS;
+    };
 };
 mod.flush = function(){
     let clean = room => {
@@ -2006,6 +2065,7 @@ mod.flush = function(){
         room.newInvader = [];
         room.goneInvader = [];
     };
+    Memory.observerSchedule = [];
     _.forEach(Game.rooms, clean);
 };
 mod.analyze = function(){
@@ -2024,12 +2084,14 @@ mod.analyze = function(){
                 room.updateResourceOrders();
                 room.updateRoomOrders();
                 room.terminalBroker();
+                room.initObserverRooms(); // to re-evaluate rooms, in case parameters are changed
             }
             room.roadConstruction();
             room.linkDispatcher();
             room.processInvaders();
             room.processLabs();
             room.processPower();
+            room.controlObserver();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
@@ -2107,13 +2169,23 @@ mod.isMine = function(roomName) {
     return( room && room.my );
 };
 
+mod.calcCardinalDirection = function(roomName) {
+    const parsed = /^([WE])[0-9]{1,2}([NS])[0-9]{1,2}$/.exec(roomName);
+    return [parsed[1], parsed[2]];
+};
+mod.calcGlobalCoordinates = function(roomName, callBack) {
+    if (!callBack) return null;
+    const parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+    const x = +parsed[1];
+    const y = +parsed[2];
+    return callBack(x, y);
+};
 mod.calcCoordinates = function(roomName, callBack){
-    let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
-    let x = parsed[1] % 10;
-    let y = parsed[2] % 10;
-    if( callBack ) return callBack(x,y);
-    return null;
-}
+    if (!callBack) return null;
+    return Room.calcGlobalCoordinates(roomName, (x, y) => {
+        return callBack(x % 10, y % 10);
+    });
+};
 mod.isCenterRoom = function(roomName){
     return Room.calcCoordinates(roomName, (x,y) => {
         return x === 5 && y === 5;
