@@ -1085,13 +1085,15 @@ mod.extend = function(){
             structure => structure.structureType == STRUCTURE_CONTAINER
         );
         let add = (cont) => {
+            // TODO consolidate managed container code
             let minerals = this.find(FIND_MINERALS);
             let source = cont.pos.findInRange(this.sources, 2);
             let mineral = cont.pos.findInRange(minerals, 2);
+            let isControllerContainer = !!(this.my && cont.pos.getRangeTo(this.controller) <= 4);
             this.memory.container.push({
                 id: cont.id,
                 source: (source.length > 0),
-                controller: ( cont.pos.getRangeTo(this.controller) < 4 ),
+                controller: isControllerContainer,
                 mineral: (mineral.length > 0),
             });
             let assignContainer = s => s.memory.container = cont.id;
@@ -1158,8 +1160,9 @@ mod.extend = function(){
 
         // for each link add to memory ( if not contained )
         let add = (link) => {
+            // TODO consolidate managed container code
             if( !this.memory.links.find( (l) => l.id == link.id ) ) {
-                let isControllerLink = ( link.pos.getRangeTo(this.controller) < 4 );
+                let isControllerLink = ( link.pos.getRangeTo(this.controller) <= 4 );
                 let isSource = false;
                 if( !isControllerLink ) {
                     let source = link.pos.findInRange(this.sources, 2);
