@@ -1,42 +1,31 @@
 let mod = {};
 module.exports = mod;
-// load task memory & flush caches
-mod.flush = function () {
-    const tasks = [
-        Task.guard,
-        Task.defense,
+mod.tasks = [];
+mod.populate = function() {
+    Task.addTasks(...[
+        Task.attackController,
         Task.claim,
-        Task.reserve,
+        Task.defense,
+        Task.guard,
         Task.mining,
         Task.pioneer,
-        Task.attackController,
-        Task.robbing,
         Task.reputation,
-    ];
-    for (let i = tasks.length - 1; i >= 0; i--) {
-        if (tasks[i].flush) {
-            tasks[i].flush();
-        }
-    }
+        Task.reserve,
+        Task.robbing,
+    ]);
+};
+mod.addTasks = (...task) => Task.tasks.push(...task);
+// load task memory & flush caches
+mod.flush = function () {
+    Task.tasks.forEach(task => {
+        if (task.flush) task.flush();
+    });
 };
 // register tasks (hook up into events)
 mod.register = function () {
-    const tasks = [
-        Task.guard,
-        Task.defense,
-        Task.claim,
-        Task.reserve,
-        Task.mining,
-        Task.pioneer,
-        Task.attackController,
-        Task.robbing,
-        Task.reputation,
-    ];
-    for (let i = tasks.length - 1; i >= 0; i--) {
-        if (tasks[i].register) {
-            tasks[i].register();
-        }
-    }
+    Task.tasks.forEach(task => {
+        if (task.register) task.register();
+    });
 };
 mod.memory = (task, s) => { // task:  (string) name of the task, s: (string) any selector for that task, could be room name, flag name, enemy name
     if( !Memory.tasks ) Memory.tasks = {};

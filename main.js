@@ -215,6 +215,7 @@ global.install = () => {
     Room.extend();
     Spawn.extend();
     FlagDir.extend();
+    Task.populate();
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
 };
