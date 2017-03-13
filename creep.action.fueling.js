@@ -13,7 +13,7 @@ action.isAddableTarget = function(target){
         (!target.targetOf || target.targetOf.length < this.maxPerTarget));
 };
 action.newTarget = function(creep){
-    return creep.room.structures.fuelable.length > 0 ? creep.room.structures.fuelable[0] : null;
+    return creep.room.structures.fuelable.length > 0 ? creep.pos.findClosestByRange(creep.room.structures.fuelable) : null;
 };
 action.work = function(creep){
     let response = creep.transfer(creep.target, RESOURCE_ENERGY);
