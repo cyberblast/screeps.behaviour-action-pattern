@@ -184,12 +184,18 @@ module.exports = function(globalOpts = {}){
             // check if creep is stuck
             let hasMoved = true;
             if (travelData.prev) {
+                const isBorder = (pos) => {
+                    return pos.x === 0 || pos.x === 49 || pos.y === 0 || pos.y === 49;
+                };
+                const opposingBorders = (p1, p2) => {
+                    return isBorder(p1) && isBorder(p2) && p1.roomName !== p2.roomName && (p1.x === p2.x || p1.y === p2.y);
+                };
                 travelData.prev = new RoomPosition(travelData.prev.x, travelData.prev.y, travelData.prev.roomName);
-                if (creepPos.inRangeTo(travelData.prev, 0)) {
+                if (creepPos.inRangeTo(travelData.prev, 0) ||
+                    opposingBorders(creep.pos, travelData.prev)) {
                     hasMoved = false;
                     travelData.stuck++;
-                }
-                else {
+                } else {
                     creep.room.recordMove(creep);
                     travelData.stuck = 0;
                 }
