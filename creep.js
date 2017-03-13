@@ -162,7 +162,7 @@ mod.extend = function(){
                     roomCallback: function(roomName) {
                         let room = Game.rooms[roomName];
                         if (!room) return;
-                        return room.currentCostMatrix;
+                        return room.creepMatrix;
                     }
                 }
             );
@@ -204,7 +204,7 @@ mod.extend = function(){
                         roomCallback: function(roomName) {
                             let room = Game.rooms[roomName];
                             if (!room) return;
-                            return room.currentCostMatrix;
+                            return room.creepMatrix;
                         }
                     }
                 );

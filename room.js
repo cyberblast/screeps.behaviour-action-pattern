@@ -818,53 +818,71 @@ mod.extend = function(){
                 return this.memory.mineralType;
             }
         },
-        'costMatrix': {
+        'structureMatrix': {
             configurable: true,
             get: function () {
-                if( _.isUndefined(Memory.pathfinder)) Memory.pathfinder = {};
-                if( _.isUndefined(Memory.pathfinder[this.name])) Memory.pathfinder[this.name] = {};
+                if (_.isUndefined(this._structureMatrix)) {
+                    const COSTMATRIX_CACHE_VERSION = 1; // change this to invalidate previously cached costmatrices
+                    const cacheValid = (roomName) => {
+                        if (_.isUndefined(Memory.pathfinder)) {
+                            Memory.pathfinder = {};
+                            Memory.pathfinder[roomName] = {};
+                            return false;
+                        } else if (_.isUndefined(Memory.pathfinder[roomName])) {
+                            Memory.pathfinder[roomName] = {};
+                            return false;
+                        }
+                        const mem = Memory.pathfinder[roomName];
+                        const ttl = Game.time - mem.updated;
+                        if (mem.version === COSTMATRIX_CACHE_VERSION && mem.costMatrix && ttl < COST_MATRIX_VALIDITY) {
+                            return true;
+                        }
+                        return false;
+                    };
 
-                const ttl = Game.time - Memory.pathfinder[this.name].updated;
-                if( Memory.pathfinder[this.name].costMatrix && ttl < COST_MATRIX_VALIDITY) {
-                    if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
-                    return PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
-                }
-
-                if( DEBUG ) logSystem(this.name, 'Calulating cost matrix');
-                var costMatrix = new PathFinder.CostMatrix();
-                let setCosts = structure => {
-                    const site = structure instanceof ConstructionSite;
-                    if (structure.structureType === STRUCTURE_ROAD) {
-                        if (!site || USE_UNBUILT_ROADS)
-                            return costMatrix.set(structure.pos.x, structure.pos.y, 1);
-                    } else if (OBSTACLE_OBJECT_TYPES.includes(structure.structureType)) {
-                        if (!site || Task.reputation.allyOwner(structure))
-                            costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
-                    } else if (structure.structureType === STRUCTURE_RAMPART && !(structure.my || structure.isPublic)) {
-                        costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                    if (cacheValid(this.name)) {
+                        if (DEBUG && TRACE) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
+                        this._structureMatrix = PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
+                    } else {
+                        if (DEBUG) logSystem(this.name, 'Calulating cost matrix');
+                        var costMatrix = new PathFinder.CostMatrix();
+                        let setCosts = structure => {
+                            const site = structure instanceof ConstructionSite;
+                            if (structure.structureType === STRUCTURE_ROAD) {
+                                if (!site || USE_UNBUILT_ROADS)
+                                    return costMatrix.set(structure.pos.x, structure.pos.y, 1);
+                            } else if (OBSTACLE_OBJECT_TYPES.includes(structure.structureType)) {
+                                if (!site || Task.reputation.allyOwner(structure))
+                                    costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                            } else if (structure.structureType === STRUCTURE_RAMPART && !(structure.my || structure.isPublic)) {
+                                costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                            }
+                        };
+                        this.structures.all.forEach(setCosts);
+                        this.constructionSites.forEach(setCosts);
+                        const prevTime = Memory.pathfinder[this.name].updated;
+                        Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
+                        Memory.pathfinder[this.name].updated = Game.time;
+                        Memory.pathfinder[this.name].version = COSTMATRIX_CACHE_VERSION;
+                        if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
+                        this._structureMatrix = costMatrix;
                     }
-                };
-                this.structures.all.forEach(setCosts);
-                this.constructionSites.forEach(setCosts);
-                const prevTime = Memory.pathfinder[this.name].updated;
-                Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
-                Memory.pathfinder[this.name].updated = Game.time;
-                if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
-                return costMatrix;
+                }
+                return this._structureMatrix;
             }
         },
-        'currentCostMatrix': {
+        'creepMatrix': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this._currentCostMatrix) ) {
-                    let costs = this.costMatrix;
+                if (_.isUndefined(this._creepMatrix) ) {
+                    const costs = this.structureMatrix.clone();
                     // Avoid creeps in the room
                     this.allCreeps.forEach(function(creep) {
                         costs.set(creep.pos.x, creep.pos.y, 0xff);
                     });
-                    this._currentCostMatrix = costs;
+                    this._creepMatrix = costs;
                 }
-                return this._currentCostMatrix;
+                return this._creepMatrix;
             }
         },
         'my': {

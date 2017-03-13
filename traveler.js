@@ -367,8 +367,8 @@ module.exports = function(globalOpts = {}){
             options = this.getStrategyHandler([], 'moveOptions', options);
             if (_.isUndefined(options.useFindRoute)) options.useFindRoute = global.ROUTE_PRECALCULATION;
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
-            if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.currentCostMatrix;
-            if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => room.costMatrix;
+            if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
+            if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => room.structureMatrix;
             return traveler.travelTo(this, destination, options);
         };
     }
