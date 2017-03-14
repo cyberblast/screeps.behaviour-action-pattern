@@ -1425,7 +1425,7 @@ mod.extend = function(){
         return false;
     };
     Room.prototype.terminalBroker = function () {
-        if( !this.my || !this.terminal ) return;
+        if( !this.my || !this.terminal || !this.storage ) return;
         let that = this;
         let mineral = this.mineralType;
         let transacting = false;
