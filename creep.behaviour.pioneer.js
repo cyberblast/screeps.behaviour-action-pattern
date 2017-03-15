@@ -44,7 +44,7 @@ mod.nextAction = function(creep) {
                     _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit, spawnFlag.pos, true), remove);
                 }
                 else { // no spawn => build it
-                    let spawnSite = flag.room.constructionSites.some(s => s.structureType === STRUCTURE_SPAWN);
+                    let spawnSite = flag.room.myConstructionSites.some(s => s.structureType === STRUCTURE_SPAWN);
                     if( !spawnSite ) // no spawn construction site yet
                         flag.room.createConstructionSite(spawnFlag, STRUCTURE_SPAWN); // create spawn construction site
                 }

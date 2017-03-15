@@ -345,7 +345,7 @@ mod.extend = function(){
                 // enable remote haulers to build their own roads and containers
                 if( REMOTE_HAULER_DRIVE_BY_BUILDING && this.data && this.data.creepType === 'remoteHauler' ) {
                     // only search in a range of 1 to save cpu
-                    let nearby = this.pos.findInRange(this.room.constructionSites, REMOTE_HAULER_DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
+                    let nearby = this.pos.findInRange(this.room.myConstructionSites, REMOTE_HAULER_DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
                         return site.my && REMOTE_HAULER_DRIVE_BY_BUILD_ALL ||
                             (site.structureType === STRUCTURE_CONTAINER ||
                             site.structureType === STRUCTURE_ROAD);

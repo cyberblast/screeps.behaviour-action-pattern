@@ -120,7 +120,7 @@ mod.run = function(creep, params = {approach: mod.approach}) {
                     if(CHATTY) creep.say('repairing', SAY_PUBLIC);
                     return creep.repair(repairs[0]);
                 }
-                const sites = creep.pos.findInRange(creep.room.constructionSites, 3);
+                const sites = creep.pos.findInRange(creep.room.myConstructionSites, 3);
                 if (sites.length) {
                     if(CHATTY) creep.say('building', SAY_PUBLIC);
                     return creep.build(sites[0]);

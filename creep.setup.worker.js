@@ -13,7 +13,7 @@ setup.maxWorker = room => {
     if( !setup.hasMinerOrHauler(room))
         return 1;
     // constructionsites present & no strorage or storage > min
-    if( room.constructionSites.length > 0 && (!room.storage
+    if( room.myConstructionSites.length > 0 && (!room.storage
         || room.storage.store && room.storage.charge > 0))
         return 1;
     // storage full & base fortifyable
