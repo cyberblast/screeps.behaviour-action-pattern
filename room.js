@@ -835,13 +835,13 @@ mod.extend = function(){
                         const mem = Memory.pathfinder[roomName];
                         const ttl = Game.time - mem.updated;
                         if (mem.version === COSTMATRIX_CACHE_VERSION && mem.costMatrix && ttl < COST_MATRIX_VALIDITY) {
+                            if (DEBUG && TRACE) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
                             return true;
                         }
                         return false;
                     };
 
                     if (cacheValid(this.name)) {
-                        if (DEBUG && TRACE) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
                         this._structureMatrix = PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
                     } else {
                         if (DEBUG) logSystem(this.name, 'Calulating cost matrix');
