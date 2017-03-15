@@ -822,7 +822,7 @@ mod.extend = function(){
             configurable: true,
             get: function () {
                 if (_.isUndefined(this._structureMatrix)) {
-                    const COSTMATRIX_CACHE_VERSION = 1; // change this to invalidate previously cached costmatrices
+                    const COSTMATRIX_CACHE_VERSION = 2; // change this to invalidate previously cached costmatrices
                     const cacheValid = (roomName) => {
                         if (_.isUndefined(Memory.pathfinder)) {
                             Memory.pathfinder = {};
@@ -848,14 +848,16 @@ mod.extend = function(){
                         var costMatrix = new PathFinder.CostMatrix();
                         let setCosts = structure => {
                             const site = structure instanceof ConstructionSite;
+                            // don't walk on allied construction sites.
+                            if (site && Task.reputation.allyOwner(structure)) return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
                             if (structure.structureType === STRUCTURE_ROAD) {
                                 if (!site || USE_UNBUILT_ROADS)
                                     return costMatrix.set(structure.pos.x, structure.pos.y, 1);
                             } else if (OBSTACLE_OBJECT_TYPES.includes(structure.structureType)) {
-                                if (!site || Task.reputation.allyOwner(structure))
-                                    costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                                if (!site || Task.reputation.allyOwner(structure)) // don't set for hostile construction sites
+                                    return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
                             } else if (structure.structureType === STRUCTURE_RAMPART && !(structure.my || structure.isPublic)) {
-                                costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                                return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
                             }
                         };
                         this.structures.all.forEach(setCosts);
