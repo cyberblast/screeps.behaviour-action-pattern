@@ -1069,13 +1069,13 @@ mod.extend = function(){
             if( options.checkOwner ){
                 const room = Game.rooms[roomName];
                 // allow for explicit overrides of hostile rooms using hostileRooms[roomName] = false
-                isMyOrNeutralRoom = Memory.rooms.hostileRooms[roomName] === false || (room &&
+                isMyOrNeutralRoom = this.hostile === false || (room &&
                                     room.controller &&
                                     (room.controller.my ||
                                     (room.controller.owner === undefined)));
             }
             if (!options.allowSK && mod.isSKRoom(roomName)) return 10;
-            if (!options.allowHostile && Memory.rooms.hostileRooms[roomName] &&
+            if (!options.allowHostile && this.hostile &&
                 roomName !== destination && roomName !== origin) {
                 return Number.POSITIVE_INFINITY;
             }
@@ -2284,6 +2284,15 @@ mod.flush = function(){
     };
     Memory.observerSchedule = [];
     _.forEach(Game.rooms, clean);
+
+    // Temporary migration can be removed once traveler is merged into /dev
+    if (!_.isUndefined(Memory.rooms.hostileRooms)) {
+        for (roomName in Memory.rooms.hostileRooms) {
+            if (_.isUndefined(Memory.rooms[roomName])) Memory.rooms[roomName] = {};
+            Memory.rooms[roomName].hostile = Memory.rooms.hostileRooms[roomName];
+        }
+        delete Memory.rooms.hostileRooms;
+    }
 };
 mod.analyze = function(){
     let getEnvironment = room => {
