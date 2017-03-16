@@ -140,7 +140,7 @@ mod.run = function(creep, params = {}) {
                 if (!creep.data.buildChecked || Game.time - creep.data.buildChecked > MINER_WORK_THRESHOLD) {
                     let buildTarget = Game.getObjectById(creep.data.buildTarget);
                     if (!buildTarget) {
-                        const sites = creep.pos.findInRange(creep.room.constructionSites, 3);
+                        const sites = creep.pos.findInRange(creep.room.myConstructionSites, 3);
                         if (sites.length) {
                             buildTarget = sites[0];
                             creep.data.buildTarget = buildTarget.id;

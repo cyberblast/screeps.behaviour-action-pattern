@@ -586,12 +586,20 @@ mod.extend = function(){
             configurable: true,
             get: function() {
                 if( _.isUndefined(this._constructionSites) ) {
-                    this._constructionSites = this.find(FIND_MY_CONSTRUCTION_SITES);
+                    this._constructionSites = this.find(FIND_CONSTRUCTION_SITES);
                 }
                 return this._constructionSites;
             }
         },
-
+        'myConstructionSites': {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._myConstructionSites) ) {
+                    this._myConstructionSites = this.find(FIND_MY_CONSTRUCTION_SITES);
+                }
+                return this._myConstructionSites;
+            }
+        },
         'creeps': {
             configurable: true,
             get: function() {
@@ -2242,6 +2250,7 @@ mod.flush = function(){
         if( global.isNewServer ) {
             delete room._my;
             delete room._constructionSites;
+            delete room._myConstructionSites;
             delete room._maxPerJob;
             delete room._minerals;
             delete room._structures;
