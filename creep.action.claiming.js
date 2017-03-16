@@ -38,9 +38,9 @@ action.newTarget = function(creep){
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
     if( creep.target.color ){
-        if( creep.flag.pos.roomName == creep.pos.roomName )
+        if( creep.flag.pos.roomName == creep.pos.roomName ) // change target from flag to controller
             creep.data.targetId = null;
-        creep.drive( creep.target.pos, 0, 1, Infinity );
+        creep.travelTo(creep.target.pos);
         return;
     }
 
@@ -51,12 +51,12 @@ action.step = function(creep){
             creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
         }
     }
-    creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
+    creep.travelTo(creep.target.pos);
 };
 action.work = function(creep){
     creep.controllerSign();
 
-    return creep.claimController(creep.target)
+    return creep.claimController(creep.target);
     /*
     var workResult;
         workResult = creep.claimController(creep.target);

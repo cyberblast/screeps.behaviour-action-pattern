@@ -37,7 +37,7 @@ setup.maxCount = function(room){
     if( upgraderEnergy === 0 ) return 0;
     if( room.storage ) return Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000));
     // dont spawn a new upgrader while there are construction sites (and no storage)
-    if( room.constructionSites.length > 0 ) return 0;
+    if( room.myConstructionSites.length > 0 ) return 0;
     // if energy on the ground next to source > 700 return 3
     if( room.droppedResources ) {
         let dropped = 0;

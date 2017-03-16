@@ -33,7 +33,7 @@ action.step = function(creep){
     if( creep.target.color ){
         if( creep.flag.pos.roomName == creep.pos.roomName )
             creep.data.targetId = null;
-        creep.drive( creep.target.pos, 0, 1, Infinity );
+        creep.travelTo(creep.target);
         return;
     }
 
@@ -44,7 +44,7 @@ action.step = function(creep){
             creep.handleError({errorCode:workResult,action,target:creep.target,range,creep});
         }
     }
-    creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
+    creep.travelTo(creep.target);
 };
 action.work = function(creep){
     var workResult;
@@ -61,4 +61,9 @@ action.work = function(creep){
 };
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9971), SAY_PUBLIC);
+};
+action.defaultStrategy.moveOptions = function(options) {
+    // // allow routing in and through hostile rooms
+    // if (_.isUndefined(options.allowHostile)) options.allowHostile = true;
+    return options;
 };

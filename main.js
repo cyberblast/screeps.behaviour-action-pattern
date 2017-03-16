@@ -220,6 +220,7 @@ global.install = () => {
     if( global.mainInjection.extend ) global.mainInjection.extend();
 };
 global.install();
+require('traveler')({exportTraveler: false, installTraveler: true, installPrototype: true, defaultStuckValue: TRAVELER_STUCK_TICKS, reportThreshold: TRAVELER_THRESHOLD});
 
 let cpuAtFirstLoop;
 module.exports.loop = function () {
@@ -258,7 +259,9 @@ module.exports.loop = function () {
     if( global.mainInjection.flush ) global.mainInjection.flush();
 
     // analyze environment
-    FlagDir.analyze();
+    if (!FlagDir.analyze()) {
+        return;
+    }
     Room.analyze();
     Population.analyze();
     // custom analyze

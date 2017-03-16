@@ -263,7 +263,7 @@ mod.checkForRequiredCreeps = (flag) => {
             );
         }
     }
-    if( room && room.constructionSites.length > 0 && workerCount < REMOTE_WORKER_MULTIPLIER) {
+    if( room && room.myConstructionSites.length > 0 && workerCount < REMOTE_WORKER_MULTIPLIER) {
         for(let i = workerCount; i < REMOTE_WORKER_MULTIPLIER; i++) {
             Task.spawn(
                 Task.mining.creep.worker, // creepDefinition

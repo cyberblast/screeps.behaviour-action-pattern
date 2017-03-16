@@ -197,6 +197,60 @@ mod.extend = function(){
         });
     };
 
+    let PowerSpawn = function(room){
+        this.room = room;
+
+        Object.defineProperties(this, {
+            'all': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.room.memory.powerSpawn)) {
+                        this.room.savePowerSpawn();
+                    }
+                    if( _.isUndefined(this._all) ){
+                        this._all = [];
+                        let add = entry => {
+                            let o = Game.getObjectById(entry.id);
+                            if( o ) {
+                                _.assign(o, entry);
+                                this._all.push(o);
+                            }
+                        };
+                        _.forEach(this.room.memory.powerSpawn, add);
+                    }
+                    return this._all;
+                }
+            },
+        });
+    };
+
+    let Nuker = function(room){
+        this.room = room;
+
+        Object.defineProperties(this, {
+            'all': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this.room.memory.nuker)) {
+                        this.room.saveNuker();
+                    }
+                    if( _.isUndefined(this._all) ){
+                        this._all = [];
+                        let add = entry => {
+                            let o = Game.getObjectById(entry.id);
+                            if( o ) {
+                                _.assign(o, entry);
+                                this._all.push(o);
+                            }
+                        };
+                        _.forEach(this.room.memory.nuker, add);
+                    }
+                    return this._all;
+                }
+            },
+        });
+    };
+
     let Structures = function(room){
         this.room = room;
 
@@ -362,11 +416,11 @@ mod.extend = function(){
             'observer': {
                 configurable: true,
                 get: function() {
-                    if (_.isUndefined(this.room.memory.observer)) {
-                        this.room.saveObserver();
-                    }
+	                if (_.isUndefined(this.room.memory.observer)) {
+		                this.room.saveObserver();
+	                }
                     if (_.isUndefined(this._observer)) {
-                        this._observer = Game.getObjectById(this.room.memory.observer.id);
+	                    this._observer = Game.getObjectById(this.room.memory.observer.id);
                     }
                     return this._observer;
                 },
@@ -532,12 +586,20 @@ mod.extend = function(){
             configurable: true,
             get: function() {
                 if( _.isUndefined(this._constructionSites) ) {
-                    this._constructionSites = this.find(FIND_MY_CONSTRUCTION_SITES);
+                    this._constructionSites = this.find(FIND_CONSTRUCTION_SITES);
                 }
                 return this._constructionSites;
             }
         },
-
+        'myConstructionSites': {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._myConstructionSites) ) {
+                    this._myConstructionSites = this.find(FIND_MY_CONSTRUCTION_SITES);
+                }
+                return this._myConstructionSites;
+            }
+        },
         'creeps': {
             configurable: true,
             get: function() {
@@ -764,48 +826,73 @@ mod.extend = function(){
                 return this.memory.mineralType;
             }
         },
-        'costMatrix': {
+        'structureMatrix': {
             configurable: true,
             get: function () {
-                if( _.isUndefined(Memory.pathfinder)) Memory.pathfinder = {};
-                if( _.isUndefined(Memory.pathfinder[this.name])) Memory.pathfinder[this.name] = {};
+                if (_.isUndefined(this._structureMatrix)) {
+                    const COSTMATRIX_CACHE_VERSION = 2; // change this to invalidate previously cached costmatrices
+                    const cacheValid = (roomName) => {
+                        if (_.isUndefined(Memory.pathfinder)) {
+                            Memory.pathfinder = {};
+                            Memory.pathfinder[roomName] = {};
+                            return false;
+                        } else if (_.isUndefined(Memory.pathfinder[roomName])) {
+                            Memory.pathfinder[roomName] = {};
+                            return false;
+                        }
+                        const mem = Memory.pathfinder[roomName];
+                        const ttl = Game.time - mem.updated;
+                        if (mem.version === COSTMATRIX_CACHE_VERSION && mem.costMatrix && ttl < COST_MATRIX_VALIDITY) {
+                            if (DEBUG && TRACE) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
+                            return true;
+                        }
+                        return false;
+                    };
 
-                const ttl = Game.time - Memory.pathfinder[this.name].updated;
-                if( Memory.pathfinder[this.name].costMatrix && ttl < COST_MATRIX_VALIDITY) {
-                    if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
-                    return PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
-                }
-
-                if( DEBUG ) logSystem(this.name, 'Calulating cost matrix');
-                var costMatrix = new PathFinder.CostMatrix;
-                let setCosts = structure => {
-                    if(structure.structureType == STRUCTURE_ROAD) {
-                        costMatrix.set(structure.pos.x, structure.pos.y, 1);
-                    } else if(structure.structureType !== STRUCTURE_RAMPART || !structure.isPublic ) {
-                        costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                    if (cacheValid(this.name)) {
+                        this._structureMatrix = PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
+                    } else {
+                        if (DEBUG) logSystem(this.name, 'Calulating cost matrix');
+                        var costMatrix = new PathFinder.CostMatrix();
+                        let setCosts = structure => {
+                            const site = structure instanceof ConstructionSite;
+                            // don't walk on allied construction sites.
+                            if (site && Task.reputation.allyOwner(structure)) return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                            if (structure.structureType === STRUCTURE_ROAD) {
+                                if (!site || USE_UNBUILT_ROADS)
+                                    return costMatrix.set(structure.pos.x, structure.pos.y, 1);
+                            } else if (OBSTACLE_OBJECT_TYPES.includes(structure.structureType)) {
+                                if (!site || Task.reputation.allyOwner(structure)) // don't set for hostile construction sites
+                                    return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                            } else if (structure.structureType === STRUCTURE_RAMPART && !(structure.my || structure.isPublic)) {
+                                return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                            }
+                        };
+                        this.structures.all.forEach(setCosts);
+                        this.constructionSites.forEach(setCosts);
+                        const prevTime = Memory.pathfinder[this.name].updated;
+                        Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
+                        Memory.pathfinder[this.name].updated = Game.time;
+                        Memory.pathfinder[this.name].version = COSTMATRIX_CACHE_VERSION;
+                        if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
+                        this._structureMatrix = costMatrix;
                     }
-                };
-                this.structures.all.forEach(setCosts);
-
-                const prevTime = Memory.pathfinder[this.name].updated;
-                Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
-                Memory.pathfinder[this.name].updated = Game.time;
-                if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
-                return costMatrix;
+                }
+                return this._structureMatrix;
             }
         },
-        'currentCostMatrix': {
+        'creepMatrix': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this._currentCostMatrix) ) {
-                    let costs = this.costMatrix;
+                if (_.isUndefined(this._creepMatrix) ) {
+                    const costs = this.structureMatrix.clone();
                     // Avoid creeps in the room
                     this.allCreeps.forEach(function(creep) {
                         costs.set(creep.pos.x, creep.pos.y, 0xff);
                     });
-                    this._currentCostMatrix = costs;
+                    this._creepMatrix = costs;
                 }
-                return this._currentCostMatrix;
+                return this._creepMatrix;
             }
         },
         'my': {
@@ -932,8 +1019,24 @@ mod.extend = function(){
                 return this._collapsed;
             }
         },
+        'hostile': {
+            configurable: true,
+            get: function() {
+                return this.memory.hostile;
+            }
+        },
     });
-
+    Room.prototype.registerIsHostile = function() {
+        if (this.controller) {
+            if (_.isUndefined(this.hostile) || typeof this.hostile === 'number') { // not overridden by user
+                if (this.controller.owner && !this.controller.my && !this.ally) {
+                    this.memory.hostile = this.controller.level;
+                } else {
+                    delete this.memory.hostile;
+                }
+            }
+        }
+    };
     Room.prototype.getBorder = function(roomName) {
         return _.findKey(Game.map.describeExits(this.name), function(name) {
             return this.name === name;
@@ -950,36 +1053,47 @@ mod.extend = function(){
             return find.apply(this, arguments);
     };
 
-    Room.prototype.findRoute = function(targetRoomName, checkOwner = true, preferHighway = true){
-        if (this.name == targetRoomName)  return [];
-
-        return Game.map.findRoute(this, targetRoomName, {
-            routeCallback(roomName) {
-                if( roomName !== targetRoomName && ROUTE_ROOM_COST[roomName]) {
-                    return ROUTE_ROOM_COST[roomName];
-                }
-                let isHighway = false;
-                if( preferHighway ){
-                    let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
-                    isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
-                }
-                let isMyOrNeutralRoom = false;
-                if( checkOwner ){
-                    let room = Game.rooms[roomName];
-                    isMyOrNeutralRoom = room &&
-                        room.controller &&
-                        (room.controller.my ||
-                        (room.controller.owner === undefined));
-                }
-
-                if (isMyOrNeutralRoom || roomName == targetRoomName)
-                    return 1;
-                else if (isHighway)
-                    return 3;
-                else if( Game.map.isRoomAvailable(roomName))
-                    return (checkOwner || preferHighway) ? 11 : 1;
-                return Infinity;
+    Room.routeCallback = function(origin, destination, options) {
+        return function(roomName) {
+            if (Game.map.getRoomLinearDistance(origin, roomName) > options.restrictDistance)
+                return false;
+            if( roomName !== destination && ROUTE_ROOM_COST[roomName]) {
+                return ROUTE_ROOM_COST[roomName];
             }
+            let isHighway = false;
+            if( options.preferHighway ){
+                const parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+                isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
+            }
+            let isMyOrNeutralRoom = false;
+            if( options.checkOwner ){
+                const room = Game.rooms[roomName];
+                // allow for explicit overrides of hostile rooms using hostileRooms[roomName] = false
+                isMyOrNeutralRoom = this.hostile === false || (room &&
+                                    room.controller &&
+                                    (room.controller.my ||
+                                    (room.controller.owner === undefined)));
+            }
+            if (!options.allowSK && mod.isSKRoom(roomName)) return 10;
+            if (!options.allowHostile && this.hostile &&
+                roomName !== destination && roomName !== origin) {
+                return Number.POSITIVE_INFINITY;
+            }
+            if (isMyOrNeutralRoom || roomName == origin || roomName == destination)
+                return 1;
+            else if (isHighway)
+                return 3;
+            else if( Game.map.isRoomAvailable(roomName))
+                return (options.checkOwner || options.preferHighway) ? 11 : 1;
+            return Number.POSITIVE_INFINITY;
+        };
+    };
+
+    Room.prototype.findRoute = function(destination, checkOwner = true, preferHighway = true){
+        if (this.name == destination)  return [];
+        const options = { checkOwner, preferHighway};
+        return Game.map.findRoute(this, destination, {
+            routeCallback: Room.routeCallback(this.name, destination, options)
         });
     };
 
@@ -1070,14 +1184,46 @@ mod.extend = function(){
         }).map(s => s.id);
     };
     Room.prototype.saveNuker = function() {
-        [this.memory.nuker] = this.find(FIND_MY_STRUCTURES, {
-            filter: s => s instanceof StructureNuker
-        }).map(s => s.id);
+        if( _.isUndefined(this.memory.nuker) ){
+            this.memory.nuker = [];
+        }
+        let nuker = this.find(FIND_MY_STRUCTURES, {
+            filter: (structure) => ( structure.structureType == STRUCTURE_NUKER )
+        });
+
+        this.memory.nuker = [];
+
+        // for each entry add to memory ( if not contained )
+        let add = (nuker) => {
+            let nukerData = this.memory.nuker.find( (l) => l.id == nuker.id );
+            if( !nukerData ) {
+                this.memory.nuker.push({
+                    id: nuker.id,
+                });
+            }
+        };
+        nuker.forEach(add);
     };
     Room.prototype.savePowerSpawn = function() {
-        [this.memory.powerSpawn] = this.find(FIND_MY_STRUCTURES, {
-            filter: s => s instanceof StructurePowerSpawn
-        }).map(s => s.id);
+        if( _.isUndefined(this.memory.powerSpawn) ){
+            this.memory.powerSpawn = [];
+        }
+        let powerSpawns = this.find(FIND_MY_STRUCTURES, {
+            filter: (structure) => ( structure.structureType == STRUCTURE_POWER_SPAWN )
+        });
+
+        this.memory.powerSpawn = [];
+
+        // for each entry add to memory ( if not contained )
+        let add = (powerSpawn) => {
+            let powerSpawnData = this.memory.powerSpawn.find( (l) => l.id == powerSpawn.id );
+            if( !powerSpawnData ) {
+                this.memory.powerSpawn.push({
+                    id: powerSpawn.id,
+                });
+            }
+        };
+        powerSpawns.forEach(add);
     };
     Room.prototype.saveContainers = function(){
         this.memory.container = [];
@@ -1189,18 +1335,6 @@ mod.extend = function(){
         });
         let storageLabs = this.storage ? this.storage.pos.findInRange(labs, 2).map(l => l.id) : [];
 
-        // for each memory entry, keep if existing
-        /*
-        let kept = [];
-        let keep = (entry) => {
-            if( links.find( (c) => c.id == entry.id )){
-                entry.storage = storageLinks.includes(entry.id);
-                kept.push(entry);
-            }
-        };
-        this.memory.links.forEach(keep);
-        this.memory.links = kept;
-        */
         this.memory.labs = [];
 
         // for each entry add to memory ( if not contained )
@@ -1276,31 +1410,47 @@ mod.extend = function(){
         let rcl = this.controller.level;
 
         // go through reallacation orders and reset completed orders
-        for(var structureType in data) {
-            for(var i=0;i<data[structureType].length;i++) {
+        for(let structureType in data) {
+            for(let i=0;i<data[structureType].length;i++) {
                 let structure = data[structureType][i];
                 // don't reset busy labs
                 if (structureType == STRUCTURE_LAB && structure.reactionState != LAB_IDLE) continue;
                 if (!structure.orders) continue;
-                for(var j=0;j<structure.orders.length;j++) {
+                for(let j=0;j<structure.orders.length;j++) {
                     let order = structure.orders[j];
                     if (order.orderRemaining <= 0) {
                         let baseAmount = 0;
-                        if (structureType == STRUCTURE_STORAGE) baseAmount = order.type == RESOURCE_ENERGY ? MIN_STORAGE_ENERGY[rcl] : MAX_STORAGE_MINERAL;
-                        else if (structureType == STRUCTURE_TERMINAL) baseAmount = order.type == RESOURCE_ENERGY ? TERMINAL_ENERGY : 0;
+                        let rcl = this.controller.level;
+                        if (structureType == STRUCTURE_STORAGE) baseAmount = (order.type == RESOURCE_ENERGY) ? MIN_STORAGE_ENERGY[rcl] : MAX_STORAGE_MINERAL;
+                        else if (structureType == STRUCTURE_TERMINAL) baseAmount = (order.type == RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0;
                         baseAmount += order.storeAmount;
                         let amount = 0;
                         let cont = Game.getObjectById(structure.id);
-                        if (cont && structureType == STRUCTURE_LAB) {
-                            // get lab amount
-                            if (cont.mineralType == order.type) {
-                                amount = cont.mineralAmount;
+                        if (cont) {
+                            switch (structureType) {
+                                case STRUCTURE_LAB:
+                                    // get lab amount
+                                    if (order.type == cont.mineralType) {
+                                        amount = cont.mineralAmount;
+                                    } else if (order.type == RESOURCE_ENERGY) {
+                                        amount = cont.energy;
+                                    }
+                                    break;
+                                case STRUCTURE_POWER_SPAWN:
+                                    // get power spawn amount
+                                    if (order.type == RESOURCE_POWER) {
+                                        amount = cont.power;
+                                    } else if (order.type == RESOURCE_ENERGY) {
+                                        amount = cont.energy;
+                                    }
+                                    break;
+                                default:
+                                    // get stored amount
+                                    amount = cont.store[order.type] || 0;
+                                    break;
                             }
-                        } else if (cont) {
-                            // get stored amount
-                            amount = cont.store[order.type] || 0;
                         }
-                        if (amount < baseAmount) {
+                        if (amount <= baseAmount) {
                             order.orderAmount = 0;
                             order.orderRemaining = 0;
                         }
@@ -1311,52 +1461,56 @@ mod.extend = function(){
     };
     Room.prototype.updateRoomOrders = function () {
         if (!this.memory.resources || !this.memory.resources.orders) return;
-        let rooms = _.filter(Game.rooms, (room) => { return room.my && room.storage && room.terminal; });
+        let rooms = _.filter(Game.rooms, (room) => { return room.my && room.storage && room.terminal && room.name !== this.name; });
         let orders = this.memory.resources.orders;
-        for (var i=0;i<orders.length;i++) {
+        for (let i=0;i<orders.length;i++) {
             let order = orders[i];
             let amountRemaining = order.amount;
-            if (amountRemaining <= 0) {
-                delete orders[i];
-                orders.splice(i,1);
-                continue;
-            }
-            for (var j=0;j<order.offers.length;j++) {
+            for (let j=0;j<order.offers.length;j++) {
                 let offer = order.offers[j];
-                if (amountRemaining > 0) {
-                    amountRemaining -= offer.amount;
-                } else {
+                //if (amountRemaining > 0) {
+                //    amountRemaining -= offer.amount;
+                //} else {
                     if (Memory.rooms[offer.room] && Memory.rooms[offer.room].resources && Memory.rooms[offer.room].resources.offers) {
                         let remoteOffers = Memory.rooms[offer.room].resources.offers;
                         let idx = remoteOffers.indexOf((o)=>{ return o.room==this.name && o.id==order.id && o.type==order.type; });
-                        remoteOffers = remoteOffers.splice(idx,1);
+                        if (idx !== -1) remoteOffers.splice(idx,1);
                     }
-                    orders = orders.splice[i--,1];
-                }
+                //    order.offers.splice[j--,1];
+                //}
             }
-            if (amountRemaining > 0) {
+            order.offers = [];
+            if (amountRemaining <= 0) {
+                delete orders[i];
+                orders.splice(i--,1);
+                continue;
+            } else {
                 rooms.sort((a,b)=>{ return Game.map.getRoomLinearDistance(this.name,a.name,true) - Game.map.getRoomLinearDistance(this.name,b.name,true); });
-                for (var j=0;j<rooms.length;j++) {
+                for (let j=0;j<rooms.length;j++) {
                     let room = rooms[j];
                     if (room.memory.resources === undefined) {
                         room.memory.resources = {
                             lab: [],
                             container: [],
                             terminal: [],
-                            storage: []
+                            storage: [],
+                            powerSpawn: [],
                         };
                     }
                     let available = (room.storage.store[order.type]||0) + (room.terminal.store[order.type]||0);
                     if (available < 100) continue;
                     available = Math.min(available,amountRemaining);
                     if (!room.memory.resources.offers) room.memory.resources.offers = [];
-                    let existingOffer = order.offers.find((o)=>o.room==this.name);
+                    let existingOffer = order.offers.find((o)=>o.room==room.name);
                     let remoteOffers = room.memory.resources.offers;
                     let existingRemoteOffer = remoteOffers.find((o)=>{ return o.room==this.name && o.id==order.id && o.type==order.type; });
                     if (existingOffer) {
+                        if (DEBUG && TRACE) trace("Room", { roomName: this.name, remoteRoom: room.name, actionName: 'updateRoomOrders', subAction: 'update', orderId: order.id, resourceType: order.type, amount: available })
                         amountRemaining -= (available - existingOffer.amount);
                         existingOffer.amount = available;
                     } else {
+                        if (DEBUG && TRACE) trace("Room", { roomName: this.name, remoteRoom: room.name, actionName: 'updateRoomOrders', subAction: 'new', orderId: order.id, resourceType: order.type, amount: available })
+                        else if (DEBUG) logSystem(this.name, `New room offer offer ${room.name} with id ${order.id} placed for ${available} ${order.type}.`);
                         amountRemaining -= available;
                         order.offers.push({
                             room: room.name,
@@ -1381,36 +1535,41 @@ mod.extend = function(){
     Room.prototype.fillARoomOrder = function () {
         if (!(this.terminal && this.memory && this.memory.resources && this.memory.resources.offers)) return false;
         let offers = this.memory.resources.offers;
-        for (var i=0;i<offers.length;i++) {
+        for (let i=0;i<offers.length;i++) {
             let offer = offers[i];
             let targetRoom = Game.rooms[offer.room];
             if (!(targetRoom && targetRoom.memory && targetRoom.memory.resources && targetRoom.memory.resources.orders)) continue;
             let order = targetRoom.memory.resources.orders.find((o)=>{ return o.id==offer.id && o.type==offer.type; });
             if (!order) continue;
-            let targetOfferIdx = order.offers.indexOf((o)=>{ return o.room==this.name; });
+            let targetOfferIdx = order.offers.findIndex((o)=>{ return o.room==this.name; });
 
-            if (!targetRoom.terminal) continue;
             let store = this.terminal.store[offer.type]||0;
             let onOrder = 0;
             let terminalOrder = null;
             if (this.memory.resources.terminal[0]) terminalOrder = this.memory.resources.terminal[0].orders.find((o)=>{ return o.type==offer.type; });
             if (terminalOrder) onOrder = terminalOrder.orderRemaining;
             let amount = Math.max(offer.amount,100);
-            if (amount > store + onOrder) {
-                this.placeOrder(this.terminal.id, offer.type, amount - store);
-                continue;
+            if (amount > (store + onOrder)) {
+                let amt = amount - (store + onOrder);
+                if (DEBUG && TRACE) trace("Room", { actionName: 'fillARoomOrder', subAction: 'terminalOrder', roomName: this.name, targetRoomName: targetRoom.name, resourceType: offer.type, amount: amt });
+                this.placeOrder(this.terminal.id, offer.type, amt);
             }
-            if (amount > store) continue;
+            if (!targetRoom.terminal) continue;
             let space = targetRoom.terminal.storeCapacity-targetRoom.terminal.sum;
-            amount = Math.min(amount,space);
-            if (amount < 100) continue;
+            amount = Math.min(amount,space,store);
 
             let cost = Game.market.calcTransactionCost(amount, this.name, targetRoom.name);
+            if (offer.type == RESOURCE_ENERGY) {
+                amount -= cost;
+                cost += amount;
+            }
             if (cost > (this.terminal.store.energy||0)) continue;
+            if (amount < 100) continue;
 
             let ret = this.terminal.send(offer.type,amount,targetRoom.name,order.id);
             if (ret == OK) {
-                console.log(this.name,'sent',amount,offer.type,'to',targetRoom.name,'referencing order id',order.id);
+                if (DEBUG && TRACE) trace("Room", { actionName: 'fillARoomOrder', roomName: this.name, targetRoomName: targetRoom.name, resourceType: offer.type, amount: amount });
+                else if (DEBUG) logSystem(this.name, `Room order filled to ${targetRoom.name} for ${amount} ${offer.type}.`);
                 offer.amount -= amount;
                 if (offer.amount > 0) {
                     order.offers[targetOfferIdx].amount = offer.amount;
@@ -1418,7 +1577,7 @@ mod.extend = function(){
                     delete order.offers[targetOfferIdx];
                     order.offers.splice(targetOfferIdx,1);
                     delete offers[i];
-                    offers.splice(i,1);
+                    offers.splice(i--,1);
                 }
                 order.amount -= amount;
                 return true;
@@ -1559,7 +1718,7 @@ mod.extend = function(){
             let data = this.memory.resources.lab.find( (s) => s.id == l.id );
             return data ? (data.slave_a && data.slave_b) : false;
         } );
-        for (var i=0;i<master_labs.length;i++) {
+        for (let i=0;i<master_labs.length;i++) {
             // see if the reaction is possible
             let master = master_labs[i];
             if (master.cooldown > 0) continue;
@@ -1598,7 +1757,7 @@ mod.extend = function(){
 
         let data = this.memory;
         if (data && data.container && data.container.length > 0) {
-            for (var i=0;i<data.container.length;i++) {
+            for (let i=0;i<data.container.length;i++) {
                 let d = data.container[i];
                 let container = Game.getObjectById(d.id);
                 if (container && container.store[resourceType]) {
@@ -1614,6 +1773,7 @@ mod.extend = function(){
         let container = Game.getObjectById(containerId);
         if (!this.my || !container || !container.room.name == this.name ||
                 !(container.structureType == STRUCTURE_LAB ||
+                container.structureType == STRUCTURE_POWER_SPAWN ||
                 container.structureType == STRUCTURE_CONTAINER ||
                 container.structureType == STRUCTURE_STORAGE ||
                 container.structureType == STRUCTURE_TERMINAL)) {
@@ -1625,11 +1785,13 @@ mod.extend = function(){
         if (this.memory.resources === undefined) {
             this.memory.resources = {
                 lab: [],
+                powerSpawn: [],
                 container: [],
                 terminal: [],
                 storage: []
             };
         }
+        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
         if (!this.memory.resources[container.structureType].find( (s) => s.id == containerId )) {
             this.memory.resources[container.structureType].push(container.structureType==STRUCTURE_LAB ? {
                 id: containerId,
@@ -1643,7 +1805,7 @@ mod.extend = function(){
         if (container.structureType == STRUCTURE_LAB && resourceType != RESOURCE_ENERGY && amount > 0) {
             // clear other resource types since labs only hold one at a time
             let orders = this.memory.resources[STRUCTURE_LAB].find((s)=>s.id==containerId).orders;
-            for (var i=0;i<orders.length;i++) {
+            for (let i=0;i<orders.length;i++) {
                 if (orders[i].type != resourceType && orders[i].type != RESOURCE_ENERGY) {
                     orders[i].orderAmount = 0;
                     orders[i].orderRemaining = 0;
@@ -1723,9 +1885,12 @@ mod.extend = function(){
         let existingOrder = orders.find((o)=>{ return o.id==orderId && o.type==resourceType; });
         if (existingOrder) {
             // update existing order
+            if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'update', orderId: orderId, resourceType: resourceType, amount: amount })
             existingOrder.amount = amount;
         } else {
             // create new order
+            if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'new', orderId: orderId, resourceType: resourceType, amount: amount })
+            else if (DEBUG) logSystem(this.name, `New room order with id ${orderId} placed for ${amount} ${resourceType}.`);
             orders.push({
                 id: orderId,
                 type: resourceType,
@@ -1765,7 +1930,7 @@ mod.extend = function(){
 
             let orders = this.memory.resources.orders;
             // clear local resource orders
-            for (var i=0;i<labData.orders.length;i++) {
+            for (let i=0;i<labData.orders.length;i++) {
                 let order = labData.orders[i];
                 if (order.type == RESOURCE_ENERGY) continue;
                 order.orderAmount = 0;
@@ -1806,7 +1971,7 @@ mod.extend = function(){
 
         return OK;
     };
-    Room.prototype.placeReactionOrder = function(labId, resourceType, amount) {
+    Room.prototype.placeReactionOrder = function(labId, resourceType, amount, tier = 1) {
         if (amount <= 0) return OK;
         let lab_master = Game.getObjectById(labId);
         if (!LAB_REACTIONS.hasOwnProperty(resourceType)) {
@@ -1822,25 +1987,33 @@ mod.extend = function(){
         }
         let component_a = LAB_REACTIONS[resourceType][0];
         let component_b = LAB_REACTIONS[resourceType][1];
-        var lab_slave_a = null;
-        var lab_slave_b = null;
+        let lab_slave_a = null;
+        let lab_slave_b = null;
 
         // find slave labs
         let nearbyLabs = lab_master.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: (s)=>{ return s.structureType==STRUCTURE_LAB && s.id != lab_master.id; }});
         //console.log(lab_master,"found",nearbyLabs.length,"potential slave labs");
-        for (var i=0;i<nearbyLabs.length;i++) {
+        for (let i=0;i<nearbyLabs.length;i++) {
             let lab = nearbyLabs[i];
             let data = this.memory.resources.lab.find( (l) => l.id == lab.id );
             //console.log(lab_master,"potential slave",i,"has",lab.mineralType,"and is currently",data?data.reactionState:"idle");
-            if (lab_slave_a == null && lab.mineralType == component_a) {
+            if (lab_slave_a == null && data && data.reactionType == component_a) {
                 lab_slave_a = lab;
-            } else if (lab_slave_b == null && lab.mineralType == component_b) {
+            } else if (lab_slave_b == null && data && data.reactionType == component_b) {
                 lab_slave_b = lab;
-            } else if (!data || !data.reactionState || data.reactionState == LAB_IDLE) {
-                if (lab_slave_a == null) lab_slave_a = lab;
-                else if (lab_slave_b == null) lab_slave_b = lab;
             }
             if (lab_slave_a && lab_slave_b) break;
+        }
+        if (!lab_slave_a || !lab_slave_b) {
+            nearbyLabs.sort( (a,b) => { lab_master.pos.getRangeTo(a) - lab_master.pos.getRangeTo(b); } );
+            for (let i=0;i<nearbyLabs.length;i++) {
+                let lab = nearbyLabs[i];
+                let data = this.memory.resources.lab.find( (l) => l.id == lab.id );
+                if (!data || !data.reactionState || data.reactionState == LAB_IDLE) {
+                    if (lab_slave_a == null) lab_slave_a = lab;
+                    else if (lab_slave_b == null) lab_slave_b = lab;
+                }
+            }
         }
 
         // qualify labs and prepare states
@@ -1874,16 +2047,23 @@ mod.extend = function(){
         // place orders with slave labs
         labData = this.memory.resources.lab.find( (l) => l.id == lab_slave_a.id );
         let slaveState = LAB_SLAVE_1;
-        if (state == LAB_SLAVE_1) slaveState = LAB_SLAVE_2;
-        if (state == LAB_SLAVE_2) slaveState = LAB_SLAVE_3;
+        let slaveDepth = 1;
+        if (state == LAB_SLAVE_1) {
+            slaveState = LAB_SLAVE_2;
+            slaveDepth = 2;
+        } else if (state == LAB_SLAVE_2) {
+            slaveState = LAB_SLAVE_3;
+            slaveDepth = 3;
+        }
         if ( labData ) {
             labData.reactionState = slaveState;
+            labData.reactionType = component_a;
             labData.master = lab_master.id;
             this.placeOrder(lab_slave_a.id, component_a, amount);
 
             let available = 0;
             if (this.memory.container) {
-                for (var i=0;i<this.memory.container.length;i++) {
+                for (let i=0;i<this.memory.container.length;i++) {
                     let d = this.memory.container[i];
                     let container = Game.getObjectById(d.id);
                     if (container && container.store[component_a]) {
@@ -1893,7 +2073,7 @@ mod.extend = function(){
             }
             if (this.storage) available += this.storage.store[component_a]||0;
             if (this.terminal) available += this.terminal.store[component_a]||0;
-            if (available < amount) {
+            if (tier > slaveDepth && slaveDepth < 3 && available < amount) {
                 if (this.placeReactionOrder(lab_slave_a.id,component_a,amount-available) == OK) {
                     let order = labData.orders.find((o)=>o.type==component_a);
                     if (order) order.orderRemaining = available;
@@ -1903,12 +2083,13 @@ mod.extend = function(){
         labData = this.memory.resources.lab.find( (l) => l.id == lab_slave_b.id );
         if ( labData ) {
             labData.reactionState = slaveState;
+            labData.reactionType = component_b;
             labData.master = lab_master.id;
             this.placeOrder(lab_slave_b.id, component_b, amount);
 
             let available = 0;
             if (this.memory.container) {
-                for (var i=0;i<this.memory.container.length;i++) {
+                for (let i=0;i<this.memory.container.length;i++) {
                     let d = this.memory.container[i];
                     let container = Game.getObjectById(d.id);
                     if (container) {
@@ -1918,7 +2099,7 @@ mod.extend = function(){
             }
             if (this.storage) available += this.storage.store[component_b]||0;
             if (this.terminal) available += this.terminal.store[component_b]||0;
-            if (available < amount) {
+            if (tier > slaveDepth && slaveDepth < 3 && available < amount) {
                 if (this.placeReactionOrder(lab_slave_a.id,component_a,amount-available) == OK) {
                     let order = labData.orders.find((o)=>o.type==component_b);
                     if (order) order.orderRemaining = available;
@@ -1928,6 +2109,38 @@ mod.extend = function(){
 
         //console.log(lab_master,"found slave labs",lab_slave_a,"for",component_a,"and",lab_slave_b,"for",component_b);
         return OK;
+    };
+    Room.prototype.isWalkable = function(x, y, look) {
+        if (!look) look = this.lookAt(x,y);
+        else look = look[y][x];
+        let invalidObject = o => {
+            return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
+                OBSTACLE_OBJECT_TYPES.includes(o[o.type].structureType));
+        };
+        return look.filter(invalidObject).length == 0;
+    };
+    Room.prototype.printCostMatrix = function(creepMatrix, aroundPos) {
+        const matrix = creepMatrix ? this.creepMatrix : this.costMatrix;
+        let startY = 0;
+        let endY = 50;
+        let startX = 0;
+        let endX = 50;
+        if (aroundPos) {
+            startY = Math.max(0, aroundPos.y - 3);
+            endY = Math.min(50, aroundPos.y + 4);
+            startX = Math.max(0, aroundPos.x - 3);
+            endX = Math.min(50, aroundPos.x + 4);
+        }
+        logSystem(this.name, "costMatrix:");
+        for (var y = startY; y < endY; y++) {
+            var line = "";
+            for (var x = startX; x < endX; x++) {
+                var val = matrix.get(x, y).toString(16);
+                if (val == "0") val = "";
+                line += ("   " + val).slice(-3);
+            }
+            logSystem(this.name, line);
+        }
     };
     Room.prototype.exits = function(findExit, point) {
         if (point === true) point = 0.5;
@@ -2053,6 +2266,7 @@ mod.flush = function(){
         if( global.isNewServer ) {
             delete room._my;
             delete room._constructionSites;
+            delete room._myConstructionSites;
             delete room._maxPerJob;
             delete room._minerals;
             delete room._structures;
@@ -2070,6 +2284,15 @@ mod.flush = function(){
     };
     Memory.observerSchedule = [];
     _.forEach(Game.rooms, clean);
+
+    // Temporary migration can be removed once traveler is merged into /dev
+    if (!_.isUndefined(Memory.rooms.hostileRooms)) {
+        for (roomName in Memory.rooms.hostileRooms) {
+            if (_.isUndefined(Memory.rooms[roomName])) Memory.rooms[roomName] = {};
+            Memory.rooms[roomName].hostile = Memory.rooms.hostileRooms[roomName];
+        }
+        delete Memory.rooms.hostileRooms;
+    }
 };
 mod.analyze = function(){
     let getEnvironment = room => {
@@ -2254,28 +2477,14 @@ mod.roomDistance = function(roomName1, roomName2, diagonal, continuous){
     //if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1
     return xDif + yDif; // count diagonal as 2
 };
-mod.getCostMatrix = function(roomName) {
-    var room = Game.rooms[roomName];
-    if(!room) return;
-    return room.costMatrix;
-};
 mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
-    let look;
-    if( checkWalkable ) {
-        look = Game.rooms[roomName].lookAtArea(minY,minX,maxY,maxX);
-    }
-    let invalidObject = o => {
-        return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
-            // o.type == LOOK_CONSTRUCTION_SITES ||
-            (o.type == LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType) ));
-    };
-    let isWalkable = (posX, posY) => look[posY][posX].filter(invalidObject).length == 0;
-
+    const room = Game.rooms[roomName];
+    const look = checkWalkable ? room.lookAtArea(minY,minX,maxY,maxX) : null;
     let fields = [];
     for( let x = minX; x <= maxX; x++) {
         for( let y = minY; y <= maxY; y++){
             if( x > 1 && x < 48 && y > 1 && y < 48 ){
-                if( !checkWalkable || isWalkable(x,y) ){
+                if( !checkWalkable || room.isWalkable(x, y, look) ){
                     let p = new RoomPosition(x, y, roomName);
                     if( !where || where(p) )
                         fields.push(p);

@@ -57,6 +57,7 @@ action.newTarget = function(creep){
         _.forEach(creep.room.structures.container.out, emptyest);
         return target;
     }
+    return null;
 };
 action.work = function(creep){
     let workResult;

@@ -168,24 +168,20 @@ mod.nextAction = creep => {
     }
     // travel to invader
     let invader = Game.getObjectById(creep.data.destiny.invaderId);
-    if( invader ) {
+    if( invader && creep.pos.roomName === invader.pos.roomName ) {
         Creep.action.travelling.assign(creep, invader);
         return;
     }
     // travel to initial calling room
     let callingRoom = Game.rooms[creep.data.destiny.spottedIn];
     if( !callingRoom || callingRoom.hostiles.length > 0 ) {
-        Creep.action.travelling.assign(creep, creep);
-        creep.data.travelRoom = creep.data.destiny.spottedIn;
-        return;
+        return Creep.action.travelling.assignRoom(creep, creep.data.destiny.spottedIn);
     }
     // check adjacent rooms for invasion
     let hasHostile = roomName => Game.rooms[roomName] && Game.rooms[roomName].hostiles.length > 0;
     let invasionRoom = creep.room.adjacentRooms.find(hasHostile);
     if( invasionRoom ) {
-        Creep.action.travelling.assign(creep, creep);
-        creep.data.travelRoom = invasionRoom;
-        return;
+        return Creep.action.travelling.assignRoom(creep, invasionRoom);
     }
     // recycle self
     let mother = Game.spawns[creep.data.motherSpawn];
