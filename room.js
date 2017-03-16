@@ -2093,6 +2093,29 @@ mod.extend = function(){
         };
         return look.filter(invalidObject).length == 0;
     };
+    Room.prototype.printCostMatrix = function(creepMatrix, aroundPos) {
+        const matrix = creepMatrix ? this.creepMatrix : this.costMatrix;
+        let startY = 0;
+        let endY = 50;
+        let startX = 0;
+        let endX = 50;
+        if (aroundPos) {
+            startY = Math.max(0, aroundPos.y - 3);
+            endY = Math.min(50, aroundPos.y + 4);
+            startX = Math.max(0, aroundPos.x - 3);
+            endX = Math.min(50, aroundPos.x + 4);
+        }
+        logSystem(this.name, "costMatrix:");
+        for (var y = startY; y < endY; y++) {
+            var line = "";
+            for (var x = startX; x < endX; x++) {
+                var val = matrix.get(x, y).toString(16);
+                if (val == "0") val = "";
+                line += ("   " + val).slice(-3);
+            }
+            logSystem(this.name, line);
+        }
+    };
     Room.prototype.exits = function(findExit, point) {
         if (point === true) point = 0.5;
         let positions;
