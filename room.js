@@ -1019,8 +1019,24 @@ mod.extend = function(){
                 return this._collapsed;
             }
         },
+        'hostile': {
+            configurable: true,
+            get: function() {
+                return this.memory.hostile;
+            }
+        },
     });
-
+    Room.prototype.registerIsHostile = function() {
+        if (this.controller) {
+            if (_.isUndefined(this.hostile) || typeof this.hostile === 'number') { // not overridden by user
+                if (this.controller.owner && !this.controller.my && !this.ally) {
+                    this.memory.hostile = this.controller.level;
+                } else {
+                    delete this.memory.hostile;
+                }
+            }
+        }
+    };
     Room.prototype.getBorder = function(roomName) {
         return _.findKey(Game.map.describeExits(this.name), function(name) {
             return this.name === name;

@@ -22,7 +22,6 @@ module.exports = function(globalOpts = {}){
         exportTraveler:    true,
         installTraveler:   false,
         installPrototype:  true,
-        hostileLocation:   'rooms',
         maxOps:            20000,
         defaultStuckValue: 3,
         reportThreshold:   50,
@@ -30,8 +29,8 @@ module.exports = function(globalOpts = {}){
     });
     class Traveler {
         constructor() {
-            // change this memory path to suit your needs
-            this.memory = _.defaultsDeep(_.get(Memory, gOpts.hostileLocation, {}), { hostileRooms: {} });
+            this.getHostileRoom = (roomName) => Memory.rooms[roomName].hostile;
+            this.registerHostileRoom = (room) => room.registerIsHostile();
         }
         findAllowedRooms(origin, destination, options = {}) {
             _.defaults(options, { restrictDistance: 16 });
@@ -67,7 +66,7 @@ module.exports = function(globalOpts = {}){
                             return 10;
                         }
                     }
-                    if (!options.allowHostile && this.memory.hostileRooms[roomName] &&
+                    if (!options.allowHostile && this.getHostileRoom(roomName) &&
                         roomName !== destination && roomName !== origin) {
                         return Number.POSITIVE_INFINITY;
                     }
@@ -108,7 +107,7 @@ module.exports = function(globalOpts = {}){
                     if (!allowedRooms[roomName]) {
                         return false;
                     }
-                } else if (this.memory.hostileRooms[roomName] && !options.allowHostile &&
+                } else if (this.getHostileRoom(roomName) && !options.allowHostile &&
                     roomName !== origPos.roomName && roomName !== destPos.roomName) {
                     return false;
                 }
@@ -146,16 +145,7 @@ module.exports = function(globalOpts = {}){
         travelTo(creep, destination, options = {}) {
             // register hostile rooms entered
             let creepPos = creep.pos, destPos = (destination.pos || destination);
-            if (creep.room.controller) {
-                const mem = this.memory.hostileRooms[creep.room.name];
-                if (_.isUndefined(mem) || typeof mem === 'number') { // not overridden by user
-                    if (creep.room.controller.owner && !creep.room.controller.my && !creep.room.ally) {
-                        this.memory.hostileRooms[creep.room.name] = creep.room.controller.level;
-                    } else {
-                        this.memory.hostileRooms[creep.room.name] = undefined;
-                    }
-                }
-            }
+            this.registerHostileRoom(creep.room);
             // initialize data object
             if (!creep.memory._travel) {
                 creep.memory._travel = { stuck: 0, tick: Game.time, cpu: 0, count: 0 };
