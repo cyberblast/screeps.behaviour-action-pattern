@@ -108,10 +108,11 @@ module.exports = function(globalOpts = {}){
                     if (!allowedRooms[roomName]) {
                         return false;
                     }
-                }
-                else if (this.memory.hostileRooms[roomName] && !options.allowHostile) {
+                } else if (this.memory.hostileRooms[roomName] && !options.allowHostile &&
+                    roomName !== origPos.roomName && roomName !== destPos.roomName) {
                     return false;
                 }
+
                 let room = Game.rooms[roomName];
                 if (!room)
                     return;
