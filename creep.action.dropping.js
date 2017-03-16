@@ -21,10 +21,17 @@ action.work = function(creep) {
     let isSpawnFlag = f => f && f.color === FLAG_COLOR.claim.spawn.color && f.secondaryColor === FLAG_COLOR.claim.spawn.secondaryColor;
     if (!(creep.target instanceof StructureSpawn || isSpawnFlag(creep.target))) {
         let range = creep.pos.getRangeTo(creep.target);
-        if( range > action.reachedRange && creep.data.lastPos && creep.data.path
-            && !_.eq(creep.pos, creep.data.lastPos) ) {
-            // move ok, don't drop early
-            return ret;
+        if( range > 0 && creep.data.lastPos && creep.data.path && !_.eq(creep.pos, creep.data.lastPos) ) {
+            // If the destination is walkable, try to move there before dropping
+            let invalidObject = o => {
+                return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
+                     o.type == LOOK_CREEPS ||
+                    (o.type == LOOK_STRUCTURES && OBSTACLE_OBJECT_TYPES.includes(o.structure.structureType) ));
+            };
+            let look = creep.room.lookAt(target);
+            if (!_.some(look, invalidObject)) {
+                return ret;
+            }
         }
     }
     for(let resourceType in creep.carry) {

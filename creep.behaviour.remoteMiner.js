@@ -6,17 +6,17 @@ mod.run = function(creep) {
         return;
     }
 
-    let oldTargetId = creep.data.targetId;
-    // assign Action
-    if( creep.room.name == creep.data.destiny.room ){
-        // if we're there, be a miner.
-        this.mine(creep);
-        return;
-    } else {
-        // else go there
-        Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.targetName]);
+    if (!creep.action || creep.action.name === 'idle') {
+        // assign Action
+        if( creep.room.name === creep.data.destiny.room || creep.data.determinatedTarget ){
+            // if we're there (or have been), be a miner.
+            this.mine(creep);
+            return;
+        } else {
+            // else go there
+            this.gotoTargetRoom(creep);
+        }
     }
-    
     // Do some work
     if( creep.action && creep.target ) {
         creep.action.step(creep);
@@ -31,10 +31,19 @@ mod.approach = function(creep){
     let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.destiny.room);
     let range = creep.pos.getRangeTo(targetPos);
     if( range > 0 ) {
-        creep.drive( targetPos, 0, 0, range );
+        creep.travelTo( targetPos, {range:0} );
         if( range <= 2 && !creep.data.predictedRenewal ) {
             creep.data.predictedRenewal = _.min([500, 1500 - creep.ticksToLive + creep.data.spawningTime]);
         }
     }
     return range;
+};
+mod.gotoTargetRoom = function(creep){
+    const targetFlag = creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
+    if (targetFlag) return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName);
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+    },
 };

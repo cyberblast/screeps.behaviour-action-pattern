@@ -143,6 +143,7 @@ mod.flush = function(){
     delete this._hasInvasionFlag;
 };
 mod.analyze = function(){
+    const specialFlag = mod.specialFlag(true);
     let register = flag => {
         flag.creeps = {};
         if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
@@ -164,6 +165,7 @@ mod.analyze = function(){
         }
     };
     _.forEach(Memory.flags, findStaleFlags);
+    return !!specialFlag;
 };
 mod.execute = function() {
     let triggerFound = entry => {
@@ -197,4 +199,18 @@ mod.flagType = function(flag) {
     }
     logError('Unknown flag type for flag ' + flag ? flag.name : 'undefined flag');
     return 'undefined';
+};
+mod.specialFlag = function(create) {
+    const name = '_OCS';
+    const flag = Game.flags[name];
+    if (create && !flag) {
+        _(Game.rooms).values().some(function(room) {
+            new RoomPosition(49, 49, room.name).createFlag(name, COLOR_WHITE, COLOR_PURPLE);
+            return true;
+        });
+    }
+    return flag;
+};
+mod.isSpecialFlag = function(object) {
+    return object.name === '_OCS';
 };
