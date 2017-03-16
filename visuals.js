@@ -384,11 +384,13 @@ module.exports = class Visuals {
             transactions.forEach(transaction => {
                 const outgoing = transaction.sender.username === room.controller.owner.username;
                 const toSelf = transaction.recipient ? transaction.sender.username === transaction.recipient.username : false;
-                const colour = outgoing ? '#00FF00' : '#FF0000';
+                const receiving = room.name === transaction.to;
+                const colour = outgoing || receiving ? '#00FF00' : '#FF0000';
                 const prefix = outgoing ? '+' : '-';
                 let text = '';
-                if ( toSelf ) {
-                    text = `${transaction.to} : ${transaction.amount} ${transaction.resourceType}`;
+                if (toSelf || !transaction.order) {
+                    const roomName = receiving ? transaction.from : transaction.to;
+                    text = `${roomName} : ${transaction.amount} ${transaction.resourceType}`;
                 } else {
                     text = `${prefix}${transaction.amount * transaction.order.price}`;
                 }
