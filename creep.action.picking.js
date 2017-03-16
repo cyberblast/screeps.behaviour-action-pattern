@@ -21,7 +21,7 @@ action.isAddableTarget = function(target, creep){
 };
 action.newTarget = function(creep){
     let target;
-    if( creep.room.situation.invasion ) {
+    if( creep.room.my && creep.room.situation.invasion ) {
         // pickup near sources only
         target = creep.pos.findClosestByPath(creep.room.droppedResources, {
             filter: (o) => this.isAddableTarget(o, creep) && o.pos.findInRange(creep.room.sources, 1).length > 0
