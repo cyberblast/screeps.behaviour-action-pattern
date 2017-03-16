@@ -97,7 +97,7 @@ module.exports = class Visuals {
             x += sectionWidth + bufferWidth;
             vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
             const CPU_PERCENTAGE = Game.cpu.getUsed() / Game.cpu.limit;
-            const FUNCTIONAL_CPU_PERCENTAGE = CPU_PERCENTAGE > 1 ? 1 : CPU_PERCENTAGE;
+            const FUNCTIONAL_CPU_PERCENTAGE = Math.min(1, CPU_PERCENTAGE);
             vis.rect(x, y - 0.75, FUNCTIONAL_CPU_PERCENTAGE * sectionWidth, 1, {
                 fill: getColourByPercentage(FUNCTIONAL_CPU_PERCENTAGE),
                 opacity: BAR_STYLE.opacity
