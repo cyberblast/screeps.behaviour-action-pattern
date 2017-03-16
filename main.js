@@ -258,8 +258,9 @@ module.exports.loop = function () {
     // custom flush
     if( global.mainInjection.flush ) global.mainInjection.flush();
 
-    // analyze environment
+    // analyze environment, wait a tick if critical failure
     if (!FlagDir.analyze()) {
+        logError('FlagDir.analyze failed, waiting one tick to sync flags');
         return;
     }
     Room.analyze();
