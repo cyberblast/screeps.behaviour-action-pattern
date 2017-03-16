@@ -275,14 +275,17 @@ module.exports = class Visuals {
         let weakest = _(room.find(FIND_STRUCTURES)).filter(s => s.structureType === type).min(s => s.hits);
         if (weakest && weakest.pos) {
             vis.circle(weakest.pos.x, weakest.pos.y, {radius: 0.4, fill: '#FF0000', opacity: 0.3, strokeWidth: 0,});
-            let y = weakest.pos.y - 0.5;
+            let y = weakest.pos.y - 0.5; // base y pos - consistent with spawns, labs, and controllers
             const look = weakest.pos.lookFor(LOOK_STRUCTURES);
             const spawns = _.find(look, o => o instanceof StructureSpawn && o.spawning);
-            if (spawns) {
+            if (spawns && VISUALS.SPAWN) {
+                // if structure shares a position with a spawn (road, rampart), lower to next line
+                // spawn must be spawning, and spawn visuals must be enabled
                 y += 0.4;
             } else {
                 const labs = _.find(look, o => o instanceof StructureLab);
-                if (labs) {
+                if (labs && VISUALS.LABS) {
+                    // same as spawns, move the weakest structure text until it's on its own line
                     if (labs.energy) y += 0.4;
                     if (labs.mineralAmount) y += 0.4;
                     if (labs.cooldown) y += 0.4;
