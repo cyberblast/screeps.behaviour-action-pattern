@@ -215,20 +215,32 @@ mod.checkForRequiredCreeps = (flag) => {
     const maxHaulers = Math.ceil(memory.running.remoteMiner.length * REMOTE_HAULER_MULTIPLIER);
     if(haulerCount < maxHaulers && (!memory.capacityLastChecked || Game.time - memory.capacityLastChecked > REMOTE_HAULER_CHECK_INTERVAL)) {
         for(let i = haulerCount; i < maxHaulers; i++) {
-            const spawnRoom = mod.strategies.hauler.spawnRoom(roomName);
-            if( !spawnRoom ) break;
+            let minWeight = i >= 1 && REMOTE_HAULER_MIN_WEIGHT;
+            const spawnRoom = mod.strategies.hauler.spawnRoom({roomName, minWeight});
+            if( !spawnRoom ) {
+                break;
+            }
 
             // haulers set homeRoom if closer storage exists
             const storageRoom = REMOTE_HAULER_REHOME && mod.strategies.hauler.homeRoom(roomName) || spawnRoom;
-            const maxWeight = mod.strategies.hauler.maxWeight(roomName, storageRoom, memory); // TODO Task.strategies
-            if( !maxWeight || (i >= 1 && maxWeight < REMOTE_HAULER_MIN_WEIGHT)) {
+            let maxWeight = mod.strategies.hauler.maxWeight(roomName, storageRoom, memory); // TODO Task.strategies
+            if( !maxWeight || (!REMOTE_HAULER_ALLOW_OVER_CAPACITY && maxWeight < minWeight)) {
                 memory.capacityLastChecked = Game.time;
                 break;
+            }
+
+            if (_.isNumber(REMOTE_HAULER_ALLOW_OVER_CAPACITY)) {
+                maxWeight = Math.max(maxWeight, REMOTE_HAULER_ALLOW_OVER_CAPACITY);
+                minWeight = minWeight && Math.min(REMOTE_HAULER_MIN_WEIGHT, maxWeight);
+            } else if (REMOTE_HAULER_ALLOW_OVER_CAPACITY) {
+                maxWeight = Math.max(maxWeight, REMOTE_HAULER_MIN_WEIGHT);
+                minWeight = minWeight && Math.min(REMOTE_HAULER_MIN_WEIGHT, maxWeight);
             }
 
             // spawning a new hauler
             const creepDefinition = _.create(Task.mining.creep.hauler);
             creepDefinition.maxWeight = maxWeight;
+            if (minWeight) creepDefinition.minWeight = minWeight;
             Task.spawn(
                 creepDefinition,
                 { // destiny
@@ -484,10 +496,10 @@ mod.strategies = {
             // Otherwise, score it
             return Room.bestSpawnRoomFor(flagRoomName);
         },
-        spawnRoom: function(flagRoomName) {
+        spawnRoom: function({roomName, minWeight}) {
             return Room.findSpawnRoom({
-                targetRoom: flagRoomName,
-                minEnergyCapacity: 500
+                targetRoom: roomName,
+                minEnergyCapacity: minWeight || 500,
             });
         },
         maxWeight: function(roomName, travelRoom, memory, ignorePopulation, ignoreQueue) {

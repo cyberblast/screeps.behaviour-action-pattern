@@ -54,6 +54,15 @@ setup.default = {
     maxCount: room => setup.maxCount(room),
     maxWeight: room => setup.maxWeight(room),
 };
+setup.high = {
+    fixedBody: [WORK, CARRY, MOVE],
+    multiBody: [CARRY, CARRY, MOVE],
+    minAbsEnergyAvailable: 200,
+    minEnergyAvailable: 0.2,
+    maxMulti: room => setup.maxMulti(room),
+    maxCount: room => setup.maxCount(room),
+    maxWeight: room => setup.maxWeight(room),
+};
 setup.RCL = {
     1: setup.none,
     2: setup.default,
@@ -62,5 +71,5 @@ setup.RCL = {
     5: setup.default,
     6: setup.default,
     7: setup.default,
-    8: setup.default
+    8: setup.high
 };

@@ -215,6 +215,7 @@ global.install = () => {
     Room.extend();
     Spawn.extend();
     FlagDir.extend();
+    Task.populate();
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
 };
@@ -291,7 +292,7 @@ module.exports.loop = function () {
     // custom cleanup
     if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
 
-    if ( ROOM_VISUALS && !Memory.CPU_CRITICAL ) Visuals.run(); // At end to correctly display used CPU.
+    if ( ROOM_VISUALS && !Memory.CPU_CRITICAL && Visuals ) Visuals.run(); // At end to correctly display used CPU.
 
     if ( GRAFANA && Game.time % GRAFANA_INTERVAL === 0 ) Grafana.run();
 

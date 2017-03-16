@@ -1207,13 +1207,15 @@ mod.extend = function(){
             structure => structure.structureType == STRUCTURE_CONTAINER
         );
         let add = (cont) => {
+            // TODO consolidate managed container code
             let minerals = this.find(FIND_MINERALS);
             let source = cont.pos.findInRange(this.sources, 2);
             let mineral = cont.pos.findInRange(minerals, 2);
+            let isControllerContainer = !!(this.my && cont.pos.getRangeTo(this.controller) <= 4);
             this.memory.container.push({
                 id: cont.id,
                 source: (source.length > 0),
-                controller: ( cont.pos.getRangeTo(this.controller) < 4 ),
+                controller: isControllerContainer,
                 mineral: (mineral.length > 0),
             });
             let assignContainer = s => s.memory.container = cont.id;
@@ -1280,8 +1282,9 @@ mod.extend = function(){
 
         // for each link add to memory ( if not contained )
         let add = (link) => {
+            // TODO consolidate managed container code
             if( !this.memory.links.find( (l) => l.id == link.id ) ) {
-                let isControllerLink = ( link.pos.getRangeTo(this.controller) < 4 );
+                let isControllerLink = ( link.pos.getRangeTo(this.controller) <= 4 );
                 let isSource = false;
                 if( !isControllerLink ) {
                     let source = link.pos.findInRange(this.sources, 2);
@@ -1560,7 +1563,7 @@ mod.extend = function(){
         return false;
     };
     Room.prototype.terminalBroker = function () {
-        if( !this.my || !this.terminal ) return;
+        if( !this.my || !this.terminal || !this.storage ) return;
         let that = this;
         let mineral = this.mineralType;
         let transacting = false;
@@ -1715,11 +1718,10 @@ mod.extend = function(){
     Room.prototype.processPower = function() {
         // run lab reactions WOO!
         let powerSpawns = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_POWER_SPAWN; } } );
-        if (!this.memory.resources) return;
         for (var i=0;i<powerSpawns.length;i++) {
             // see if the reaction is possible
             let powerSpawn = powerSpawns[i];
-            if (powerSpawn.energy > 0 && powerSpawn.power > POWER_SPAWN_ENERGY_RATIO) {
+            if (powerSpawn.energy >= POWER_SPAWN_ENERGY_RATIO && powerSpawn.power >= 1) {
                 if (DEBUG && TRACE) trace('Room', { roomName: this.name, actionName: 'processPower' });
                 powerSpawn.processPower();
             }
@@ -2156,6 +2158,65 @@ mod.extend = function(){
         }
         return ret;
     }
+    Room.prototype.controlObserver = function() {
+        const OBSERVER = this.structures.observer;
+        if (!OBSERVER) return;
+        if (!this.memory.observer.rooms) this.initObserverRooms();
+        const ROOMS = this.memory.observer.rooms;
+        let lastLookedIndex = Number.isInteger(this.memory.observer.lastLookedIndex) ? this.memory.observer.lastLookedIndex : ROOMS.length;
+        let nextRoom;
+        let i = 0;
+        do { // look ma! my first ever do-while loop!
+            if (lastLookedIndex >= ROOMS.length) {
+                nextRoom = ROOMS[0];
+            }  else {
+                nextRoom = ROOMS[lastLookedIndex + 1];
+            }
+            lastLookedIndex = ROOMS.indexOf(nextRoom);
+            if (++i >= ROOMS.length) { // safety check - prevents an infinite loop
+                break;
+            }
+        } while (Memory.observerSchedule.includes(nextRoom) || nextRoom in Game.rooms);
+        this.memory.observer.lastLookedIndex = lastLookedIndex;
+        Memory.observerSchedule.push(nextRoom);
+        OBSERVER.observeRoom(nextRoom); // now we get to observe a room
+    };
+    Room.prototype.initObserverRooms = function() {
+        const OBSERVER_RANGE = OBSERVER_OBSERVE_RANGE > 10 ? 10 : OBSERVER_OBSERVE_RANGE; // can't be > 10
+        const PRIORITISE_HIGHWAY = OBSERVER_PRIORITISE_HIGHWAY;
+        const [x, y] = Room.calcGlobalCoordinates(this.name, (x,y) => [x,y]); // hacky get x,y
+        const [HORIZONTAL, VERTICAL] = Room.calcCardinalDirection(this.name);
+        let ROOMS = [];
+
+        for (let a = x - OBSERVER_RANGE; a < x + OBSERVER_RANGE; a++) {
+            for (let b = y - OBSERVER_RANGE; b < y + OBSERVER_RANGE; b++) {
+                let hor = HORIZONTAL;
+                let vert = VERTICAL;
+                let n = a;
+                if (a < 0) { // swap horizontal letter
+                    hor = hor === 'W' ? 'E' : 'W';
+                    n = Math.abs(a) - 1;
+                }
+                hor += n;
+                n = b;
+                if (b < 0) {
+                    vert = vert === 'N' ? 'S' : 'N';
+                    n = Math.abs(b) - 1;
+                }
+                vert += n;
+                const room = hor + vert;
+                if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
+                if (OBSERVER_OBSERVE_HIGHWAYS_ONLY && !Room.isHighwayRoom(room)) continue; // we only want highway rooms
+                ROOMS.push(room);
+            }
+        }
+        if (PRIORITISE_HIGHWAY) {
+            ROOMS = _.sortBy(ROOMS, v => {
+                return Room.isHighwayRoom(v) ? 0 : 1; // should work, I hope
+            });
+        }
+        this.memory.observer.rooms = ROOMS;
+    };
 };
 mod.flush = function(){
     let clean = room => {
@@ -2196,6 +2257,7 @@ mod.flush = function(){
         room.newInvader = [];
         room.goneInvader = [];
     };
+    Memory.observerSchedule = [];
     _.forEach(Game.rooms, clean);
 };
 mod.analyze = function(){
@@ -2214,12 +2276,14 @@ mod.analyze = function(){
                 room.updateResourceOrders();
                 room.updateRoomOrders();
                 room.terminalBroker();
+                room.initObserverRooms(); // to re-evaluate rooms, in case parameters are changed
             }
             room.roadConstruction();
             room.linkDispatcher();
             room.processInvaders();
             room.processLabs();
             room.processPower();
+            room.controlObserver();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
@@ -2297,13 +2361,23 @@ mod.isMine = function(roomName) {
     return( room && room.my );
 };
 
+mod.calcCardinalDirection = function(roomName) {
+    const parsed = /^([WE])[0-9]{1,2}([NS])[0-9]{1,2}$/.exec(roomName);
+    return [parsed[1], parsed[2]];
+};
+mod.calcGlobalCoordinates = function(roomName, callBack) {
+    if (!callBack) return null;
+    const parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+    const x = +parsed[1];
+    const y = +parsed[2];
+    return callBack(x, y);
+};
 mod.calcCoordinates = function(roomName, callBack){
-    let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
-    let x = parsed[1] % 10;
-    let y = parsed[2] % 10;
-    if( callBack ) return callBack(x,y);
-    return null;
-}
+    if (!callBack) return null;
+    return Room.calcGlobalCoordinates(roomName, (x, y) => {
+        return callBack(x % 10, y % 10);
+    });
+};
 mod.isCenterRoom = function(roomName){
     return Room.calcCoordinates(roomName, (x,y) => {
         return x === 5 && y === 5;

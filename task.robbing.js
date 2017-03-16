@@ -151,6 +151,7 @@ mod.nextAction = creep => {
     if( creep.pos.roomName == creep.data.homeRoom ){
         // carrier filled
         if( carrySum > 0 ){
+            if( DEBUG && TRACE ) trace('Task', {creepName:creep.name, pos:creep.pos, nextAction: 'storing?', robbing:'nextAction', Task:'robbing'});
             let deposit = []; // deposit energy in...
             // links?
             if( creep.carry.energy == carrySum ) deposit = creep.room.structures.links.privateers;
@@ -172,11 +173,13 @@ mod.nextAction = creep => {
         }
         // empty
         // travelling
-        if( Task[creep.data.destiny.task].exploitNextRoom(creep) )
+        if( Task[creep.data.destiny.task].exploitNextRoom(creep) ) {
+            if( DEBUG && TRACE ) trace('Task', {creepName:creep.name, pos:creep.pos, nextAction: 'travelling', robbing:'nextAction', Task:'robbing'});
             return;
-        else {
+        } else {
             // no new flag
             // behave as worker
+            if( DEBUG && TRACE ) trace('Task', {creepName:creep.name, pos:creep.pos, nextAction: 'working', robbing:'nextAction', Task:'robbing'});
             Creep.behaviour.worker.nextAction(creep);
             return;
         }
@@ -184,7 +187,8 @@ mod.nextAction = creep => {
     // not at home
     else {
         // at target room
-        if( creep.data.destiny.room == creep.pos.roomName ){
+        if( creep.flag && creep.flag.pos.roomName === creep.pos.roomName ){
+            if( DEBUG && TRACE ) trace('Task', {creepName:creep.name, pos:creep.pos, nextAction: 'robbing', robbing:'nextAction', Task:'robbing'});
             // get some energy
             if( creep.sum < creep.carryCapacity*0.4 ) {
                 // harvesting or picking
@@ -211,8 +215,12 @@ mod.nextAction = creep => {
                 mod.goHome(creep);
                 return;
             }
-        } else { // not at target room
-            return Task[creep.data.destiny.task].exploitNextRoom(creep);
+        }
+        // not at target room
+        else {
+            if( DEBUG && TRACE ) trace('Task', {creepName:creep.name, pos:creep.pos, nextAction: 'travelling2', robbing:'nextAction', Task:'robbing'});
+            Task[creep.data.destiny.task].exploitNextRoom(creep);
+            return;
         }
     }
     // fallback

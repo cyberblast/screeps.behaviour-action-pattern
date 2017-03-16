@@ -5,7 +5,8 @@ mod.name = 'reserve';
 mod.creep = {
     reserver: {
         fixedBody: [CLAIM, CLAIM, MOVE, MOVE],
-        multiBody: [],
+        multiBody: [CLAIM, MOVE],
+        maxMulti: 7,
         name: "reserver", 
         behaviour: "claimer"
     },
@@ -237,7 +238,7 @@ mod.strategies = {
             // Don't spawn if...
             const hasFlag = !!flag;
             const hasController = Room.isControllerRoom(flag.pos.roomName) || (flag.room && flag.room.controller);
-            const hasReservation = (flag.room && flag.room.controller && flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 2500 || flag.room.controller.reservation.username != myName) );
+            const hasReservation = (flag.room && flag.room.controller && flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 1000 || flag.room.controller.reservation.username != myName) );
             const isOwned = (flag.room && flag.room.controller && flag.room.controller.owner);
             if( // Flag was removed
                 !hasFlag ||
