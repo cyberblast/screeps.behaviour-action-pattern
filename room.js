@@ -2400,7 +2400,7 @@ mod.isMine = function(roomName) {
 };
 
 mod.calcCardinalDirection = function(roomName) {
-    const parsed = /^([WE])[0-9]{1,2}([NS])[0-9]{1,2}$/.exec(roomName);
+    const parsed = /^([WE])[0-9]+([NS])[0-9]+$/.exec(roomName);
     return [parsed[1], parsed[2]];
 };
 mod.calcGlobalCoordinates = function(roomName, callBack) {
