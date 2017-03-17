@@ -857,7 +857,7 @@ mod.extend = function(){
                         let setCosts = structure => {
                             const site = structure instanceof ConstructionSite;
                             // don't walk on allied construction sites.
-                            if (site && Task.reputation.allyOwner(structure)) return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                            if (site && !structure.my && Task.reputation.allyOwner(structure)) return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
                             if (structure.structureType === STRUCTURE_ROAD) {
                                 if (!site || USE_UNBUILT_ROADS)
                                     return costMatrix.set(structure.pos.x, structure.pos.y, 1);
