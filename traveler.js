@@ -29,7 +29,7 @@ module.exports = function(globalOpts = {}){
     });
     class Traveler {
         constructor() {
-            this.getHostileRoom = (roomName) => Memory.rooms[roomName].hostile;
+            this.getHostileRoom = (roomName) => _.get(Memory, ['rooms', roomName, 'hostile']);
             this.registerHostileRoom = (room) => room.registerIsHostile();
         }
         findAllowedRooms(origin, destination, options = {}) {
