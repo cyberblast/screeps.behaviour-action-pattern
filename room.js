@@ -2206,6 +2206,7 @@ mod.extend = function(){
         const r = OBSERVER.observeRoom(nextRoom); // now we get to observe a room
         if (r === ERR_INVALID_ARGS) { // room has not yet been created / off the map
             Memory.observerSchedule.splice(Memory.observerSchedule.indexOf(nextRoom), 1); // remove invalid room from list
+            this.controlObserver(); // should look at the next room (latest call will override previous calls on the same tick)
         }
     };
     Room.prototype.initObserverRooms = function() {
