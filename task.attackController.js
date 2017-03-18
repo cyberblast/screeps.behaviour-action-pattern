@@ -165,8 +165,10 @@ mod.nextAction = creep => {
 };
 mod.creep = {
     attackController: {
-        fixedBody: [CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE],
-        multiBody: [],
+        fixedBody: [],
+        multiBody: [CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE],
+        minMulti: 1,
+        maxMulti: 4,
         name: "Atk-Contr", 
         behaviour: "claimer", 
         queue: "Low"
