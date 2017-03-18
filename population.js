@@ -271,6 +271,7 @@ mod.execute = function(){
 mod.cleanup = function(){
     let unregister = name => Population.unregisterCreep(name);
     this.died.forEach(unregister);
+    // TODO consider clearing target here
 };
 mod.sortEntries = function() {
     let temp = {};
@@ -309,4 +310,43 @@ mod.getCombatStats = function(body) {
         hull, // damage needed to impede movement
         coreHits // if (hits < coreHits) missing moves!
     };
+};
+mod.findCircular = function() {
+    const groups = {
+        creeps: Game.creeps,
+        structures: Game.structures,
+        memory: Memory
+    };
+
+    const map = {};
+
+    for (let gid in groups) {
+        const group = groups[gid];
+        for (let id in group) {
+            const entity = group[id];
+            const path = gid + '.' + id;
+            map[id] = path;
+            this.checkCircular(id, map, entity, path, 1);
+        }
+    }
+};
+mod.checkCircular = function(stopId, map, root, rootPath, depth) {
+    if (depth > 10) {
+        logError('Checking for circulars, very deep path', {rootPath, depth});
+        return;
+    }
+    for (let key in root) {
+        const path = rootPath + '.' + key;
+        const entity = root[key];
+        if (!_.isObject(entity)) continue;
+        const id = entity.id || entity.name;
+        if (id === stopId) {
+            throw new Error('circular structure:' + id + ' at:' + path + ' and at:' + map[id]);
+        }
+        if (!id || map[id]) {
+            continue;
+        }
+        map[id] = path;
+        mod.checkCircular(stopId, map, entity, path, depth + 1);
+    }
 };

@@ -475,6 +475,7 @@ mod.strategies = {
         name: `default-${mod.name}`,
     },
     reserve: {
+        name: `reserve-${mod.name}`,
         spawnParams: function(flag) {
             const population = mod.carryPopulation(flag.pos.roomName);
 
