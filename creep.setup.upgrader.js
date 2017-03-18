@@ -71,8 +71,8 @@ setup.low = {
 setup.level8 = {
     fixedBody: [CARRY, MOVE, MOVE, MOVE],
     multiBody: [WORK],
-    minAbsEnergyAvailable: 300,
-    minEnergyAvailable: 1,
+    minAbsEnergyAvailable: 1700,
+    minEnergyAvailable: 0.5,
     maxMulti: CONTROLLER_MAX_UPGRADE_PER_TICK / UPGRADE_CONTROLLER_POWER,
     maxCount: room => setup.maxCount(room),
 };
