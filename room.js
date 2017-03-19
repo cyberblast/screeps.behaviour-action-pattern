@@ -2315,7 +2315,7 @@ mod.analyze = function(){
                 room.updateResourceOrders();
                 room.updateRoomOrders();
                 room.terminalBroker();
-                room.initObserverRooms(); // to re-evaluate rooms, in case parameters are changed
+                if (room.structures.observer) room.initObserverRooms(); // to re-evaluate rooms, in case parameters are changed
             }
             room.roadConstruction();
             room.linkDispatcher();
