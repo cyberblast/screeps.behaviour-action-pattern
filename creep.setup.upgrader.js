@@ -23,7 +23,7 @@ setup.maxCount = function(room){
             // Energy reserves are low
             room.conserveForDefense ||
             // No energy structures built near controller
-            (room.structures.container.controller.length + room.structures.links.controller.length) == 0 ||
+            (room.structures.container.controller.length + room.structures.links.controller.length) === 0 ||
             // Upgrading blocked -> http://support.screeps.com/hc/en-us/articles/207711889-StructureController#upgradeBlocked
             room.controller.upgradeBlocked
         ) return 0;

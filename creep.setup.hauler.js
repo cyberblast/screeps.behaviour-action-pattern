@@ -8,18 +8,18 @@ setup.maxMulti = function(room) {
     let contSum = _.sum(room.structures.container.in, 'sum');
     contSum += _.sum(room.droppedResources, 'amount');
     max += Math.floor(contSum / 1000);
-    max += Creep.setup.upgrader.maxMulti(room);
+    max += Creep.setup.upgrader._maxMulti(room);
     return Math.min(max, 16);
 };
 setup.maxCount = function(room){
     if( !room.population ) return 0;
     let count = 0;
-    let miners = (room.population.typeCount['miner']||0);
-    let workers = (room.population.typeCount['worker']||0);
-    let mineralMiners = (room.population.typeCount['mineralMiner']||0);
+    let miners = (room.population.typeCount.miner || 0);
+    let workers = (room.population.typeCount.worker || 0);
+    let mineralMiners = (room.population.typeCount.mineralMiner || 0);
     let cont = room.structures.container.in.length + room.structures.links.storage.length;
     if( miners > 0  || ( cont > 0 && workers > 2 )) {
-        count += Creep.setup.upgrader.maxCount(room);
+        count += Creep.setup.upgrader._maxCount(room);
         if( room.structures.links.all.length < 3 ||
            (room.storage && room.storage.charge > 1 &&
             room.structures.container.controller && _.sum(room.structures.container.controller, 'store.energy') == 0 )) count++;
@@ -38,12 +38,12 @@ setup.maxCount = function(room){
         room.droppedResources.forEach(countNearSource);
         if(room.storage && dropped > 1000) count++;
         */
-        if( count == 0 ) count = 1;
+        if( count === 0 ) count = 1;
     }
     return count;
 };
 setup.maxWeight = function(room){
-    return setup.maxCount(room) * 2000;
+    return setup._maxCount(room) * 2000;
 };
 setup.default = {
     fixedBody: [WORK, CARRY, MOVE],
