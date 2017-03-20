@@ -6,6 +6,14 @@ let mod = {
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details, use false not undefined to unset
     TRACE: false, // use Memory.debugTrace for low-level information
+    PROFILE: false, // enable CPU profiling
+    PROFILING: {
+        ANALYZE_LIMIT: 2, // profile warning levels
+        AVERAGE_USAGE: true, // display average creep & flag usage
+        EXECUTE_LIMIT: 5, // profile warning levels
+        FLUSH_LIMIT: 5, // profile warning levels
+        REGISTER_LIMIT: 2, // profile warning levels
+    },
     TRAVELER_STUCK_TICKS: 2, // Number of ticks not moving to be considered stuck by the Traveler API
     TRAVELER_THRESHOLD: 5, // Average creep CPU usage/tick before warning about pathing cost, starts after 25 ticks
     USE_UNBUILT_ROADS: true, // enabling this will set the pathing cost of road construction sites to that of roads
