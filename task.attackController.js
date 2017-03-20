@@ -41,7 +41,7 @@ mod.checkForRequiredCreeps = (flag) => {
             }, 
             { // spawn room selection params
                 targetRoom: flag.pos.roomName, 
-                minEnergyCapacity: 3250
+                minEnergyCapacity: 9750
             },
             creepSetup => { // onQueued callback
                     memory.queued.push({
@@ -59,7 +59,7 @@ mod.handleSpawningStarted = params => { // params: {spawn: spawn.name, name: cre
     if ( !params.destiny || !params.destiny.task || params.destiny.task != 'attackController' )
         return;
     // get flag which caused queueing of that creep
-    let flag = Game.flags[params.destiny.flagName];
+    let flag = Game.flags[params.destiny.targetName];
     if (flag) {
         // get task memory
         let memory = Task.attackController.memory(flag);
@@ -83,7 +83,7 @@ mod.handleSpawningCompleted = creep => {
     if (!creep.data || !creep.data.destiny || !creep.data.destiny.task || creep.data.destiny.task != 'attackController')
         return;
     // get flag which caused request of that creep
-    let flag = Game.flags[creep.data.destiny.flagName];
+    let flag = Game.flags[creep.data.destiny.targetName];
     if (flag) {
         // calculate & set time required to spawn and send next substitute creep
         // TODO: implement better distance calculation
@@ -114,7 +114,7 @@ mod.handleCreepDied = name => {
     if (!mem || !mem.destiny || !mem.destiny.task || mem.destiny.task != 'attackController')
         return;
     // get flag which caused request of that creep
-    let flag = Game.flags[mem.destiny.flagName];
+    let flag = Game.flags[mem.destiny.targetName];
     if (flag) {
         // get task memory
         let memory = Task.attackController.memory(flag);
