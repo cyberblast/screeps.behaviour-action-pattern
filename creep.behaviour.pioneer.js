@@ -1,6 +1,5 @@
-let mod = {};
+let mod = new Creep.Behaviour('pioneer');
 module.exports = mod;
-mod.name = 'pioneer';
 mod.run = function(creep) {
     // Assign next Action
     let oldTargetId = creep.data.targetId;
@@ -16,6 +15,41 @@ mod.run = function(creep) {
     } else {
         logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
     }
+};
+mod.outflowActions = (creep) => {
+    let priority;
+    if (creep.room.controller && creep.room.controller.level < 2) {
+        priority = [
+            Creep.action.feeding,
+            Creep.action.upgrading,
+            Creep.action.building,
+            Creep.action.repairing,
+            Creep.action.fueling,
+            Creep.action.fortifying,
+            Creep.action.charging,
+            Creep.action.storing,
+            Creep.action.picking
+        ];
+    } else {
+        priority = [
+            Creep.action.feeding,
+            Creep.action.building,
+            Creep.action.repairing,
+            Creep.action.fueling,
+            Creep.action.fortifying,
+            Creep.action.charging,
+            Creep.action.upgrading,
+            Creep.action.storing,
+            Creep.action.picking
+        ];
+    }
+    if (creep.room.controller && creep.room.controller.ticksToDowngrade < 2000) { // urgent upgrading
+        priority.unshift(Creep.action.upgrading);
+    }
+    if (creep.sum > creep.carry.energy) {
+        priority.unshift(Creep.action.storing);
+    }
+    return priority;
 };
 mod.nextAction = function(creep) {
     var flag;

@@ -4,18 +4,26 @@ let Behaviour = function(name) {
 	this.inflowActions = [];
 	this.outflowActions = [];
 	this.assignAction = function(creep, action) {
-		if (action.isValidAction(creep) &&
-			action.isAddableAction(creep) &&
-			action.assign(creep)) {
+		const valid = action.isValidAction(creep);
+        if( DEBUG && TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, valid, Action:'isValidAction'});
+        if( !valid ) return false;
+
+        const addable = action.isAddableAction(creep);
+        if( DEBUG && TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, addable, Action:'isAddableAction'});
+        if( !addable ) return false;
+
+        const assigned = action.assign(creep);
+        if( assigned ) {
+            if( DEBUG && TRACE ) trace(assigned ? 'Behaviour' : 'Action', {actionName:action.name, behaviourName:this.name, reepName:creep.name, assigned, Behaviour:'nextAction', Action:'assign'});
 			creep.data.lastAction = action.name;
 			creep.data.lastTarget = creep.target.id;
-			return true;
-		}
+            return true;
+        }
 		return false;
 	};
-	this.selectInflowAction = function(creep, inflowActions, outflowActions) {
-		for (const action in inflowActions) {
-			if (!action.debounce || action.debounce(outflowActions)) {
+	this.selectInflowAction = function(creep) {
+		for (const action in this.inflowActions) {
+			if (!action.debounce || action.debounce(creep, this.outflowActions)) {
 				if (this.assignAction(creep, action)) return;
 			}
 		}
