@@ -1,6 +1,5 @@
-let mod = {};
+let mod = new Creep.Behaviour('claimer');
 module.exports = mod;
-mod.name = 'claimer';
 mod.run = function(creep) {
     // Assign next Action
     let oldTargetId = creep.data.targetId;
@@ -30,18 +29,9 @@ mod.run = function(creep) {
     }
     if( DEBUG && TRACE ) trace('Behaviour', {creepName:creep.name, run:creep.action && creep.action.name || 'none', [mod.name]: 'run', Behaviour:mod.name});
 };
-mod.nextAction = function(creep){
-    let priority = [
+mod.actions = (creep) => {
+    return [
         Creep.action.claiming,
-        Creep.action.reserving,
-        Creep.action.idle
+        Creep.action.reserving
     ];
-    for(var iAction = 0; iAction < priority.length; iAction++) {
-        var action = priority[iAction];
-        if(action.isValidAction(creep) &&
-            action.isAddableAction(creep) &&
-            action.assign(creep)) {
-                return;
-        }
-    } 
 };
