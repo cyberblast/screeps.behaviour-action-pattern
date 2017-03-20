@@ -15,6 +15,9 @@ action.isAddableTarget = function(target){
         (!target.targetOf || _.filter(target.targetOf, {'actionName':'feeding'}).length < this.maxPerTarget));
 };
 action.newTarget = function(creep){
+    if (creep.room.energyAvailable === creep.room.energyCapacityAvailable) {
+        return null;
+    }
     var that = this;
     return creep.pos.findClosestByRange(creep.room.structures.all, {
         filter: (structure) => {

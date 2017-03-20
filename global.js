@@ -139,10 +139,14 @@ mod.DECAYABLES = [
     STRUCTURE_RAMPART];
 mod.LAB_IDLE = 'idle';
 mod.LAB_BOOST = 'boost';
+mod.LAB_SEED = 'seed';
 mod.LAB_MASTER = 'master';
 mod.LAB_SLAVE_1 = 'slave_1';
 mod.LAB_SLAVE_2 = 'slave_2';
 mod.LAB_SLAVE_3 = 'slave_3';
+mod.REACTOR_TYPE_FLOWER = 'flower';
+mod.REACTOR_MODE_IDLE = 'idle';
+mod.REACTOR_MODE_BURST = 'burst';
 mod.LAB_REACTIONS = {};
 for(let a in REACTIONS){
     for(let b in REACTIONS[a]){
