@@ -28,8 +28,12 @@ action.debounce = function(creep, outflowActions, thisArg) {
         // cycle detected
         //FIXME: How do I spoof creep.sum only for this call so we can check validAction & addableAction
         const dummyCreep = {};
-        _.assignIn(dummyCreep, creep);
-        dummyCreep.carry = {};
+        for (let key in creep) {
+            dummyCreep[key] = creep[key];
+        }
+        for (let key in dummyCreep.carry) {
+            dummyCreep.carry[key] = 0;
+        }
         dummyCreep.carry[RESOURCE_ENERGY] = dummyCreep.carryCapacity; // assume we get a full load of energy
         shouldCall = _.some(outflowActions, a => a.name !== 'storing' && a.isValidAction(dummyCreep) && a.isAddableAction(dummyCreep) && a.newTarget(creep));
     } else {

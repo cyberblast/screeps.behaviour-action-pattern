@@ -23,7 +23,7 @@ let Behaviour = function(name) {
 		return false;
 	};
 	this.selectInflowAction = function(creep) {
-		for (const action in this.inflowActions(creep)) {
+		for (const action of this.inflowActions(creep)) {
 			if (!action.debounce || action.debounce(creep, this.outflowActions(creep))) {
 				if (this.assignAction(creep, action)) return;
 			}
@@ -31,7 +31,7 @@ let Behaviour = function(name) {
 		return Creep.action.idle.assign(creep);
 	};
 	this.selectAction = function(creep, actions) {
-		for (const action in actions) {
+		for (const action of actions) {
 			if (this.assignAction(creep, action)) return;
 		}
 	    return Creep.action.idle.assign(creep);

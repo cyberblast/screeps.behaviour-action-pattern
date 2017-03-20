@@ -47,5 +47,5 @@ mod.nextAction = function(creep){
     if (creep.sum < creep.carryCapacity / 2)
         return mod.selectInflowAction(creep);
     else
-        return mod.selectAction(creep, mod.outflowActions);
+        return mod.selectAction(creep, mod.outflowActions(creep));
 };
