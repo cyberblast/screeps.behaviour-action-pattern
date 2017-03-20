@@ -1,6 +1,5 @@
-let mod = {};
+let mod = new Creep.Behaviour('healer');
 module.exports = mod;
-mod.name = 'healer';
 mod.run = function(creep) {
     // Assign next Action
     let oldTargetId = creep.data.targetId;
@@ -15,20 +14,11 @@ mod.run = function(creep) {
         logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
     }
 };
-mod.nextAction = function(creep){
-    let priority = [
+mod.actions = (creep) => {
+    return [
         Creep.action.healing,
-        Creep.action.guarding,
-        Creep.action.idle
+        Creep.action.guarding
     ];
-    for(var iAction = 0; iAction < priority.length; iAction++) {
-        var action = priority[iAction];
-        if(action.isValidAction(creep) &&
-            action.isAddableAction(creep) &&
-            action.assign(creep)) {
-                return;
-        }
-    }
 };
 mod.strategies = {
     defaultStrategy: {

@@ -1,8 +1,9 @@
 // base class for behaviours
 let Behaviour = function(name) {
 	this.name = name;
-	this.inflowActions = [];
-	this.outflowActions = [];
+	this.actions = (creep) => []; // priority list of actions for default nextAction
+	this.inflowActions = (creep) => []; // priority list of actions for getting energy
+	this.outflowActions = (creep) => []; // priority list of actions for using energy
 	this.assignAction = function(creep, action) {
 		const valid = action.isValidAction(creep);
         if( DEBUG && TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, valid, Action:'isValidAction'});
@@ -22,8 +23,8 @@ let Behaviour = function(name) {
 		return false;
 	};
 	this.selectInflowAction = function(creep) {
-		for (const action in this.inflowActions) {
-			if (!action.debounce || action.debounce(creep, this.outflowActions)) {
+		for (const action in this.inflowActions(creep)) {
+			if (!action.debounce || action.debounce(creep, this.outflowActions(creep))) {
 				if (this.assignAction(creep, action)) return;
 			}
 		}
@@ -34,6 +35,9 @@ let Behaviour = function(name) {
 			if (this.assignAction(creep, action)) return;
 		}
 	    return Creep.action.idle.assign(creep);
+	};
+	this.nextAction = function(creep) {
+		return this.selectAction(creep, this.actions(creep));
 	};
 };
 module.exports = Behaviour;
