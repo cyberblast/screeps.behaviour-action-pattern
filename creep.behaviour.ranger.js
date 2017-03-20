@@ -1,6 +1,5 @@
-let mod = {};
+let mod = new Creep.Behaviour('ranger');
 module.exports = mod;
-mod.name = 'ranger';
 mod.run = function(creep) {
     creep.flee = creep.flee || !creep.hasActiveBodyparts([ATTACK, RANGED_ATTACK]);
     creep.attacking = false;
@@ -33,21 +32,12 @@ mod.heal = function(creep){
         }
     }
 };
-mod.nextAction = function(creep){
-    let priority = [
+mod.actions = (creep) => {
+    return [
         Creep.action.defending,
         Creep.action.invading,
         Creep.action.guarding,
-        Creep.action.idle
     ];
-    for(var iAction = 0; iAction < priority.length; iAction++) {
-        var action = priority[iAction];
-        if(action.isValidAction(creep) &&
-            action.isAddableAction(creep) &&
-            action.assign(creep)) {
-                return;
-        }
-    }
 };
 mod.strategies = {
     defaultStrategy: {
