@@ -27,7 +27,11 @@ action.debounce = function(creep, outflowActions, thisArg) {
     if (creep.data.lastAction === 'storing' && creep.data.lastTarget === creep.room.storage.id) {
         // cycle detected
         //FIXME: How do I spoof creep.sum only for this call so we can check validAction & addableAction
-        shouldCall = _.some(outflowActions, a => a.name !== 'storing' && a.newTarget(creep));
+        const dummyCreep = {};
+        _.assignIn(dummyCreep, creep);
+        dummyCreep.carry = {};
+        dummyCreep.carry[RESOURCE_ENERGY] = dummyCreep.carryCapacity; // assume we get a full load of energy
+        shouldCall = _.some(outflowActions, a => a.name !== 'storing' && a.isValidAction(dummyCreep) && a.isAddableAction(dummyCreep) && a.newTarget(creep));
     } else {
         shouldCall = true;
     }
