@@ -1,4 +1,4 @@
-let mod = {};
+let mod = new Creep.Behaviour('hauler');
 module.exports = mod;
 mod.name = 'hauler';
 mod.run = function(creep) {
@@ -15,50 +15,38 @@ mod.run = function(creep) {
         logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
     }
 };
+mod.inflowActions = (creep) => {
+    return [
+        Creep.action.uncharging,
+        Creep.action.picking,
+        Creep.action.withdrawing,
+        Creep.action.reallocating
+    ];
+};
+mod.outflowActions = (creep) => {
+    let priority = [
+        Creep.action.feeding,
+        Creep.action.charging,
+        Creep.action.fueling,
+        Creep.action.storing
+    ];
+    if ( creep.sum > creep.carry.energy ||
+            ( !creep.room.situation.invasion &&
+                SPAWN_DEFENSE_ON_ATTACK && creep.room.conserveForDefense && creep.room.relativeEnergyAvailable > 0.8)) {
+        priority.unshift(Creep.action.storing);
+    }
+    if (creep.room.structures.urgentRepairable.length > 0 ) {
+        priority.unshift(Creep.action.fueling);
+    }
+    return priority;
+};
 mod.nextAction = function(creep){
     if( creep.pos.roomName != creep.data.homeRoom && Game.rooms[creep.data.homeRoom] && Game.rooms[creep.data.homeRoom].controller ) {
         Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
         return;
     }
-    const outflowPriority = [
-        Creep.action.feeding,
-        Creep.action.charging,
-        Creep.action.fueling,
-    ];
-    let priority = outflowPriority;
-    if( creep.sum * 2 < creep.carryCapacity ) {
-        priority = [
-            Creep.action.uncharging,
-            Creep.action.picking,
-        ];
-        Creep.action.withdrawing.debounce(creep, outflowPriority, function(withdrawing) {
-            priority.push(withdrawing);
-        });
-        priority.push(Creep.action.reallocating);
-        priority.push(Creep.action.idle);
-    } else {
-        priority = outflowPriority.concat([
-            Creep.action.storing,
-            Creep.action.idle,
-        ]);
-        if ( creep.sum > creep.carry.energy ||
-            ( !creep.room.situation.invasion &&
-                SPAWN_DEFENSE_ON_ATTACK && creep.room.conserveForDefense && creep.room.relativeEnergyAvailable > 0.8)) {
-            priority.unshift(Creep.action.storing);
-        }
-        if (creep.room.structures.urgentRepairable.length > 0 ) {
-            priority.unshift(Creep.action.fueling);
-        }
-    }
-
-    for(var iAction = 0; iAction < priority.length; iAction++) {
-        var a = priority[iAction];
-        if(a.isValidAction(creep) && a.isAddableAction(creep) && a.assign(creep)) {
-            if (a.name !== 'idle') {
-                creep.data.lastAction = a.name;
-                creep.data.lastTarget = creep.target.id;
-            }
-            return;
-        }
-    }
+    if (creep.sum < creep.carryCapacity / 2)
+        return mod.selectInflowAction(creep);
+    else
+        return mod.selectAction(creep, mod.outflowActions);
 };
