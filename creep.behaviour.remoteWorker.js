@@ -1,6 +1,5 @@
-let mod = {};
+const mod = new Creep.Behaviour('remoteWorker');
 module.exports = mod;
-mod.name = 'remoteWorker';
 mod.run = function(creep) {
     if (Creep.action.avoiding.run(creep)) {
         return;
@@ -19,39 +18,32 @@ mod.run = function(creep) {
         logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
     }
 };
-mod.nextAction = function(creep){
+mod.inflowActions = (creep) => {
+    return [
+        Creep.action.picking,
+        Creep.action.uncharging,
+        Creep.action.withdrawing,
+        Creep.action.harvesting
+    ];
+};
+mod.outflowActions = (creep) => {
+    return [
+        Creep.action.repairing,
+        Creep.action.building,
+        Creep.action.recycling
+    ];
+};
+mod.nextAction = function(creep) {
     // at target room
-    if( creep.data.destiny.room == creep.pos.roomName ){
-        let priority;
-        // get some energy
-        if( creep.sum < creep.carryCapacity * 0.8 ) {
-            priority = [
-                Creep.action.picking,
-                Creep.action.uncharging,
-                Creep.action.withdrawing,
-                Creep.action.harvesting,
-                Creep.action.idle];
+    if (creep.data.destiny.room == creep.pos.roomName) {
+        if (creep.sum < creep.carryCapacity * 0.8) {
+            // get some energy
+            return mod.selectInflowAction(creep);
         } else {
-            priority = [
-                Creep.action.repairing,
-                Creep.action.building,
-                Creep.action.recycling
-            ];
+            return mod.selectAction(creep, mod.outflowActions(creep));
         }
-
-        for(var iAction = 0; iAction < priority.length; iAction++) {
-            var action = priority[iAction];
-            if(action.isValidAction(creep) &&
-                action.isAddableAction(creep) &&
-                action.assign(creep)) {
-                return;
-            }
-        }
-    }
-    // not at target room
-    else {
-        this.gotoTargetRoom(creep);
-        return;
+    } else { // not at target room
+        return this.gotoTargetRoom(creep);
     }
     // fallback
     // recycle self
@@ -63,7 +55,4 @@ mod.nextAction = function(creep){
 mod.gotoTargetRoom = function(creep){
     const targetFlag = creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
     if (targetFlag) return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName);
-};
-mod.goHome = function(creep){
-    return Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
 };

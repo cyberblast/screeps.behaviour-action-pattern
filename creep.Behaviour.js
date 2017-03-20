@@ -1,11 +1,11 @@
 // base class for behaviours
-let Behaviour = function(name) {
-	this.name = name;
-	this.actions = (creep) => []; // priority list of actions for default nextAction
-	this.inflowActions = (creep) => []; // priority list of actions for getting energy
-	this.outflowActions = (creep) => []; // priority list of actions for using energy
-	this.assignAction = function(creep, action) {
-		const valid = action.isValidAction(creep);
+const Behaviour = function(name) {
+    this.name = name;
+    this.actions = (creep) => []; // priority list of actions for default nextAction
+    this.inflowActions = (creep) => []; // priority list of actions for getting energy
+    this.outflowActions = (creep) => []; // priority list of actions for using energy
+    this.assignAction = function(creep, action) {
+        const valid = action.isValidAction(creep);
         if( DEBUG && TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, valid, Action:'isValidAction'});
         if( !valid ) return false;
 
@@ -16,28 +16,28 @@ let Behaviour = function(name) {
         const assigned = action.assign(creep);
         if( assigned ) {
             if( DEBUG && TRACE ) trace(assigned ? 'Behaviour' : 'Action', {actionName:action.name, behaviourName:this.name, reepName:creep.name, assigned, Behaviour:'nextAction', Action:'assign'});
-			creep.data.lastAction = action.name;
-			creep.data.lastTarget = creep.target.id;
+            creep.data.lastAction = action.name;
+            creep.data.lastTarget = creep.target.id;
             return true;
         }
-		return false;
-	};
-	this.selectInflowAction = function(creep) {
-		for (const action of this.inflowActions(creep)) {
-			if (!action.debounce || action.debounce(creep, this.outflowActions(creep))) {
-				if (this.assignAction(creep, action)) return;
-			}
-		}
-		return Creep.action.idle.assign(creep);
-	};
-	this.selectAction = function(creep, actions) {
-		for (const action of actions) {
-			if (this.assignAction(creep, action)) return;
-		}
-	    return Creep.action.idle.assign(creep);
-	};
-	this.nextAction = function(creep) {
-		return this.selectAction(creep, this.actions(creep));
-	};
+        return false;
+    };
+    this.selectInflowAction = function(creep) {
+        for (const action of this.inflowActions(creep)) {
+            if (!action.debounce || action.debounce(creep, this.outflowActions(creep))) {
+                if (this.assignAction(creep, action)) return;
+            }
+        }
+        return Creep.action.idle.assign(creep);
+    };
+    this.selectAction = function(creep, actions) {
+        for (const action of actions) {
+            if (this.assignAction(creep, action)) return;
+        }
+        return Creep.action.idle.assign(creep);
+    };
+    this.nextAction = function(creep) {
+        return this.selectAction(creep, this.actions(creep));
+    };
 };
 module.exports = Behaviour;

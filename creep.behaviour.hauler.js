@@ -1,4 +1,4 @@
-let mod = new Creep.Behaviour('hauler');
+const mod = new Creep.Behaviour('hauler');
 module.exports = mod;
 mod.run = function(creep) {
     // Assign next Action

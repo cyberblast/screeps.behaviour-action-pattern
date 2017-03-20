@@ -1,4 +1,4 @@
-let mod = new Creep.Behaviour('claimer');
+const mod = new Creep.Behaviour('claimer');
 module.exports = mod;
 mod.run = function(creep) {
     // Assign next Action

@@ -1,6 +1,5 @@
-let mod = {};
+const mod = new Creep.Behaviour('melee');
 module.exports = mod;
-mod.name = 'melee';
 mod.run = function(creep) {
     creep.flee = creep.flee || !creep.hasActiveBodyparts([ATTACK, RANGED_ATTACK]);
     creep.attacking = false;
@@ -31,21 +30,12 @@ mod.heal = function(creep){
         creep.heal(creep);
     }
 };
-mod.nextAction = function(creep){
-    let priority = [
+mod.actions = (creep) => {
+    return [
         Creep.action.defending,
         Creep.action.invading,
-        Creep.action.guarding,
-        Creep.action.idle
+        Creep.action.guarding
     ];
-    for(var iAction = 0; iAction < priority.length; iAction++) {
-        var action = priority[iAction];
-        if(action.isValidAction(creep) &&
-            action.isAddableAction(creep) &&
-            action.assign(creep)) {
-                return;
-        }
-    }
 };
 mod.strategies = {
     defaultStrategy: {
