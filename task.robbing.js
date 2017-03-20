@@ -168,6 +168,7 @@ mod.nextAction = creep => {
             //if( Creep.action.storing.assign(creep) ) return;
             if( Creep.action.charging.assign(creep) ) return;
             if( !creep.room.ally && Creep.action.storing.assign(creep) ) return;
+            if (Creep.action.dropping.assign(creep)) return;
             Creep.behaviour.worker.nextAction(creep);
             return;
         }
