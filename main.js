@@ -204,6 +204,23 @@ global.install = () => {
             worker: load("creep.setup.worker")
         }
     });
+    _.assign(Room, {
+        Containers: load("room.containers"),
+        Defense: load("room.defense"),
+        Labs: load("room.labs"),
+        Links: load("room.links"),
+        Nukers: load("room.nukers"),
+        Observer: load("room.observer"),
+        Orders: load("room.orders"),
+        Pathfinding: load("room.pathfinding"),
+        PowerBank: load("room.powerBank"),
+        PowerSpawns: load("room.powerSpawns"),
+        Resources: load("room.resources"),
+        Spawns: load("room.spawns"),
+        Structures: load("room.structures"),
+        Terminal: load("room.terminal"),
+        Towers: load("room.towers"),
+    });
     global.inject(Creep, load("creep"));
     global.inject(Room, load("room"));
     global.inject(Spawn, load("spawn"));
