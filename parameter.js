@@ -34,6 +34,7 @@ let mod = {
         CONTROLLER: true, // displays level, progress, and ticks to downgrade if active
         STORAGE: true, // displays storage contents
         TERMINAL: true, // displays terminal contents
+        TOWER: true, // displays tower contents
         TRANSACTIONS: true, // displays 2 most recent transactions over room terminal
         LABS: true, // displays lab energy, mineral, or cooldown
         MINERAL: true, // displays mineral amount, or ticks to regen
