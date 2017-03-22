@@ -4,21 +4,9 @@ let find = Room.prototype.find;
 let mod = {};
 module.exports = mod;
 mod.extend = function(){
-    Room.Containers.extend();
-    Room.Defense.extend();
-    Room.Labs.extend();
-    Room.Links.extend();
-    Room.Nukers.extend();
-    Room.Observer.extend();
-    Room.Orders.extend();
-    Room.Pathfinding.extend();
-    Room.PowerBank.extend();
-    Room.PowerSpawns.extend();
-    Room.Resources.extend();
-    Room.Spawns.extend();
-    Room.Structures.extend();
-    Room.Terminal.extend();
-    Room.Towers.extend();
+    for (const mod in Room) {
+        if (Room[mod].extend) Room[mod].extend();
+    }
     Object.defineProperties(Room.prototype, {
         'creeps': {
             configurable: true,
@@ -295,21 +283,9 @@ mod.flush = function(){
     Room.Observer.flush();
     
     let clean = room => {
-        Room.Containers.flush(room);
-        Room.Defense.flush(room);
-        Room.Labs.flush(room);
-        Room.Links.flush(room);
-        Room.Nukers.flush(room);
-        Room.Observer.flush(room);
-        Room.Orders.flush(room);
-        Room.Pathfinding.flush(room);
-        Room.PowerBank.flush(room);
-        Room.PowerSpawns.flush(room);
-        Room.Resources.flush(room);
-        Room.Spawns.flush(room);
-        Room.Structures.flush(room);
-        Room.Terminal.flush(room);
-        Room.Towers.flush(room);
+        for (const mod in Room) {
+            if (Room[mod].flush) Room[mod].flush(room);
+        }
         delete room._situation;
         delete room._creeps;
         delete room._privateerMaxWeight;
@@ -326,21 +302,9 @@ mod.flush = function(){
 mod.analyze = function(){
     let getEnvironment = room => {
         try {
-            Room.Containers.analyze(room);
-            Room.Defense.analyze(room);
-            Room.Labs.analyze(room);
-            Room.Links.analyze(room);
-            Room.Nukers.analyze(room);
-            Room.Observer.analyze(room);
-            Room.Orders.analyze(room);
-            Room.Pathfinding.analyze(room);
-            Room.PowerBank.analyze(room);
-            Room.PowerSpawns.analyze(room);
-            Room.Resources.analyze(room);
-            Room.Spawns.analyze(room);
-            Room.Structures.analyze(room);
-            Room.Terminal.analyze(room);
-            Room.Towers.analyze(room);
+            for (const mod in Room) {
+                if (Room[mod].analyze) Room[mod].analyze(room);
+            }
             room.roadConstruction();
         }
         catch(err) {
