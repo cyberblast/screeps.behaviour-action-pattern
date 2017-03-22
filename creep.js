@@ -349,6 +349,11 @@ mod.extend = function(){
             selector: taskName => Task[taskName] && Task[taskName],
         });
 
+    // Explain API extension
+    Creep.prototype.explainAgent = function() {
+        return `ttl:${this.ticksToLive} pos:${this.pos}`;
+    };
+
     // API
     Creep.prototype.staticCustomStrategy = function(actionName, behaviourName, taskName) {};
     Creep.prototype.customStrategy = function(actionName, behaviourName, taskName) {};
