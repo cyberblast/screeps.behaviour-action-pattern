@@ -146,6 +146,7 @@ global.install = () => {
         reputation: load("task.reputation"),
     });
     Creep.Action = load("creep.Action");
+    Creep.Action.extend();
     Creep.Setup = load("creep.Setup");
     _.assign(Creep, {
         action: {
