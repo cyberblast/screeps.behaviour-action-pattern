@@ -176,7 +176,7 @@ mod.extend = function() {
                                     (room.controller.my ||
                                     (room.controller.owner === undefined)));
             }
-            if (!options.allowSK && mod.isSKRoom(roomName)) return 10;
+            if (!options.allowSK && Room.isSKRoom(roomName)) return 10;
             if (!options.allowHostile && this.hostile &&
                 roomName !== destination && roomName !== origin) {
                 return Number.POSITIVE_INFINITY;

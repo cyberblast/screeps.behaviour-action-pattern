@@ -144,13 +144,13 @@ mod.triggerKnownInvaders = id =>  Room.knownInvader.trigger(id);
 mod.triggerGoneInvaders = id =>  Room.goneInvader.trigger(id);
 mod.execute = function(room) {
     if (room) { // has sight
-        room.goneInvader.forEach(triggerGoneInvaders);
-        room.hostileIds.forEach(triggerKnownInvaders);
-        room.newInvader.forEach(triggerNewInvaders);
+        room.goneInvader.forEach(mod.triggerGoneInvaders);
+        room.hostileIds.forEach(mod.triggerKnownInvaders);
+        room.newInvader.forEach(mod.triggerNewInvaders);
         Tower.loop(room);
     }
     else { // no sight
-        if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
+        if( memory.hostileIds ) _.forEach(memory.hostileIds, mod.triggerKnownInvaders);
     }
 };
 mod.flush = function(room) {

@@ -145,10 +145,10 @@ mod.extend = function() {
         } else this.memory.minerals = [];
     };
 };
-mod.analyze = function() {
+mod.analyze = function(room) {
     if( Game.time % MEMORY_RESYNC_INTERVAL === 0 || room.name == 'sim' ) room.saveMinerals();
 };
-mod.flush = function() {
+mod.flush = function(room) {
     if (global.isNewServer) delete room._minerals;
     delete room._reservedSpawnEnergy;
     delete room._sourceEnergyAvailable;
