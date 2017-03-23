@@ -1,6 +1,7 @@
 // This task will react on robbing flags (invade/rob or red/yellow), sending 2 creeps to rob that room
 let mod = {};
 module.exports = mod;
+mod.name = 'robbing';
 // hook into events
 mod.register = () => {
     // when a new flag has been found (occurs every tick, for each flag)
@@ -27,20 +28,27 @@ mod.checkForRequiredCreeps = (flag) => {
     // get task memory
     let memory = Task.robbing.memory(flag);
     // count creeps assigned to task
-
-    let count = memory.queued.length + memory.spawning.length + memory.running.length;
+    const count = memory.queued.length + memory.spawning.length + memory.running.length;
+    const roomName = flag.pos.roomName;
     
     // if creep count below requirement spawn a new creep creep 
-    if( count < 2 ) {
+    if( count < (memory.numRobbers || 2) ) {
+        const spawnRoom = mod.strategies.robber.spawnRoom({roomName});
+        if( !spawnRoom ) {
+            return;
+        }
+        // robbers set homeRoom if closer storage exists
+        const storageRoom = ROBBER_REHOME && (mod.strategies.robber.homeRoom(flag) || spawnRoom);
         Task.spawn(
             Task.robbing.creep.robbing, // creepDefinition
             { // destiny
-                task: 'robbing', // taskName
+                task: mod.name, // taskName
                 targetName: flag.name, // targetName
+                homeRoom: storageRoom.name
             }, 
             { // spawn room selection params
-                targetRoom: flag.pos.roomName, 
-                minEnergyCapacity: 250
+                targetRoom: roomName,
+                explicit: spawnRoom.name,
             },
             creepSetup => { // callback onQueued
                 let memory = Task.robbing.memory(Game.flags[creepSetup.destiny.targetName]);
@@ -81,6 +89,9 @@ mod.handleSpawningCompleted = creep => {
     // ensure it is a creep which has been requested by this task (else return)
     if (!creep.data || !creep.data.destiny || !creep.data.destiny.task || creep.data.destiny.task != 'robbing')
         return;
+    if( creep.data.destiny.homeRoom ) {
+        creep.data.homeRoom = creep.data.destiny.homeRoom;
+    }
     // get flag which caused request of that creep
     // TODO: remove  || creep.data.destiny.flagName (temporary backward compatibility)
     let flag = Game.flags[creep.data.destiny.targetName || creep.data.destiny.flagName];
@@ -140,7 +151,8 @@ mod.memory = (flag) => {
         flag.memory.tasks.robbing = {
             queued: [], 
             spawning: [],
-            running: []
+            running: [],
+            numRobbers: 2
         };
     }
     return flag.memory.tasks.robbing;
@@ -230,12 +242,9 @@ mod.nextAction = creep => {
 mod.exploitNextRoom = creep => {
     if( creep.sum < creep.carryCapacity*0.4 ) {
         // calc by distance to home room
-        let validColor = flagEntry => (
-            (flagEntry.color == FLAG_COLOR.invade.robbing.color && flagEntry.secondaryColor == FLAG_COLOR.invade.robbing.secondaryColor)
-        );
         var flag;
         if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.flagName];
-        if( !flag ) flag = FlagDir.find(validColor, Game.rooms[creep.data.homeRoom].controller.pos, false);
+        if( !flag ) flag = mod.getFlag(creep.data.homeRoom);
         // new flag found
         if( flag ) {
             return mod.gotoTargetRoom(creep, flag);
@@ -249,6 +258,28 @@ mod.goHome = creep => {
     Population.registerCreepFlag(creep, null);
     Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
     return false;
+};
+mod.getFlag = function(roomName) {
+    let validColor = flagEntry => (
+        (flagEntry.color == FLAG_COLOR.invade.robbing.color && flagEntry.secondaryColor == FLAG_COLOR.invade.robbing.secondaryColor)
+    );
+    return FlagDir.find(validColor, new RoomPosition(25, 25, roomName), false);
+};
+mod.storage = function(roomName, storageRoom) {
+    const memory = Task.robbing.memory(mod.getFlag(roomName));
+    if (storageRoom) {
+        const was = memory.storageRoom;
+        memory.storageRoom = storageRoom;
+        return `Task.${mod.name}: room ${roomName}, now sending haulers to ${storageRoom}, (was ${was})`;
+    } else if (!memory.storageRoom) {
+        return `Task.${mod.name}: room ${roomName}, no custom storage destination`;
+    } else if (storageRoom === false) {
+        const was = memory.storageRoom;
+        delete memory.storageRoom;
+        return `Task.${mod.name}: room ${roomName}, cleared custom storage room (was ${was})`;
+    } else {
+        return `Task.${mod.name}: room ${roomName}, sending haulers to ${memory.storageRoom}`;
+    }
 };
 mod.gotoTargetRoom = (creep, flag) => {
     if( Creep.action.travelling.assignRoom(creep, flag.pos.roomName) ) {
@@ -264,4 +295,25 @@ mod.creep = {
         behaviour: "privateer", 
         queue: 'Low'
     },
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+    },
+    robber: {
+        name: `robber-${mod.name}`,
+        homeRoom: function(flag) {
+            // Explicity set by user?
+            const memory = Task.robbing.memory(flag);
+            if(memory.storageRoom) return Game.rooms[memory.storageRoom];
+            // Otherwise, score it
+            return Room.bestSpawnRoomFor(flag.pos.roomName);
+        },
+        spawnRoom: function({roomName, minWeight}) {
+            return Room.findSpawnRoom({
+                targetRoom: roomName,
+                minEnergyCapacity: minWeight || 250,
+            });
+        },
+    }
 };
