@@ -46,6 +46,11 @@ let Action = function(actionName){
     this.newTarget = function(creep){
         return null;
     };
+    // used to debounce inflow actions
+    // @return {target, resourceType, amount} - the id of the target structure, the type of resource and the amount needed.
+    this.hasNeeds = function(creep) {
+        return {target: this.newTarget(creep), resourceType: RESOURCE_ENERGY, amount: 0};
+    };
     // order for the creep to execute each tick, when assigned to that action
     this.step = function(creep){
         if(CHATTY) creep.say(this.name, SAY_PUBLIC);

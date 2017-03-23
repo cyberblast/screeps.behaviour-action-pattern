@@ -241,6 +241,9 @@ mod.extend = function(){
         else if (store > unloadTarget*1.05) ret = unloadTarget-store;
         return ret;
     };
+    StructureStorage.prototype.satisfyOrder = function(resourceType, amount) {
+        return mod.satisfyOrder(this, resourceType, amount);
+    };
     Object.defineProperty(StructureTerminal.prototype, 'sum', {
         configurable: true,
         get: function() {
@@ -299,38 +302,27 @@ mod.extend = function(){
         if (!this.room.memory.resources) return 0;
         let loadTarget = 0;
         let unloadTarget = 0;
+        const current = resourceType === RESOURCE_ENERGY ? this.energy : resourceType === this.mineralType ? this.mineralAmount : 0;
+        const order = mod.getOrder(this);
+        if (order) {
+            loadTarget = Math.max(order.orderRemaining + current, order.storeAmount);
+            unloadTarget = order.orderAmount + order.storeAmount;
+            if (unloadTarget < 0) unloadTarget = 0;
+        }
+        const space = resourceType === RESOURCE_ENERGY ? this.energyCapacity - this.energy : this.mineralCapacity - this.mineralAmount;
+        const capacity = resourceType === RESOURCE_ENERGY ? this.energyCapacity : this.mineralCapacity;
 
-        // look up resource and calculate needs
-        let containerData = this.room.memory.resources.lab.find( (s) => s.id == this.id );
-        if (containerData) {
-            let order = containerData.orders.find((o)=>{return o.type==resourceType;});
-            if (order) {
-                let amt = 0;
-                if (resourceType == RESOURCE_ENERGY) amt = this.energy;
-                else if (resourceType == this.mineralType) amt = this.mineralAmount;
-                loadTarget = Math.max(order.orderRemaining + amt, order.storeAmount);
-                unloadTarget = order.orderAmount + order.storeAmount;
-                if (unloadTarget < 0) unloadTarget = 0;
-            }
+        // loading
+        if (current < Math.min(loadTarget, capacity) / 2 ) return Math.min(loadTarget - current, space);
+
+        // unloading
+        if (order && order.reactionType === this.mineralType && store > unloadTarget + (cap - Math.min(unloadTarget, cap)) / 2) {
+            return unloadTarget - store;
+        } else if (store > unloadTarget) {
+            return unloadTarget - store;
         }
-        let store = 0;
-        let space = 0;
-        let cap = 0;
-        if (resourceType == RESOURCE_ENERGY) {
-            store = this.energy;
-            space = this.energyCapacity-this.energy;
-            cap = this.energyCapacity;
-        } else {
-            if (this.mineralType == resourceType) store = this.mineralAmount;
-            space = this.mineralCapacity-this.mineralAmount;
-            cap = this.mineralCapacity;
-        }
-        if( store < Math.min(loadTarget,cap) / 2 ) return Math.min( loadTarget-store,space );
-        if( containerData && containerData.reactionType === this.mineralType ) {
-            if( store > unloadTarget + ( cap - Math.min(unloadTarget,cap) ) / 2 ) return unloadTarget-store;
-        } else {
-            if( store > unloadTarget ) return unloadTarget-store;
-        }
+
+        // no change
         return 0;
     };
     StructurePowerSpawn.prototype.getNeeds = function(resourceType) {
@@ -376,6 +368,27 @@ mod.extend = function(){
     };
 
     if( Memory.pavementArt === undefined ) Memory.pavementArt = {};
+};
+mod.satisfyOrder = function(target, resourceType, amount) {
+    const data = target.room.memory.resources && target.room.memory.resources[target.structureType].find(s => s.id === target.id);
+    if (data && data.orders) {
+        const order = data.orders.find(o => o.type === resourceType);
+        if (order && order.orderRemaining > 0) {
+            order.orderRemaining -= amount;
+        }
+    }
+};
+mod.getOrder = function(target) {
+    const room = target.room;
+    if (!room.memory || !room.memory.resources) return null;
+    const data = room.memory.resources[target.structureType].find((s) => s.id === target.id);
+    if (data) {
+        for (const order in data.orders) {
+            if (order.orderRemaining > 0 || order.storeAmount > 0) {
+                return order;
+            }
+        }
+    }
 };
 module.exports = mod;
 
