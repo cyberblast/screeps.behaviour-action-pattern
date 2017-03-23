@@ -223,23 +223,21 @@ mod.extend = function(){
         },
     });
     StructureStorage.prototype.getNeeds = function(resourceType) {
-        var ret = 0;
         if (!this.room.memory.resources) return 0;
-
-        let storageData = this.room.memory.resources.storage[0];
-        // look up resource and calculate needs
-        let order = null;
-        if (storageData) order = storageData.orders.find((o)=>{return o.type==resourceType;});
-        if (!order) order = { orderAmount: 0, orderRemaining: 0, storeAmount: 0 };
-        let rcl = this.room.controller.level;
-        let loadTarget = Math.max(order.orderRemaining + (this.store[resourceType]||0), order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? MIN_STORAGE_ENERGY[rcl] : MAX_STORAGE_MINERAL));
+        const storageData = this.room.memory.resources.storage[0];
+        const order = storageData ? storageData.orders.find(o => o.type === resourceType) : {orderAmount: 0, orderRemaining: 0, storeAmount: 0};
+        const current = this.store[resourceType] || 0;
+        const rcl = this.room.controller.level;
+        const loadTarget = Math.max(order.orderRemaining + current, order.storeAmount + ((resourceType === RESOURCE_ENERGY) ? MIN_STORAGE_ENERGY[rcl] : MAX_STORAGE_MINERAL));
         // storage always wants energy
-        let unloadTarget = (resourceType == RESOURCE_ENERGY) ? (this.storeCapacity-this.sum)+this.store.energy : order.orderAmount + order.storeAmount + MAX_STORAGE_MINERAL;
-        if (unloadTarget < 0) unloadTarget = 0;
-        let store = this.store[resourceType]||0;
-        if (store < loadTarget) ret = Math.min(loadTarget-store,this.storeCapacity-this.sum);
-        else if (store > unloadTarget*1.05) ret = unloadTarget-store;
-        return ret;
+        const unloadTarget = Math.max(0, resourceType === RESOURCE_ENERGY ?
+            (this.storeCapacity - this.sum) + this.store.energy : order.orderAmount + order.storeAmount + MAX_STORAGE_MINERAL);
+        // loading
+        if (current < loadTarget) return Math.min(loadTarget - current, this.storeCapacity - this.sum);
+        // unloading
+        else if (current > unloadTarget*1.05) return unloadTarget - store;
+        // no change
+        return 0;
     };
     StructureStorage.prototype.satisfyOrder = function(resourceType, amount) {
         return mod.satisfyOrder(this, resourceType, amount);
@@ -255,20 +253,22 @@ mod.extend = function(){
         }
     });
     StructureTerminal.prototype.getNeeds = function(resourceType) {
-        var ret = 0;
         if (!this.room.memory.resources) return 0;
-        let terminalData = this.room.memory.resources.terminal[0];
-        // look up resource and calculate needs
-        let order = null;
-        if (terminalData) order = terminalData.orders.find((o)=>{return o.type==resourceType;});
-        if (!order) order = { orderAmount: 0, orderRemaining: 0, storeAmount: 0 };
-        let loadTarget = Math.max(order.orderRemaining + (this.store[resourceType]||0), order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0));
-        let unloadTarget = order.orderAmount + order.storeAmount + ((resourceType == RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0);
-        if (unloadTarget < 0) unloadTarget = 0;
-        let store = this.store[resourceType]||0;
-        if (store < loadTarget) ret = Math.min(loadTarget-store,this.storeCapacity-this.sum);
-        else if (store > unloadTarget*1.05) ret = unloadTarget-store;
-        return ret;
+        const terminalData = this.room.memory.resources.terminal[0];
+        const order = terminalData ? terminalData.orders.find(o => o.type === resourceType) : {orderAmount: 0, orderRemaining: 0, storeAmount: 0};
+        const current = this.store[resourceType] || 0;
+        const loadTarget = Math.max(order.orderRemaining + current, order.storeAmount + ((resourceType === RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0));
+        const unloadTarget = Math.max(0, order.orderAmount + order.storeAmount + ((resourceType === RESOURCE_ENERGY) ? TERMINAL_ENERGY : 0));
+
+        // loading
+        if (store < loadTarget) return Math.min(loadTarget - current, this.storeCapacity - this.sum);
+        // unloading
+        else if (store > unloadTarget*1.05) return unloadTarget - current;
+        // no change
+        return 0;
+    };
+    StructureTerminal.satisfyOrder = function(resourceType, amount) {
+        return mod.satisfyOrder(this, resourceType, amount);
     };
     Object.defineProperty(StructureContainer.prototype, 'sum', {
         configurable: true,
@@ -303,11 +303,10 @@ mod.extend = function(){
         let loadTarget = 0;
         let unloadTarget = 0;
         const current = resourceType === RESOURCE_ENERGY ? this.energy : resourceType === this.mineralType ? this.mineralAmount : 0;
-        const order = mod.getOrder(this);
+        const order = mod.getOrder(this, resourceType);
         if (order) {
             loadTarget = Math.max(order.orderRemaining + current, order.storeAmount);
-            unloadTarget = order.orderAmount + order.storeAmount;
-            if (unloadTarget < 0) unloadTarget = 0;
+            unloadTarget = Math.max(0, order.orderAmount + order.storeAmount);
         }
         const space = resourceType === RESOURCE_ENERGY ? this.energyCapacity - this.energy : this.mineralCapacity - this.mineralAmount;
         const capacity = resourceType === RESOURCE_ENERGY ? this.energyCapacity : this.mineralCapacity;
@@ -324,6 +323,9 @@ mod.extend = function(){
 
         // no change
         return 0;
+    };
+    StructureLab.satisfyOrder = function(resourceType, amount) {
+        return mod.satisfyOrder(this, resourceType, amount);
     };
     StructurePowerSpawn.prototype.getNeeds = function(resourceType) {
         // if parameter is enabled then autofill powerSpawns
@@ -366,6 +368,9 @@ mod.extend = function(){
         if (store > unloadTarget * 1.05) return unloadTarget-store;
         return 0;
     };
+    StructurePowerSpawn.satisfyOrder = function(resourceType, amount) {
+        return mod.satisfyOrder(this, resourceType, amount);
+    };
 
     if( Memory.pavementArt === undefined ) Memory.pavementArt = {};
 };
@@ -378,13 +383,13 @@ mod.satisfyOrder = function(target, resourceType, amount) {
         }
     }
 };
-mod.getOrder = function(target) {
+mod.getOrder = function(target, resourceType) {
     const room = target.room;
     if (!room.memory || !room.memory.resources) return null;
     const data = room.memory.resources[target.structureType].find((s) => s.id === target.id);
     if (data) {
         for (const order in data.orders) {
-            if (order.orderRemaining > 0 || order.storeAmount > 0) {
+            if ((order.orderRemaining > 0 || order.storeAmount > 0) && order.type === resourceType) {
                 return order;
             }
         }
