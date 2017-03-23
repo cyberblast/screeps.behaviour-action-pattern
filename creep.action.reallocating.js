@@ -2,16 +2,22 @@ const action = new Creep.Action('reallocating');
 module.exports = action;
 /**
   * Finds a destination for the given resource type and amount
-  * @param {Room} room - The room object this action is working in.
+  * @param {Creep} creep - The creep object that is performing this action.
   * @param {String} resourceType - The type of resource to find a destination for, if undefined this will also find and return a source.
-  * @returns {outflow: {target, resourceType, amount}, [inflow: {target, resourceType, amount}]} - target for outflow and optional inflow target
+  * @returns {structure, amount} - target structure and amoun tof resource
   */
-action.findNeeding = function(room, resourceType, amountMin){
+action.findNeeding = function(creep, resourceType, amountMin){
+    const room = creep.room;
     if (!amountMin) amountMin = 1;
+
+    // search structures in order labs -> powerSpawns -> containers -> terminals -> storage
     const validLabs = _.filter(room.structures.labs.all, l => l.mineralAmount === 0 || l.mineralType === resourceType || resourceType === RESOURCE_ENERGY);
     const structures = [...validLabs];
     if (resourceType === RESOURCE_ENERGY || resourceType === RESOURCE_POWER) structures.push([...room.structures.powerSpawns.all]);
-    structures.push([...room.structures.container.all, room.terminal, room.storage]);
+    structures.push(...room.structures.container.all);
+    if (room.terminal) structures.push(room.terminal);
+    if (room.storage) structures.push(room.storage);
+
     for (const structure of structures) {
         if (structure) {
             const amount = structure.getNeeds(resourceType);
@@ -23,10 +29,10 @@ action.findNeeding = function(room, resourceType, amountMin){
     // no specific needs found ... check for overflow availability
     // FIXME: Can this and terminal just be handled by creep.action.storing?
     if (room.storage && storage.storeCapacity - storage.sum > amountMin)
-        return { structure: room.storage, amount: 0 };
+        return {structure: room.storage, amount: creep.carryCapacity - creep.sum};
 
     if (room.terminal && resourceType !== RESOURCE_ENERGY && resourceType !== RESOURCE_POWER && terminal.storeCapacity - terminal.sum > amountMin)
-        return { structure: room.terminal, amount: 0 };
+        return {structure: room.terminal, amount: creep.carryCapacity - creep.sum};
 
     // no destination found
     return null;
