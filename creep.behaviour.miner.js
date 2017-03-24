@@ -99,8 +99,8 @@ mod.run = function(creep, params = {}) {
         }
 
         if( creep.data.determinatedSpot ) {
-            const energyPerHarvest = creep => creep.data.body && creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2);
-            if( source.energy === 0 ) {
+            const perHarvest = creep => creep.data.body && creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2);
+            if( source.energy === 0 ) { // for mineral miners source.energy is undefined so this is false
                 const carryThreshold = (creep.data.body&&creep.data.body.work ? (creep.data.body.work*5) : (creep.carryCapacity/2));
                 if( creep.carry.energy <= carryThreshold ) {
                     const dropped = creep.pos.findInRange(FIND_DROPPED_ENERGY, 1);
@@ -168,7 +168,7 @@ mod.run = function(creep, params = {}) {
                 if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
                 let range = params.approach(creep);
                 if( range === 0 ){
-                    if( creep.carry.energy > ( creep.carryCapacity - energyPerHarvest(creep) )){
+                    if( creep.sum > ( creep.carryCapacity - perHarvest(creep) )){
                         let transfer = r => { if(creep.carry[r] > 0 ) creep.transfer(source.container, r); };
                         _.forEach(Object.keys(creep.carry), transfer);
                     }
@@ -178,7 +178,7 @@ mod.run = function(creep, params = {}) {
                 if(CHATTY) creep.say('dropmining', SAY_PUBLIC);
                 let range = params.approach(creep);
                 if( range === 0 ){
-                    if( creep.carry.energy > ( creep.carryCapacity - energyPerHarvest(creep) )) {
+                    if( creep.sum > ( creep.carryCapacity - perHarvest(creep) )) {
                         if( OOPS ) creep.say(String.fromCharCode(8681), SAY_PUBLIC);
                         let drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
                         _.forEach(Object.keys(creep.carry), drop);
