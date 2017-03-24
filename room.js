@@ -640,6 +640,42 @@ mod.extend = function(){
                 return this._allCreeps;
             }
         },
+        'allies': {
+            configurable: true,
+            get: function() {
+                if (_.isUndefined(this._allies)) {
+                    this._allies = this.allCreeps.filter(Task.reputation.allyOwner);
+                }
+                return this._allies;
+            },
+        },
+        'allyIDs': {
+            configurable: true,
+            get: function() {
+                if (_.isUndefined(this._allyIDs)) {
+                    this._allyIDs = _.map(this.allies, 'id');
+                }
+                return this._allyIDs;
+            }
+        },
+        'neutrals': {
+            configurable: true,
+            get: function() {
+                if (_.isUndefined(this._neutrals)) {
+                    this._neutrals = this.allCreeps.filter(Task.reputation.neutralOwner);
+                }
+                return this._neutrals;
+            },
+        },
+        'neutralIDs': {
+            configurable: true,
+            get: function() {
+                if (_.isUndefined(this._neutralIDs)) {
+                    this._neutralIDs = _.map(this.neutrals, 'id');
+                }
+                return this._neutralIDs;
+            }
+        },
         'hostiles': {
             configurable: true,
             get: function() {
@@ -1740,6 +1776,46 @@ mod.extend = function(){
 
         this.memory.hostileIds = this.hostileIds;
     };
+    Room.prototype.processAllies = function() {
+        if (!this.memory.allyIDs) this.memory.allyIDs = [];
+        
+        const registerAlly = creep => {
+            if (!this.memory.allyIDs.includes(creep.id)) {
+                this.memory.allyIDs.push(creep.id);
+                this.newAlly.push(creep.id);
+            }
+        };
+        _.forEach(this.allies, registerAlly);
+        
+        const registerAllyLeave = id => {
+            const creep = Game.getObjectById(id);
+            const stillAlly = !creep || Task.reputation.allyOwner(creep);
+            if (!this.allyIDs.includes(id) && !stillAlly) {
+                this.goneAlly.push(id);
+            }
+        };
+        _.forEach(this.memory.allyIDs, registerAllyLeave);
+    };
+    Room.prototype.processNeutrals = function() {
+        if (!this.memory.neutralIDs) this.memory.neutralIDs = [];
+        
+        const registerNeutral = creep => {
+            if (!this.memory.neutralIDs.includes(creep.is)) {
+                this.memory.neutralIDs.push(creep.id);
+                this.newNeutral.push(creep.id);
+            }
+        };
+        _.forEach(this.neutrals, registerNeutral);
+        
+        const registerNeutralLeave = id => {
+            const creep = Game.getObjectById(id);
+            const stillNeutral = !creep || Task.reputation.neutralOwner(creep);
+            if (!this.neutralIDs.includes(id) && !stillNeutral) {
+                this.goneNeutral.push(id);
+            }
+        };
+        _.forEach(this.memory.neutralIDs, registerNeutralLeave);
+    };
     Room.prototype.processReactorFlowerBurst = function() {
         let data = this.memory.resources.reactions;
         if ( !data || data.reactorType !== REACTOR_TYPE_FLOWER || data.reactorMode !== REACTOR_MODE_BURST ) return;
@@ -2671,7 +2747,11 @@ mod.flush = function(){
             delete room.memory.powerBank;
         }
         room.newInvader = [];
+        room.newAlly = [];
+        room.newNeutral = [];
         room.goneInvader = [];
+        room.goneAlly = [];
+        room.goneNeutral = [];
     };
     Memory.observerSchedule = [];
     _.forEach(Game.rooms, clean);
@@ -2706,6 +2786,8 @@ mod.analyze = function(){
             room.roadConstruction();
             room.linkDispatcher();
             room.processInvaders();
+            room.processAllies();
+            room.processNeutrals();
             room.processLabs();
             room.processPower();
             room.controlObserver();
@@ -2727,20 +2809,28 @@ mod.execute = function() {
         }
         // trigger subscribers
         Room.newInvader.trigger(creep);
-    }
+    };
     let triggerKnownInvaders = id =>  Room.knownInvader.trigger(id);
     let triggerGoneInvaders = id =>  Room.goneInvader.trigger(id);
     let run = (memory, roomName) => {
         let room = Game.rooms[roomName];
         if( room ){ // has sight
             room.goneInvader.forEach(triggerGoneInvaders);
+            room.goneAlly.forEach(Room.goneAlly.trigger);
+            room.goneNeutral.forEach(Room.goneNeutralPlayer.trigger);
             room.hostileIds.forEach(triggerKnownInvaders);
+            room.allyIDs.forEach(Room.knownAlly.trigger);
+            room.neutralIDs.forEach(Room.knownNeutralPlayer.trigger);
             room.newInvader.forEach(triggerNewInvaders);
+            room.newAlly.forEach(Room.newAlly.trigger);
+            room.newNeutral.forEach(Room.newNeutralPlayer.trigger);
             Tower.loop(room);
             if( room.collapsed ) Room.collapsed.trigger(room);
         }
         else { // no sight
             if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
+            if (memory.allyIDs) _.forEach(memory.allyIDs, Room.knownAlly.trigger);
+            if (memory.neutralIDs) _.forEach(memory.neutralIDs, Room.knownNeutralPlayer.trigger);
         }
     };
     _.forEach(Memory.rooms, run);

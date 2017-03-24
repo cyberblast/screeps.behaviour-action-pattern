@@ -18,6 +18,8 @@ const mod = {
     isAlly: username => mod.score(username) >= CONST.ALLY,
     notAlly: username => !mod.isAlly(username),
     allyOwner: creep => creep.owner && mod.isAlly(creep.owner.username),
+    isNeutral: username => mod.notAlly(username) && mod.notHostile(username),
+    neutralOwner: creep => creeo.owner && mod.isNeutral(creep.owner.username),
     isHostile: username => mod.score(username) < CONST.NEUTRAL,
     notHostile: username => !mod.isHostile(username),
     hostileOwner: creep => creep.owner && mod.isHostile(creep.owner.username),
