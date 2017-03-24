@@ -47,10 +47,10 @@ action.findNeeding = function(room, resourceType, amountMin, structureId){
                 return { structure: powerSpawn, amount: amount};
         }
     }
-    const containers = room.containers.all;
+    const containers = room.structures.container.all;
     if (containers.length > 0) {
-        for (let i = 0; i < data.container.length; i++) {
-            const container = Game.getObjectById(continers[i].id);
+        for (let i = 0; i < containers.length; i++) {
+            const container = Game.getObjectById(containers[i].id);
             let amount = 0;
             if (container) amount = container.getNeeds(resourceType);
             if (amount >= amountMin && container.id != structureId) return { structure: container, amount: amount };

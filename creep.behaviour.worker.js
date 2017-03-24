@@ -16,6 +16,7 @@ mod.run = function(creep) {
 };
 mod.inflowActions = (creep) => {
     let priority = [
+        Creep.action.bulldozing,
         Creep.action.picking,
         Creep.action.dismantling,
         Creep.action.withdrawing,
@@ -60,6 +61,7 @@ mod.outflowActions = (creep) => {
         if (creep.sum > creep.carry.energy) {
             priority.unshift(Creep.action.storing);
         }
+        priority.unshift(Creep.action.bulldozing);
         return priority;
     }
 };

@@ -32,6 +32,7 @@ mod.run = function(creep) {
 mod.actions = (creep) => {
     return [
         Creep.action.claiming,
-        Creep.action.reserving
+        Creep.action.reserving,
+        Creep.action.bulldozing,
     ];
 };

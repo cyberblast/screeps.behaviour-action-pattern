@@ -1,9 +1,9 @@
 // base class for behaviours
 const Behaviour = function(name) {
     this.name = name;
-    this.actions = (creep) => []; // priority list of actions for default nextAction
-    this.inflowActions = (creep) => []; // priority list of actions for getting energy
-    this.outflowActions = (creep) => []; // priority list of actions for using energy
+    this.actions = (creep) => []; // priority list of non resource based actions
+    this.inflowActions = (creep) => []; // priority list of actions for getting resources
+    this.outflowActions = (creep) => []; // priority list of actions for using resources
     this.assignAction = function(creep, action) {
         const valid = action.isValidAction(creep);
         if( DEBUG && TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, valid, Action:'isValidAction'});

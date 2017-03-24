@@ -168,10 +168,15 @@ mod.analyze = function(){
     return !!specialFlag;
 };
 mod.execute = function() {
+
     let triggerFound = entry => {
-        if( !entry.cloaking || entry.cloaking == 0)
-        Flag.found.trigger(Game.flags[entry.name]);
-    }
+        if( !entry.cloaking || entry.cloaking == 0) {
+            let p = startProfiling('Flag.execute');
+            const flag = Game.flags[entry.name];
+            Flag.found.trigger(flag);
+            p.checkCPU(entry.name, 2, mod.flagType(flag));
+        }
+    };
     this.list.forEach(triggerFound);
 
     let triggerRemoved = flagName => Flag.FlagRemoved.trigger(flagName);
@@ -182,7 +187,7 @@ mod.cleanup = function(){
     this.stale.forEach(clearMemory);
 };
 mod.flagType = function(flag) {
-    if (mod.isSpecialFlag(flag)) return 'specialFlag';
+    if (mod.isSpecialFlag(flag)) return '_OCS';
     for (const primary in FLAG_COLOR) {
         const obj = FLAG_COLOR[primary];
         if (flag.color === obj.color) {

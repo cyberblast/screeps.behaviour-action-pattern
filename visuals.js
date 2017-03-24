@@ -56,6 +56,9 @@ module.exports = class Visuals {
             if (VISUALS.TERMINAL) {
                 Visuals.terminal(room);
             }
+            if (VISUALS.TOWER) {
+                room.structures.towers.forEach(t => Visuals.drawTowerInfo(t));
+            }
             if (VISUALS.TRANSACTIONS) {
                 Visuals.drawTransactions(room);
             }
@@ -191,7 +194,8 @@ module.exports = class Visuals {
             RCL_PERCENTAGE = 0;
             text = `Unowned`;
         }
-        vis.rect(x, y - 0.75, Math.min(1, RCL_PERCENTAGE) * sectionWidth, 1, {fill: getColourByPercentage(RCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
+        RCL_PERCENTAGE = Math.min(1, RCL_PERCENTAGE);
+        vis.rect(x, y - 0.75, RCL_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(RCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
         vis.text(text, x + sectionWidth / 2, y);
         
         if (VISUALS.ROOM_GLOBAL) {
@@ -277,20 +281,25 @@ module.exports = class Visuals {
             vis.circle(weakest.pos.x, weakest.pos.y, {radius: 0.4, fill: '#FF0000', opacity: 0.3, strokeWidth: 0,});
             let y = weakest.pos.y - 0.5; // base y pos - consistent with spawns, labs, and controllers
             const look = weakest.pos.lookFor(LOOK_STRUCTURES);
-            const spawns = _.find(look, o => o instanceof StructureSpawn && o.spawning);
-            if (spawns && VISUALS.SPAWN) {
-                // if structure shares a position with a spawn (road, rampart), lower to next line
-                // spawn must be spawning, and spawn visuals must be enabled
+            const towers = _.find(look, o => o instanceof StructureTower);
+            if (towers && VISUALS.TOWER) {
                 y += 0.4;
             } else {
-                const labs = _.find(look, o => o instanceof StructureLab);
-                if (labs && VISUALS.LABS) {
+                const spawns = _.find(look, o => o instanceof StructureSpawn && o.spawning);
+                if (spawns && VISUALS.SPAWN) {
+                // if structure shares a position with a spawn (road, rampart), lower to next line
+                // spawn must be spawning, and spawn visuals must be enabled
+                    y += 0.4;
+                } else {
+                    const labs = _.find(look, o => o instanceof StructureLab);
+                    if (labs && VISUALS.LABS) {
                     // same as spawns, move the weakest structure text until it's on its own line
-                    if (labs.energy) y += 0.4;
-                    if (labs.mineralAmount) y += 0.4;
-                    if (labs.cooldown) y += 0.4;
+                        if (labs.energy) y += 0.4;
+                        if (labs.mineralAmount) y += 0.4;
+                        if (labs.cooldown) y += 0.4;
+                    }
                 }
-            }
+            }    
             vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, y, {align: 'left', font: 0.4,});
         }
     }
@@ -359,6 +368,11 @@ module.exports = class Visuals {
         }
     }
     
+    static drawTowerInfo(tower) {
+        const vis = new RoomVisual(tower.room.name);
+        vis.text(`E: ${tower.energy}/${tower.energyCapacity}`, tower.pos.x + 1, tower.pos.y - 0.5, {align: 'left', font: 0.4});
+    }
+        
     static drawTransactions(room) {
         if (room.terminal) {
             const vis = new RoomVisual(room.name);
