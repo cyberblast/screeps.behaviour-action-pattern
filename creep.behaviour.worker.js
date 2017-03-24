@@ -90,6 +90,7 @@ mod.nextAction = function(creep){
     if( creep.sum > creep.carry.energy ) {
         priority.unshift(Creep.action.storing);
     }
+    priority.unshift(Creep.action.bulldozing);
     for(var iAction = 0; iAction < priority.length; iAction++) {
         var action = priority[iAction];
         const valid = action.isValidAction(creep);
