@@ -67,7 +67,7 @@ action.work = function(creep) {
             if (amount > 0) {
                 const workResult = creep.transfer(creep.target, resource, amount);
                 if (workResult == OK) {
-                    target.satisfyOrder(resourceType, amount);
+                    target.orderSatisfied(resourceType, amount);
                     break;
                 }
             }

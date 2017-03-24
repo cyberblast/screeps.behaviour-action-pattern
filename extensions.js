@@ -239,8 +239,8 @@ mod.extend = function(){
         // no change
         return 0;
     };
-    StructureStorage.prototype.satisfyOrder = function(resourceType, amount) {
-        return mod.satisfyOrder(this, resourceType, amount);
+    StructureStorage.prototype.orderSatisfied = function(resourceType, amount) {
+        return mod.orderSatisfied(this, resourceType, amount);
     };
     Object.defineProperty(StructureTerminal.prototype, 'sum', {
         configurable: true,
@@ -267,8 +267,8 @@ mod.extend = function(){
         // no change
         return 0;
     };
-    StructureTerminal.satisfyOrder = function(resourceType, amount) {
-        return mod.satisfyOrder(this, resourceType, amount);
+    StructureTerminal.orderSatisfied = function(resourceType, amount) {
+        return mod.orderSatisfied(this, resourceType, amount);
     };
     Object.defineProperty(StructureContainer.prototype, 'sum', {
         configurable: true,
@@ -324,8 +324,8 @@ mod.extend = function(){
         // no change
         return 0;
     };
-    StructureLab.satisfyOrder = function(resourceType, amount) {
-        return mod.satisfyOrder(this, resourceType, amount);
+    StructureLab.orderSatisfied = function(resourceType, amount) {
+        return mod.orderSatisfied(this, resourceType, amount);
     };
     StructurePowerSpawn.prototype.getNeeds = function(resourceType) {
         // if parameter is enabled then autofill powerSpawns
@@ -368,13 +368,13 @@ mod.extend = function(){
         if (store > unloadTarget * 1.05) return unloadTarget-store;
         return 0;
     };
-    StructurePowerSpawn.satisfyOrder = function(resourceType, amount) {
-        return mod.satisfyOrder(this, resourceType, amount);
+    StructurePowerSpawn.orderSatisfied = function(resourceType, amount) {
+        return mod.orderSatisfied(this, resourceType, amount);
     };
 
     if( Memory.pavementArt === undefined ) Memory.pavementArt = {};
 };
-mod.satisfyOrder = function(target, resourceType, amount) {
+mod.orderSatisfied = function(target, resourceType, amount) {
     const data = target.room.memory.resources && target.room.memory.resources[target.structureType].find(s => s.id === target.id);
     if (data && data.orders) {
         const order = data.orders.find(o => o.type === resourceType);
