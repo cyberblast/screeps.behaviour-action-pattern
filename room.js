@@ -1182,18 +1182,6 @@ mod.extend = function(){
             this.roadConstructionTrace[key] = 1;
         else this.roadConstructionTrace[key]++;
     };
-    Room.prototype.checkPowerBank = function() {
-    if (!this.powerBank) return; // no power bank in room
-    	//power > 2500, and ticksToDecay > 4500
-        const currentFlags = FlagDir.count(FLAG_COLOR.invade.powerMining, this.powerBank.pos, false);
-    	const flagged = FlagDir.find(FLAG_COLOR.invade.powerMining, this.powerBank.pos, true);
-    	if(!flagged && currentFlags < MAX_AUTO_POWER_MINING_FLAGS){
-    	    if(this.powerBank.power > 2500 && this.powerBank.ticksToDecay > 4500){
-    		    // Place a flag
-    		    this.createFlag(this.powerBank.pos, null, FLAG_COLOR.invade.powerMining.color, FLAG_COLOR.invade.powerMining.secondaryColor);
-    	    }
-        }
-    };
     Room.prototype.saveTowers = function(){
         let towers = this.find(FIND_MY_STRUCTURES, {
             filter: {structureType: STRUCTURE_TOWER}
@@ -1900,18 +1888,6 @@ mod.extend = function(){
             }
         }
     };
-    Room.prototype.processPower = function() {
-        // run lab reactions WOO!
-        let powerSpawns = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_POWER_SPAWN; } } );
-        for (var i=0;i<powerSpawns.length;i++) {
-            // see if the reaction is possible
-            let powerSpawn = powerSpawns[i];
-            if (powerSpawn.energy >= POWER_SPAWN_ENERGY_RATIO && powerSpawn.power >= 1) {
-                if (DEBUG && TRACE) trace('Room', { roomName: this.name, actionName: 'processPower' });
-                powerSpawn.processPower();
-            }
-        }
-    };
     Room.prototype.findContainerWith = function(resourceType, amountMin) {
         if (!amountMin) amountMin = 1;
         //if (!RESOURCES_ALL.find((r)=>{r==resourceType;})) return null;
@@ -2496,15 +2472,6 @@ mod.extend = function(){
         }
         return ret;
     }
-    Room.prototype.isWalkable = function(x, y, look) {
-        if (!look) look = this.lookAt(x,y);
-        else look = look[y][x];
-        let invalidObject = o => {
-            return ((o.type == LOOK_TERRAIN && o.terrain == 'wall') ||
-                OBSTACLE_OBJECT_TYPES.includes(o[o.type].structureType));
-        };
-        return look.filter(invalidObject).length == 0;
-    };
     Room.prototype.printCostMatrix = function(creepMatrix, aroundPos) {
         const matrix = creepMatrix ? this.creepMatrix : this.costMatrix;
         let startY = 0;
@@ -2528,46 +2495,6 @@ mod.extend = function(){
             logSystem(this.name, line);
         }
     };
-    Room.prototype.exits = function(findExit, point) {
-        if (point === true) point = 0.5;
-        let positions;
-        if (findExit === 0) {
-            // portals
-            positions = _.chain(this.find(FIND_STRUCTURES)).filter(function(s) {
-                return s.structureType === STRUCTURE_PORTAL;
-            }).map('pos').value();
-        } else {
-            positions = this.find(findExit);
-        }
-
-        // assuming in-order
-        let maxX, maxY;
-        let map = {};
-        let limit = -1;
-        const ret = [];
-        for (let i = 0; i < positions.length; i++) {
-            const pos = positions[i];
-            if (!(_.get(map,[pos.x-1, pos.y]) || _.get(map,[pos.x,pos.y-1]))) {
-                if (point && limit !== -1) {
-                    ret[limit].x += Math.ceil(point * (maxX - ret[limit].x));
-                    ret[limit].y += Math.ceil(point * (maxY - ret[limit].y));
-                }
-                limit++;
-                ret[limit] = _.pick(pos, ['x','y']);
-                maxX = pos.x;
-                maxY = pos.y;
-                map = {};
-            }
-            _.set(map, [pos.x, pos.y], true);
-            maxX = Math.max(maxX, pos.x);
-            maxY = Math.max(maxY, pos.y);
-        }
-        if (point && limit !== -1) {
-            ret[limit].x += Math.ceil(point * (maxX - ret[limit].x));
-            ret[limit].y += Math.ceil(point * (maxY - ret[limit].y));
-        }
-        return ret;
-    }
     Room.prototype.controlObserver = function() {
         const OBSERVER = this.structures.observer;
         if (!OBSERVER) return;
