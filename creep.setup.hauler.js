@@ -58,7 +58,7 @@ setup.high = {
     fixedBody: [WORK, CARRY, MOVE],
     multiBody: [CARRY, CARRY, MOVE],
     minAbsEnergyAvailable: 200,
-    minEnergyAvailable: 0.2,
+    minEnergyAvailable: 0.1,
     maxMulti: room => setup.maxMulti(room),
     maxCount: room => setup.maxCount(room),
     maxWeight: room => setup.maxWeight(room),
