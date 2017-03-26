@@ -238,18 +238,15 @@ module.exports.loop = function () {
     if (!cpuAtFirstLoop) cpuAtFirstLoop = cpuAtLoop;
 
     // ensure required memory namespaces
-    if (Memory.modules === undefined)  {
-        Memory.modules = {
-            viral: {},
-            internalViral: {}
-        };
-    }
-    if (Memory.debugTrace === undefined) {
-        Memory.debugTrace = {error:true, no:{}};
-    }
-    if (Memory.cloaked === undefined) {
-        Memory.cloaked = {};
-    }
+    Util.set(Memory, 'modules', {
+        viral: {},
+        internalViral: {},
+    });
+    Util.set(Memory, 'debugTrace', {
+        error: true,
+        no: {},
+    });
+    Util.set(Memory, 'cloaked', {});
     // ensure up to date parameters
     _.assign(global, load("parameter"));
 
@@ -260,7 +257,7 @@ module.exports.loop = function () {
     Room.flush();
     Task.flush();
     // custom flush
-    if( global.mainInjection.flush ) global.mainInjection.flush();
+    Util.callIfExists(global.mainInjection.flush);
     p.checkCPU('flush', PROFILING.FLUSH_LIMIT);
 
     // analyze environment, wait a tick if critical failure
@@ -274,14 +271,14 @@ module.exports.loop = function () {
     Population.analyze();
     p.checkCPU('Population.analyze', PROFILING.ANALYZE_LIMIT);
     // custom analyze
-    if( global.mainInjection.analyze ) global.mainInjection.analyze();
+    Util.callIfExists(global.mainInjection.analyze);
 
     // Register event hooks
     Creep.register();
     Spawn.register();
     Task.register();
     // custom register
-    if( global.mainInjection.register ) global.mainInjection.register();
+    Util.callIfExists(global.mainInjection.register);
     p.checkCPU('register', PROFILING.REGISTER_LIMIT);
 
     // Execution
@@ -296,7 +293,7 @@ module.exports.loop = function () {
     Spawn.execute();
     p.checkCPU('spawn.execute', PROFILING.EXECUTE_LIMIT);
     // custom execute
-    if( global.mainInjection.execute ) global.mainInjection.execute();
+    Util.callIfExists(global.mainInjection.execute);
 
     // Postprocessing
     if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
@@ -308,7 +305,7 @@ module.exports.loop = function () {
     Population.cleanup();
     p.checkCPU('Population.cleanup', PROFILING.ANALYZE_LIMIT);
     // custom cleanup
-    if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
+    Util.callIfExists(global.mainInjection.cleanup);
 
     if ( ROOM_VISUALS && !Memory.CPU_CRITICAL && Visuals ) Visuals.run(); // At end to correctly display used CPU.
     p.checkCPU('visuals', PROFILING.EXECUTE_LIMIT);
