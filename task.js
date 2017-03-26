@@ -1,89 +1,102 @@
-let mod = {};
-module.exports = mod;
-mod.tasks = [];
-mod.populate = function() {
-    Task.addTasks(...[
-        Task.attackController,
-        Task.claim,
-        Task.defense,
-        Task.guard,
-        Task.mining,
-        Task.pioneer,
-        Task.reputation,
-        Task.reserve,
-        Task.robbing,
-    ]);
+const Task = class {
+    constructor(...args) {
+        Task.prototype.constructor.apply(this, args);
+    }
 };
-mod.addTasks = (...task) => Task.tasks.push(...task);
+module.exports = Task;
 
-mod.installTask = (...taskNames) => {
-    taskNames.forEach(taskName => {
-        Task[taskName] = load(`task.${taskName}`);
-        Task.addTasks(Task[taskName]);
+const cache = {};
+
+Task.extend = function() {
+    Object.defineProperties(Task, {
+        tasks: {
+            configurable: true,
+            value: [],
+        },
+        installTask: {
+            value: function(...taskNames) {
+                taskNames.forEach(taskName => {
+                    Task[taskName] = load(`task.${taskName}`);
+                    new Task(Task[taskName]);
+                });
+            },
+        },
+        memory: {
+            configurable: true,
+            value: function(task, s) {
+                if (!Memory.tasks) Memory.tasks = {};
+                if (!Memory.tasks[task]) Memory.tasks[task] = {};
+                if (!Memory.tasks[task][s]) Memory.tasks[task][s] = {};
+                return Memory.tasks[task][s];
+            },
+        },
+        clearMemory: {
+            configurable: true,
+            value: function(task, s) {
+                if (Memory.tasks[task] && Memory.tasks[task][s]) delete Memory.tasks[task][s];
+            },
+        },
+        cache: {
+            configurable: true,
+            value: function(task, s) {
+                if (!cache[task]) cache[task] = {};
+                if (!cache[task][s]) cache[task][s] = {};
+                return cache[task][s];
+            },
+        },
+        clearCache: {
+            configurable: true,
+            value: function(task, s) {
+                if (cache[task] && cache[task][s]) delete cache[task][s];
+            },
+        },
+        spawn: {
+            configurable: true,
+            value: function(creepDefinition, destiny, roomParams, onQueued) {
+                // define nearest room
+                const room = roomParams.explicit ? Game.rooms[roomParams.explicit] : Room.findSpawnRoom(roomParams);
+                if (!room) return null;
+                // define new creep
+                if (!destiny) destiny = {};
+                if (!destiny.room && roomParams.targetRoom) destiny.room = roomParams.targetRoom;
+                
+                const parts = Creep.compileBody(room, creepDefinition);
+                
+                const name = `${creepDefinition.name || creepDefinition.behaviour}-${destiny.targetName}`;
+                const creepSetup = {
+                    parts, name, destiny,
+                    behaviour: creepDefinition.behaviour,
+                    queueRoom: room.name,
+                };
+                if (creepSetup.parts.length === 0) {
+                    // creep has no body
+                    global.logSystem(flag.pos.roomName, dye(CRAYON.error, `${destiny.task} task tried to queue a zero parts body ${creepDefinition.behaviour} creep. Aborted.`));
+                    return null;
+                }
+                // queue creep for spawning
+                const queue = room['spawnQueue' + creepDefinition.queue] || room.spawnQueueLow;
+                queue.push(creepSetup);
+                // save queued creep to task memory
+                if (onQueued) onQueued(creepSetup);
+                return creepSetup;
+            },
+        },
     });
+    
+    Task.prototype.constructor = function(task) {
+        if (!(task instanceof Task)) Task.installTask(task);
+        Task.tasks.push(task);
+    }
 };
 // load task memory & flush caches
-mod.flush = function () {
+Task.flush = function () {
     Task.tasks.forEach(task => {
         if (task.flush) task.flush();
     });
 };
 // register tasks (hook up into events)
-mod.register = function () {
+Task.register = function () {
     Task.tasks.forEach(task => {
         if (task.register) task.register();
     });
 };
-mod.memory = (task, s) => { // task:  (string) name of the task, s: (string) any selector for that task, could be room name, flag name, enemy name
-    if( !Memory.tasks ) Memory.tasks = {};
-    if( !Memory.tasks[task] ) Memory.tasks[task] = {};
-    if( !Memory.tasks[task][s] ) Memory.tasks[task][s] = {};
-    return Memory.tasks[task][s];
-};
-mod.clearMemory = (task, s) => {
-    if( Memory.tasks[task] && Memory.tasks[task][s] )
-        delete Memory.tasks[task][s];
-};
-mod.cache = (task, s) => {
-    if( !cache[task] ) cache[task] = {};
-    if( !cache[task][s] ) cache[task][s] = {};
-    return cache[task][s];
-};
-mod.clearCache = (task, s) => {
-    if( cache[task] && cache[task][s] )
-        delete cache[task][s];
-};
-// creepDefinition: { queue, name, behaviour, fixedBody, multiBody }
-// destiny: { task, targetName }
-// roomParams: { targetRoom, minRCL = 0, maxRange = Infinity, minEnergyAvailable = 0, minEnergyCapacity = 0, callBack = null, allowTargetRoom = false, rangeRclRatio = 3, rangeQueueRatio = 51 }
-mod.spawn = (creepDefinition, destiny, roomParams, onQueued) => {
-    // get nearest room
-    let room = roomParams.explicit ? Game.rooms[roomParams.explicit] : Room.findSpawnRoom(roomParams);
-    if( !room ) return null;
-    // define new creep
-    if(!destiny) destiny = {};
-    if(!destiny.room && roomParams.targetRoom) destiny.room = roomParams.targetRoom;
-
-    let parts = Creep.compileBody(room, creepDefinition);
-
-    let name = `${creepDefinition.name || creepDefinition.behaviour}-${destiny.targetName}`;
-    let creepSetup = {
-        parts: parts,
-        name: name,
-        behaviour: creepDefinition.behaviour,
-        destiny: destiny,
-        queueRoom: room.name
-    };
-    if( creepSetup.parts.length === 0 ) {
-        // creep has no body. 
-        global.logSystem(flag.pos.roomName, dye(CRAYON.error, `${destiny.task} task tried to queue a zero parts body ${creepDefinition.behaviour} creep. Aborted.` ));
-        return null;
-    }
-    // queue creep for spawning
-    let queue = room['spawnQueue' + creepDefinition.queue] || room.spawnQueueLow;
-    queue.push(creepSetup);
-    // save queued creep to task memory
-    if( onQueued ) onQueued(creepSetup);
-    return creepSetup;
-};
-const cache = {};
