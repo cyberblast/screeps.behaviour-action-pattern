@@ -6,7 +6,7 @@ module.exports = class Visuals {
             if (!ROOM_VISUALS_ALL && !room.my) continue;
             if (!room.controller) continue;
             
-            if (Memory.heatmap === undefined) Memory.heatmap = false;
+            Util.set(Memory, 'heatmap', false);
             
             if (VISUALS.HEATMAP) {
                 if (Game.time % VISUALS.HEATMAP_INTERVAL === 0) {
@@ -152,9 +152,7 @@ module.exports = class Visuals {
     }
     
     static collectSparklineStats() {
-        if (!_.get(Memory, 'visualStats.cpu')) {
-            _.set(Memory, 'visualStats.cpu', []);
-        }
+        Util.set(Memory, 'visualStats.cpu', []);
         Memory.visualStats.cpu.push({
             limit: Game.cpu.limit,
             bucket: Game.cpu.bucket,
@@ -230,9 +228,9 @@ module.exports = class Visuals {
         let x = mineral.pos.x + 1;
         let y = mineral.pos.y - 0.5;
         if (mineral.mineralAmount) {
-            vis.text(`Amount: ${formatNum(mineral.mineralAmount)}`, x, y, {align: 'left', font: 0.4,});
+            vis.text(`Amount: ${Util.formatNumber(mineral.mineralAmount)}`, x, y, {align: 'left', font: 0.4,});
         } else {
-            vis.text(`Regen: ${formatNum(mineral.ticksToRegeneration)}`, x, y, {align: 'left', font: 0.4,});
+            vis.text(`Regen: ${Util.formatNumber(mineral.ticksToRegeneration)}`, x, y, {align: 'left', font: 0.4,});
         }
     }
     
@@ -253,8 +251,8 @@ module.exports = class Visuals {
         let y = controller.pos.y - 0.5;
         const style = {align: 'left', font: 0.4,};
         let line0 = `L: ${controller.level}`;
-        let line1 = `P: ${formatNum(controller.progress)}/${formatNum(controller.progressTotal)} (${(controller.progress / controller.progressTotal * 100).toFixed(2)}%)`;
-        let line2 = `D: ${formatNum(controller.ticksToDowngrade)}`;
+        let line1 = `P: ${Util.formatNumber(controller.progress)}/${Util.formatNumber(controller.progressTotal)} (${(controller.progress / controller.progressTotal * 100).toFixed(2)}%)`;
+        let line2 = `D: ${Util.formatNumber(controller.ticksToDowngrade)}`;
         if (controller.level === 8) {
             line1 = undefined;
         } else if (controller.reservation) {
@@ -300,7 +298,7 @@ module.exports = class Visuals {
                     }
                 }
             }    
-            vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, y, {align: 'left', font: 0.4,});
+            vis.text(`H: ${Util.formatNumber(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, y, {align: 'left', font: 0.4,});
         }
     }
     
@@ -319,7 +317,7 @@ module.exports = class Visuals {
         }
         vis.text('Room Orders', x, ++y, {align: 'left'});
         for (let order of room.memory.resources.orders) {
-            vis.text(`${order.type}: ${formatNum(order.amount)}`, x, y += 0.6, {align: 'left', font: 0.4, color: getResourceColour(order.type)});
+            vis.text(`${order.type}: ${Util.formatNumber(order.amount)}`, x, y += 0.6, {align: 'left', font: 0.4, color: getResourceColour(order.type)});
         }
     }
     
@@ -341,7 +339,7 @@ module.exports = class Visuals {
         }
         vis.text('Room Offerings', x, ++y, {align: 'left'});
         for (let offer of room.memory.resources.offers) {
-            vis.text(`${offer.type}: ${formatNum(offer.amount)} (to ${offer.room})`, x, y += 0.6, {align: 'left', font: 0.4, color: getResourceColour(offer.type)});
+            vis.text(`${offer.type}: ${Util.formatNumber(offer.amount)} (to ${offer.room})`, x, y += 0.6, {align: 'left', font: 0.4, color: getResourceColour(offer.type)});
         }
     }
     
@@ -423,10 +421,10 @@ module.exports = class Visuals {
                 const x = lab.pos.x + 0.8;
                 let y = lab.pos.y - 0.5;
                 if (lab.energy) {
-                    vis.text(`E: ${formatNum(lab.energy)}`, x, y, {align: 'left', font: 0.4, color: getResourceColour(RESOURCE_ENERGY)});
+                    vis.text(`E: ${Util.formatNumber(lab.energy)}`, x, y, {align: 'left', font: 0.4, color: getResourceColour(RESOURCE_ENERGY)});
                 }
                 if (lab.mineralAmount) {
-                    vis.text(`M: ${lab.mineralType} (${formatNum(lab.mineralAmount)})`, x, y += 0.4, {align: 'left', font: 0.4, color: getResourceColour(lab.mineralType)});
+                    vis.text(`M: ${lab.mineralType} (${Util.formatNumber(lab.mineralAmount)})`, x, y += 0.4, {align: 'left', font: 0.4, color: getResourceColour(lab.mineralType)});
                 }
                 if (lab.cooldown) {
                     vis.text(`C: ${lab.cooldown}`, x, y += 0.4, {align: 'left', font: 0.4, color: '#FF0000'});
@@ -554,17 +552,8 @@ module.exports = class Visuals {
     
 };
 
-function formatNum(n) {
-    if (n >= 1000000) {
-        return (n / 1000000).toFixed(2) + 'M';
-    } else if (n >= 1000) {
-        return (n / 1000).toFixed(1) + 'K';
-    }
-    return n;
-}
-
 function storageObject(vis, store, x, startY) {
-    Object.keys(store).forEach(resource => vis.text(`${resource}: ${formatNum(store[resource])}`, x, startY += 0.6, {align: 'left', font: 0.5, color: getResourceColour(resource)}));
+    Object.keys(store).forEach(resource => vis.text(`${resource}: ${Util.formatNumber(store[resource])}`, x, startY += 0.6, {align: 'left', font: 0.5, color: getResourceColour(resource)}));
 }
 
 function getResourceColour(resourceType) {
