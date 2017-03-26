@@ -1678,10 +1678,8 @@ mod.extend = function(){
     };
     Room.prototype.processInvaders = function(){
         let that = this;
-        if( this.memory.hostileIds === undefined )
-            this.memory.hostileIds = [];
-        if( this.memory.statistics === undefined)
-            this.memory.statistics = {};
+        Util.set(this.memory, 'hostileIds', []);
+        Util.set(this.memory, 'statistics', {});
 
         let registerHostile = creep => {
             if (Room.isCenterNineRoom(this.name)) return;
@@ -1695,8 +1693,7 @@ mod.extend = function(){
                 // create statistics
                 if( SEND_STATISTIC_REPORTS ) {
                     let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-                    if(that.memory.statistics.invaders === undefined)
-                        that.memory.statistics.invaders = [];
+                    Util.set(that.memory.statistics, 'invaders', []);
                     that.memory.statistics.invaders.push({
                         owner: creep.owner.username,
                         id: creep.id,
@@ -1920,15 +1917,13 @@ mod.extend = function(){
         if (!RESOURCES_ALL.includes(resourceType)) {
             return ERR_INVALID_ARGS;
         }
-        if (this.memory.resources === undefined) {
-            this.memory.resources = {
-                lab: [],
-                powerSpawn: [],
-                container: [],
-                terminal: [],
-                storage: []
-            };
-        }
+        Util.set(this.memory, 'resources', {
+            lab: [],
+            powerSpawn: [],
+            container: [],
+            terminal: [],
+            storage: [],
+        });
         if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
         if (!this.memory.resources[container.structureType].find( (s) => s.id == containerId )) {
             this.memory.resources[container.structureType].push(container.structureType==STRUCTURE_LAB ? {
@@ -2031,18 +2026,12 @@ mod.extend = function(){
         return OK;
     };
     Room.prototype.cancelRoomOrder = function(orderId = null, resourceType = null) {
-        if (this.memory.resources === undefined) {
-            this.memory.resources = {
-                lab: [],
-                container: [],
-                terminal: [],
-                storage: []
-            };
-        }
-        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
-        if (this.memory.resources.orders === undefined) {
-            this.memory.resources.orders = [];
-        }
+        Util.set(this.memory, 'resources.lab', []);
+        Util.set(this.memory, 'resources.container', []);
+        Util.set(this.memory, 'resources.terminal', []);
+        Util.set(this.memory, 'resources.storage', []);
+        Util.set(this.memory, 'resources.powerSpawn', []);
+        Util.set(this.memory, 'resources.orders', []);
         let orders = this.memory.resources.orders;
         if ( orderId && resourceType ) {
             let existingOrder = orders.find((o)=>{ return o.id==orderId && o.type==resourceType; });
@@ -2069,18 +2058,12 @@ mod.extend = function(){
     };
     Room.prototype.placeRoomOrder = function(orderId, resourceType, amount) {
         if (amount <= 0) return OK;
-        if (this.memory.resources === undefined) {
-            this.memory.resources = {
-                lab: [],
-                container: [],
-                terminal: [],
-                storage: []
-            };
-        }
-        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
-        if (this.memory.resources.orders === undefined) {
-            this.memory.resources.orders = [];
-        }
+        Util.set(this.memory, 'resources.lab', []);
+        Util.set(this.memory, 'resources.container', []);
+        Util.set(this.memory, 'resources.terminal', []);
+        Util.set(this.memory, 'resources.storage', []);
+        Util.set(this.memory, 'resources.powerSpawn', []);
+        Util.set(this.memory, 'resources.orders', []);
         let orders = this.memory.resources.orders;
         let existingOrder = orders.find((o)=>{ return o.id==orderId && o.type==resourceType; });
         if (existingOrder) {
@@ -2116,18 +2099,13 @@ mod.extend = function(){
             delete labData.master;
             delete labData.slave_a;
             delete labData.slave_b;
-
-            if (this.memory.resources === undefined) {
-                this.memory.resources = {
-                    lab: [],
-                    container: [],
-                    terminal: [],
-                    storage: []
-                };
-            }
-            if (this.memory.resources.orders === undefined) {
-                this.memory.resources.orders = [];
-            }
+            
+            Util.set(this.memory, 'resources.lab', []);
+            Util.set(this.memory, 'resources.container', []);
+            Util.set(this.memory, 'resources.terminal', []);
+            Util.set(this.memory, 'resources.storage', []);
+            Util.set(this.memory, 'resources.powerSpawn', []);
+            Util.set(this.memory, 'resources.orders', []);
 
             let orders = this.memory.resources.orders;
             // clear local resource orders
@@ -2149,14 +2127,12 @@ mod.extend = function(){
         if (!LAB_REACTIONS.hasOwnProperty(resourceType)) {
             return ERR_INVALID_ARGS;
         }
-        if (this.memory.resources === undefined) {
-            this.memory.resources = {
-                lab: [],
-                container: [],
-                terminal: [],
-                storage: []
-            };
-        }
+        Util.set(this.memory, 'resources.lab', []);
+        Util.set(this.memory, 'resources.container', []);
+        Util.set(this.memory, 'resources.terminal', []);
+        Util.set(this.memory, 'resources.storage', []);
+        Util.set(this.memory, 'resources.powerSpawn', []);
+        Util.set(this.memory, 'resources.orders', []);
 
         let labData = this.memory.resources.lab.find( (l) => l.id == labId );
         if ( !labData ) {
@@ -2177,15 +2153,11 @@ mod.extend = function(){
         if (!LAB_REACTIONS.hasOwnProperty(resourceType)) {
             return ERR_INVALID_ARGS;
         }
-        if (this.memory.resources === undefined) {
-            this.memory.resources = {
-                lab: [],
-                container: [],
-                terminal: [],
-                storage: []
-            };
-        }
-        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
+        Util.set(this.memory, 'resources.lab', []);
+        Util.set(this.memory, 'resources.container', []);
+        Util.set(this.memory, 'resources.terminal', []);
+        Util.set(this.memory, 'resources.storage', []);
+        Util.set(this.memory, 'resources.powerSpawn', []);
         let lab_master = Game.getObjectById(labId);
         let component_a = LAB_REACTIONS[resourceType][0];
         let component_b = LAB_REACTIONS[resourceType][1];
@@ -2317,15 +2289,12 @@ mod.extend = function(){
         if (!LAB_REACTIONS.hasOwnProperty(resourceType)) {
             return ERR_INVALID_ARGS;
         }
-        if (this.memory.resources === undefined) {
-            this.memory.resources = {
-                lab: [],
-                container: [],
-                terminal: [],
-                storage: []
-            };
-        }
-        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
+        Util.set(this.memory, 'resources.lab', []);
+        Util.set(this.memory, 'resources.container', []);
+        Util.set(this.memory, 'resources.terminal', []);
+        Util.set(this.memory, 'resources.storage', []);
+        Util.set(this.memory, 'resources.powerSpawn', []);
+        Util.set(this.memory, 'resources.orders', []);
 
         let data = this.memory.resources;
         if ( data.reactions ) {
@@ -2356,15 +2325,12 @@ mod.extend = function(){
         if (!LAB_REACTIONS.hasOwnProperty(resourceType)) {
             return ERR_INVALID_ARGS;
         }
-        if (this.memory.resources === undefined) {
-            this.memory.resources = {
-                lab: [],
-                container: [],
-                terminal: [],
-                storage: []
-            };
-        }
-        if (this.memory.resources.powerSpawn === undefined) this.memory.resources.powerSpawn = [];
+        Util.set(this.memory, 'resources.lab', []);
+        Util.set(this.memory, 'resources.container', []);
+        Util.set(this.memory, 'resources.terminal', []);
+        Util.set(this.memory, 'resources.storage', []);
+        Util.set(this.memory, 'resources.powerSpawn', []);
+        Util.set(this.memory, 'resources.orders', []);
 
         let lab_master = Game.getObjectById(orderId);
         if ( lab_master && lab_master.structureType === STRUCTURE_LAB ) {
@@ -2389,15 +2355,12 @@ mod.extend = function(){
         return OK;
     };
     Room.prototype.registerReactorFlower = function(seed_a_id, seed_b_id) {
-        if ( this.memory.resources === undefined ) {
-            this.memory.resources = {
-                lab: [],
-                container: [],
-                terminal: [],
-                storage: []
-            };
-        }
-        if ( this.memory.resources.powerSpawn === undefined ) this.memory.resources.powerSpawn = [];
+        Util.set(this.memory, 'resources.lab', []);
+        Util.set(this.memory, 'resources.container', []);
+        Util.set(this.memory, 'resources.terminal', []);
+        Util.set(this.memory, 'resources.storage', []);
+        Util.set(this.memory, 'resources.powerSpawn', []);
+        Util.set(this.memory, 'resources.orders', []);
 
         let seed_a = Game.getObjectById(seed_a_id);
         let seed_b = Game.getObjectById(seed_b_id);
@@ -2612,7 +2575,7 @@ mod.flush = function(){
     // Temporary migration can be removed once traveler is merged into /dev
     if (!_.isUndefined(Memory.rooms.hostileRooms)) {
         for (roomName in Memory.rooms.hostileRooms) {
-            if (_.isUndefined(Memory.rooms[roomName])) Memory.rooms[roomName] = {};
+            Util.set(Memory.rooms, roomName, {});
             Memory.rooms[roomName].hostile = Memory.rooms.hostileRooms[roomName];
         }
         delete Memory.rooms.hostileRooms;
