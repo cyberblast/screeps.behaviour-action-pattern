@@ -41,7 +41,7 @@ module.exports = {
     get(object, path, defaultValue, setDefault = true) {
         const r = _.get(object, path);
         if (!r && !_.isUndefined(defaultValue) && setDefault) {
-            defaultValue = typeof defaultValue === 'function' ? defaultValue() : defaultValue;
+            defaultValue = Util.fieldOrFunction(defaultValue);
             _.set(object, path, defaultValue);
             return defaultValue;
         }
@@ -61,6 +61,25 @@ module.exports = {
             return;
         }
         _.set(object, path, value);
+    },
+    
+    /**
+     * Calls a function if it exists
+     * @param {Function} toCall - The function to call
+     * @param {...*} [args] - A list of arguments to pass to the function
+     * @returns {*} Will return whatever the function calls, if it exists
+     */
+    callIfExists(toCall, ...args) {
+        if (toCall) return toCall(...args);
+    },
+    
+    /**
+     * Returns the result of the function or the value passed
+     * @param {*} value
+     * @returns {*}
+     */
+    fieldOrFunction(value) {
+        return typeof value === 'function' ? value() : value;
     },
     
     /**
