@@ -2207,7 +2207,7 @@ mod.extend = function(){
             if (lab_slave_a && lab_slave_b) break;
         }
         if (!lab_slave_a || !lab_slave_b) {
-            nearbyLabs.sort( (a,b) => { lab_master.pos.getRangeTo(a) - lab_master.pos.getRangeTo(b); } );
+            nearbyLabs.sort( (a,b) => lab_master.pos.getRangeTo(a) - lab_master.pos.getRangeTo(b));
             for (let i=0;i<nearbyLabs.length;i++) {
                 let lab = nearbyLabs[i];
                 let data = this.memory.resources.lab.find( (l) => l.id == lab.id );
