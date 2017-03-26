@@ -25,29 +25,24 @@ mod.installTask = (...taskNames) => {
 // load task memory & flush caches
 mod.flush = function () {
     Task.tasks.forEach(task => {
-        if (task.flush) task.flush();
+        Util.callIfExists(task.flush);
     });
 };
 // register tasks (hook up into events)
 mod.register = function () {
     Task.tasks.forEach(task => {
-        if (task.register) task.register();
+        Util.callIfExists(task.register);
     });
 };
 mod.memory = (task, s) => { // task:  (string) name of the task, s: (string) any selector for that task, could be room name, flag name, enemy name
-    if( !Memory.tasks ) Memory.tasks = {};
-    if( !Memory.tasks[task] ) Memory.tasks[task] = {};
-    if( !Memory.tasks[task][s] ) Memory.tasks[task][s] = {};
-    return Memory.tasks[task][s];
+    return Util.get(Memory, `tasks.${task}.${s}`, {});
 };
 mod.clearMemory = (task, s) => {
     if( Memory.tasks[task] && Memory.tasks[task][s] )
         delete Memory.tasks[task][s];
 };
 mod.cache = (task, s) => {
-    if( !cache[task] ) cache[task] = {};
-    if( !cache[task][s] ) cache[task][s] = {};
-    return cache[task][s];
+    return Util.get(cache, `task.${task}.${s}`, {});
 };
 mod.clearCache = (task, s) => {
     if( cache[task] && cache[task][s] )
