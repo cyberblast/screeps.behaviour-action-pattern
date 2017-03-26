@@ -2767,7 +2767,7 @@ mod.isHighwayRoom = function(roomName){
     });
 };
 mod.adjacentRooms = function(roomName){
-    let parts = roomName.split(/([N,E,S,W])/);
+    let parts = roomName.split(/([NESW])/);
     let dirs = ['N','E','S','W'];
     let toggle = q => dirs[ (dirs.indexOf(q)+2) % 4 ];
     let names = [];
@@ -2799,8 +2799,8 @@ mod.adjacentAccessibleRooms = function(roomName, diagonal = true) {
 mod.roomDistance = function(roomName1, roomName2, diagonal, continuous){
     if( diagonal ) return Game.map.getRoomLinearDistance(roomName1, roomName2, continuous);
     if( roomName1 == roomName2 ) return 0;
-    let posA = roomName1.split(/([N,E,S,W])/);
-    let posB = roomName2.split(/([N,E,S,W])/);
+    let posA = roomName1.split(/([NESW])/);
+    let posB = roomName2.split(/([NESW])/);
     let xDif = posA[1] == posB[1] ? Math.abs(posA[2]-posB[2]) : posA[2]+posB[2]+1;
     let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
     //if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1
