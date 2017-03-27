@@ -62,13 +62,16 @@ global.inject = (base, alien, namespace) => {
     let keys = _.keys(alien);
     for (const key of keys) {
         if (typeof alien[key] === "function") {
-            if( namespace ){
+            if (namespace) {
                 let original = base[key];
-                if( !base.baseOf ) base.baseOf = {};
-                if( !base.baseOf[namespace] ) base.baseOf[namespace] = {};
-                if( !base.baseOf[namespace][key] ) base.baseOf[namespace][key] = original;
+                if (!base.baseOf) base.baseOf = {};
+                if (!base.baseOf[namespace]) base.baseOf[namespace] = {};
+                if (!base.baseOf[namespace][key]) base.baseOf[namespace][key] = original;
             }
             base[key] = alien[key].bind(base);
+        } else if (alien[key] !== null && typeof base[key] === 'object' && !Array.isArray(base[key]) &&
+            typeof alien[key] === 'object' && !Array.isArray(alien[key])) {
+            global.inject(base[key], alien[key], namespace);
         } else {
             base[key] = alien[key]
         }
