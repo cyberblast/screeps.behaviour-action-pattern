@@ -2,16 +2,7 @@ const mod = {};
 module.exports = mod;
 mod.minControllerLevel = 2;
 mod.name = 'mining';
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.mining.handleFlagFound(flag) );
-    // when a flag has been removed
-    Flag.FlagRemoved.on( flagName => Task.mining.handleFlagRemoved(flagName) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.mining.handleSpawningStarted(params) );
-    Creep.spawningCompleted.on( creep => Task.mining.handleSpawningCompleted(creep) );
-    Creep.died.on( name => Task.mining.handleCreepDied(name));
-};
+mod.register = () => {};
 mod.checkFlag = (flag) => {
     if( flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor ) {
         flag.memory.roomName = flag.pos.roomName;
@@ -357,20 +348,31 @@ mod.memory = key => {
 };
 mod.creep = {
     miner: {
-        fixedBody: [MOVE, WORK, WORK, WORK, WORK, WORK],
+        fixedBody: {
+            [MOVE]: 1,
+            [WORK]: 5,
+        },
         multiBody: [MOVE, MOVE, WORK, CARRY],
         maxMulti: 1,
         behaviour: 'remoteMiner',
         queue: 'Medium' // not much point in hauling or working without a miner, and they're a cheap spawn.
     },
     hauler: {
-        fixedBody: [CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, WORK],
+        fixedBody: {
+            [CARRY]: 5,
+            [MOVE]: 3,
+            [WORK]: 1,
+        },
         multiBody: [CARRY, CARRY, MOVE],
         behaviour: 'remoteHauler',
         queue: 'Low'
     },
     worker: {
-        fixedBody: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, WORK, WORK, WORK],
+        fixedBody: {
+            [CARRY]: 3,
+            [MOVE]: 3,
+            [WORK]: 3,
+        },
         multiBody: [], 
         behaviour: 'remoteWorker',
         queue: 'Low'

@@ -3,18 +3,7 @@ let mod = {};
 module.exports = mod;
 mod.name = 'robbing';
 // hook into events
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.robbing.handleFlagFound(flag) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.robbing.handleSpawningStarted(params) );
-    // a creep completed spawning
-    Creep.spawningCompleted.on( creep => Task.robbing.handleSpawningCompleted(creep) );
-    // a creep will die soon
-    Creep.predictedRenewal.on( creep => Task.robbing.handleCreepDied(creep.name) );
-    // a creep died
-    Creep.died.on( name => Task.robbing.handleCreepDied(name) );
-};
+mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a robbing flag

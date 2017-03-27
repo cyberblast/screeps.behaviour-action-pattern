@@ -28,10 +28,29 @@ mod.flush = function () {
         Util.callIfExists(task.flush);
     });
 };
+// temporary hack to avoid registering twice internally, remove and fix internal when merged.
+mod.selfRegister = true;
 // register tasks (hook up into events)
 mod.register = function () {
     Task.tasks.forEach(task => {
+        // Extending of any other kind
         Util.callIfExists(task.register);
+        // Flag Events
+        if (task.handleFlagFound) Flag.found.on(flag => task.handleFlagFound(flag));
+        if (task.handleFlagRemoved) Flag.FlagRemoved.on(flagName => task.handleFlagRemoved(flagName));
+        // Creep Events
+        if (task.handleSpawningStarted) Creep.spawningStarted.on(params => task.handleSpawningStarted(params));
+        if (task.handleSpawningCompleted) Creep.spawningCompleted.on(creep => task.handleSpawningCompleted(creep));
+        if (task.handleCreepDied) {
+            Creep.predictedRenewal.on(creep => task.handleCreepDied(creep.name));
+            Creep.died.on(name => task.handleCreepDied(name));
+        }
+        if (task.handleCreepError) Creep.error.on(errorData => task.handleCreepError(errorData));
+        // Room events
+        if (task.handleNewInvader) Room.newInvader.on(invader => task.handleNewInvader(invader));
+        if (task.handleKnownInvader) Room.knownInvader.on(invaderID => task.handleKnownInvader(invaderID));
+        if (task.handleGoneInvader) Room.goneInvader.on(invaderID => task.handleGoneInvader(invaderID));
+        if (task.handleRoomDied) Room.collapsed.on(room => task.handleRoomDied(room));
     });
 };
 mod.memory = (task, s) => { // task:  (string) name of the task, s: (string) any selector for that task, could be room name, flag name, enemy name
