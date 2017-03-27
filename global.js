@@ -64,6 +64,46 @@ mod.FLAG_COLOR = {
     //COLOR_PURPLE - Reserved labs
     //COLOR_BLUE - Reserved (internal use)
     //COLOR_CYAN - Reserved (build related)
+    construct: { // construct an extension at flag when available
+        color: COLOR_CYAN,
+        secondaryColor: COLOR_CYAN,
+        spawn: { // construct a spawn at flag when available
+            color: COLOR_CYAN,
+            secondaryColor: COLOR_RED,
+        },
+        tower: { // construct a tower at flag when available
+            color: COLOR_CYAN,
+            secondaryColor: COLOR_PURPLE,
+        },
+        link: { // construct a link at flag when available
+            color: COLOR_CYAN,
+            secondaryColor: COLOR_BLUE,
+        },
+        lab: { // construct a lab at flag when available
+            color: COLOR_CYAN,
+            secondaryColor: COLOR_GREEN,
+        },
+        storage: { // construct a storage at flag when available
+            color: COLOR_CYAN,
+            secondaryColor: COLOR_YELLOW,
+        },
+        terminal: { // construct a terminal at flag when available
+            color: COLOR_CYAN,
+            secondaryColor: COLOR_ORANGE,
+        },
+        observer: { // construct an observer at flag when available
+            color: COLOR_CYAN,
+            secondaryColor: COLOR_BROWN,
+        },
+        nuker: { // construct a nuker at flag when available
+            color: COLOR_CYAN,
+            secondaryColor: COLOR_GREY,
+        },
+        powerSpawn: { // construct a power spawn at flagwhen available
+            color: COLOR_CYAN,
+            secondaryColor: COLOR_WHITE,
+        }
+    },
     //COLOR_GREEN
     claim: { // claim this room, then build spawn at flag
         color: COLOR_GREEN,

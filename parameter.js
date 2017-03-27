@@ -46,6 +46,8 @@ let mod = {
         HEATMAP: false, // collects creep positioning to display a heatmap
         HEATMAP_INTERVAL: 2, // intervals between collections
     },
+    SEMI_AUTOMATIC_CONSTRUCTION: true, // enables semi-automatic construction. Will construct based on flags.
+    REMOVE_CONSTRUCTION_FLAG: true, // if false, flag will remain. This is good if a structure decays, it can rebuild
     MAX_STORAGE_ENERGY: { // get rid of energy when reached
         1: 2000,
         2: 2000,
