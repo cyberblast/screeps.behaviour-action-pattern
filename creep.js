@@ -14,7 +14,7 @@ mod.extend = function(){
                 }
             }
         } else {
-            logError("Invalid arguments for Creep.findGroupMemberByType");
+            // logError("Invalid arguments for Creep.findGroupMemberByType");
         }
         return null;
     };
