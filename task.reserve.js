@@ -4,7 +4,10 @@ module.exports = mod;
 mod.name = 'reserve';
 mod.creep = {
     reserver: {
-        fixedBody: [CLAIM, CLAIM, MOVE, MOVE],
+        fixedBody: {
+            [CLAIM]: 2,
+            [MOVE]: 2,
+        },
         multiBody: [CLAIM, MOVE],
         maxMulti: 7,
         name: "reserver", 

@@ -155,7 +155,10 @@ mod.nextAction = creep => {
 mod.creep = {
     attackController: {
         fixedBody: [],
-        multiBody: [CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE],
+        multiBody: {
+            [CLAIM]: 5,
+            [MOVE]: 5,
+        },
         minMulti: 1,
         maxMulti: 4,
         name: "Atk-Contr", 

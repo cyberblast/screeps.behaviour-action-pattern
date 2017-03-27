@@ -53,23 +53,40 @@ setup.maxCount = function(room){
     return 2;
 };
 setup.default = {
-    fixedBody: [WORK, WORK, CARRY, MOVE],
-    multiBody: [WORK, WORK, WORK, MOVE],
+    fixedBody: {
+        [CARRY]: 1,
+        [MOVE]: 1,
+        [WORK]: 2,
+    },
+    multiBody: {
+        [MOVE]: 1,
+        [WORK]: 3,
+    },
     minAbsEnergyAvailable: 400,
     minEnergyAvailable: 0.5,
     maxMulti: room => setup.maxMulti(room),
     maxCount: room => setup.maxCount(room),
 };
 setup.low = {
-    fixedBody: [WORK, WORK, CARRY, MOVE],
-    multiBody: [WORK, WORK, MOVE],
+    fixedBody: {
+        [CARRY]: 1,
+        [MOVE]: 1,
+        [WORK]: 2,
+    },
+    multiBody: {
+        [MOVE]: 1,
+        [WORK]: 2,
+    },
     minAbsEnergyAvailable: 300,
     minEnergyAvailable: 1,
     maxMulti: room => setup.maxMulti(room),
     maxCount: room => setup.maxCount(room),
 };
 setup.level8 = {
-    fixedBody: [CARRY, MOVE, MOVE, MOVE],
+    fixedBody: {
+        [CARRY]: 1,
+        [MOVE]: 3,
+    },
     multiBody: [WORK],
     minAbsEnergyAvailable: 1700,
     minEnergyAvailable: 0.5,

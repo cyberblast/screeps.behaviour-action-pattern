@@ -348,20 +348,31 @@ mod.memory = key => {
 };
 mod.creep = {
     miner: {
-        fixedBody: [MOVE, WORK, WORK, WORK, WORK, WORK],
+        fixedBody: {
+            [MOVE]: 1,
+            [WORK]: 5,
+        },
         multiBody: [MOVE, MOVE, WORK, CARRY],
         maxMulti: 1,
         behaviour: 'remoteMiner',
         queue: 'Medium' // not much point in hauling or working without a miner, and they're a cheap spawn.
     },
     hauler: {
-        fixedBody: [CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, WORK],
+        fixedBody: {
+            [CARRY]: 5,
+            [MOVE]: 3,
+            [WORK]: 1,
+        },
         multiBody: [CARRY, CARRY, MOVE],
         behaviour: 'remoteHauler',
         queue: 'Low'
     },
     worker: {
-        fixedBody: [MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, WORK, WORK, WORK],
+        fixedBody: {
+            [CARRY]: 3,
+            [MOVE]: 3,
+            [WORK]: 3,
+        },
         multiBody: [], 
         behaviour: 'remoteWorker',
         queue: 'Low'

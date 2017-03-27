@@ -182,7 +182,11 @@ mod.memory = (flag) => {
 };
 mod.creep = {
     pioneer: {
-        fixedBody: [WORK, WORK, MOVE, MOVE, CARRY, CARRY],
+        fixedBody: {
+            [CARRY]: 2,
+            [MOVE]: 2,
+            [WORK]: 2,
+        },
         multiBody: [WORK, MOVE, CARRY],
         name: "pioneer", 
         behaviour: "pioneer", 
