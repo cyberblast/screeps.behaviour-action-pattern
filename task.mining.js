@@ -2,16 +2,7 @@ const mod = {};
 module.exports = mod;
 mod.minControllerLevel = 2;
 mod.name = 'mining';
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.mining.handleFlagFound(flag) );
-    // when a flag has been removed
-    Flag.FlagRemoved.on( flagName => Task.mining.handleFlagRemoved(flagName) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.mining.handleSpawningStarted(params) );
-    Creep.spawningCompleted.on( creep => Task.mining.handleSpawningCompleted(creep) );
-    Creep.died.on( name => Task.mining.handleCreepDied(name));
-};
+mod.register = () => {};
 mod.checkFlag = (flag) => {
     if( flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor ) {
         flag.memory.roomName = flag.pos.roomName;

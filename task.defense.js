@@ -2,14 +2,7 @@
 let mod = {};
 module.exports = mod;
 // hook into events
-mod.register = () => {
-    // When a new invader has been spotted
-    Room.newInvader.on( invaderCreep => Task.defense.handleNewInvader(invaderCreep) );
-    // When an invader leaves a room
-    Room.goneInvader.on( invaderId => Task.defense.handleGoneInvader(invaderId) );
-    // a creep died
-    Creep.died.on( creepName => Task.defense.handleCreepDied(creepName) );
-};
+mod.register = () => {};
 // When a new invader has been spotted
 mod.handleNewInvader = invaderCreep => {
     // ignore if on blacklist
@@ -63,7 +56,7 @@ mod.handleGoneInvader = invaderId => {
     }
 };
 // when a creep died
-mod.handleCreepDied = creepName => {     
+mod.handleCreepDied = creepName => {
     // check if its our creep
     let creepMemory = Memory.population[creepName];
     if (!creepMemory || !creepMemory.destiny || !creepMemory.destiny.task || creepMemory.destiny.task != 'defense' || !creepMemory.destiny.invaderId )

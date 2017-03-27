@@ -2,20 +2,7 @@
 let mod = {};
 module.exports = mod;
 // hook into events
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.pioneer.handleFlagFound(flag) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.pioneer.handleSpawningStarted(params) );
-    // a creep completed spawning
-    Creep.spawningCompleted.on( creep => Task.pioneer.handleSpawningCompleted(creep) );
-    // a creep will die soon
-    Creep.predictedRenewal.on( creep => Task.pioneer.handleCreepDied(creep.name) );
-    // a creep died
-    Creep.died.on( name => Task.pioneer.handleCreepDied(name) );
-    // a room collapsed
-    Room.collapsed.on( room => Task.pioneer.handleRoomDied(room) );
-};
+mod.register = () => {};
 mod.handleRoomDied = room => {
     // try to spawn a worker
     let pioneer = true;
