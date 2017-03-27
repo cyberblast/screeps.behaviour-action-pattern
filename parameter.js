@@ -43,7 +43,7 @@ let mod = {
         WALL: false, // highlight weakest wall and display hits
         RAMPART: false, // highlight weakest rampart and display hits
         ROAD: false, // highlight weakest road and display hits
-        HEATMAP: false, // collects creep positioning to display a heatmap
+        HEATMAP: false, // collects creep positioning to display a heatmap. WARNING: HIGH MEMORY USAGE
         HEATMAP_INTERVAL: 2, // intervals between collections
     },
     SEMI_AUTOMATIC_CONSTRUCTION: true, // enables semi-automatic construction. Will construct based on flags.
@@ -112,7 +112,7 @@ let mod = {
     REPORT_MAX_LENGTH: 500,
     REPORTS_PER_LOOP: 18,
     SEND_STATISTIC_REPORTS: true, // Set to true to receive room statistics per mail, otherwise set to false.
-    ROAD_CONSTRUCTION_ENABLE: false, // Set to False to disable automatic road construction, or to a number to enable for owned rooms reaching that RC Level
+    ROAD_CONSTRUCTION_ENABLE: false, // Set to False to disable automatic road construction, or to a number to enable for owned rooms reaching that RC Level. WARNING: HIGH MEMORY USAGE
     ROAD_CONSTRUCTION_INTERVAL: 500,
     ROAD_CONSTRUCTION_MIN_DEVIATION: 1.2,
     ROAD_CONSTRUCTION_ABS_MIN: 3,
