@@ -44,21 +44,17 @@ mod.FLAG_COLOR = {
     invade: { // destroy everything enemy in the room
         color: COLOR_RED,
         secondaryColor: COLOR_RED,
-        filter: {'color': COLOR_RED, 'secondaryColor': COLOR_RED},
         exploit: { // send privateers to exploit sources
             color: COLOR_RED,
             secondaryColor: COLOR_GREEN,
-            filter: {'color': COLOR_RED, 'secondaryColor': COLOR_GREEN}
         },
         robbing: { // take energy from foreign structures
             color: COLOR_RED,
             secondaryColor: COLOR_YELLOW,
-            filter: {'color': COLOR_RED, 'secondaryColor': COLOR_YELLOW}
         },
         attackController: { // attack enemy controller and then claim
             color: COLOR_RED,
             secondaryColor: COLOR_CYAN,
-            filter: {'color': COLOR_RED, 'secondaryColor': COLOR_CYAN},
         }
     },
     //COLOR_PURPLE - Reserved labs
@@ -108,55 +104,45 @@ mod.FLAG_COLOR = {
     claim: { // claim this room, then build spawn at flag
         color: COLOR_GREEN,
         secondaryColor: COLOR_GREEN,
-        filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_GREEN},
         spawn: { // send pioneers & build spawn here
             color: COLOR_GREEN,
             secondaryColor: COLOR_WHITE,
-            filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_WHITE}
         },
         pioneer: { // send additional pioneers
             color: COLOR_GREEN,
             secondaryColor: COLOR_RED,
-            filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_RED}
         },
         reserve: { // reserve this room
             color: COLOR_GREEN,
             secondaryColor: COLOR_GREY,
-            filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_GREY},
         },
         mining: {
             color: COLOR_GREEN,
             secondaryColor: COLOR_BROWN,
-            filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_BROWN}
         },
         delivery: { // rob energy from friendly rooms and deliver here
             color: COLOR_GREEN,
             secondaryColor: COLOR_YELLOW,
-            filter: {'color': COLOR_GREEN, 'secondaryColor': COLOR_YELLOW}
         },
     },
     //COLOR_YELLOW
     defense: { // point to gather troops
         color: COLOR_YELLOW,
         secondaryColor: COLOR_YELLOW,
-        filter: {'color': COLOR_YELLOW, 'secondaryColor': COLOR_YELLOW}
     },
     //COLOR_ORANGE
     destroy: { // destroy whats standing here
         color: COLOR_ORANGE,
         secondaryColor: COLOR_ORANGE,
-        filter: {'color': COLOR_ORANGE, 'secondaryColor': COLOR_ORANGE},
         dismantle: {
             color: COLOR_ORANGE,
             secondaryColor: COLOR_YELLOW,
-            filter: {'color': COLOR_ORANGE, 'secondaryColor': COLOR_YELLOW}
         },
     },
     //COLOR_BROWN
     pavementArt: {
         color: COLOR_BROWN,
         secondaryColor: COLOR_BROWN,
-        filter: {'color': COLOR_BROWN, 'secondaryColor': COLOR_BROWN},
     },
     // COLOR_GREY
     command: { // command api
@@ -164,7 +150,6 @@ mod.FLAG_COLOR = {
         drop: { // haulers drop energy in a pile here
             color: COLOR_WHITE,
             secondaryColor: COLOR_YELLOW,
-            filter: {'color': COLOR_WHITE, 'secondaryColor': COLOR_YELLOW}
         }
     },
 };
