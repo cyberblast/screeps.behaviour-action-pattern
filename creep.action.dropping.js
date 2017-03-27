@@ -14,12 +14,19 @@ action.newTarget = function(creep) {
     if( !drop ) {
         drop = creep.pos.findClosestByRange(creep.room.find(FIND_FLAGS, {filter: FLAG_COLOR.claim.spawn.filter}));
     }
+    if (!drop) {
+        drop = creep.pos.findClosestByRange(_.filter(creep.room.constructionSites, {structureType: STRUCTURE_SPAWN}));
+    }
+    if (!drop) {
+        drop = creep.room.controller;
+    }
     return drop;
 };
 action.work = function(creep) {
     let ret = OK;
     let isSpawnFlag = f => f && f.color === FLAG_COLOR.claim.spawn.color && f.secondaryColor === FLAG_COLOR.claim.spawn.secondaryColor;
-    if (!(creep.target instanceof StructureSpawn || isSpawnFlag(creep.target))) {
+    if (!(creep.target instanceof StructureSpawn || creep.target instanceof ConstructionSite
+        || creep.target instanceof StructureController || isSpawnFlag(creep.target))) {
         let range = creep.pos.getRangeTo(creep.target);
         if( range > action.reachedRange && creep.data.lastPos && creep.data.path
             && !_.eq(creep.pos, creep.data.lastPos) ) {

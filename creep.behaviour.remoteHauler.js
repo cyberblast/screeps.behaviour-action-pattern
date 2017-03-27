@@ -38,8 +38,12 @@ mod.nextAction = function(creep){
             // no deposit :/ 
             // try spawn & extensions
             if( this.assign(creep, Creep.action.feeding) ) return;
-            this.assign(creep, Creep.action.dropping);
-            return;
+            if( this.assign(creep, Creep.action.dropping) ) return;
+            else {
+                const drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
+                _.forEach(Object.keys(creep.carry), drop);
+                return this.assign(creep, Creep.action.idle);
+            }
         }
         // empty
         // travelling
