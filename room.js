@@ -404,8 +404,9 @@ mod.extend = function(){
                 get: function() {
                     if( _.isUndefined(this._piles) ){
                         const room = this.room;
-                        this._piles = room.find(FIND_FLAGS, {filter: FLAG_COLOR.command.drop.filter})
-                            .map(function(flag) {
+                        this._piles = FlagDir.filter(FLAG_COLOR.command.drop, room.getPositionAt(25,25), true)
+                            .map(function(flagInformation) {
+                                const flag = Game.flags[flagInformation.name];
                                 const piles = room.lookForAt(LOOK_ENERGY, flag.pos.x, flag.pos.y);
                                 return piles.length && piles[0] || flag;
                             });
