@@ -90,8 +90,8 @@ const mod = {
                 }
                 return list;
             }, score);
-
-            score[mod.myName()] = CONST.MY_SCORE;
+    
+            mod.setScore(mod.myName(), CONST.MY_SCORE);
         }
     },
     _loadWhitelist: () => {
