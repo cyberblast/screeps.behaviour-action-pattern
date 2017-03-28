@@ -31,46 +31,53 @@ mod.run = function(creep, params = {approach: mod.approach}) {
     if( source ) {
         if (!creep.action || creep.action.name !== 'harvesting') Population.registerAction(creep, Creep.action.harvesting, source);
         if( !creep.data.determinatedSpot ) {
-            let args = {
-                spots: [{
-                    pos: source.pos,
-                    range: 1
-                }],
-                checkWalkable: true,
-                where: null,
-                roomName: creep.pos.roomName
-            };
-
             let invalid = [];
             let findInvalid = entry => {
                 const predictedRenewal = entry.predictedRenewal ? entry.predictedRenewal : entry.spawningTime;
-                if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot
+                if( entry.roomName === creep.pos.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot
                     && entry.ttl > predictedRenewal )
                     invalid.push(entry.determinatedSpot);
             };
             _.forEach(Memory.population, findInvalid);
-            args.where = pos => !_.some(invalid,{x:pos.x,y:pos.y});
-
-            if( source.container )
-                args.spots.push({
-                    pos: source.container.pos,
-                    range: 1
-                });
-            if( !params.remote && source.link )
-                args.spots.push({
-                    pos: source.link.pos,
-                    range: 1
-                });
-            let spots = Room.fieldsInRange(args);
-            if( spots.length > 0 ){
-                let spot = creep.pos.findClosestByPath(spots, {filter: pos => {
-                    return !_.some(
-                        creep.room.lookForAt(LOOK_STRUCTURES, pos),
-                        {'structureType': STRUCTURE_ROAD }
-                    );
-                }});
-                if( !spot ) spot = creep.pos.findClosestByPath(spots) || spots[0];
-                if( spot ) {
+            const containerSpot = (source.container && source.container.pos.isNearTo(source)
+                && !_.some(invalid,{x:source.container.pos.x, y:source.container.pos.y})) ? source.container.pos : null;
+            let spots = [];
+            let args;
+            if (!containerSpot) {
+                args = {
+                    spots: [{
+                        pos: source.pos,
+                        range: 1
+                    }],
+                    checkWalkable: true,
+                    where: pos => !_.some(invalid,{x:pos.x,y:pos.y}),
+                    roomName: creep.pos.roomName
+                };
+                if( source.container ) {
+                    args.spots.push({
+                        pos: source.container.pos,
+                        range: 1
+                    });
+                }
+                if( !params.remote && source.link )
+                    args.spots.push({
+                        pos: source.link.pos,
+                        range: 1
+                    });
+                spots = Room.fieldsInRange(args);
+            }
+            if (containerSpot || spots.length > 0) {
+                let spot = containerSpot;
+                if (!spot) {
+                    spot = creep.pos.findClosestByPath(spots, {filter: pos => {
+                        return !_.some(
+                            creep.room.lookForAt(LOOK_STRUCTURES, pos),
+                            {'structureType': STRUCTURE_ROAD }
+                        );
+                    }});
+                }
+                if (!spot) spot = creep.pos.findClosestByPath(spots) || spots[0];
+                if (spot) {
                     creep.data.determinatedSpot = {
                         x: spot.x,
                         y: spot.y
