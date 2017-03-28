@@ -2704,6 +2704,7 @@ mod.flush = function(){
         delete room._isReceivingEnergy;
         delete room._reservedSpawnEnergy;
         delete room._creeps;
+        delete room._allCreeps;
         delete room._privateerMaxWeight;
         delete room._claimerMaxWeight;
         delete room._combatCreeps;
