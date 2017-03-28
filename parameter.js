@@ -69,20 +69,20 @@ let mod = {
         8: 50000
     },
     MAX_STORAGE_MINERAL:200000, // keep a max of each type of minerals in store
-    ROOM_TRADING: false, // set this true to enable haulers within your colony to request resources from other rooms in your colony
+    ROOM_TRADING: true, // set this true to enable haulers within your colony to request resources from other rooms in your colony
     FILL_POWERSPAWN: true,
-    MIN_MINERAL_SELL_AMOUNT:20000,
-    ENERGY_VALUE_CREDITS: 0.15, // assumed energy exchange rate (in credits) to determine best mineral sell offer
+    MIN_MINERAL_SELL_AMOUNT: 20000,
+    ENERGY_VALUE_CREDITS: 0.05, // assumed energy exchange rate (in credits) to determine best mineral sell offer
     //MAX_SELL_RANGE: 60,
     TERMINAL_ENERGY: 100000,
     MIN_SELL_RATIO: {
-        'H': 0.2,
-        'O': 0.2,
-        'U': 0.3,
-        'L': 0.3,
-        'K': 0.3,
-        'Z': 0.3,
-        'X': 0.4
+        'H': 0.02,
+        'O': 0.02,
+        'U': 0.2,
+        'L': 0.2,
+        'K': 0.2,
+        'Z': 0.2,
+        'X': 0.2
     },
     MAX_REPAIR_LIMIT: { // Limits how high structures get repaired by towers, regarding RCL
         1: 1000,
@@ -102,7 +102,7 @@ let mod = {
         5: 100000,
         6: 300000,
         7: 750000,
-        8: Infinity
+        8: 300000000
     },
     MAX_FORTIFY_CONTAINER: 50000,
     LIMIT_URGENT_REPAIRING: 750, // urgent repair when hits below
@@ -128,7 +128,7 @@ let mod = {
     COMBAT_CREEPS_RESPECT_RAMPARTS: false, // causes own creeps not to leave through ramparts
     COST_MATRIX_VALIDITY: 1000,
     CONSTRUCTION_PRIORITY: [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_LINK,STRUCTURE_TERMINAL,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_POWER_SPAWN,STRUCTURE_NUKER,STRUCTURE_OBSERVER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_LAB,STRUCTURE_WALL,STRUCTURE_RAMPART],
-    CONTROLLER_SIGN: false,
+    CONTROLLER_SIGN: true,
     CONTROLLER_SIGN_MESSAGE: `Territory of ${_.chain(Game.spawns).values().first().get('owner.username').value()}, an Open Collaboration Society user! (https://github.com/ScreepsOCS)`,
     CONTROLLER_SIGN_UPDATE: false, // Update sign message if user changes CONTROLLER_SIGN_MESSAGE
     MINERS_AUTO_BUILD: false, // miners and remoteMiners will build their own containers if they are missing.
@@ -144,7 +144,7 @@ let mod = {
     REMOTE_HAULER_DRIVE_BY_BUILD_RANGE: 1, // A creep's max build distance is 3 but cpu can be saved by dropping the search distance to 1.
     REMOTE_HAULER_DRIVE_BY_BUILD_ALL: false, // If REMOTE_HAULER_DRIVE_BY_BUILDING is enabled then this option will allow remote haulers will drive-by-build any of your structures.
     PIONEER_UNOWNED: false, // True: pioneers may attempt to work in unowned rooms.
-    DRIVE_BY_REPAIR_RANGE: 3, // range that creeps should search when trying to repair and move
+    DRIVE_BY_REPAIR_RANGE: 2, // range that creeps should search when trying to repair and move
     REMOTE_WORKER_MULTIPLIER: 1, // Number of workers spawned per remote mining room.
     PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah','fsck-u','FaceWound','forkmantis','Migaaresno','xAix1999','silentpoots','arguinyano','OokieCookie','OverlordQ','Nibinhilion','Crowsbane','Yew','BogdanBiv','s1akr','Pandabear41','Logmadr','Patrik','novice','Conquest','ofirl','GeorgeBerkeley','TTR','tynstar','K-C','Hoekynl','Sunri5e','AgOrange','distantcam','Lisp','bbdMinimbl','Twill','Logxen','miR','Spedwards','Krazyfuq','Icesory','chobobobo','deft-code','mmmd','DKPlugins','pavelnieks','buckley310','almaravarion','SSH','Perrytheplatypus','Jnesselr','ryagas','xXtheguy52Xx','SEATURTLEKING','DasBrain','C00k1e_93','Currency','Vykook','shedletsky','Aranatha','Montblanc'],
     // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
