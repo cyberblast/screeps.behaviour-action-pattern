@@ -87,6 +87,9 @@ mod.nextAction = function(creep) {
         }
     }    
     
-    // else run as worker
-    Creep.behaviour.worker.nextAction(creep);
+    if( creep.sum < (creep.carryCapacity*0.5) ) {
+        return mod.selectInflowAction(creep);
+    } else {
+        return mod.selectAction(creep, mod.outflowActions(creep));
+    }
 };
