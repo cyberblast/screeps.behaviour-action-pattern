@@ -16,6 +16,7 @@ mod.run = function(creep) {
         logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
     }
 };
+mod.inflowActions = Creep.behaviour.worker.inflowActions;
 mod.outflowActions = (creep) => {
     let priority;
     if (creep.room.controller && creep.room.controller.level < 2) {
