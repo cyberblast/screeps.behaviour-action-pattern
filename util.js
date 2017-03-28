@@ -76,10 +76,11 @@ module.exports = {
     /**
      * Returns the result of the function or the value passed
      * @param {*} value
+     * @param {...*} [args] - A list of arguments to pass if it's a function
      * @returns {*}
      */
-    fieldOrFunction(value) {
-        return typeof value === 'function' ? value() : value;
+    fieldOrFunction(value, ...args) {
+        return typeof value === 'function' ? value(...args) : value;
     },
     
     /**
