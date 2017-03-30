@@ -35,14 +35,12 @@ mod.registerAction = function(creep, action, target, entry) {
     if( entry === undefined ) entry = this.getCreep(creep.name);
     entry.carryCapacityLeft = creep.carryCapacity - creep.sum;
     let room = creep.room;
-    if( room.population === undefined ) {
-        room.population = {
-            typeCount: {},
-            typeWeight: {},
-            actionCount: {},
-            actionWeight: {}
-        };
-    }
+    Util.set(room, 'population', {
+        typeCount: {},
+        typeWeight: {},
+        actionCount: {},
+        actionWeight: {},
+    });
     if( creep.action ){
         // unregister action
         if( room.population.actionCount[creep.action.name] === undefined )
@@ -131,14 +129,12 @@ mod.registerCreepFlag = function(creep, flag) {
 };
 mod.countCreep = function(room, entry){
     entry.roomName = room.name;
-    if( room.population === undefined ) {
-        room.population = {
-            typeCount: {},
-            typeWeight: {},
-            actionCount: {},
-            actionWeight: {}
-        };
-    }
+    Util.set(room, 'population', {
+        typeCount: {},
+        typeWeight: {},
+        actionCount: {},
+        actionWeight: {},
+    });
 
     if( room.population.typeCount[entry.creepType] === undefined )
         room.population.typeCount[entry.creepType] = 1;
@@ -163,9 +159,7 @@ mod.flush = function() {
     this.predictedRenewal = [];
     this.spawned = [];
     this.spawnsToProbe = [];
-    if(_.isUndefined(Memory.population)) {
-        Memory.population = {};
-    }
+    Util.set(Memory, 'population', {});
 };
 mod.analyze = function(){
     let register = entry => {
