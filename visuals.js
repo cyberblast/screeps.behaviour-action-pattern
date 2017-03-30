@@ -1,87 +1,50 @@
-module.exports = class Visuals {
+const Visuals = class {};
+module.exports = Visuals;
+
+Visuals.extend = function() {
     
-    static run() {
-        for (let roomName in Game.rooms) {
-            const room = Game.rooms[roomName];
-            if (!ROOM_VISUALS_ALL && !room.my) continue;
-            if (!room.controller) continue;
-            
-            if (Memory.heatmap === undefined) Memory.heatmap = false;
-            
-            if (VISUALS.HEATMAP) {
-                if (Game.time % VISUALS.HEATMAP_INTERVAL === 0) {
-                    Visuals.setHeatMapData(room);
-                }
-                
-                if (Memory.heatmap) {
-                    Visuals.drawHeatMapData(room);
-                    continue;
-                }
-            }
-            
-            if (VISUALS.ROOM) {
-                Visuals.drawRoomInfo(room, VISUALS.ROOM_GLOBAL);
-            }
-            if (VISUALS.ROOM_ORDERS) {
-                Visuals.drawRoomOrders(room);
-            }
-            if (VISUALS.ROOM_OFFERS) {
-                Visuals.drawRoomOffers(room);
-            }
-            if (VISUALS.CONTROLLER) {
-                Visuals.drawControllerInfo(room.controller);
-            }
-            if (VISUALS.SPAWN) {
-                room.structures.spawns.filter(s => s.spawning).forEach(s => Visuals.drawSpawnInfo(s));
-            }
-            if (VISUALS.MINERAL) {
-                let [mineral] = room.minerals;
-                if (mineral) Visuals.drawMineralInfo(mineral);
-            }
-            if (VISUALS.SOURCE) {
-                room.sources.forEach(s => Visuals.drawSourceInfo(s));
-            }
-            if (VISUALS.WALL) {
-                Visuals.highlightWeakest(room, STRUCTURE_WALL);
-            }
-            if (VISUALS.RAMPART) {
-                Visuals.highlightWeakest(room, STRUCTURE_RAMPART);
-            }
-            if (VISUALS.ROAD) {
-                Visuals.highlightWeakest(room, STRUCTURE_ROAD);
-            }
-            if (VISUALS.STORAGE) {
-                Visuals.storage(room);
-            }
-            if (VISUALS.TERMINAL) {
-                Visuals.terminal(room);
-            }
-            if (VISUALS.TOWER) {
-                room.structures.towers.forEach(t => Visuals.drawTowerInfo(t));
-            }
-            if (VISUALS.TRANSACTIONS) {
-                Visuals.drawTransactions(room);
-            }
-            if (VISUALS.LABS) {
-                Visuals.drawLabs(room);
-            }
-            if (VISUALS.CREEP) {
-                Visuals.drawCreepPath(room);
-            }
+    Object.defineProperties(Visuals, {
+        barStyle: {
+            configurable: true,
+            value: {fill: '#2B2B2B', opacity: 0.8, stroke: '#000000',},
+        },
+        sparklineStyle: {
+            configurable: true,
+            value: [{
+                key: 'limit',
+                min: Game.cpu.limit * 0.5,
+                max: Game.cpu.limit * 1.5,
+                stroke: '#808080',
+                opacity: 0.25,
+            }, {
+                key: 'cpu',
+                min: Game.cpu.limit * 0.5,
+                max: Game.cpu.limit * 1.5,
+                stroke: '#FFFF00',
+                opacity: 0.5,
+            }, {
+                key: 'bucket',
+                min: 0,
+                max: 10000,
+                stroke: '#00FFFF',
+                opacity: 0.5,
+            }],
+        },
+        tooltipStyle: {
+            configurable: true,
+            value: {align: 'left', font: 0.4,},
+        },
+        weakestStyle: {
+            configurable: true,
+            value: {radius: 0.4, fill: '#FF0000', opacity: 0.3, strokeWidth: 0,},
         }
-        if (VISUALS.ROOM_GLOBAL) {
-            if (VISUALS.CPU) {
-                Visuals.collectSparklineStats();
-            }
-            Visuals.drawGlobal();
-        }
-    }
+    });
     
-    static drawGlobal() {
+    Visuals.drawGlobal = function() {
         const vis = new RoomVisual();
         const bufferWidth = 1;
         const sectionWidth = 49 / 5;
-        const BAR_STYLE = {fill: '#2B2B2B', opacity: 0.8, stroke: '#000000',};
+        const BAR_STYLE = Visuals.barStyle;
         
         let x = bufferWidth;
         const y = 2;
@@ -122,36 +85,18 @@ module.exports = class Visuals {
             vis.text(`Tick: ${Game.time}`, x, y, {align: 'left'});
         }
         if (VISUALS.CPU) {
-            Visuals.drawSparkline(undefined, 1.5, 46.5, 20, 2, _.map(Memory.visualStats.cpu, (v, i) => Memory.visualStats.cpu[i]), [{
-                key: 'limit',
-                min: Game.cpu.limit * 0.5,
-                max: Game.cpu.limit * 1.5,
-                stroke: '#808080',
-                opacity: 0.25,
-            }, {
-                key: 'cpu',
-                min: Game.cpu.limit * 0.5,
-                max: Game.cpu.limit * 1.5,
-                stroke: '#FFFF00',
-                opacity: 0.5,
-            }, {
-                key: 'bucket',
-                min: 0,
-                max: 10000,
-                stroke: '#00FFFF',
-                opacity: 0.5,
-            }]);
+            Visuals.drawSparkline(undefined, 1.5, 46.5, 20, 2, _.map(Memory.visualStats.cpu, (v, i) => Memory.visualStats.cpu[i]), Visuals.sparklineStyle);
         }
-    }
+    };
     
-    static drawSparkline(room, x, y, w, h, values, options) {
+    Visuals.drawSparkline = function(room, x, y, w, h, values, options) {
         const vis = room ? new RoomVisual(room) : new RoomVisual();
         _.forEach(options, option => {
             vis.poly(_.map(values, (v, i) => [x + w * (i / (values.length - 1)), y + h * (1 - (v[option.key] - option.min) / (option.max - option.min))]), option);
         });
-    }
+    };
     
-    static collectSparklineStats() {
+    Visuals.collectSparklineStats = function() {
         if (!_.get(Memory, 'visualStats.cpu')) {
             _.set(Memory, 'visualStats.cpu', []);
         }
@@ -163,9 +108,9 @@ module.exports = class Visuals {
         if (Memory.visualStats.cpu.length >= 100) {
             Memory.visualStats.cpu.shift();
         }
-    }
+    };
     
-    static drawRoomInfo(room) {
+    Visuals.drawRoomInfo = function(room) {
         const vis = new RoomVisual(room.name);
         let x;
         let y = 0;
@@ -174,7 +119,7 @@ module.exports = class Visuals {
         // Display bars: RCL, GCL, CPU, Bucket, Tick #
         const bufferWidth = 1;
         const sectionWidth = 49 / 5;
-        const BAR_STYLE = {fill: '#2B2B2B', opacity: 0.8, stroke: '#000000',};
+        const BAR_STYLE = Visuals.barStyle;
         
         // RCL
         x = bufferWidth;
@@ -195,7 +140,10 @@ module.exports = class Visuals {
             text = `Unowned`;
         }
         RCL_PERCENTAGE = Math.min(1, RCL_PERCENTAGE);
-        vis.rect(x, y - 0.75, RCL_PERCENTAGE * sectionWidth, 1, {fill: getColourByPercentage(RCL_PERCENTAGE, true), opacity: BAR_STYLE.opacity});
+        vis.rect(x, y - 0.75, RCL_PERCENTAGE * sectionWidth, 1, {
+            fill: getColourByPercentage(RCL_PERCENTAGE, true),
+            opacity: BAR_STYLE.opacity
+        });
         vis.text(text, x + sectionWidth / 2, y);
         
         if (VISUALS.ROOM_GLOBAL) {
@@ -217,41 +165,41 @@ module.exports = class Visuals {
             });
             vis.text(`Energy: ${room.energyAvailable}/${room.energyCapacityAvailable} (${(ENERGY_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
         }
-    }
+    };
     
-    static drawSpawnInfo(spawn) {
+    Visuals.drawSpawnInfo = function(spawn) {
         if (!spawn.spawning) return;
         const vis = new RoomVisual(spawn.room.name);
-        vis.text(`${spawn.spawning.name} (${((spawn.spawning.needTime - spawn.spawning.remainingTime) / spawn.spawning.needTime * 100).toFixed(1)}%)`, spawn.pos.x + 1, spawn.pos.y - 0.5, {align: 'left', font: 0.4,});
-    }
+        vis.text(`${spawn.spawning.name} (${((spawn.spawning.needTime - spawn.spawning.remainingTime) / spawn.spawning.needTime * 100).toFixed(1)}%)`, spawn.pos.x + 1, spawn.pos.y - 0.5, Visuals.tooltipStyle);
+    };
     
-    static drawMineralInfo(mineral) {
+    Visuals.drawMineralInfo = function(mineral) {
         const vis = new RoomVisual(mineral.room.name);
         let x = mineral.pos.x + 1;
         let y = mineral.pos.y - 0.5;
         if (mineral.mineralAmount) {
-            vis.text(`Amount: ${formatNum(mineral.mineralAmount)}`, x, y, {align: 'left', font: 0.4,});
+            vis.text(`Amount: ${formatNum(mineral.mineralAmount)}`, x, y, Visuals.tooltipStyle);
         } else {
-            vis.text(`Regen: ${formatNum(mineral.ticksToRegeneration)}`, x, y, {align: 'left', font: 0.4,});
+            vis.text(`Regen: ${formatNum(mineral.ticksToRegeneration)}`, x, y, Visuals.tooltipStyle);
         }
-    }
+    };
     
-    static drawSourceInfo(source) {
+    Visuals.drawSourceInfo = function(source) {
         const vis = new RoomVisual(source.room.name);
         let x = source.pos.x + 0.5;
         let y = source.pos.y - 0.5;
         if (source.energy) {
-            vis.text(`Amount: ${source.energy}`, x, y, {align: 'left', font: 0.4,});
+            vis.text(`Amount: ${source.energy}`, x, y, Visuals.tooltipStyle);
         } else {
-            vis.text(`Regen: ${source.ticksToRegeneration}`, x, y, {align: 'left', font: 0.4,});
+            vis.text(`Regen: ${source.ticksToRegeneration}`, x, y, Visuals.tooltipStyle);
         }
-    }
+    };
     
-    static drawControllerInfo(controller) {
+    Visuals.drawControllerInfo = function(controller) {
         const vis = new RoomVisual(controller.room.name);
         const BASE_X = controller.pos.x + 1;
         let y = controller.pos.y - 0.5;
-        const style = {align: 'left', font: 0.4,};
+        const style = Visuals.tooltipStyle;
         let line0 = `L: ${controller.level}`;
         let line1 = `P: ${formatNum(controller.progress)}/${formatNum(controller.progressTotal)} (${(controller.progress / controller.progressTotal * 100).toFixed(2)}%)`;
         let line2 = `D: ${formatNum(controller.ticksToDowngrade)}`;
@@ -272,13 +220,13 @@ module.exports = class Visuals {
             let downgradeStyle = Object.assign({}, style, {color: '#FF0000'});
             vis.text(line2, BASE_X, y += 0.4, downgradeStyle);
         }
-    }
+    };
     
-    static highlightWeakest(room, type) {
+    Visuals.highlightWeakest = function(room, type) {
         const vis = new RoomVisual(room.name);
         let weakest = _(room.find(FIND_STRUCTURES)).filter(s => s.structureType === type).min(s => s.hits);
         if (weakest && weakest.pos) {
-            vis.circle(weakest.pos.x, weakest.pos.y, {radius: 0.4, fill: '#FF0000', opacity: 0.3, strokeWidth: 0,});
+            vis.circle(weakest.pos.x, weakest.pos.y, Visuals.weakestStyle);
             let y = weakest.pos.y - 0.5; // base y pos - consistent with spawns, labs, and controllers
             const look = weakest.pos.lookFor(LOOK_STRUCTURES);
             const towers = _.find(look, o => o instanceof StructureTower);
@@ -287,24 +235,24 @@ module.exports = class Visuals {
             } else {
                 const spawns = _.find(look, o => o instanceof StructureSpawn && o.spawning);
                 if (spawns && VISUALS.SPAWN) {
-                // if structure shares a position with a spawn (road, rampart), lower to next line
-                // spawn must be spawning, and spawn visuals must be enabled
+                    // if structure shares a position with a spawn (road, rampart), lower to next line
+                    // spawn must be spawning, and spawn visuals must be enabled
                     y += 0.4;
                 } else {
                     const labs = _.find(look, o => o instanceof StructureLab);
                     if (labs && VISUALS.LABS) {
-                    // same as spawns, move the weakest structure text until it's on its own line
+                        // same as spawns, move the weakest structure text until it's on its own line
                         if (labs.energy) y += 0.4;
                         if (labs.mineralAmount) y += 0.4;
                         if (labs.cooldown) y += 0.4;
                     }
                 }
-            }    
-            vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, y, {align: 'left', font: 0.4,});
+            }
+            vis.text(`H: ${formatNum(weakest.hits)} (${(weakest.hits / weakest.hitsMax * 100).toFixed(2)}%)`, weakest.pos.x + 1, y, Visuals.tooltipStyle);
         }
-    }
+    };
     
-    static drawRoomOrders(room) {
+    Visuals.drawRoomOrders = function(room) {
         const vis = new RoomVisual(room.name);
         const x = 43;
         let y = 4.5;
@@ -319,11 +267,11 @@ module.exports = class Visuals {
         }
         vis.text('Room Orders', x, ++y, {align: 'left'});
         for (let order of room.memory.resources.orders) {
-            vis.text(`${order.type}: ${formatNum(order.amount)}`, x, y += 0.6, {align: 'left', font: 0.4, color: getResourceColour(order.type)});
+            vis.text(`${order.type}: ${formatNum(order.amount)}`, x, y += 0.6, Object.assign({color: getResourceColour(order.type)}, Visuals.tooltipStyle));
         }
-    }
+    };
     
-    static drawRoomOffers(room) {
+    Visuals.drawRoomOffers = function(room) {
         const vis = new RoomVisual(room.name);
         const x = 43;
         let y = 4.5;
@@ -341,11 +289,11 @@ module.exports = class Visuals {
         }
         vis.text('Room Offerings', x, ++y, {align: 'left'});
         for (let offer of room.memory.resources.offers) {
-            vis.text(`${offer.type}: ${formatNum(offer.amount)} (to ${offer.room})`, x, y += 0.6, {align: 'left', font: 0.4, color: getResourceColour(offer.type)});
+            vis.text(`${offer.type}: ${formatNum(offer.amount)} (to ${offer.room})`, x, y += 0.6, Object.assign({color: getResourceColour(offer.type)}, Visuals.tooltipStyle));
         }
-    }
+    };
     
-    static storage(room) {
+    Visuals.storage = function(room) {
         if (room.storage) {
             const vis = new RoomVisual(room.name);
             const x = 43;
@@ -353,9 +301,9 @@ module.exports = class Visuals {
             vis.text('Storage Contents', x, ++y, {align: 'left'});
             storageObject(vis, room.storage.store, x, y);
         }
-    }
+    };
     
-    static terminal(room) {
+    Visuals.terminal = function(room) {
         if (room.terminal) {
             const vis = new RoomVisual(room.name);
             const x = 43;
@@ -366,14 +314,14 @@ module.exports = class Visuals {
             vis.text('Terminal Contents', x, ++y, {align: 'left'});
             storageObject(vis, room.terminal.store, x, y);
         }
-    }
+    };
     
-    static drawTowerInfo(tower) {
+    Visuals.drawTowerInfo = function(tower) {
         const vis = new RoomVisual(tower.room.name);
-        vis.text(`E: ${tower.energy}/${tower.energyCapacity}`, tower.pos.x + 1, tower.pos.y - 0.5, {align: 'left', font: 0.4});
-    }
-        
-    static drawTransactions(room) {
+        vis.text(`E: ${tower.energy}/${tower.energyCapacity}`, tower.pos.x + 1, tower.pos.y - 0.5, Visuals.tooltipStyle);
+    };
+    
+    Visuals.drawTransactions = function(room) {
         if (room.terminal) {
             const vis = new RoomVisual(room.name);
             const x = room.terminal.pos.x;
@@ -409,40 +357,40 @@ module.exports = class Visuals {
                     text = `${prefix}${transaction.amount * transaction.order.price}`;
                 }
                 //const detailedText = `${prefix}${transaction.amount * transaction.order.price} : ${transaction.resourceType} * ${transaction.amount}`;
-                vis.text(text, x, y, {font: 0.4, color: colour,});
+                vis.text(text, x, y, {font: Visuals.tooltipStyle.font, color: colour,});
                 
                 y += 0.4;
             });
         }
-    }
+    };
     
-    static drawLabs(room) {
+    Visuals.drawLabs = function(room) {
         const vis = new RoomVisual(room.name);
         for (let lab of room.structures.labs.all) {
             if (lab.energy || lab.mineralAmount || lab.cooldown) {
                 const x = lab.pos.x + 0.8;
                 let y = lab.pos.y - 0.5;
                 if (lab.energy) {
-                    vis.text(`E: ${formatNum(lab.energy)}`, x, y, {align: 'left', font: 0.4, color: getResourceColour(RESOURCE_ENERGY)});
+                    vis.text(`E: ${formatNum(lab.energy)}`, x, y, Object.assign({color: getResourceColour(RESOURCE_ENERGY)}, Visuals.tooltipStyle));
                 }
                 if (lab.mineralAmount) {
-                    vis.text(`M: ${lab.mineralType} (${formatNum(lab.mineralAmount)})`, x, y += 0.4, {align: 'left', font: 0.4, color: getResourceColour(lab.mineralType)});
+                    vis.text(`M: ${lab.mineralType} (${formatNum(lab.mineralAmount)})`, x, y += 0.4, Object.assign({color: getResourceColour(lab.mineralType)}, Visuals.tooltipStyle));
                 }
                 if (lab.cooldown) {
-                    vis.text(`C: ${lab.cooldown}`, x, y += 0.4, {align: 'left', font: 0.4, color: '#FF0000'});
+                    vis.text(`C: ${lab.cooldown}`, x, y += 0.4, Object.assign({color: '#FF0000'}, Visuals.tooltipStyle));
                 }
             }
         }
-    }
+    };
     
-    static setHeatMapData(room) {
+    Visuals.setHeatMapData = function(room) {
         if (room.memory.heatmap === undefined) {
             room.memory.heatmap = {};
             for (let x = 0; x < 50; x++) {
                 for (let y = 0; y < 50; y++) {
                     const look = room.lookForAt(LOOK_TERRAIN, x, y);
                     if (look && look[0] === 'wall') continue;
-                    const key = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
+                    const key = `${String.fromCharCode(32 + x)}${String.fromCharCode(32 + y)}_x${x}-y${y}`;
                     room.memory.heatmap[key] = 0;
                 }
             }
@@ -450,12 +398,12 @@ module.exports = class Visuals {
         room.creeps.filter(creep => !creep.spawning).forEach(creep => {
             const x = creep.pos.x;
             const y = creep.pos.y;
-            const key = `${String.fromCharCode(32+x)}${String.fromCharCode(32+y)}_x${x}-y${y}`;
+            const key = `${String.fromCharCode(32 + x)}${String.fromCharCode(32 + y)}_x${x}-y${y}`;
             room.memory.heatmap[key]++;
         });
-    }
+    };
     
-    static drawHeatMapData(room) {
+    Visuals.drawHeatMapData = function(room) {
         const vis = new RoomVisual(room.name);
         const data = Object.keys(room.memory.heatmap).map(k => {
             return {
@@ -473,9 +421,9 @@ module.exports = class Visuals {
             const colour = getColourByPercentage(PERCENTAGE > 1 ? 1 : PERCENTAGE);
             vis.rect(d.x - 0.5, d.y - 0.5, 1, 1, {fill: colour});
         });
-    }
+    };
     
-    static creepPathStyle(creep) {
+    Visuals.creepPathStyle = function(creep) {
         function randomColour() {
             let c = '#';
             while (c.length < 7) {
@@ -490,9 +438,9 @@ module.exports = class Visuals {
             color: creep.data.pathColour,
             lineStyle: 'dashed',
         };
-    }
+    };
     
-    static drawCreepPath(room) {
+    Visuals.drawCreepPath = function(room) {
         const vis = new RoomVisual(room.name);
         room.creeps.forEach(creep => {
             if (creep.memory && creep.memory._travel && creep.memory._travel.path) {
@@ -550,8 +498,85 @@ module.exports = class Visuals {
                 }
             }
         });
-    }
+    };
     
+};
+
+Visuals.run = function() {
+    for (let roomName in Game.rooms) {
+        const room = Game.rooms[roomName];
+        if (!ROOM_VISUALS_ALL && !room.my) continue;
+        if (!room.controller) continue;
+        
+        if (Memory.heatmap === undefined) Memory.heatmap = false;
+        
+        if (VISUALS.HEATMAP) {
+            if (Game.time % VISUALS.HEATMAP_INTERVAL === 0) {
+                Visuals.setHeatMapData(room);
+            }
+            
+            if (Memory.heatmap) {
+                Visuals.drawHeatMapData(room);
+                continue;
+            }
+        }
+        
+        if (VISUALS.ROOM) {
+            Visuals.drawRoomInfo(room, VISUALS.ROOM_GLOBAL);
+        }
+        if (VISUALS.ROOM_ORDERS) {
+            Visuals.drawRoomOrders(room);
+        }
+        if (VISUALS.ROOM_OFFERS) {
+            Visuals.drawRoomOffers(room);
+        }
+        if (VISUALS.CONTROLLER) {
+            Visuals.drawControllerInfo(room.controller);
+        }
+        if (VISUALS.SPAWN) {
+            room.structures.spawns.filter(s => s.spawning).forEach(Visuals.drawSpawnInfo);
+        }
+        if (VISUALS.MINERAL) {
+            let [mineral] = room.minerals;
+            if (mineral) Visuals.drawMineralInfo(mineral);
+        }
+        if (VISUALS.SOURCE) {
+            room.sources.forEach(Visuals.drawSourceInfo);
+        }
+        if (VISUALS.WALL) {
+            Visuals.highlightWeakest(room, STRUCTURE_WALL);
+        }
+        if (VISUALS.RAMPART) {
+            Visuals.highlightWeakest(room, STRUCTURE_RAMPART);
+        }
+        if (VISUALS.ROAD) {
+            Visuals.highlightWeakest(room, STRUCTURE_ROAD);
+        }
+        if (VISUALS.STORAGE) {
+            Visuals.storage(room);
+        }
+        if (VISUALS.TERMINAL) {
+            Visuals.terminal(room);
+        }
+        if (VISUALS.TOWER) {
+            room.structures.towers.forEach(Visuals.drawTowerInfo);
+        }
+        if (VISUALS.TRANSACTIONS) {
+            Visuals.drawTransactions(room);
+        }
+        if (VISUALS.LABS) {
+            Visuals.drawLabs(room);
+        }
+        if (VISUALS.CREEP) {
+            Visuals.drawCreepPath(room);
+        }
+    }
+    if (VISUALS.ROOM_GLOBAL) {
+        if (VISUALS.CPU) {
+            Visuals.collectSparklineStats();
+        }
+        Visuals.drawGlobal();
+    }
 };
 
 function formatNum(n) {
@@ -564,7 +589,7 @@ function formatNum(n) {
 }
 
 function storageObject(vis, store, x, startY) {
-    Object.keys(store).forEach(resource => vis.text(`${resource}: ${formatNum(store[resource])}`, x, startY += 0.6, {align: 'left', font: 0.5, color: getResourceColour(resource)}));
+    Object.keys(store).forEach(resource => vis.text(`${resource}: ${formatNum(store[resource])}`, x, startY += 0.6, Object.assign({color: getResourceColour(resource)}, Visuals.tooltipStyle)));
 }
 
 function getResourceColour(resourceType) {
