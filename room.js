@@ -1137,7 +1137,7 @@ mod.extend = function(){
         if( filter ) sites = this.constructionSites.filter(filter);
         else sites = this.constructionSites;
         if( sites.length == 0 ) return null;
-        let siteOrder = CONSTRUCTION_PRIORITY;
+        let siteOrder = Util.fieldOrFunction(CONSTRUCTION_PRIORITY, this);
         let rangeOrder = site => {
             let order = siteOrder.indexOf(site.structureType);
             return pos.getRangeTo(site) + ( order < 0 ? 100000 : (order * 100) );
@@ -1435,7 +1435,7 @@ mod.extend = function(){
         }
     };
     Room.prototype.processConstructionFlags = function() {
-        if (!this.my || !SEMI_AUTOMATIC_CONSTRUCTION) return;
+        if (!this.my || !Util.fieldOrFunction(SEMI_AUTOMATIC_CONSTRUCTION, this)) return;
         let sitesSize = _.size(Game.constructionSites);
         if (sitesSize >= 100) return;
         const LEVEL = this.controller.level;
@@ -1452,7 +1452,7 @@ mod.extend = function(){
             const structures = POS.lookFor(LOOK_STRUCTURES).filter(s => !(s instanceof StructureRoad || s instanceof StructureRampart));
             if (structures && structures.length) return; // pre-existing structure here
             const r = POS.createConstructionSite(type);
-            if (REMOVE_CONSTRUCTION_FLAG && r === OK) {
+            if (Util.fieldOrFunction(REMOVE_CONSTRUCTION_FLAG, this, type) && r === OK) {
                 flag.remove();
                 sitesSize++;
             }
