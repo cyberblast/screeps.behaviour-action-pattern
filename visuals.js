@@ -5,7 +5,7 @@ module.exports = class Visuals {
             const room = Game.rooms[roomName];
             if (!ROOM_VISUALS_ALL && !room.my) continue;
             if (!room.controller) continue;
-    
+            
             if (Memory.heatmap === undefined) Memory.heatmap = false;
             
             if (VISUALS.HEATMAP) {
@@ -555,9 +555,9 @@ module.exports = class Visuals {
 };
 
 function formatNum(n) {
-    if (n => 1000000) {
+    if (n >= 1000000) {
         return (n / 1000000).toFixed(2) + 'M';
-    } else if (n => 1000) {
+    } else if (n >= 1000) {
         return (n / 1000).toFixed(1) + 'K';
     }
     return n;
