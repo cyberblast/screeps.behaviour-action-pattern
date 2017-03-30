@@ -2811,7 +2811,7 @@ mod.execute = function() {
         run(memory, roomName);
         let room = Game.rooms[roomName];
         if (room) {
-            room.controlObserver();
+            if (room.structures.observer) room.controlObserver();
         }
     });
 };
