@@ -27,12 +27,6 @@ let Setup = function(typeName){
     this.mixMoveParts = false;
 
     this.rclProperty = Setup.rclProperty;
-    this.SelfOrCall = function(obj, param) {
-        if( obj == null ) return null;
-        if (typeof obj === 'function' )
-            return obj.apply(this, [param]);
-        else return obj;
-    };
     this._fixedBody = this.rclProperty('fixedBody');
     this._multiBody = this.rclProperty('multiBody');
     this._minAbsEnergyAvailable = this.rclProperty('minAbsEnergyAvailable');
@@ -68,8 +62,8 @@ let Setup = function(typeName){
             return false;
         }
 
-        let minAbsEnergyAvailable = this.SelfOrCall(this._minAbsEnergyAvailable, room);
-        let minEnergyAvailable = this.SelfOrCall(this._minEnergyAvailable, room);
+        let minAbsEnergyAvailable = Util.fieldOrFunction(this._minAbsEnergyAvailable, room);
+        let minEnergyAvailable = Util.fieldOrFunction(this._minEnergyAvailable, room);
         const absEnergy = room.remainingEnergyAvailable;
         const energy = room.relativeRemainingEnergyAvailable;
         if( absEnergy < minAbsEnergyAvailable ||
@@ -78,8 +72,8 @@ let Setup = function(typeName){
             return false;
         }
 
-        let maxCount = this.SelfOrCall(this._maxCount, room);
-        let maxWeight = this.SelfOrCall(this._maxWeight, room);
+        let maxCount = Util.fieldOrFunction(this._maxCount, room);
+        let maxWeight = Util.fieldOrFunction(this._maxWeight, room);
         if( maxCount === 0 || maxWeight === 0 ) {
             if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, maxCount, maxWeight, Setup:'isValidSetup'}, 'too many creeps');
             return false;
@@ -128,11 +122,11 @@ let Setup = function(typeName){
         return existingWeight;
     };
     this.parts = function(room){
-        let fixedBody = this.SelfOrCall(this._fixedBody, room);
-        let multiBody = this.SelfOrCall(this._multiBody, room);
-        let min = this.SelfOrCall(this._minMulti, room);
-        let maxMulti = this.SelfOrCall(this._maxMulti, room);
-        let maxWeight = this.SelfOrCall(this._maxWeight, room);
+        let fixedBody = Util.fieldOrFunction(this._fixedBody, room);
+        let multiBody = Util.fieldOrFunction(this._multiBody, room);
+        let min = Util.fieldOrFunction(this._minMulti, room);
+        let maxMulti = Util.fieldOrFunction(this._maxMulti, room);
+        let maxWeight = Util.fieldOrFunction(this._maxWeight, room);
         let maxMultiWeight;
         if( maxWeight ){
             let existingWeight = this.existingWeight(room);
