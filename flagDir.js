@@ -227,7 +227,7 @@ mod.flagType = function(flag) {
             }
         }
     }
-    logError('Unknown flag type for flag ' + flag ? flag.name : 'undefined flag');
+    logError('Unknown flag type for flag: ' + (flag ? flag.name : 'undefined flag'));
     return 'undefined';
 };
 mod.specialFlag = function(create) {
