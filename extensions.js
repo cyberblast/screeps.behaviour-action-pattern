@@ -16,18 +16,14 @@ mod.extend = function(){
     Object.defineProperty(Source.prototype, 'memory', {
         configurable: true,
         get: function() {
-            if(_.isUndefined(Memory.sources)) {
-                Memory.sources = {};
-            }
+            Util.set(Memory, 'sources', {});
             if(!_.isObject(Memory.sources)) {
                 return undefined;
             }
             return Memory.sources[this.id] = Memory.sources[this.id] || {};
         },
         set: function(value) {
-            if(_.isUndefined(Memory.sources)) {
-                Memory.sources = {};
-            }
+            Util.set(Memory, 'sources', {});
             if(!_.isObject(Memory.sources)) {
                 throw new Error('Could not set memory extension for sources');
             }
@@ -37,17 +33,17 @@ mod.extend = function(){
     Object.defineProperty(RoomPosition.prototype, 'adjacent', {
         configurable: true,
         get: function() {
-            if( _.isUndefined(this._adjacent) )  {
-                this._adjacent = [];
-                for(let x = this.x-1; x < this.x+2; x++){
-                    for(let y = this.y-1; y < this.y+2; y++){
-                        if( x > 0 && x < 49 && y > 0 && y < 49 ){
-                            this._adjacent.push(new RoomPosition(x, y, this.roomName));
+            return Util.get(this, '_adjacent', () => {
+                let r = [];
+                for (let x = this.x - 1; x < this.x + 2; x++) {
+                    for (let y = this.y - 1; y < this.y + 2; y++) {
+                        if (49 > x && x > 0 && 49 > y && y > 0) {
+                            r.push(new RoomPosition(x, y, this.roomName));
                         }
                     }
                 }
-            }
-            return this._adjacent;
+                return r;
+            });
         }
     });
     Object.defineProperty(RoomObject.prototype, 'accessibleFields', {
@@ -375,7 +371,7 @@ mod.extend = function(){
         return 0;
     };
 
-    if( Memory.pavementArt === undefined ) Memory.pavementArt = {};
+    Util.set(Memory, 'pavementArt', {});
 };
 module.exports = mod;
 
