@@ -16,8 +16,8 @@ action.isAddableAction = function(creep) {
 action.isValidTarget = function(target, creep){
     if (Task.reputation.npcOwner(target)) {
         return action.isActiveLair(target);
-    } else if (Task.reputation.hostileOwner(target) && target.hasActiveBodyparts) {
-        return target.hasActiveBodyparts([ATTACK,RANGED_ATTACK]);
+    } else if (Task.reputation.hostileOwner(target)) {
+        return Util.callIfExists(target.hasActiveBodyparts, [ATTACK, RANGED_ATTACK]);
     }
     return false;
 };
