@@ -1,8 +1,6 @@
 // This task will react on pioneer flags - 4 for Green/White, 1 for Green/Red
-let mod = {};
+let mod = new Task('pioneer');
 module.exports = mod;
-// hook into events
-mod.register = () => {};
 mod.handleRoomDied = room => {
     // try to spawn a worker
     let pioneer = true;

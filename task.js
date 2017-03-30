@@ -1,5 +1,5 @@
 const Task = class {
-    constructor(...args) {
+    constructor(...args) { // Allows constructor to be extended
         Task.prototype.constructor.apply(this, args);
     }
 };
@@ -8,15 +8,26 @@ module.exports = Task;
 const cache = {};
 
 Task.extend = function() {
+    // STATIC
     Object.defineProperties(Task, {
         tasks: {
             configurable: true,
-            value: [],
+            value: [
+                Task.attackController,
+                Task.claim,
+                Task.defense,
+                Task.guard,
+                Task.mining,
+                Task.pioneer,
+                Task.reputation,
+                Task.reserve,
+                Task.robbing,
+            ],
         },
         installTask: {
             value: function(...taskNames) {
                 taskNames.forEach(taskName => {
-                    Task[taskName] = load(`task.${taskName}`);
+                    Task[taskName] = Task[taskName] || load(`task.${taskName}`);
                     new Task(Task[taskName]);
                 });
             },
@@ -24,10 +35,7 @@ Task.extend = function() {
         memory: {
             configurable: true,
             value: function(task, s) {
-                if (!Memory.tasks) Memory.tasks = {};
-                if (!Memory.tasks[task]) Memory.tasks[task] = {};
-                if (!Memory.tasks[task][s]) Memory.tasks[task][s] = {};
-                return Memory.tasks[task][s];
+                return Util.get(Memory, `tasks.${task}.${s}`, {});
             },
         },
         clearMemory: {
@@ -39,9 +47,7 @@ Task.extend = function() {
         cache: {
             configurable: true,
             value: function(task, s) {
-                if (!cache[task]) cache[task] = {};
-                if (!cache[task][s]) cache[task][s] = {};
-                return cache[task][s];
+                return Util.get(cache, `${task}.${s}`, {});
             },
         },
         clearCache: {
@@ -83,10 +89,42 @@ Task.extend = function() {
         },
     });
     
+    // INSTANCE
     Task.prototype.constructor = function(task) {
-        if (!(task instanceof Task)) Task.installTask(task);
+        if (!(task instanceof Task)) {  // not a task
+            Task.installTask(task);     // install the task
+            return;                     // and return
+        }
         Task.tasks.push(task);
-    }
+    };
+    
+    Task.prototype.register = function() {
+        if (this.handleFlagFound) Flag.found.on(flag => this.handleFlagFound(flag));
+        if (this.handleFlagRemoved) Flag.FlagRemoved.on(flagName => this.handleFlagRemoved(flagName));
+        
+        if (this.handleSpawningStarted) Creep.spawningStarted.on(params => this.handleSpawningStarted(params));
+        if (this.handleSpawningCompleted) Creep.spawningCompleted.on(creep => this.handleSpawningCompleted(creep));
+        if (this.handleCreepDied) {
+            Creep.predictedRenewal.on(creep => this.handleCreepDied(creep.name));
+            Creep.died.on(name => this.handleCreepDied(name));
+        }
+        if (this.handleCreepError) Creep.error.on(errorData => this.handleCreepError(errorData));
+        
+        if (this.handleNewInvader) Room.newInvader.on(invader => this.handleNewInvader(invader));
+        if (this.handleKnownInvader) Room.knownInvader.on(invaderID => this.handleKnownInvader(invaderID));
+        if (this.handleGoneInvader) Room.goneInvader.on(invaderID => this.handleGoneInvader(invaderID));
+        if (this.handleRoomDied) Room.collapsed.on(room => this.handleRoomDied(room));
+    };
+    
+    Task.prototype.handleFlagRemoved = function(flagName) {
+        const flagMem = Memory.flags[flagName];
+        if (flagMem && flagMem.task === this.name && flagMem.roomName) {
+            const flags = FlagDir.filter(FLAG_COLOR.claim.mining, new RoomPosition(25, 25, flagMem.roomName), true);
+            if (!(flags && flags.length > 0)) {
+                Task.clearMemory(this.name, flagMem.roomName);
+            }
+        }
+    };
 };
 // load task memory & flush caches
 Task.flush = function () {
@@ -94,28 +132,9 @@ Task.flush = function () {
         if (task.flush) task.flush();
     });
 };
-// temporary hack to avoid registering twice internally, remove and fix internal when merged.
-mod.selfRegister = true;
 // register tasks (hook up into events)
 Task.register = function () {
     Task.tasks.forEach(task => {
-        // Extending of any other kind
-        if (task.register) task.register();
-        // Flag Events
-        if (task.handleFlagFound) Flag.found.on(flag => task.handleFlagFound(flag));
-        if (task.handleFlagRemoved) Flag.FlagRemoved.on(flagName => task.handleFlagRemoved(flagName));
-        // Creep Events
-        if (task.handleSpawningStarted) Creep.spawningStarted.on(params => task.handleSpawningStarted(params));
-        if (task.handleSpawningCompleted) Creep.spawningCompleted.on(creep => task.handleSpawningCompleted(creep));
-        if (task.handleCreepDied) {
-            Creep.predictedRenewal.on(creep => task.handleCreepDied(creep.name));
-            Creep.died.on(name => task.handleCreepDied(name));
-        }
-        if (task.handleCreepError) Creep.error.on(errorData => task.handleCreepError(errorData));
-        // Room events
-        if (task.handleNewInvader) Room.newInvader.on(invader => task.handleNewInvader(invader));
-        if (task.handleKnownInvader) Room.knownInvader.on(invaderID => task.handleKnownInvader(invaderID));
-        if (task.handleGoneInvader) Room.goneInvader.on(invaderID => task.handleGoneInvader(invaderID));
-        if (task.handleRoomDied) Room.collapsed.on(room => task.handleRoomDied(room));
+        task.register();
     });
 };

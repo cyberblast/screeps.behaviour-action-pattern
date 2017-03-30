@@ -1,9 +1,7 @@
 // This task will react on robbing flags (invade/rob or red/yellow), sending 2 creeps to rob that room
-let mod = {};
+let mod = new Task('robbing');
 module.exports = mod;
 mod.name = 'robbing';
-// hook into events
-mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a robbing flag

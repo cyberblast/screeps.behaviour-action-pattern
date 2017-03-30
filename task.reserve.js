@@ -1,5 +1,5 @@
 // This task will react on exploit, reserve and remotemine flags, sending a reserving creep to the flags position.
-let mod = {};
+let mod = new Task('reserve');
 module.exports = mod;
 mod.name = 'reserve';
 mod.creep = {
@@ -14,8 +14,6 @@ mod.creep = {
         behaviour: "claimer"
     },
 };
-// hook into events
-mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a reserve, exploit or remote mine flag

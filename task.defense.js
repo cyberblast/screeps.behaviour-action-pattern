@@ -1,8 +1,6 @@
 // Defense task handles spotted invaders. Spawns defenders and gives them special behaviour.
-let mod = {};
+let mod = new Task('defense');
 module.exports = mod;
-// hook into events
-mod.register = () => {};
 // When a new invader has been spotted
 mod.handleNewInvader = invaderCreep => {
     // ignore if on blacklist

@@ -1,8 +1,6 @@
 // This task will react on Red/Cyan flags, sending a giant (RCL7 Req) claiming creep to the flags position.
-let mod = {};
+let mod = new Task('attackController');
 module.exports = mod;
-// hook into events
-mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a Green/Purple flag

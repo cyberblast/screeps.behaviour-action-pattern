@@ -1,8 +1,7 @@
-const mod = {};
+const mod = new Task('mining');
 module.exports = mod;
 mod.minControllerLevel = 2;
 mod.name = 'mining';
-mod.register = () => {};
 mod.checkFlag = (flag) => {
     if( flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor ) {
         flag.memory.roomName = flag.pos.roomName;
@@ -10,21 +9,6 @@ mod.checkFlag = (flag) => {
         return true;
     }
     return false;
-};
-mod.handleFlagRemoved = flagName => {
-    // check flag
-    const flagMem = Memory.flags[flagName];
-    if( flagMem && flagMem.task === mod.name && flagMem.roomName ){
-        // if there is still a mining flag in that room ignore. 
-        const flags = FlagDir.filter(FLAG_COLOR.claim.mining, new RoomPosition(25,25,flagMem.roomName), true);
-        if( flags && flags.length > 0 ) 
-            return;
-        else {
-            // no more mining in that room. 
-            // clear memory
-            Task.clearMemory(mod.name, flagMem.roomName);
-        }
-    }
 };
 mod.handleFlagFound = flag => {
     // Analyze Flag

@@ -1,9 +1,7 @@
 // This task will react on yellow/yellow flags, sending a guarding creep to the flags position.
-let mod = {};
+let mod = new Task('guard');
 module.exports = mod;
 mod.minControllerLevel = 3;
-// hook into events
-mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a yellow/yellow flag
