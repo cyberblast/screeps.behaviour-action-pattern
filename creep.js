@@ -296,10 +296,7 @@ mod.extend = function(){
         'threat': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._threat) ) {
-                    this._threat = Creep.bodyThreat(this.body);
-                }
-                return this._threat;
+                return Util.get(this, '_threat', () => Creep.bodyThreat(this.body));
             }
         },
         'trace': { // only valid on one creep at a time
@@ -467,12 +464,12 @@ mod.bodyThreat = function(body) {
 };
 mod.register = function() {
     for (const action in Creep.action) {
-        if (Creep.action[action].register) Creep.action[action].register(this);
+        Util.callIfExists(Creep.action[action].register, this);
     }
     for (const behaviour in Creep.behaviour) {
-        if (Creep.behaviour[behaviour].register) Creep.behaviour[behaviour].register(this);
+        Util.callIfExists(Creep.behaviour[behaviour].register, this);
     }
     for (const setup in Creep.setup) {
-        if (Creep.setup[setup].register) Creep.setup[setup].register(this);
+        Util.callIfExists(Creep.setup[setup].register, this);
     }
 };
