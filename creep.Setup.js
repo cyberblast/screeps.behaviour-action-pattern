@@ -130,7 +130,6 @@ let Setup = function(typeName){
     this.parts = function(room){
         let fixedBody = this.SelfOrCall(this._fixedBody, room);
         let multiBody = this.SelfOrCall(this._multiBody, room);
-        var parts = [];
         let min = this.SelfOrCall(this._minMulti, room);
         let maxMulti = this.SelfOrCall(this._maxMulti, room);
         let maxWeight = this.SelfOrCall(this._maxWeight, room);
@@ -139,31 +138,14 @@ let Setup = function(typeName){
             let existingWeight = this.existingWeight(room);
             maxMultiWeight = maxWeight - existingWeight;
         }
-        let multi = Creep.multi(room, {
+        return Creep.compileBody(room, {
             fixedBody, multiBody,
             maxWeight: maxMultiWeight,
-            maxMulti: maxMulti, 
-            currentEnergy: true
+            minMulti: min,
+            maxMulti: maxMulti,
+            currentEnergy: true,
+            sort: this.sortedParts,
         });
-
-        if( multi < (min ? min : 0) ) return parts;
-        for (let iMulti = 0; iMulti < multi; iMulti++) {
-            parts = parts.concat(multiBody);
-        }
-        for( let iPart = 0; iPart < fixedBody.length; iPart ++ ){
-            parts[parts.length] = fixedBody[iPart];
-        }
-        if( this.sortedParts ) {
-            parts.sort(Creep.partsComparator);
-            if( this.mixMoveParts )
-                parts = this.mixParts(parts);
-            else if( parts.includes(HEAL) ) {
-                let index = parts.indexOf(HEAL);
-                parts.splice(index, 1);
-                parts.push(HEAL);
-            }
-        }
-        return parts;
     };
     this.mixParts = function(parts){
         let sum = _.countBy(parts);

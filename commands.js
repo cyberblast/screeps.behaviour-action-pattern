@@ -44,10 +44,10 @@ _.forEach(Memory.rooms, r => delete r.heatmap);
 
 // https://github.com/ScreepsOCS/screeps.behaviour-action-pattern/wiki/Resource-Management
 //resource management  - stat labs
-Game.rooms[<roomName>].placeReactionOrder(<labId>, <resourceId>, <amount>)
+Game.rooms['<roomName>'].placeReactionOrder('<labId>', '<resourceId>', '<amount>');
 
 //resource management - maintain set amount in container
-Game.rooms[<roomName>].setStore(<structure>, <resource>, <amount>)
+Game.rooms['<roomName>'].setStore('<structure>', '<resource>', '<amount>');
 
 //resource management - one off amount in container
-Game.rooms[<roomName>].placeOrder(<structure>, <resource>, <amount>)
+Game.rooms['<roomName>'].placeOrder('<structure>', '<resource>', '<amount>');

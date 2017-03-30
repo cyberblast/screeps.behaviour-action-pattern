@@ -471,6 +471,18 @@ mod.extend = function(){
                     return this._powerSpawns;
                 }
             },
+            'extensions': {
+                configurable: true,
+                get: function() {
+                    if (_.isUndefined(this.room.memory.extensions)) {
+                        this.room.saveExtensions();
+                    }
+                    if (_.isUndefined(this._extensions)) {
+                        this._extensions = this.room.memory.extensions.map(e => Game.getObjectById(e));
+                    }
+                    return this._extensions;
+                },
+            }
         });
     };
 
@@ -1238,6 +1250,11 @@ mod.extend = function(){
         };
         powerSpawns.forEach(add);
     };
+    Room.prototype.saveExtensions = function() {
+        this.memory.extensions = this.find(FIND_MY_STRUCTURES, {
+            filter: s => s instanceof StructureExtension
+        }).map(s => s.id);
+    };
     Room.prototype.saveContainers = function(){
         this.memory.container = [];
         let containers = this.structures.all.filter(
@@ -1414,6 +1431,112 @@ mod.extend = function(){
                 }
             }
             filledStorage.forEach(handleFilledStorage);
+        }
+    };
+    Room.prototype.processConstructionFlags = function() {
+        if (!this.my || !SEMI_AUTOMATIC_CONSTRUCTION) return;
+        const LEVEL = this.controller.level;
+        const POS = new RoomPosition(25, 25, this.name);
+        const ARGS = [POS, true];
+        const CONSTRUCT = (flag, type) => {
+            if (_.size(Game.constructionSites) >= 100) return;
+            if (!flag) return;
+            flag = Game.flags[flag.name];
+            const POS = flag.pos;
+            if (!POS) return;
+            const sites = POS.lookFor(LOOK_CONSTRUCTION_SITES);
+            if (sites && sites.length) return; // already a construction site
+            const structures = POS.lookFor(LOOK_STRUCTURES).filter(s => !(s instanceof StructureRoad || s instanceof StructureRampart));
+            if (structures && structures.length) return; // pre-existing structure here
+            const r = POS.createConstructionSite(type);
+            if (REMOVE_CONSTRUCTION_FLAG && r === OK) flag.remove();
+        };
+        
+        // Extensions
+        let shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][LEVEL] - (this.structures.extensions.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_EXTENSION).length);
+        if (shortAmount > 0) {
+            FlagDir.filter(FLAG_COLOR.construct, ...ARGS).splice(0, shortAmount).forEach(flag => {
+                CONSTRUCT(flag, STRUCTURE_EXTENSION);
+            });
+        }
+        
+        // Spawns
+        shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][LEVEL] - (this.structures.spawns.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_SPAWN).length);
+        if (shortAmount > 0) {
+            FlagDir.filter(FLAG_COLOR.construct.spawn, ...ARGS).splice(0, shortAmount).forEach(flag => {
+                CONSTRUCT(flag, STRUCTURE_SPAWN);
+            });
+        }
+        
+        // Towers
+        shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_TOWER][LEVEL] - (this.structures.towers.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_TOWER).length);
+        if (shortAmount > 0) {
+            FlagDir.filter(FLAG_COLOR.construct.tower, ...ARGS).splice(0, shortAmount).forEach(flag => {
+                CONSTRUCT(flag, STRUCTURE_TOWER);
+            });
+        }
+        
+        // Links
+        shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_LINK][LEVEL] - (this.structures.links.all.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_LINK).length);
+        if (shortAmount > 0) {
+            FlagDir.filter(FLAG_COLOR.construct.link, ...ARGS).splice(0, shortAmount).forEach(flag => {
+                CONSTRUCT(flag, STRUCTURE_LINK);
+            });
+        }
+        
+        // Labs
+        shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_LAB][LEVEL] - (this.structures.labs.all.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_LAB).length);
+        if (shortAmount > 0) {
+            FlagDir.filter(FLAG_COLOR.construct.lab, ...ARGS).splice(0, shortAmount).forEach(flag => {
+                CONSTRUCT(flag, STRUCTURE_LAB);
+            });
+        }
+        
+        // Storage
+        if (!this.storage && CONTROLLER_STRUCTURES[STRUCTURE_STORAGE][LEVEL] > 0) {
+            FlagDir.filter(FLAG_COLOR.construct.storage, ...ARGS).splice(0, 1).forEach(flag => {
+                CONSTRUCT(flag, STRUCTURE_STORAGE);
+            });
+        }
+        
+        // Terminal
+        if (!this.terminal && CONTROLLER_STRUCTURES[STRUCTURE_TERMINAL][LEVEL] > 0) {
+            FlagDir.filter(FLAG_COLOR.construct.terminal, ...ARGS).splice(0, 1).forEach(flag => {
+                CONSTRUCT(flag, STRUCTURE_TERMINAL);
+            });
+        }
+        
+        // Observer
+        if (!this.structures.observer && CONTROLLER_STRUCTURES[STRUCTURE_OBSERVER][LEVEL] > 0) {
+            FlagDir.filter(FLAG_COLOR.construct.observer, ...ARGS).splice(0, 1).forEach(flag => {
+                CONSTRUCT(flag, STRUCTURE_OBSERVER);
+            });
+        }
+        
+        // Nuker
+        if (!this.structures.nuker && CONTROLLER_STRUCTURES[STRUCTURE_NUKER][LEVEL] > 0) {
+            FlagDir.filter(FLAG_COLOR.construct.nuker, ...ARGS).splice(0, 1).forEach(flag => {
+                CONSTRUCT(flag, STRUCTURE_NUKER);
+            });
+        }
+        
+        // Power Spawn
+        if (!this.structures.powerSpawn && CONTROLLER_STRUCTURES[STRUCTURE_POWER_SPAWN][LEVEL] > 0) {
+            FlagDir.filter(FLAG_COLOR.construct.powerSpawn, ...ARGS).splice(0, 1).forEach(flag => {
+                CONSTRUCT(flag, STRUCTURE_POWER_SPAWN);
+            });
+        }
+        
+        // Extractor
+        if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][LEVEL] > 0) {
+            const [mineral] = this.find(FIND_MINERALS);
+            const extractor = mineral.pos.lookFor(LOOK_STRUCTURES);
+            if (extractor.length && extractor[0] instanceof StructureExtractor) return;
+            const flagName = mineral.pos.createFlag('_tempExtractor', FLAG_COLOR.construct.color, FLAG_COLOR.construct.secondaryColor);
+            if (typeof flagName !== 'string') return;
+            CONSTRUCT({
+                flagName,
+            }, STRUCTURE_EXTRACTOR);
         }
     };
     Room.prototype.updateResourceOrders = function () {
@@ -2591,6 +2714,7 @@ mod.analyze = function(){
                 room.saveObserver();
                 room.saveNukers();
                 room.savePowerSpawns();
+                room.saveExtensions();
                 room.saveContainers();
                 room.saveLinks();
                 room.saveLabs();
@@ -2598,6 +2722,7 @@ mod.analyze = function(){
                 room.updateRoomOrders();
                 room.terminalBroker();
                 if (room.structures.observer) room.initObserverRooms(); // to re-evaluate rooms, in case parameters are changed
+                room.processConstructionFlags();
             }
             room.roadConstruction();
             room.linkDispatcher();
