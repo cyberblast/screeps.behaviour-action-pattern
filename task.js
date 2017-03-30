@@ -91,9 +91,9 @@ Task.extend = function() {
     
     // INSTANCE
     Task.prototype.constructor = function(task) {
-        if (!(task instanceof Task)) {  // not a task
-            Task.installTask(task);     // install the task
-            return;                     // and return
+        if (task.link) {            // not a task
+            Task.installTask(task); // install the task
+            return;                 // and return
         }
         Task.tasks.push(task);
     };
