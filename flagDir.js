@@ -1,5 +1,15 @@
 let mod = {};
 module.exports = mod;
+mod.flagFilter = function(flagColour) {
+    if (!flagColour) return;
+    let filter;
+    if (flagColour.filter) {
+        filter = _.clone(flagColour.filter);
+    } else {
+        filter = {color: flagColour.color, secondaryColor: flagColour.secondaryColor};
+    }
+    return filter;
+};
 mod.findName = function(flagColor, pos, local, mod, modArgs){
     let that = this;
     if( flagColor == null || this.list.length == 0)
@@ -15,7 +25,7 @@ mod.findName = function(flagColor, pos, local, mod, modArgs){
         }
     }
     else {
-        filter = _.clone(flagColor.filter);
+        filter = this.flagFilter(flagColor);
         if( local && pos && pos.roomName )
             _.assign(filter, {roomName: pos.roomName, cloaking: "0"});
         else
@@ -62,7 +72,7 @@ mod.count = function(flagColor, pos, local){
     if( flagColor == null || this.list.length == 0)
         return 0;
 
-    let filter = _.clone(flagColor.filter);
+    let filter = this.flagFilter(flagColor);
     if( local && pos && pos.roomName )
         _.assign(filter, {roomName: pos.roomName});
     return _.countBy(this.list, filter).true || 0;
@@ -82,7 +92,7 @@ mod.filter = function(flagColor, pos, local){
             return false;
         };
     } else {
-        filter = _.clone(flagColor.filter);
+        filter = this.flagFilter(flagColor);
         if( local && pos && pos.roomName )
             _.assign(filter, {'roomName': pos.roomName});
     }
@@ -217,7 +227,7 @@ mod.flagType = function(flag) {
             }
         }
     }
-    logError('Unknown flag type for flag ' + flag ? flag.name : 'undefined flag');
+    logError('Unknown flag type for flag: ' + (flag ? flag.name : 'undefined flag'));
     return 'undefined';
 };
 mod.specialFlag = function(create) {

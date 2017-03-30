@@ -4,7 +4,10 @@ module.exports = mod;
 mod.name = 'reserve';
 mod.creep = {
     reserver: {
-        fixedBody: [CLAIM, CLAIM, MOVE, MOVE],
+        fixedBody: {
+            [CLAIM]: 2,
+            [MOVE]: 2,
+        },
         multiBody: [CLAIM, MOVE],
         maxMulti: 7,
         name: "reserver", 
@@ -12,18 +15,7 @@ mod.creep = {
     },
 };
 // hook into events
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.reserve.handleFlagFound(flag) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.reserve.handleSpawningStarted(params) );
-    // a creep completed spawning
-    Creep.spawningCompleted.on( creep => Task.reserve.handleSpawningCompleted(creep) );
-    // a creep will die soon
-    Creep.predictedRenewal.on( creep => Task.reserve.handleCreepDied(creep.name) );
-    // a creep died
-    Creep.died.on( name => Task.reserve.handleCreepDied(name) );
-};
+mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a reserve, exploit or remote mine flag
