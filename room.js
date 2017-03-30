@@ -15,79 +15,77 @@ mod.extend = function(){
                     if( _.isUndefined(this.room.memory.container)) {
                         this.room.saveContainers();
                     }
-                    if( _.isUndefined(this._container) ){
-                        this._container = [];
-                        let add = entry => {
-                            let cont = Game.getObjectById(entry.id);
-                            if( cont ) {
+                    return Util.get(this, '_container', () => {
+                        const r = [];
+                        const add = entry => {
+                            const cont = Game.getObjectById(entry.id);
+                            if (cont) {
                                 _.assign(cont, entry);
-                                this._container.push(cont);
+                                r.push(cont);
                             }
                         };
                         _.forEach(this.room.memory.container, add);
-                    }
-                    return this._container;
+                        return r;
+                    });
                 }
             },
             'controller': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._controller) ){
-                        if( this.room.my && this.room.controller.memory.storage ){
-                            this._controller = [Game.getObjectById(this.room.controller.memory.storage)];
-                            if( !this._controller[0] ) delete this.room.controller.memory.storage;
+                    return Util.get(this, '_controller', () => {
+                        let r;
+                        if (this.room.my && this.room.controller.memory.storage) {
+                            r = [Game.getObjectById(this.room.controller.memory.storage)];
+                            if (!r[0]) delete this.room.controller.memory.storage;
                         } else {
-                            let byType = c => c.controller == true;
-                            this._controller = _.filter(this.all, byType);
+                            const byType = c => c.controller === true;
+                            r = _.filter(this.all, byType);
                         }
-                    }
-                    return this._controller;
+                        return r;
+                    });
                 }
             },
             'in': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._in) ){
-                        let byType = c => c.controller == false;
-                        this._in = _.filter(this.all, byType);
+                    return Util.get(this, '_in', () => {
+                        const byType = c => c.controller === false;
+                        let r = _.filter(this.all, byType);
                         // add managed
-                        let isFull = c => c.sum >= (c.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER));
-                        this._in = this._in.concat(this.managed.filter(isFull));
-                    }
-                    return this._in;
+                        const isFull = c => c.sum >= (c.storeCapacity * (1 - MANAGED_CONTAINER_TRIGGER));
+                        r = r.concat(this.managed.filter(isFull));
+                        return r;
+                    });
                 }
             },
             'out': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._out) ){
-                        let byType = c => c.controller == true;
-                        this._out = _.filter(this.all, byType);
+                    return Util.get(this, '_out', () => {
+                        const byType = c => c.controller === true;
+                        let r = _.filter(this.all, byType);
                         // add managed
-                        let isEmpty = c => c.sum <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
-                        this._out = this._out.concat(this.managed.filter(isEmpty));
-                    }
-                    return this._out;
+                        const isEmpty = c => c.sum <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
+                        r = r.concat(this.managed.filter(isEmpty));
+                    });
                 }
             },
             'privateers': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._privateers) ){
-                        let byType = c => (c.source === false && !c.mineral && c.sum < c.storeCapacity);
-                        this._privateers = _.filter(this.all, byType);
-                    }
-                    return this._privateers;
+                    return Util.get(this, '_privateers', () => {
+                        const byType = c => (c.source === false && !c.mineral && c.sum < c.storeCapacity);
+                        return _.filter(this.all, byType);
+                    });
                 }
             },
             'managed': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._managed) ){
-                        let byType = c => c.source === true && c.controller == true;
-                        this._managed = _.filter(this.all, byType);
-                    }
-                    return this._managed;
+                    return Util.get(this, '_managed', () => {
+                        const byType = c => c.source === true && c.controller === true;
+                        return _.filter(this.all, byType);
+                    });
                 }
             }
         });
