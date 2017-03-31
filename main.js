@@ -187,6 +187,7 @@ global.install = () => {
         },
         behaviour: {
             claimer: load("creep.behaviour.claimer"),
+            collapseWorker: load("creep.behaviour.collapseWorker"),
             hauler: load("creep.behaviour.hauler"),
             healer: load("creep.behaviour.healer"),
             melee: load("creep.behaviour.melee"),
