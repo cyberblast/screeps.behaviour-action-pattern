@@ -31,7 +31,7 @@ mod.approach = function(creep){
     let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.destiny.room);
     let range = creep.pos.getRangeTo(targetPos);
     if( range > 0 ) {
-        creep.travelTo( targetPos, {range:0} );
+        creep.travelTo( targetPos, {range:0, cacheRoutes:true} );
         if( range <= 2 && !creep.data.predictedRenewal ) {
             creep.data.predictedRenewal = _.min([500, 1500 - creep.ticksToLive + creep.data.spawningTime]);
         }
@@ -40,7 +40,7 @@ mod.approach = function(creep){
 };
 mod.gotoTargetRoom = function(creep){
     const targetFlag = creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
-    if (targetFlag) return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName);
+    if (targetFlag) return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName, {cacheRoutes:true});
 };
 mod.strategies = {
     defaultStrategy: {

@@ -23,7 +23,7 @@ mod.run = function(creep) {
                 let room = Game.rooms[creep.data.nearestHome];
                 if (room) {
                     let range = creep.pos.getRangeTo(room.controller);
-                    if (range > 1) creep.travelTo( room.controller.pos );
+                    if (range > 1) creep.travelTo( room.controller.pos, {cacheRoutes:true});
                 }
             }
         }
