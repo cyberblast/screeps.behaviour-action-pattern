@@ -2706,8 +2706,8 @@ mod.extend = function(){
     
         // Open Ramparts
         _(this.allCreeps)                                                                                       // Iterate over all creeps
-            .filter(creep => Task.reputation.allyOwner(creep))                                                  // Filter out any non-friendly creeps
             .filter(creep => creep.saying === String.fromCodePoint(0x1F6AA))                                    // Filter out any creeps not requesting access
+            .filter(creep => Task.reputation.allyOwner(creep))                                                  // Filter out any non-friendly creeps
             .forEach(creep => {
                 const radius = 2;
                 const [x, y] = [creep.pos.x, creep.pos.y];
