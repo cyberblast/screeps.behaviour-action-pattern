@@ -2709,7 +2709,16 @@ mod.extend = function(){
             .filter(creep => Task.reputation.allyOwner(creep))                                                  // Filter out any non-friendly creeps
             .filter(creep => creep.saying === String.fromCodePoint(0x1F6AA))                                    // Filter out any creeps not requesting access
             .forEach(creep => {
-                _(creep.pos.adjacent)                                                                           // Iterate over positions adjacent to the creep
+                const radius = 2;
+                const [x, y] = [creep.pos.x, creep.pos.y];
+                const bounds = [
+                    y - radius < 0 ? 0 : y - radius,    // TOP
+                    x - radius < 0 ? 0 : x - radius,    // LEFT
+                    y + radius > 49 ? 49 : y + radius,  // BOTTOM
+                    x + radius > 49 ? 49 : x + radius,  // RIGHT
+                ];
+                _(creep.room.lookForAtArea(LOOK_STRUCTURES, ...bounds, true))                                   // Iterate over positions adjacent to the creep
+                    .map(look => creep.room.getPositionAt(look.x, look.y))                                      // Map the array to positions
                     .filter(pos => !!_.find(pos.lookFor(LOOK_STRUCTURES), s => s instanceof StructureRampart))  // Filter out structures not a rampart
                     .map(pos => _.find(pos.lookFor(LOOK_STRUCTURES), s => s instanceof StructureRampart))       // Map the array to ramparts
                     .reject(rampart => rampart.isPublic)                                                        // Filter out already public ramparts
