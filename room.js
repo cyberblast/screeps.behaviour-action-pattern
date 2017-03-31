@@ -2699,21 +2699,21 @@ mod.extend = function(){
         if (!this.my) return;
         
         // Close Ramparts
-        _(this.structures.all)
-            .filter(s => s instanceof StructureRampart)
-            .filter(rampart => rampart.isPublic)
-            .forEach(rampart => rampart.setPublic(false));
+        _(this.structures.all)                              // Iterate over all room structures
+            .filter(s => s instanceof StructureRampart)     // Filter out structures not a rampart
+            .filter(rampart => rampart.isPublic)            // Filter out any rampart already closed
+            .forEach(rampart => rampart.setPublic(false));  // Close any public rampart
     
         // Open Ramparts
-        _(this.allCreeps)
-            .filter(creep => Task.reputation.allyOwner(creep))
-            .filter(creep => creep.saying === String.fromCodePoint(0x1F6AA))
+        _(this.allCreeps)                                                                                       // Iterate over all creeps
+            .filter(creep => Task.reputation.allyOwner(creep))                                                  // Filter out any non-friendly creeps
+            .filter(creep => creep.saying === String.fromCodePoint(0x1F6AA))                                    // Filter out any creeps not requesting access
             .forEach(creep => {
-                _(creep.pos.adjacent)
-                    .filter(pos => !!_.find(pos.lookFor(LOOK_STRUCTURES), s => s instanceof StructureRampart))
-                    .map(pos => _.find(pos.lookFor(LOOK_STRUCTURES), s => s instanceof StructureRampart))
-                    .filter(rampart => !rampart.isPublic)
-                    .forEach(rampart => rampart.setPublic(true));
+                _(creep.pos.adjacent)                                                                           // Iterate over positions adjacent to the creep
+                    .filter(pos => !!_.find(pos.lookFor(LOOK_STRUCTURES), s => s instanceof StructureRampart))  // Filter out structures not a rampart
+                    .map(pos => _.find(pos.lookFor(LOOK_STRUCTURES), s => s instanceof StructureRampart))       // Map the array to ramparts
+                    .filter(rampart => !rampart.isPublic)                                                       // Filter out already public ramparts
+                    .forEach(rampart => rampart.setPublic(true));                                               // Open closed ramparts
             });
     };
 };
