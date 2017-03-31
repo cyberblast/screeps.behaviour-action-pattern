@@ -2698,6 +2698,12 @@ mod.extend = function(){
     Room.prototype.switchRamparts = function() {
         if (!this.my) return;
         
+        // Close Ramparts
+        _(this.structures.all)
+            .filter(s => s instanceof StructureRampart)
+            .filter(rampart => rampart.isPublic)
+            .forEach(rampart => rampart.setPublic(false));
+    
         // Open Ramparts
         _(this.allCreeps)
             .filter(creep => Task.reputation.allyOwner(creep))
@@ -2709,12 +2715,6 @@ mod.extend = function(){
                     .filter(rampart => !rampart.isPublic)
                     .forEach(rampart => rampart.setPublic(true));
             });
-        
-        // Close Ramparts
-        _(this.structures.all)
-            .filter(s => s instanceof StructureRampart)
-            .filter(rampart => rampart.isPublic)
-            .forEach(rampart => rampart.setPublic(false));
     };
 };
 mod.flush = function(){
