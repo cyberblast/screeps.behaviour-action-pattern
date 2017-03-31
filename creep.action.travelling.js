@@ -28,18 +28,22 @@ action.step = function(creep){
         if( range <= targetRange ) {
             return action.unregister(creep);
         }
-        creep.travelTo(target, {range:targetRange, ignoreCreeps:creep.data.ignoreCreeps || true});
+        const options = creep.data.travelOptions || {};
+        options.range = targetRange;
+        options.ignoreCreeps = creep.data.ignoreCreeps || true;
+        creep.travelTo(target, options);
     } else {
         action.unregister(creep);
     }
 };
-action.assignRoom = function(creep, roomName) {
+action.assignRoom = function(creep, roomName, options) {
     if (!roomName) {
         logError(creep.name + 'Creep.action.travelling.assignRoom called with no room.');
         return;
     }
     if (_.isUndefined(creep.data.travelRange)) creep.data.travelRange = TRAVELLING_BORDER_RANGE || 22;
     creep.data.travelRoom = roomName;
+    if (options) creep.data.travelOptions = options;
     return Creep.action.travelling.assign(creep, FlagDir.specialFlag());
 };
 action.unregister = function(creep) {
