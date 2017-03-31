@@ -54,6 +54,7 @@ action.unregister = function(creep) {
     delete creep.data.targetId;
     delete creep.data.travelRoom;
     delete creep.data.travelRange;
+    delete creep.data.travelOptions;
 };
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9784), SAY_PUBLIC);

@@ -1136,7 +1136,7 @@ mod.extend = function(){
         if (_.isUndefined(this.memory.paths)) this.memory.paths = {};
         const startID = startPos.x + ',' + startPos.y;
         const destPos = destination.pos || destination;
-        const destID = destination.id || destination.x + ',' + destination.y;
+        const destID = destination.id || destination.roomName + ',' + destination.x + ',' + destination.y;
         if (_.isUndefined(this.memory.paths[destID])) this.memory.paths[destID] = {};
         let path = this.memory.paths[destID];
         if (!path || !path[startID]) {
