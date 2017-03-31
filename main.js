@@ -231,10 +231,7 @@ module.exports.loop = function () {
 
     // ensure required memory namespaces
     if (Memory.modules === undefined)  {
-        Memory.modules = {
-            viral: {},
-            internalViral: {}
-        };
+        global.install();
     }
     if (Memory.debugTrace === undefined) {
         Memory.debugTrace = {error:true, no:{}};
