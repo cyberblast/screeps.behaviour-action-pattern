@@ -2705,9 +2705,9 @@ mod.extend = function(){
             .forEach(rampart => rampart.setPublic(false));  // Close any public rampart
     
         // Open Ramparts
-        _(this.allCreeps)                                                                                       // Iterate over all creeps
-            .filter(creep => creep.saying === String.fromCodePoint(0x1F6AA))                                    // Filter out any creeps not requesting access
-            .filter(creep => Task.reputation.allyOwner(creep))                                                  // Filter out any non-friendly creeps
+        _(this.allCreeps)                                                       // Iterate over all creeps
+            .filter(creep => creep.saying === String.fromCodePoint(0x1F6AA))    // Filter out any creeps not requesting access
+            .filter(creep => Task.reputation.allyOwner(creep))                  // Filter out any non-friendly creeps
             .forEach(creep => {
                 const radius = 2;
                 const [x, y] = [creep.pos.x, creep.pos.y];
@@ -2717,7 +2717,7 @@ mod.extend = function(){
                     y + radius > 49 ? 49 : y + radius,  // BOTTOM
                     x + radius > 49 ? 49 : x + radius,  // RIGHT
                 ];
-                _(creep.room.lookForAtArea(LOOK_STRUCTURES, ...bounds, true))                                   // Iterate over positions adjacent to the creep
+                _(creep.room.lookForAtArea(LOOK_STRUCTURES, ...bounds, true))                                   // Iterate over positions within bounds to the creep
                     .map(look => creep.room.getPositionAt(look.x, look.y))                                      // Map the array to positions
                     .filter(pos => !!_.find(pos.lookFor(LOOK_STRUCTURES), s => s instanceof StructureRampart))  // Filter out structures not a rampart
                     .map(pos => _.find(pos.lookFor(LOOK_STRUCTURES), s => s instanceof StructureRampart))       // Map the array to ramparts
