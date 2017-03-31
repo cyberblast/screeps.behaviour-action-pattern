@@ -4,7 +4,7 @@ mod.minControllerLevel = 2;
 mod.name = 'mining';
 mod.register = () => {};
 mod.checkFlag = (flag) => {
-    if( flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor ) {
+    if (flag.compareTo(FLAG_COLOR.claim.mining)) {
         flag.memory.roomName = flag.pos.roomName;
         flag.memory.task = mod.name;
         return true;

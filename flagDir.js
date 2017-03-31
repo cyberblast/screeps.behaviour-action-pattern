@@ -90,8 +90,7 @@ mod.filter = function(flagColor, pos, local=true){
             if( local && pos && pos.roomName && entry.roomName != pos.roomName )
                 return false;
             for( let i = 0; i < flagColor.length; i++ ){
-                if( flagColor[i].color == entry.color && flagColor[i].secondaryColor == entry.secondaryColor )
-                    return true;
+                if (Flag.compare(flagColor[i], entry)) return true;
             }
             return false;
         };
@@ -218,20 +217,16 @@ mod.cleanup = function(){
 mod.flagType = function(flag) {
     if (mod.isSpecialFlag(flag)) return '_OCS';
     for (const primary in FLAG_COLOR) {
-        const obj = FLAG_COLOR[primary];
-        if (flag.color === obj.color) {
-            if (flag.secondaryColor === obj.secondaryColor) {
-                return primary + '.' + primary;
-            } else {
-                for (const secondary in obj) {
-                    if (flag.secondaryColor === obj[secondary].secondaryColor) {
-                        return primary + '.' + secondary;
-                    }
-                }
-            }
+        const type = FLAG_COLOR[primary];
+        if (Flag.compare(flag, type)) {
+            return primary;
+        }
+        for (const secondary in type) {
+            const subType = type[secondary];
+            if (Flag.compare(flag, subType)) return `${primary}.${secondary}`;
         }
     }
-    logError('Unknown flag type for flag: ' + (flag ? flag.name : 'undefined flag'));
+    logError(`Unknown flag type for flag: ${flag ? flag.name : 'undefined flag'}.`);
     return 'undefined';
 };
 mod.specialFlag = function(create) {

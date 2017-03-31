@@ -32,7 +32,7 @@ mod.handleRoomDied = room => {
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a pioneer single or spawn
-    if( flag.color == FLAG_COLOR.claim.pioneer.color && flag.secondaryColor == FLAG_COLOR.claim.pioneer.secondaryColor ){
+    if( flag.compareTo(FLAG_COLOR.claim.pioneer)){
         // check if a new creep has to be spawned
         Task.pioneer.checkForRequiredCreeps(flag);
     }
