@@ -443,6 +443,9 @@ Visuals.extend = function() {
     Visuals.drawCreepPath = function(room) {
         const vis = new RoomVisual(room.name);
         room.creeps.forEach(creep => {
+            if (creep.action === Creep.action.idle) return; // don't draw idle path
+            if (_.chain(creep.pos).pick(['x','y']).eq(creep.data.determinatedSpot).value()) return;
+
             if (creep.memory && creep.memory._travel && creep.memory._travel.path) {
                 const path = creep.memory._travel.path.substr(1);
                 const style = Visuals.creepPathStyle(creep);
