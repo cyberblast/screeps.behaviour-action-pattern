@@ -363,7 +363,7 @@ module.exports = function(globalOpts = {}){
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
             if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
             if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => room.structureMatrix;
-            if (options.cacheRoutes) {
+            if (options.cacheRoutes && options.ignoreCreeps) {
                 const path = this.room.getPath(this.pos, destination, options);
                 if (path){
                     const next = path[this.pos.x + ',' + this.pos.y];
