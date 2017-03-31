@@ -57,8 +57,11 @@ global.tryRequire = (path, silent = false) => {
     }
     return mod;
 };
+
 // inject members of alien class into base class. specify a namespace to call originals from baseObject.baseOf[namespace]['<functionName>'] later
 global.inject = (base, alien, namespace) => {
+    // TODO get mixin options (alien.overwrite?)
+
     let keys = _.keys(alien);
     for (const key of keys) {
         if (typeof alien[key] === "function") {
@@ -75,6 +78,10 @@ global.inject = (base, alien, namespace) => {
         } else {
             base[key] = alien[key]
         }
+    }
+
+    if (alien.install && typeof alien.install === 'function') {
+        // TODO call install
     }
 };
 // partially override a module using a registered viral file
@@ -108,9 +115,6 @@ global.load = (modName) => {
         // load viral overrides 
         mod = infect(mod, 'internalViral', modName);
         mod = infect(mod, 'viral', modName);
-        if( mod.install ) {
-            mod.install();
-        }
     }
     return mod;
 };
