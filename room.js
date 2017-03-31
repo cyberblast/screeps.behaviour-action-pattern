@@ -2694,6 +2694,29 @@ mod.extend = function(){
             }
         }
     };
+    
+    Room.prototype.switchRamparts = function() {
+        if (!this.my) return;
+        
+        // Open Ramparts
+        _(this.allCreeps)
+            .filter(creep => Task.reputation.allyOwner(creep))
+            .filter(creep => creep.saying === String.fromCodePoint(0x1F6AA))
+            .forEach(creep => {
+                _(creep.pos.adjacent)
+                    .filter(pos => !!_.find(pos.lookFor(LOOK_STRUCTURES), s => s instanceof StructureRampart))
+                    .map(pos => _.find(pos.lookFor(LOOK_STRUCTURES), s => s instanceof StructureRampart))
+                    .filter(rampart => !rampart.isPublic)
+                    .forEach(rampart => rampart.setPublic(true));
+            });
+        
+        // Close Ramparts
+        _(this.structures.all)
+            .filter(s => s instanceof StructureRampart)
+            .filter(rampart => rampart.isPublic)
+            .filter(rampart => !_.find(rampart.pos.lookFor(LOOK_CREEPS), c => c.owner.username !== Task.reputation.myName() && Task.reputation.allyOwner(creep)))
+            .forEach(rampart => rampart.setPublic(false));
+    };
 };
 mod.flush = function(){
     let clean = room => {
@@ -2773,6 +2796,7 @@ mod.analyze = function(){
             room.processInvaders();
             room.processLabs();
             room.processPower();
+            room.switchRamparts();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
