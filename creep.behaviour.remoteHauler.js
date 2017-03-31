@@ -90,10 +90,18 @@ mod.nextAction = function(creep){
 mod.assign = function(creep, action, target){        
     return (action.isValidAction(creep) && action.isAddableAction(creep) && action.assign(creep, target));
 };
-mod.gotoTargetRoom = function(creep){
+mod.gotoTargetRoom = function(creep) {
     const targetFlag = creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
-    if (targetFlag) return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName, {cacheRoutes:true});
+    if (targetFlag) {
+        return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName, {cacheRoutes:true});
+    }
 };
-mod.goHome = function(creep){
-    return Creep.action.travelling.assignRoom(creep, creep.data.homeRoom, {cacheRoutes:true});
+mod.goHome = function(creep) {
+    const room = Game.rooms[creep.data.homeRoom];
+    if (room && room.storage) {
+        creep.data.travelOptions = {cacheRoutes:true};
+        return Creep.action.travelling.assign(creep, room.storage);
+    } else {
+        return Creep.action.travelling.assignRoom(creep, creep.data.homeRoom, {cacheRoutes:true});        
+    }
 };

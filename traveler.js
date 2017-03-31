@@ -364,7 +364,7 @@ module.exports = function(globalOpts = {}){
             if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
             if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => room.structureMatrix;
             if (options.cacheRoutes) {
-                const path = this.room.getPath(this.pos, destination);
+                const path = this.room.getPath(this.pos, destination, options);
                 if (path){
                     const next = path[this.pos.x + ',' + this.pos.y];
                     if (next) {
