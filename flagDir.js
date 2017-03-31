@@ -1,5 +1,15 @@
 let mod = {};
 module.exports = mod;
+mod.flagFilter = function(flagColour) {
+    if (!flagColour) return;
+    let filter;
+    if (flagColour.filter) {
+        filter = _.clone(flagColour.filter);
+    } else {
+        filter = {color: flagColour.color, secondaryColor: flagColour.secondaryColor};
+    }
+    return filter;
+};
 mod.findName = function(flagColor, pos, local, mod, modArgs){
     let that = this;
     if( flagColor == null || this.list.length == 0)
@@ -15,7 +25,7 @@ mod.findName = function(flagColor, pos, local, mod, modArgs){
         }
     }
     else {
-        filter = _.clone(flagColor.filter);
+        filter = this.flagFilter(flagColor);
         if( local && pos && pos.roomName )
             _.assign(filter, {roomName: pos.roomName, cloaking: "0"});
         else
@@ -62,7 +72,7 @@ mod.count = function(flagColor, pos, local){
     if( flagColor == null || this.list.length == 0)
         return 0;
 
-    let filter = _.clone(flagColor.filter);
+    let filter = this.flagFilter(flagColor);
     if( local && pos && pos.roomName )
         _.assign(filter, {roomName: pos.roomName});
     return _.countBy(this.list, filter).true || 0;
@@ -82,7 +92,7 @@ mod.filter = function(flagColor, pos, local){
             return false;
         };
     } else {
-        filter = _.clone(flagColor.filter);
+        filter = this.flagFilter(flagColor);
         if( local && pos && pos.roomName )
             _.assign(filter, {'roomName': pos.roomName});
     }
@@ -133,7 +143,22 @@ mod.extend = function(){
         set: function(value) {
             this.memory.cloaking = value;
         }
-    });        
+    });
+    
+    Object.defineProperty(Flag, 'compare', {
+        configurable: true,
+        value: function(flagA, flagB) {
+            return flagA.color === flagB.color && flagA.secondaryColor === flagB.secondaryColor;
+        }
+    });
+    
+    Object.defineProperty(Flag.prototype, 'compareTo', {
+        configurable: true,
+        // FLAG_COLOR flag
+        value: function(flag) {
+            return Flag.compare(this, flag);
+        },
+    });
 };
 mod.flush = function(){        
     let clear = flag => delete flag.targetOf;
@@ -143,7 +168,6 @@ mod.flush = function(){
     delete this._hasInvasionFlag;
 };
 mod.analyze = function(){
-    const specialFlag = mod.specialFlag(true);
     let register = flag => {
         flag.creeps = {};
         if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
@@ -165,13 +189,19 @@ mod.analyze = function(){
         }
     };
     _.forEach(Memory.flags, findStaleFlags);
+    const specialFlag = mod.specialFlag(true);
     return !!specialFlag;
 };
 mod.execute = function() {
+
     let triggerFound = entry => {
-        if( !entry.cloaking || entry.cloaking == 0)
-        Flag.found.trigger(Game.flags[entry.name]);
-    }
+        if( !entry.cloaking || entry.cloaking == 0) {
+            let p = startProfiling('Flag.execute');
+            const flag = Game.flags[entry.name];
+            Flag.found.trigger(flag);
+            p.checkCPU(entry.name, 2, mod.flagType(flag));
+        }
+    };
     this.list.forEach(triggerFound);
 
     let triggerRemoved = flagName => Flag.FlagRemoved.trigger(flagName);
@@ -182,7 +212,7 @@ mod.cleanup = function(){
     this.stale.forEach(clearMemory);
 };
 mod.flagType = function(flag) {
-    if (mod.isSpecialFlag(flag)) return 'specialFlag';
+    if (mod.isSpecialFlag(flag)) return '_OCS';
     for (const primary in FLAG_COLOR) {
         const obj = FLAG_COLOR[primary];
         if (flag.color === obj.color) {
@@ -197,17 +227,21 @@ mod.flagType = function(flag) {
             }
         }
     }
-    logError('Unknown flag type for flag ' + flag ? flag.name : 'undefined flag');
+    logError('Unknown flag type for flag: ' + (flag ? flag.name : 'undefined flag'));
     return 'undefined';
 };
 mod.specialFlag = function(create) {
     const name = '_OCS';
     const flag = Game.flags[name];
-    if (create && !flag) {
-        _(Game.rooms).values().some(function(room) {
-            new RoomPosition(49, 49, room.name).createFlag(name, COLOR_WHITE, COLOR_PURPLE);
-            return true;
-        });
+    if (create) {
+        if (!flag) {
+            return _(Game.rooms).values().some(function (room) {
+                new RoomPosition(49, 49, room.name).createFlag(name, COLOR_WHITE, COLOR_PURPLE);
+                return true;
+            });
+        } else if (flag.pos.roomName !== 'W0N0') {
+            flag.setPosition(new RoomPosition(49, 49, 'W0N0'));
+        }
     }
     return flag;
 };

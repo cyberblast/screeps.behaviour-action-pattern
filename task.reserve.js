@@ -4,25 +4,18 @@ module.exports = mod;
 mod.name = 'reserve';
 mod.creep = {
     reserver: {
-        fixedBody: [CLAIM, CLAIM, MOVE, MOVE],
-        multiBody: [],
+        fixedBody: {
+            [CLAIM]: 2,
+            [MOVE]: 2,
+        },
+        multiBody: [CLAIM, MOVE],
+        maxMulti: 7,
         name: "reserver", 
         behaviour: "claimer"
     },
 };
 // hook into events
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.reserve.handleFlagFound(flag) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.reserve.handleSpawningStarted(params) );
-    // a creep completed spawning
-    Creep.spawningCompleted.on( creep => Task.reserve.handleSpawningCompleted(creep) );
-    // a creep will die soon
-    Creep.predictedRenewal.on( creep => Task.reserve.handleCreepDied(creep.name) );
-    // a creep died
-    Creep.died.on( name => Task.reserve.handleCreepDied(name) );
-};
+mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a reserve, exploit or remote mine flag
@@ -237,7 +230,7 @@ mod.strategies = {
             // Don't spawn if...
             const hasFlag = !!flag;
             const hasController = Room.isControllerRoom(flag.pos.roomName) || (flag.room && flag.room.controller);
-            const hasReservation = (flag.room && flag.room.controller && flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 2500 || flag.room.controller.reservation.username != myName) );
+            const hasReservation = (flag.room && flag.room.controller && flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 1000 || flag.room.controller.reservation.username != myName) );
             const isOwned = (flag.room && flag.room.controller && flag.room.controller.owner);
             if( // Flag was removed
                 !hasFlag ||

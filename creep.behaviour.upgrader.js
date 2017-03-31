@@ -80,7 +80,8 @@ mod.run = function(creep) {
                 let spawn = Game.spawns[creep.data.motherSpawn];
                 if( spawn ) {
                     let path = spot.findPathTo(spawn, {ignoreCreeps: true});
-                    if( path ) creep.data.predictedRenewal = creep.data.spawningTime + path.length; // road assumed
+                    const speed = creep.data.body ? Math.ceil(creep.data.body.work / (2 * creep.data.body.move)) : 1; // road assumed
+                    if( path ) creep.data.predictedRenewal = creep.data.spawningTime + (path.length * speed);
                 }
             }
         }

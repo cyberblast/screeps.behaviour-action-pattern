@@ -7,13 +7,13 @@ setup.maxWorker = room => {
     if (room.controller.level < 4) {
         if (room.situation.invasion) return 1;
         let max = room.controller.level === 2 ? 6 : 4;
-        const numPioneers = room.population ? room.population.typeCount.pioneer : 0;
+        const numPioneers = room.population && room.population.typeCount.pioneer || 0;
         return max - numPioneers;
     }
     if( !setup.hasMinerOrHauler(room))
         return 1;
     // constructionsites present & no strorage or storage > min
-    if( room.constructionSites.length > 0 && (!room.storage
+    if( room.myConstructionSites.length > 0 && (!room.storage
         || room.storage.store && room.storage.charge > 0))
         return 1;
     // storage full & base fortifyable
@@ -23,8 +23,8 @@ setup.maxWorker = room => {
 };
 // validates if there is a miner or a hauler present
 setup.hasMinerOrHauler = room => ( room.population &&
-    ((room.population.typeCount['hauler'] && room.population.typeCount['hauler'] > 0) ||
-    (room.population.typeCount['miner'] && room.population.typeCount['miner'] > 0 )));
+    ((room.population.typeCount.hauler && room.population.typeCount.hauler > 0) ||
+    (room.population.typeCount.miner && room.population.typeCount.miner > 0 )));
 // this assures that the first worker gets spawned immediately, but later workers require more energy, giving preference to miners
 setup.byPopulation = function(type, start, perBody, limit) {
     return function(room) {

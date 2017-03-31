@@ -1,42 +1,57 @@
 let mod = {};
 module.exports = mod;
+mod.tasks = [];
+mod.populate = function() {
+    Task.addTasks(...[
+        Task.attackController,
+        Task.claim,
+        Task.defense,
+        Task.guard,
+        Task.mining,
+        Task.pioneer,
+        Task.reputation,
+        Task.reserve,
+        Task.robbing,
+    ]);
+};
+mod.addTasks = (...task) => Task.tasks.push(...task);
+
+mod.installTask = (...taskNames) => {
+    taskNames.forEach(taskName => {
+        Task[taskName] = load(`task.${taskName}`);
+        Task.addTasks(Task[taskName]);
+    });
+};
 // load task memory & flush caches
 mod.flush = function () {
-    const tasks = [
-        Task.guard,
-        Task.defense,
-        Task.claim,
-        Task.reserve,
-        Task.mining,
-        Task.pioneer,
-        Task.attackController,
-        Task.robbing,
-        Task.reputation,
-    ];
-    for (let i = tasks.length - 1; i >= 0; i--) {
-        if (tasks[i].flush) {
-            tasks[i].flush();
-        }
-    }
+    Task.tasks.forEach(task => {
+        if (task.flush) task.flush();
+    });
 };
+// temporary hack to avoid registering twice internally, remove and fix internal when merged.
+mod.selfRegister = true;
 // register tasks (hook up into events)
 mod.register = function () {
-    const tasks = [
-        Task.guard,
-        Task.defense,
-        Task.claim,
-        Task.reserve,
-        Task.mining,
-        Task.pioneer,
-        Task.attackController,
-        Task.robbing,
-        Task.reputation,
-    ];
-    for (let i = tasks.length - 1; i >= 0; i--) {
-        if (tasks[i].register) {
-            tasks[i].register();
+    Task.tasks.forEach(task => {
+        // Extending of any other kind
+        if (task.register) task.register();
+        // Flag Events
+        if (task.handleFlagFound) Flag.found.on(flag => task.handleFlagFound(flag));
+        if (task.handleFlagRemoved) Flag.FlagRemoved.on(flagName => task.handleFlagRemoved(flagName));
+        // Creep Events
+        if (task.handleSpawningStarted) Creep.spawningStarted.on(params => task.handleSpawningStarted(params));
+        if (task.handleSpawningCompleted) Creep.spawningCompleted.on(creep => task.handleSpawningCompleted(creep));
+        if (task.handleCreepDied) {
+            Creep.predictedRenewal.on(creep => task.handleCreepDied(creep.name));
+            Creep.died.on(name => task.handleCreepDied(name));
         }
-    }
+        if (task.handleCreepError) Creep.error.on(errorData => task.handleCreepError(errorData));
+        // Room events
+        if (task.handleNewInvader) Room.newInvader.on(invader => task.handleNewInvader(invader));
+        if (task.handleKnownInvader) Room.knownInvader.on(invaderID => task.handleKnownInvader(invaderID));
+        if (task.handleGoneInvader) Room.goneInvader.on(invaderID => task.handleGoneInvader(invaderID));
+        if (task.handleRoomDied) Room.collapsed.on(room => task.handleRoomDied(room));
+    });
 };
 mod.memory = (task, s) => { // task:  (string) name of the task, s: (string) any selector for that task, could be room name, flag name, enemy name
     if( !Memory.tasks ) Memory.tasks = {};

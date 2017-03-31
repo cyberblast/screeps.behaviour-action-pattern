@@ -14,7 +14,12 @@ action.isAddableAction = function(creep) {
     return true;
 };
 action.isValidTarget = function(target, creep){
-    return Task.reputation.hostileOwner(target) && action.isActiveLair(target);
+    if (Task.reputation.npcOwner(target)) {
+        return action.isActiveLair(target);
+    } else if (Task.reputation.hostileOwner(target) && target.hasActiveBodyparts) {
+        return target.hasActiveBodyparts([ATTACK,RANGED_ATTACK]);
+    }
+    return false;
 };
 action.newTarget = function(creep) {
     if (Room.isSKRoom(creep.pos.roomName)) {
@@ -28,7 +33,9 @@ action.newTarget = function(creep) {
     }
 
     if (creep.room.situation.invasion) {
-        const target = _.chain(creep.room.hostiles).map(function(target) {
+        const target = _.chain(creep.room.hostiles).filter(function(target) {
+            return action.isValidTarget(target);
+        }).map(function(target) {
             // TODO react to players? getStrategyHandler
             let score = 0;
             const range = creep.pos.getRangeTo(target);

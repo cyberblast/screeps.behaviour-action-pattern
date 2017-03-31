@@ -2,6 +2,7 @@ let action = new Creep.Action('guarding');
 module.exports = action;
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
+action.reachedRange = 0;
 action.newTarget = function(creep){
     var flag;
     if( creep.data.destiny ) flag = Game.flags[creep.data.destiny.flagName];

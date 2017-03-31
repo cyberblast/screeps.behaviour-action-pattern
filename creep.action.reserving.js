@@ -44,6 +44,7 @@ action.step = function(creep){
         if( workResult != OK ) {
             creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
         }
+        return workResult;
     }
     return creep.travelTo( creep.target.pos );
 };

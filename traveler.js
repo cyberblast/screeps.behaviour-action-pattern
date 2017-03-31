@@ -22,7 +22,6 @@ module.exports = function(globalOpts = {}){
         exportTraveler:    true,
         installTraveler:   false,
         installPrototype:  true,
-        hostileLocation:   'rooms',
         maxOps:            20000,
         defaultStuckValue: 3,
         reportThreshold:   50,
@@ -30,8 +29,8 @@ module.exports = function(globalOpts = {}){
     });
     class Traveler {
         constructor() {
-            // change this memory path to suit your needs
-            this.memory = _.defaultsDeep(_.get(Memory, gOpts.hostileLocation, {}), { hostileRooms: {} });
+            this.getHostileRoom = (roomName) => _.get(Memory, ['rooms', roomName, 'hostile']);
+            this.registerHostileRoom = (room) => room.registerIsHostile();
         }
         findAllowedRooms(origin, destination, options = {}) {
             _.defaults(options, { restrictDistance: 16 });
@@ -67,10 +66,11 @@ module.exports = function(globalOpts = {}){
                             return 10;
                         }
                     }
-                    if (!options.allowHostile && this.memory.hostileRooms[roomName] &&
+                    if (!options.allowHostile && this.getHostileRoom(roomName) &&
                         roomName !== destination && roomName !== origin) {
                         return Number.POSITIVE_INFINITY;
                     }
+                    return 2.5;
                 }
             });
             if (!_.isArray(ret)) {
@@ -107,10 +107,11 @@ module.exports = function(globalOpts = {}){
                     if (!allowedRooms[roomName]) {
                         return false;
                     }
-                }
-                else if (this.memory.hostileRooms[roomName] && !options.allowHostile) {
+                } else if (this.getHostileRoom(roomName) && !options.allowHostile &&
+                    roomName !== origPos.roomName && roomName !== destPos.roomName) {
                     return false;
                 }
+
                 let room = Game.rooms[roomName];
                 if (!room)
                     return;
@@ -122,10 +123,10 @@ module.exports = function(globalOpts = {}){
                     }
                 }
                 else if (options.ignoreCreeps || roomName !== origin.pos.roomName) {
-                    matrix = this.getStructureMatrix(room);
+                    matrix = this.getStructureMatrix(room, options);
                 }
                 else {
-                    matrix = this.getCreepMatrix(room);
+                    matrix = this.getCreepMatrix(room, options);
                 }
                 for (let obstacle of options.obstacles) {
                     matrix.set(obstacle.pos.x, obstacle.pos.y, 0xff);
@@ -144,14 +145,7 @@ module.exports = function(globalOpts = {}){
         travelTo(creep, destination, options = {}) {
             // register hostile rooms entered
             let creepPos = creep.pos, destPos = (destination.pos || destination);
-            if (creep.room.controller) {
-                if (creep.room.controller.owner && !creep.room.controller.my && !creep.room.ally) {
-                    this.memory.hostileRooms[creep.room.name] = creep.room.controller.level;
-                }
-                else {
-                    this.memory.hostileRooms[creep.room.name] = undefined;
-                }
-            }
+            this.registerHostileRoom(creep.room);
             // initialize data object
             if (!creep.memory._travel) {
                 creep.memory._travel = { stuck: 0, tick: Game.time, cpu: 0, count: 0 };
@@ -181,12 +175,18 @@ module.exports = function(globalOpts = {}){
             // check if creep is stuck
             let hasMoved = true;
             if (travelData.prev) {
+                const isBorder = (pos) => {
+                    return pos.x === 0 || pos.x === 49 || pos.y === 0 || pos.y === 49;
+                };
+                const opposingBorders = (p1, p2) => {
+                    return isBorder(p1) && isBorder(p2) && p1.roomName !== p2.roomName && (p1.x === p2.x || p1.y === p2.y);
+                };
                 travelData.prev = new RoomPosition(travelData.prev.x, travelData.prev.y, travelData.prev.roomName);
-                if (creepPos.inRangeTo(travelData.prev, 0)) {
+                if (creepPos.inRangeTo(travelData.prev, 0) ||
+                    opposingBorders(creep.pos, travelData.prev)) {
                     hasMoved = false;
                     travelData.stuck++;
-                }
-                else {
+                } else {
                     creep.room.recordMove(creep);
                     travelData.stuck = 0;
                 }
@@ -278,7 +278,8 @@ module.exports = function(globalOpts = {}){
                 this.creepMatrixCache = {};
             }
         }
-        getStructureMatrix(room) {
+        getStructureMatrix(room, options) {
+            if (options.getStructureMatrix) return options.getStructureMatrix(room);
             this.refreshMatrices();
             if (!this.structureMatrixCache[room.name]) {
                 let matrix = new PathFinder.CostMatrix();
@@ -305,7 +306,6 @@ module.exports = function(globalOpts = {}){
                 if (site.structureType === STRUCTURE_CONTAINER) {
                     continue;
                 } else if (site.structureType === STRUCTURE_ROAD) {
-                    if (USE_UNBUILT_ROADS) matrix.set(site.pos.x, site.pos.y, roadCost);
                     continue;
                 } else if (site.structureType === STRUCTURE_RAMPART) {
                     continue;
@@ -314,10 +314,11 @@ module.exports = function(globalOpts = {}){
             }
             return matrix;
         }
-        getCreepMatrix(room) {
+        getCreepMatrix(room, options) {
+            if (options.getCreepMatrix) return options.getCreepMatrix(room);
             this.refreshMatrices();
             if (!this.creepMatrixCache[room.name]) {
-                this.creepMatrixCache[room.name] = Traveler.addCreepsToMatrix(room, this.getStructureMatrix(room).clone());
+                this.creepMatrixCache[room.name] = Traveler.addCreepsToMatrix(room, this.getStructureMatrix(room, options).clone());
             }
             return this.creepMatrixCache[room.name];
         }
@@ -358,10 +359,10 @@ module.exports = function(globalOpts = {}){
 
         Creep.prototype.travelTo = function (destination, options = {}) {
             options = this.getStrategyHandler([], 'moveOptions', options);
-            if (_.isUndefined(options.cacheRoutes)) options.cacheRoutes = true;
-            if (_.isUndefined(options.allowHostile)) options.allowHostile = false;
-            if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(destination.roomName, options.allowHostile, options.preferHighway);
             if (_.isUndefined(options.useFindRoute)) options.useFindRoute = global.ROUTE_PRECALCULATION;
+            if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
+            if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
+            if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => room.structureMatrix;
             if (options.cacheRoutes) {
                 const path = this.room.getPath(this.pos, destination);
                 if (path){

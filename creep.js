@@ -32,10 +32,21 @@ mod.extend = function(){
     // Check if a creep has body parts of a certain type anf if it is still active. 
     // Accepts a single part type (like RANGED_ATTACK) or an array of part types. 
     // Returns true, if there is at least any one part with a matching type present and active.
-    Creep.prototype.hasActiveBodyparts = function(partTypes){
-        if(Array.isArray(partTypes))
-            return (this.body.some((part) => ( partTypes.includes(part.type) && part.hits > 0 )));
-        else return (this.body.some((part) => ( part.type === partTypes && part.hits > 0 )));
+    Creep.prototype.hasActiveBodyparts = function(partTypes) {
+        return this.hasBodyparts(partTypes, this.body.length - Math.ceil(this.hits * 0.01));
+    };
+    Creep.prototype.hasBodyparts = function(partTypes, start = 0) {
+        const body = this.body;
+        const limit = body.length;
+        if (!Array.isArray(partTypes)) {
+            partTypes = [partTypes];
+        }
+        for (let i = start; i < limit; i++) {
+            if (partTypes.includes(body[i].type)) {
+                return true;
+            }
+        }
+        return false;
     };
     Creep.prototype.run = function(behaviour){
         if( !this.spawning ){
@@ -45,7 +56,10 @@ mod.extend = function(){
                     return;
                 }
             }
-            this.repairNearby();
+            let p = startProfiling('Creep.run');
+            if (this.data && !_.contains(['remoteMiner', 'miner', 'upgrader'], this.data.creepType)) {
+                this.repairNearby();
+            }
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Behaviour: behaviour && behaviour.name, Creep:'run'});
             if( behaviour ) behaviour.run(this);
             else if(!this.data){
@@ -100,6 +114,7 @@ mod.extend = function(){
                 Creep.behaviour.ranger.heal(this);
                 if( SAY_ASSIGNMENT ) this.say(String.fromCharCode(10133), SAY_PUBLIC);
             }
+            p.checkCPU(this.name, 5, this.data ? this.data.creepType : 'noType');
         }
 
         strategy.freeStrategy(this);
@@ -151,7 +166,7 @@ mod.extend = function(){
                     roomCallback: function(roomName) {
                         let room = Game.rooms[roomName];
                         if (!room) return;
-                        return room.currentCostMatrix;
+                        return room.creepMatrix;
                     }
                 }
             );
@@ -174,9 +189,13 @@ mod.extend = function(){
         if( here && here.length > 0 ) {
             let path;
             if( !this.data.idlePath || this.data.idlePath.length < 2 || this.data.idlePath[0].x != this.pos.x || this.data.idlePath[0].y != this.pos.y || this.data.idlePath[0].roomName != this.pos.roomName ) {
-                let goals = _.map(this.room.structures.all, function(o) {
+                let goals = this.room.structures.all.map(function(o) {
                     return { pos: o.pos, range: 1 };
-                });
+                }).concat(this.room.sources.map(function (s) {
+                    return { pos: s.pos, range: 2 };
+                })).concat(this.pos.findInRange(FIND_EXIT, 2).map(function (e) {
+                    return { pos: e, range: 1 };
+                }));
 
                 let ret = PathFinder.search(
                     this.pos, goals, {
@@ -189,7 +208,7 @@ mod.extend = function(){
                         roomCallback: function(roomName) {
                             let room = Game.rooms[roomName];
                             if (!room) return;
-                            return room.currentCostMatrix;
+                            return room.creepMatrix;
                         }
                     }
                 );
@@ -203,9 +222,11 @@ mod.extend = function(){
                 this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
         }
     };
-    Creep.prototype.repairNearby = function( ) {
+    Creep.prototype.repairNearby = function() {
+        // only repair in rooms that we own, have reserved, or belong to our allies, also SK rooms and highways.
+        if (this.room.controller && this.room.controller.owner && !(this.room.my || this.room.reserved || this.room.ally)) return;
         // if it has energy and a work part, remoteMiners do repairs once the source is exhausted.
-        if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK) && this.data && this.data.creepType !== 'remoteMiner') {
+        if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
             let nearby = this.pos.findInRange(this.room.structures.repairable, DRIVE_BY_REPAIR_RANGE);
             if( nearby && nearby.length ){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
@@ -215,7 +236,7 @@ mod.extend = function(){
                 // enable remote haulers to build their own roads and containers
                 if( REMOTE_HAULER_DRIVE_BY_BUILDING && this.data && this.data.creepType === 'remoteHauler' ) {
                     // only search in a range of 1 to save cpu
-                    let nearby = this.pos.findInRange(this.room.constructionSites, REMOTE_HAULER_DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
+                    let nearby = this.pos.findInRange(this.room.myConstructionSites, REMOTE_HAULER_DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
                         return site.my && REMOTE_HAULER_DRIVE_BY_BUILD_ALL ||
                             (site.structureType === STRUCTURE_CONTAINER ||
                             site.structureType === STRUCTURE_ROAD);
@@ -328,13 +349,24 @@ mod.extend = function(){
             selector: taskName => Task[taskName] && Task[taskName],
         });
 
+    // Explain API extension
+    Creep.prototype.explainAgent = function() {
+        return `ttl:${this.ticksToLive} pos:${this.pos}`;
+    };
+
     // API
     Creep.prototype.staticCustomStrategy = function(actionName, behaviourName, taskName) {};
     Creep.prototype.customStrategy = function(actionName, behaviourName, taskName) {};
 };
 mod.execute = function(){
     if ( DEBUG && Memory.CPU_CRITICAL ) logSystem('system',`${Game.time}: CPU Bucket level is critical (${Game.cpu.bucket}). Skipping non critical creep roles.`);
-    let run = creep => creep.run();
+    let run = creep => {
+        try {
+            creep.run();
+        } catch (e) {
+            console.log('<span style="color:FireBrick">Creep ' + creep.name + (e.stack || e.toString()) + '</span>');
+        }
+    };
     _.forEach(Game.creeps, run);
 };
 mod.bodyCosts = function(body){
@@ -375,8 +407,26 @@ mod.partsComparator = function (a, b) {
     let indexOfB = partsOrder.indexOf(b);
     return indexOfA - indexOfB;
 };
+mod.formatParts = function(parts) {
+    if (parts && !Array.isArray(parts) && typeof parts === 'object') {
+        const body = [];
+        for (const part of BODYPARTS_ALL) {
+            if (part in parts) body.push(..._.times(parts[part], n => part));
+        }
+        parts = body;
+    }
+    return parts;
+};
+mod.formatBody = function(fixedBody, multiBody) {
+    fixedBody = Creep.formatParts(fixedBody);
+    multiBody = Creep.formatParts(multiBody);
+    return {fixedBody, multiBody};
+};
 // params: {minThreat, maxWeight, maxMulti}
 mod.compileBody = function (room, params, sort = true) {
+    const {fixedBody, multiBody} = Creep.formatBody(params.fixedBody || [], params.multiBody || []);
+    _.assign(params, {fixedBody, multiBody});
+    if (params.sort !== undefined) sort = params.sort;
     let parts = [];
     let multi = Creep.multi(room, params);
     for (let iMulti = 0; iMulti < multi; iMulti++) {
@@ -385,7 +435,10 @@ mod.compileBody = function (room, params, sort = true) {
     for (let iPart = 0; iPart < params.fixedBody.length; iPart++) {
         parts[parts.length] = params.fixedBody[iPart];
     }
-    if( sort ) parts.sort(Creep.partsComparator);            
+    if( sort ) {
+        const compareFunction = typeof sort === 'function' ? sort : Creep.partsComparator;
+        parts.sort(compareFunction);
+    }
     if( parts.includes(HEAL) ) {
         let index = parts.indexOf(HEAL);
         parts.splice(index, 1);
