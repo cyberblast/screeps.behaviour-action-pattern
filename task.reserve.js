@@ -31,6 +31,9 @@ mod.checkForRequiredCreeps = (flag) => {
     let spawnParams;
     if( flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor ) {
         spawnParams = Task.mining.strategies.reserve.spawnParams(flag);
+    } else if( flag.compareTo(FLAG_COLOR.invade.exploit) ) {
+        spawnParams = mod.strategies.defaultStrategy.spawnParams(flag);
+        spawnParams.queue = 'Low'; // privateer reserve is always low queue
     } else {
         spawnParams = mod.strategies.defaultStrategy.spawnParams(flag);
     }
