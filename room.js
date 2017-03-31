@@ -2714,7 +2714,6 @@ mod.extend = function(){
         _(this.structures.all)
             .filter(s => s instanceof StructureRampart)
             .filter(rampart => rampart.isPublic)
-            .filter(rampart => !_.find(rampart.pos.lookFor(LOOK_CREEPS), c => c.owner.username !== Task.reputation.myName() && Task.reputation.allyOwner(creep)))
             .forEach(rampart => rampart.setPublic(false));
     };
 };
