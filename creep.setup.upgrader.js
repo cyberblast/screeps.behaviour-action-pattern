@@ -23,7 +23,7 @@ setup.maxCount = function(room){
             // Energy reserves are low
             room.conserveForDefense ||
             // No energy structures built near controller
-            (room.structures.container.controller.length + room.structures.links.controller.length) == 0 ||
+            (room.structures.container.controller.length + room.structures.links.controller.length) === 0 ||
             // Upgrading blocked -> http://support.screeps.com/hc/en-us/articles/207711889-StructureController#upgradeBlocked
             room.controller.upgradeBlocked
         ) return 0;
@@ -37,7 +37,7 @@ setup.maxCount = function(room){
     if( upgraderEnergy === 0 ) return 0;
     if( room.storage ) return Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000));
     // dont spawn a new upgrader while there are construction sites (and no storage)
-    if( room.constructionSites.length > 0 ) return 0;
+    if( room.myConstructionSites.length > 0 ) return 0;
     // if energy on the ground next to source > 700 return 3
     if( room.droppedResources ) {
         let dropped = 0;
@@ -53,26 +53,43 @@ setup.maxCount = function(room){
     return 2;
 };
 setup.default = {
-    fixedBody: [WORK, WORK, CARRY, MOVE],
-    multiBody: [WORK, WORK, WORK, MOVE],
+    fixedBody: {
+        [CARRY]: 1,
+        [MOVE]: 1,
+        [WORK]: 2,
+    },
+    multiBody: {
+        [MOVE]: 1,
+        [WORK]: 3,
+    },
     minAbsEnergyAvailable: 400,
     minEnergyAvailable: 0.5,
     maxMulti: room => setup.maxMulti(room),
     maxCount: room => setup.maxCount(room),
 };
 setup.low = {
-    fixedBody: [WORK, WORK, CARRY, MOVE],
-    multiBody: [WORK, WORK, MOVE],
+    fixedBody: {
+        [CARRY]: 1,
+        [MOVE]: 1,
+        [WORK]: 2,
+    },
+    multiBody: {
+        [MOVE]: 1,
+        [WORK]: 2,
+    },
     minAbsEnergyAvailable: 300,
     minEnergyAvailable: 1,
     maxMulti: room => setup.maxMulti(room),
     maxCount: room => setup.maxCount(room),
 };
 setup.level8 = {
-    fixedBody: [CARRY, MOVE, MOVE, MOVE],
+    fixedBody: {
+        [CARRY]: 1,
+        [MOVE]: 3,
+    },
     multiBody: [WORK],
-    minAbsEnergyAvailable: 300,
-    minEnergyAvailable: 1,
+    minAbsEnergyAvailable: 1700,
+    minEnergyAvailable: 0.5,
     maxMulti: CONTROLLER_MAX_UPGRADE_PER_TICK / UPGRADE_CONTROLLER_POWER,
     maxCount: room => setup.maxCount(room),
 };

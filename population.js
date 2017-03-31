@@ -31,6 +31,7 @@ mod.unregisterCreep = function(creepName){
 mod.registerAction = function(creep, action, target, entry) {
     if( DEBUG && TRACE ) trace('Population', {creepName:this.name, registerAction:action.name, target:target.name || target.id, Population:'registerAction'});
 
+    if( creep === target ) throw new Error('attempt to register self target');
     if( entry === undefined ) entry = this.getCreep(creep.name);
     entry.carryCapacityLeft = creep.carryCapacity - creep.sum;
     let room = creep.room;
@@ -91,7 +92,7 @@ mod.registerAction = function(creep, action, target, entry) {
     }
     // register target
     entry.targetId = targetId;
-    if( target ) {
+    if( target && !FlagDir.isSpecialFlag(target)) {
         if( target.targetOf === undefined )
             target.targetOf = [entry];
         else target.targetOf.push(entry);
@@ -181,22 +182,24 @@ mod.analyze = function(){
             if( creep.spawning ) { // count spawning time
                 entry.spawningTime++;
             }
-            else if( creep.ticksToLive ==  ( creep.data.body.claim !== undefined ? 499 : 1499 ) ){ // spawning complete
+            else if( creep.ticksToLive > 0 && !creep.data.spawned ){ // spawning complete
+                creep.data.spawned = true;
                 this.spawned.push(entry.creepName);
                 if (Game.spawns[entry.motherSpawn]) this.spawnsToProbe.push(entry.motherSpawn); // only push living spawns
             }
-            else if(creep.ticksToLive == ( entry.predictedRenewal ? entry.predictedRenewal : entry.spawningTime)) { // will die in ticks equal to spawning time or custom
+            else if(creep.ticksToLive <= ( entry.predictedRenewal ? entry.predictedRenewal : entry.spawningTime) && !creep.data.nearDeath) { // will die in ticks equal to spawning time or custom
+                creep.data.nearDeath = true;
                 if(CENSUS_ANNOUNCEMENTS) console.log(dye(CRAYON.system, entry.creepName + ' &gt; ') + dye(CRAYON.death, 'Farewell!') );
                 this.predictedRenewal.push(creep.name);
                 if( !this.spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' && Game.spawns[entry.motherSpawn] ) {
                     this.spawnsToProbe.push(entry.motherSpawn);
                 }
-            } 
+            }
             entry.ttl = creep.ticksToLive;
 
             if( entry.creepType &&
                 ( creep.ticksToLive === undefined ||
-                creep.ticksToLive > entry.spawningTime )) {
+                Creep.Setup.isWorkingAge(entry) )) {
                     this.countCreep(creep.room, entry);
             }
 
@@ -212,6 +215,9 @@ mod.analyze = function(){
             }
             let action = ( entry.actionName && Creep.action[entry.actionName] ) ? Creep.action[entry.actionName] : null;
             let target = action && entry.targetId ? Game.getObjectById(entry.targetId) || Game.spawns[entry.targetId] || Game.flags[entry.targetId] : null;
+            if (target && target.id === creep.id) {
+                target = FlagDir.specialFlag();
+            }
             if( action && target ) this.registerAction( creep, action, target, entry );
             else {
                 delete entry.actionName;
@@ -265,6 +271,12 @@ mod.execute = function(){
 mod.cleanup = function(){
     let unregister = name => Population.unregisterCreep(name);
     this.died.forEach(unregister);
+    // TODO consider clearing target here
+};
+mod.sortEntries = function() {
+    let temp = {};
+    _.map(_.sortBy(Memory.population, p => p.creepName), c => temp[c.creepName] = c);
+    Memory.population = temp;
 };
 mod.stats = {
     creep: {
@@ -298,4 +310,43 @@ mod.getCombatStats = function(body) {
         hull, // damage needed to impede movement
         coreHits // if (hits < coreHits) missing moves!
     };
+};
+mod.findCircular = function() {
+    const groups = {
+        creeps: Game.creeps,
+        structures: Game.structures,
+        memory: Memory
+    };
+
+    const map = {};
+
+    for (let gid in groups) {
+        const group = groups[gid];
+        for (let id in group) {
+            const entity = group[id];
+            const path = gid + '.' + id;
+            map[id] = path;
+            this.checkCircular(id, map, entity, path, 1);
+        }
+    }
+};
+mod.checkCircular = function(stopId, map, root, rootPath, depth) {
+    if (depth > 10) {
+        logError('Checking for circulars, very deep path', {rootPath, depth});
+        return;
+    }
+    for (let key in root) {
+        const path = rootPath + '.' + key;
+        const entity = root[key];
+        if (!_.isObject(entity)) continue;
+        const id = entity.id || entity.name;
+        if (id === stopId) {
+            throw new Error('circular structure:' + id + ' at:' + path + ' and at:' + map[id]);
+        }
+        if (!id || map[id]) {
+            continue;
+        }
+        map[id] = path;
+        mod.checkCircular(stopId, map, entity, path, depth + 1);
+    }
 };

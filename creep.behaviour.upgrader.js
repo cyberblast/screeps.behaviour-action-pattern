@@ -14,7 +14,7 @@ mod.approach = function(creep){
                 delete creep.data.determinatedSpot;
             }
         }
-        creep.drive( targetPos, 0, 0, range );
+        creep.travelTo( targetPos, {range:0} );
     }
     return range;
 };
@@ -23,7 +23,7 @@ mod.run = function(creep) {
         creep.data.creepType='recycler';
         return;
     }
-    if( !creep.action ) Population.registerAction(creep, Creep.action.upgrading, creep.room.controller);
+    if( !creep.action || creep.action.name !== 'upgrading' ) Population.registerAction(creep, Creep.action.upgrading, creep.room.controller);
     if( !creep.data.determinatedSpot ) {
         let determineSpots = (ignoreSources=false) => {
             let spots = [];
@@ -80,7 +80,8 @@ mod.run = function(creep) {
                 let spawn = Game.spawns[creep.data.motherSpawn];
                 if( spawn ) {
                     let path = spot.findPathTo(spawn, {ignoreCreeps: true});
-                    if( path ) creep.data.predictedRenewal = creep.data.spawningTime + path.length; // road assumed
+                    const speed = creep.data.body ? Math.ceil(creep.data.body.work / (2 * creep.data.body.move)) : 1; // road assumed
+                    if( path ) creep.data.predictedRenewal = creep.data.spawningTime + (path.length * speed);
                 }
             }
         }
@@ -108,4 +109,15 @@ mod.run = function(creep) {
             creep.upgradeController(creep.room.controller);
         }
     }
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        moveOptions: function(options) {
+            return options || {};
+        }
+    }
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
 };

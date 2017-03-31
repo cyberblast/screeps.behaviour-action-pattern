@@ -25,13 +25,13 @@ mod.nextAction = function(creep) {
         // not at target room
         if( !flag.room || flag.pos.roomName != creep.pos.roomName ){
             // travel to target room
-            if( Creep.action.travelling.assign(creep, flag)) {
+            if( Creep.action.travelling.assignRoom(creep, flag.pos.roomName)) {
                 Population.registerCreepFlag(creep, flag);
                 return true;
             }
         }
         // if target room claimed      
-        if( flag.room && flag.room.controller.my ) {       
+        if( flag.room && flag.room.my ) {       
             let spawnFlag = FlagDir.find(FLAG_COLOR.claim.spawn, creep.pos, true) ;
             // and has spawn flag
             if( spawnFlag ) {
@@ -44,7 +44,7 @@ mod.nextAction = function(creep) {
                     _.forEach(FlagDir.filter(FLAG_COLOR.invade.exploit, spawnFlag.pos, true), remove);
                 }
                 else { // no spawn => build it
-                    let spawnSite = flag.room.constructionSites.some(s => s.structureType === STRUCTURE_SPAWN);
+                    let spawnSite = flag.room.myConstructionSites.some(s => s.structureType === STRUCTURE_SPAWN);
                     if( !spawnSite ) // no spawn construction site yet
                         flag.room.createConstructionSite(spawnFlag, STRUCTURE_SPAWN); // create spawn construction site
                 }

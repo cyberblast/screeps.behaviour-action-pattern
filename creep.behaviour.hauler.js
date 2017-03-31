@@ -17,31 +17,34 @@ mod.run = function(creep) {
 };
 mod.nextAction = function(creep){
     if( creep.pos.roomName != creep.data.homeRoom && Game.rooms[creep.data.homeRoom] && Game.rooms[creep.data.homeRoom].controller ) {
-        Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+        Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
         return;
     }
-    let priority;
-    if( creep.sum < creep.carryCapacity/2 ) {
+    const outflowPriority = [
+        Creep.action.feeding,
+        Creep.action.charging,
+        Creep.action.fueling,
+    ];
+    let priority = outflowPriority;
+    if( creep.sum * 2 < creep.carryCapacity ) {
         priority = [
             Creep.action.uncharging,
             Creep.action.picking,
-            Creep.action.reallocating,
-            Creep.action.withdrawing,
-            Creep.action.idle];
-    }
-    else {
-        priority = [
-            Creep.action.feeding,
-            Creep.action.charging,
-            Creep.action.fueling,
+        ];
+        Creep.action.withdrawing.debounce(creep, outflowPriority, function(withdrawing) {
+            priority.push(withdrawing);
+        });
+        priority.push(Creep.action.reallocating);
+        priority.push(Creep.action.idle);
+    } else {
+        priority = outflowPriority.concat([
             Creep.action.storing,
-            Creep.action.idle];
-
+            Creep.action.idle,
+        ]);
         if ( creep.sum > creep.carry.energy ||
-            ( !creep.room.situation.invasion
-            && SPAWN_DEFENSE_ON_ATTACK
-            && creep.room.conserveForDefense && creep.room.relativeEnergyAvailable > 0.8)) {
-                priority.unshift(Creep.action.storing);
+            ( !creep.room.situation.invasion &&
+                SPAWN_DEFENSE_ON_ATTACK && creep.room.conserveForDefense && creep.room.relativeEnergyAvailable > 0.8)) {
+            priority.unshift(Creep.action.storing);
         }
         if (creep.room.structures.urgentRepairable.length > 0 ) {
             priority.unshift(Creep.action.fueling);
@@ -49,11 +52,13 @@ mod.nextAction = function(creep){
     }
 
     for(var iAction = 0; iAction < priority.length; iAction++) {
-        var action = priority[iAction];
-        if(action.isValidAction(creep) &&
-            action.isAddableAction(creep) &&
-            action.assign(creep)) {
-                return;
+        var a = priority[iAction];
+        if(a.isValidAction(creep) && a.isAddableAction(creep) && a.assign(creep)) {
+            if (a.name !== 'idle') {
+                creep.data.lastAction = a.name;
+                creep.data.lastTarget = creep.target.id;
+            }
+            return;
         }
     }
 };

@@ -33,7 +33,9 @@ action.newTarget = function(creep) {
     }
 
     if (creep.room.situation.invasion) {
-        const target = _.chain(creep.room.hostiles).map(function(target) {
+        const target = _.chain(creep.room.hostiles).filter(function(target) {
+            return action.isValidTarget(target);
+        }).map(function(target) {
             // TODO react to players? getStrategyHandler
             let score = 0;
             const range = creep.pos.getRangeTo(target);
@@ -69,7 +71,7 @@ action.work = function(creep) {
 
     if (creep.data.safeSpot) {
         if (creep.pos.getRangeTo(creep.target) < 10) {
-            creep.drive(creep.data.safeSpot, 0, 1);
+            creep.travelTo(creep.data.safeSpot);
         } else {
             creep.idleMove();
         }

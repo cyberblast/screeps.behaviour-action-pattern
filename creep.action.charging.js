@@ -5,9 +5,9 @@ action.isValidAction = function(creep){ return creep.carry.energy > 0; }
 action.isAddableAction = function(creep){ return true; }
 action.isValidTarget = function(target){
     if( !target ) return false;
-    if( target.structureType == 'link' ){
-        return target.energy < target.storeCapacity * 0.85;
-    } else if( target.structureType == 'container' ) {
+    if( target.structureType == STRUCTURE_LINK ){
+        return target.energy < target.energyCapacity * 0.85;
+    } else if( target.structureType == STRUCTURE_CONTAINER ) {
         return target.sum < ((target.source === true && target.controller == true) ? target.storeCapacity * MANAGED_CONTAINER_TRIGGER : target.storeCapacity);
     }
     return false;
@@ -24,10 +24,10 @@ action.isAddableTarget = function(target, creep){
             )
         )
     ) && (
-        (target.structureType == 'container' && (target.storeCapacity - target.sum) > Math.min(creep.carry.energy, 500)) ||
-        ( target.structureType == 'link' )
+        (target.structureType == STRUCTURE_CONTAINER && (target.storeCapacity - target.sum) > Math.min(creep.carry.energy, 500)) ||
+        ( target.structureType == STRUCTURE_LINK )
     ) && (
-        target.structureType != 'container' || !target.controller || creep.carry.energy == creep.sum // don't put minerals in upgrader container
+        target.structureType != STRUCTURE_CONTAINER || !target.controller || creep.carry.energy == creep.sum // don't put minerals in upgrader container
     );
 };
 action.newTarget = function(creep){
@@ -57,6 +57,7 @@ action.newTarget = function(creep){
         _.forEach(creep.room.structures.container.out, emptyest);
         return target;
     }
+    return null;
 };
 action.work = function(creep){
     let workResult;
@@ -79,14 +80,14 @@ action.work = function(creep){
     return workResult;
     /* container charging with minerals not supported currently
     var workResult;
-    if( creep.target.structureType == 'container' ) {
+    if( creep.target.structureType == STRUCTURE_CONTAINER ) {
         for(var resourceType in creep.carry) {
             if( creep.carry[resourceType] > 0 ){
                 workResult = creep.transfer(creep.target, resourceType);
                 if( workResult != OK ) break;
             }
         }
-    } else if( creep.target.structureType == 'link' ) {
+    } else if( creep.target.structureType == STRUCTURE_LINK ) {
         workResult = creep.transfer(creep.target, RESOURCE_ENERGY);
     }
     return workResult;

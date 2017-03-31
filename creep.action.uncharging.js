@@ -9,9 +9,9 @@ action.isValidTarget = function(target, creep){
     if( target.structureType == 'link' ){
         return target.energy > 0;
     } else if( target.structureType == 'container' ) {
-    let min;
-        if(target.source === true && target.controller == true) min = target.storeCapacity * (1-MANAGED_CONTAINER_TRIGGER);
-        else if( creep.data.creepType.indexOf('remote') > 0 ) min = 250;
+        let min = 0;
+        if(target.source === true && target.controller == true) min = target.storeCapacity * MANAGED_CONTAINER_TRIGGER;
+        else if( creep.data.creepType.indexOf('remote') >= 0 ) min = 250;
         else min = 500;
         return target.sum > min;
     }
@@ -31,19 +31,19 @@ action.newTarget = function(creep){
     var that = this;
     if( creep.room.structures.container.in.length > 0 ) {
         let min;
-        if( creep.data.creepType.indexOf('remote') > 0 ) min = 250;
+        if( creep.data.creepType.indexOf('remote') >= 0 ) min = 250;
         else min = 500;
         // take from fullest IN container having energy
         let target = null;
-        let filling = 0;
+        let currMax = 0;
         let fullest = cont => {
             if( that.isValidTarget(cont, creep) ){
-                let contFilling = cont.sum;
+                let available = cont.sum;
                 if( cont.targetOf )
-                    contFilling -= _.sum( cont.targetOf.map( t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 )));
-                if( contFilling < Math.min(creep.carryCapacity - creep.sum, min) ) return;
-                if( contFilling > filling ){
-                    filling = contFilling ;
+                    available -= _.sum( cont.targetOf.map( t => ( t.actionName == 'uncharging' ? t.carryCapacityLeft : 0 )));
+                if( available < Math.min(creep.carryCapacity - creep.sum, min) ) return;
+                if( available > currMax ){
+                    currMax = available;
                     target = cont;
                 }
             }
