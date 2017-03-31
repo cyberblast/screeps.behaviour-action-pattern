@@ -2718,9 +2718,8 @@ mod.extend = function(){
                     x + radius > 49 ? 49 : x + radius,  // RIGHT
                 ];
                 _(creep.room.lookForAtArea(LOOK_STRUCTURES, ...bounds, true))                                   // Iterate over positions within bounds to the creep
-                    .map(look => creep.room.getPositionAt(look.x, look.y))                                      // Map the array to positions
-                    .filter(pos => !!_.find(pos.lookFor(LOOK_STRUCTURES), s => s instanceof StructureRampart))  // Filter out structures not a rampart
-                    .map(pos => _.find(pos.lookFor(LOOK_STRUCTURES), s => s instanceof StructureRampart))       // Map the array to ramparts
+                    .filter(look => look.structure instanceof StructureRampart)                                 // Filter out structures not a rampart
+                    .map(look => look.structure)                                                                // Map the array to ramparts
                     .reject(rampart => rampart.isPublic)                                                        // Filter out already public ramparts
                     .forEach(rampart => rampart.setPublic(true));                                               // Open closed ramparts
             });
