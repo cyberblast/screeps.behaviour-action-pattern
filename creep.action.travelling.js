@@ -28,10 +28,7 @@ action.step = function(creep){
         if( range <= targetRange ) {
             return action.unregister(creep);
         }
-        const options = creep.data.travelOptions || {};
-        options.range = targetRange;
-        options.ignoreCreeps = creep.data.ignoreCreeps || true;
-        creep.travelTo(target, options);
+        creep.travelTo(target, {range: targetRange, ignoreCreeps: creep.data.ignoreCreeps || true});
     } else {
         action.unregister(creep);
     }
@@ -43,7 +40,6 @@ action.assignRoom = function(creep, roomName, options) {
     }
     if (_.isUndefined(creep.data.travelRange)) creep.data.travelRange = TRAVELLING_BORDER_RANGE || 22;
     creep.data.travelRoom = roomName;
-    if (options) creep.data.travelOptions = options;
     return Creep.action.travelling.assign(creep, FlagDir.specialFlag());
 };
 action.unregister = function(creep) {

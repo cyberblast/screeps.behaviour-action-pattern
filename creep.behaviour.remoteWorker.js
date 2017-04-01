@@ -62,7 +62,19 @@ mod.nextAction = function(creep){
 };
 mod.gotoTargetRoom = function(creep){
     const targetFlag = creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
-    if (targetFlag) return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName, {cacheRoutes:true});
+    if (targetFlag) return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName);
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        moveOptions: function(options) {
+            options.cacheRoutes = true;
+            return options;
+        },
+    },
 };
 mod.goHome = function(creep){
     return Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);

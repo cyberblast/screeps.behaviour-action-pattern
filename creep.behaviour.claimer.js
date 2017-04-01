@@ -23,7 +23,7 @@ mod.run = function(creep) {
                 let room = Game.rooms[creep.data.nearestHome];
                 if (room) {
                     let range = creep.pos.getRangeTo(room.controller);
-                    if (range > 1) creep.travelTo( room.controller.pos, {cacheRoutes:true});
+                    if (range > 1) creep.travelTo( room.controller.pos);
                 }
             }
         }
@@ -45,4 +45,16 @@ mod.nextAction = function(creep){
                 return;
         }
     } 
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        moveOptions: function(options) {
+            options.cacheRoutes = true;
+            return options;
+        },
+    },
 };

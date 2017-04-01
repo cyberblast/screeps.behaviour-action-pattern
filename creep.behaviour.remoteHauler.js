@@ -67,7 +67,7 @@ mod.nextAction = function(creep){
             let source = creep.pos.findClosestByRange(creep.room.sources);
             if (creep.room && source && creep.pos.getRangeTo(source) > 3) {
                 creep.data.travelRange = 3;
-                return Creep.action.travelling.assign(creep, source, {cacheRoutes:true});
+                return Creep.action.travelling.assign(creep, source);
             }
         }
         return this.assign(creep, Creep.action.idle);
@@ -97,9 +97,21 @@ mod.assign = function(creep, action, target){
 mod.gotoTargetRoom = function(creep) {
     const targetFlag = creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
     if (targetFlag) {
-        return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName, {cacheRoutes:true});
+        return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName);
     }
 };
 mod.goHome = function(creep) {
-    return Creep.action.travelling.assignRoom(creep, creep.data.homeRoom, {cacheRoutes:true});        
+    return Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);        
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        moveOptions: function(options) {
+            options.cacheRoutes = true;
+            return options;
+        },
+    },
 };
