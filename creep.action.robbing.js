@@ -16,32 +16,109 @@ action.isValidTarget = function(target){
 
     return false;
 };
+action.invasionAdjacentScore = 42;
+action.invasionScoreMultiplier = 1 / Math.log(1.1);
+action.normalAdjacentScore = 50;
+action.normalScoreMultiplier = 1 / Math.log(1.2);
+/*
+ container - pile or structure
+ */
+action.resourceRobValue = function(type) {
+    if (type === RESOURCE_ENERGY) return 0.2;
+    if (type === RESOURCE_POWER) return 500;
+    return type.length;
+};
+const resourcesDescending = _.memoize(function(action) {
+    return _.chain(global).pick(function(v,k) {
+        return k.startsWith('RESOURCE_');
+    }).sortBy(action.resourceRobValue).values().value();
+});
 action.newTarget = function(creep){
-    let that = this;
-    let target = creep.pos.findClosestByRange(creep.room.structures.all, {
-        filter: (structure) => that.isValidTarget(structure)
-    });
-    return target;
+    // TODO RESOURCE_ priority
+    // LATER after scoring iterate thru top candidates and do pathfinding to find an accessible target!
+    const targetPool = creep.room.structures.all;
+
+    if (targetPool.length) {
+        const targets = _.chain(targetPool)
+            .map(this.targetScore(creep))
+            .filter('score')
+            .sortBy('score').reverse()
+            .value();
+
+        const target = _.get(targets, [0, 'target'], null);
+
+        // console.log(creep.name, targets.length, target);
+
+        return target;
+    }
+    return false;
 };
 action.work = function(creep){
-    let ret = OK;
-    // has rampart? dismantle
-    // disable ramparts for now since creeps have only one work part.
-    /*let ramparts = _.filter(creep.room.lookForAt(LOOK_STRUCTURES, creep.target.pos), {'structureType': STRUCTURE_RAMPART });
-    if( ramparts.length > 0 ){
-        ret = creep.dismantle(ramparts[0]);
-    */
-    if( creep.target.store ) {
-        for( var type in creep.target.store ){
-            if( creep.target.store[type] > 0  )
-                ret = creep.withdraw(creep.target, type);
+    return this.targetCall(creep, (target) => {
+        return (type, amount, capacity) => {
+            // console.log(creep.name, target);
+            const score = amount ? creep.withdraw(target, type, amount) : 0;
+            if (score) {
+                return {amount: capacity, score};
+            }
+            return {amount, score};
+        };
+    })(creep.target);
+};
+const identitySafe = function(count) {
+    return count || 0;
+};
+action.targetScore = function(creep) {
+    return this.targetCall(creep, (target) => {
+        const range = creep.pos.getRangeTo(target);
+        const logBase = creep.room.situation.invasion ? this.invasionScoreMultiplier : this.normalScoreMultiplier;
+        const adjacentValue = creep.room.situation.invasion ? this.invasionAdjacentScore : this.normalAdjacentScore;
+        return (type, amount, capacity) => {
+            if (amount) {
+                const multiplier = this.resourceRobValue(type);
+
+                return {amount, score: multiplier * amount * (adjacentValue - Math.log1p(range) * logBase)};
+            }
+            return {amount, score: 0};
+        };
+    });
+};
+action.targetCall = function(creep, targetHandler) {
+    return target => {
+        const valueCallback = targetHandler(target);
+
+        let score = 0;
+        if (target.store) {
+            score = this.storeCall(creep, target, target.store, identitySafe, valueCallback, resourcesDescending(this));
+        } else if (target.structureType === STRUCTURE_LAB) {
+            score = this.storeCall(creep, target,
+                {[RESOURCE_ENERGY]: target.energy, [target.mineralType]: target.mineralAmount}, identitySafe, valueCallback);
+        } else {
+            score = this.storeCall(creep, target, {[RESOURCE_ENERGY]: target.energy}, identitySafe, valueCallback);
+            // TODO dropped resources are a combination of all drops under that point, their decay function relates to the number of separate resources
+            /* instead of identitySafe:
+             const valueTransform = function(count) {
+             return decayFunction(count || 0, range);
+             };
+             */
         }
-    } else if ( creep.target.structureType == STRUCTURE_LAB && creep.target.mineralAmount > 0) {
-        ret = creep.withdraw(creep.target, creep.target.mineralType);
-    } else if ( creep.target.energy ) {
-        ret = creep.withdraw(creep.target, 'energy');
+        return {target, score};
+    };
+};
+action.storeCall = function(creep, target, store, valueTransform, valueCallback, keys) {
+    let capacity = creep.carryCapacity - creep.sum;
+    let value = 0;
+    if (!keys) keys = _.keys(store);
+    for (let i = keys.length - 1; i >= 0; i--) {
+        if (capacity === 0) break;
+
+        const type = keys[i];
+        const count = Math.min(valueTransform(store[type]), capacity);
+        const {amount, score} = valueCallback(type, count < 1 ? 0 : count, capacity);
+        capacity = capacity - amount;
+        value = value + score;
     }
-    return ret;
+    return value;
 };
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9760), SAY_PUBLIC);
