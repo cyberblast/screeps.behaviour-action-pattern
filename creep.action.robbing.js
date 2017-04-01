@@ -9,18 +9,15 @@ action.isValidTarget = function(target){
     if (_.some(target.pos.lookFor(LOOK_STRUCTURES), {structureType: STRUCTURE_RAMPART, isPublic: false, my: false})) {
         return false;
     }
-    
-    if (target.store && _.sum(target.store) > 20) return true;
-    if (target.energy && target.energy > 20) return true;
-    if (target.mineralAmount && target.mineralAmount > 20) return true;
 
-    return false;
+    return target.store || target.energy || target.mineralAmount;
 };
 action.newTarget = function(creep){
     const targetPool = creep.room.structures.all;
 
     if (targetPool.length) {
         const targets = _.chain(targetPool)
+            .filter(i=>this.isValidTarget(i))
             .map(this.targetScore(creep)) // resource fill priority
             .filter('score')
             .sortBy('score').reverse()
@@ -39,7 +36,11 @@ action.newTarget = function(creep){
 };
 action.work = function(creep){
     const resourceRobValue = creep.getStrategyHandler([action.name], 'resourceValue', creep);
-    const resourcesDescending = _.chain(Util.resources()).sortBy(resourceRobValue).values().value();
+    const resourcesDescending = _.chain(Util.resources())
+        .filter(resourceRobValue)
+        .sortBy(resourceRobValue)
+        .values().value();
+
     return this.targetCall(creep, resourcesDescending, (target) => {
         return (type, amount, capacity) => {
             // console.log(creep.name, target);
@@ -53,7 +54,11 @@ action.work = function(creep){
 };
 action.targetScore = function(creep) {
     const resourceRobValue = creep.getStrategyHandler([action.name], 'resourceValue', creep);
-    const resourcesDescending = _.chain(Util.resources()).sortBy(resourceRobValue).values().value();
+    const resourcesDescending = _.chain(Util.resources())
+        .filter(resourceRobValue)
+        .sortBy(resourceRobValue)
+        .values().value();
+
     return this.targetCall(creep, resourcesDescending, (target) => {
         return creep.getStrategyHandler([action.name], 'resourceScore', creep, target, resourceRobValue);
     });
@@ -113,6 +118,7 @@ action.defaultStrategy.resourceValue = function(creep) {
             };
         }
     }
+    // console.log(creep.name, 'standard score');
     return function(type) {
         if (type === RESOURCE_ENERGY) return 0.2;
         if (type === RESOURCE_POWER) return 500;

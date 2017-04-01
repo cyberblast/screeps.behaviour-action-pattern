@@ -492,17 +492,17 @@ module.exports = {
         return {checkCPU, totalCPU};
     },
 
-    _resources() {
+    _resources: _.memoize(function() {
         return _.chain(global).pick(function(v,k) {
             return k.startsWith('RESOURCE_');
         }).value();
-    },
+    }),
 
     /**
      * cached map of all the game's resources
      */
     resources() {
-        return _.memoize(this._resources);
+        return this._resources();
     },
 
     valueOrZero(x) {
