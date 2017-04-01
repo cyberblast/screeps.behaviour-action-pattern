@@ -231,6 +231,7 @@ global.install = () => {
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
     OCSMemory.activateSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, true);
+    OCSMemory.activateSegment(MEM_SEGMENTS.PATH_CACHE, true);
     if (DEBUG) logSystem('Global.install', 'Code reloaded.');
 };
 global.install();

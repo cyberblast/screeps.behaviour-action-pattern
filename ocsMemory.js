@@ -49,6 +49,9 @@ mod.processSegments = () => {
     for (let id = MEM_SEGMENTS.COSTMATRIX_CACHE.start; id >= MEM_SEGMENTS.COSTMATRIX_CACHE.end; id--) {
         mod.processSegment(id, Room.loadCostMatrixCache);
     }
+    for (let id = MEM_SEGMENTS.PATH_CACHE.start; id >= MEM_SEGMENTS.PATH_CACHE.end; id--) {
+        mod.processSegment(id, Room.loadPathCache);
+    }
 };
 mod.saveSegment = (range, inputData) => {
     const numActive = _.size(RawMemory.segments);

@@ -183,7 +183,11 @@ mod.MEM_SEGMENTS = {
     COSTMATRIX_CACHE: {
         start: 99,
         end: 95
-    }
+    },
+    PATH_CACHE: {
+        start: 94,
+        end: 90
+    },
 };
 // used to log something meaningful instead of numbers
 mod.translateErrorCode = function(code) {

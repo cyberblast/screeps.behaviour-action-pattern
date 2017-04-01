@@ -3,6 +3,11 @@ let find = Room.prototype.find;
 
 let mod = {};
 module.exports = mod;
+// cached paths for creeps
+mod.pathCache = {};
+mod.pathCacheLoaded = false;
+mod.pathCacheDirty = false;
+// cached costmatrices for rooms
 mod.pathfinderCache = {};
 mod.pathfinderCacheDirty = false;
 mod.pathfinderCacheLoaded = false;
@@ -1142,12 +1147,11 @@ mod.extend = function(){
     };
 
     Room.prototype.getPath = function(startPos, destination, options) {
-        if (_.isUndefined(this.memory.paths)) this.memory.paths = {};
         const startID = startPos.x + ',' + startPos.y;
         const destPos = destination.pos || destination;
         const destID = destination.id || destination.roomName + ',' + destination.x + ',' + destination.y;
-        if (_.isUndefined(this.memory.paths[destID])) this.memory.paths[destID] = {};
-        let path = this.memory.paths[destID];
+        const pathCache = Util.get(mod.cachedPaths, startPos.roomName, {});
+        let path = Util.get(pathCache, destID, {});
         if (!path || !path[startID]) {
             const ret = traveler.findTravelPath(startPos, destPos, options);
             if (!ret || ret.incomplete) {
@@ -1163,7 +1167,8 @@ mod.extend = function(){
                     else break; // we've hit an existing path
                 }
             }
-            this.memory.paths[destID] = path;
+            mod.cachedPaths[destID] = path;
+            mod.cachedPathsDirty = true;
         }
         return path;
     };
@@ -2873,6 +2878,10 @@ mod.cleanup = function() {
         OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, encodedCache);
         mod.pathfinderCacheDirty = false;
     }
+    if (mod.pathCacheDirty && mod.pathCacheLoaded) {
+        OCSMemory.saveSegment(MEM_SEGMENTS.PATH_CACHE, mod.pathCache);
+        mod.pathCacheDirty = false;
+    }
 };
 mod.bestSpawnRoomFor = function(targetRoomName) {
     var range = room => room.my ? routeRange(room.name, targetRoomName) : Infinity;
@@ -3011,6 +3020,10 @@ mod.loadCostMatrixCache = function(cache) {
     if (DEBUG && count > 0) logSystem('RawMemory', 'loading pathfinder cache.. updated ' + count + ' stale entries.');
     mod.pathfinderCacheLoaded = true;
 };
+mod.loadPathCache = function(cache) {
+    mod.pathCache = cache;
+    mod.pathCacheLoaded = true;
+}
 mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
     const room = Game.rooms[roomName];
     const look = checkWalkable ? room.lookAtArea(minY,minX,maxY,maxX) : null;
