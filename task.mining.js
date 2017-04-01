@@ -203,29 +203,29 @@ mod.checkForRequiredCreeps = (flag) => {
     }
 
     // only spawn haulers for sources a miner has been spawned for
-    const maxHaulers = Math.ceil(memory.running.remoteMiner.length * REMOTE_HAULER_MULTIPLIER);
-    if(haulerCount < maxHaulers && (!memory.capacityLastChecked || Game.time - memory.capacityLastChecked > REMOTE_HAULER_CHECK_INTERVAL)) {
+    const maxHaulers = Math.ceil(memory.running.remoteMiner.length * REMOTE_HAULER.MULTIPLIER);
+    if(haulerCount < maxHaulers && (!memory.capacityLastChecked || Game.time - memory.capacityLastChecked > REMOTE_HAULER.CHECK_INTERVAL)) {
         for(let i = haulerCount; i < maxHaulers; i++) {
-            let minWeight = i >= 1 && REMOTE_HAULER_MIN_WEIGHT;
+            let minWeight = i >= 1 && REMOTE_HAULER.MIN_WEIGHT;
             const spawnRoom = mod.strategies.hauler.spawnRoom({roomName, minWeight});
             if( !spawnRoom ) {
                 break;
             }
 
             // haulers set homeRoom if closer storage exists
-            const storageRoom = REMOTE_HAULER_REHOME && mod.strategies.hauler.homeRoom(roomName) || spawnRoom;
+            const storageRoom = REMOTE_HAULER.REHOME && mod.strategies.hauler.homeRoom(roomName) || spawnRoom;
             let maxWeight = mod.strategies.hauler.maxWeight(roomName, storageRoom, memory); // TODO Task.strategies
-            if( !maxWeight || (!REMOTE_HAULER_ALLOW_OVER_CAPACITY && maxWeight < minWeight)) {
+            if( !maxWeight || (!REMOTE_HAULER.ALLOW_OVER_CAPACITY && maxWeight < minWeight)) {
                 memory.capacityLastChecked = Game.time;
                 break;
             }
 
-            if (_.isNumber(REMOTE_HAULER_ALLOW_OVER_CAPACITY)) {
-                maxWeight = Math.max(maxWeight, REMOTE_HAULER_ALLOW_OVER_CAPACITY);
-                minWeight = minWeight && Math.min(REMOTE_HAULER_MIN_WEIGHT, maxWeight);
-            } else if (REMOTE_HAULER_ALLOW_OVER_CAPACITY) {
-                maxWeight = Math.max(maxWeight, REMOTE_HAULER_MIN_WEIGHT);
-                minWeight = minWeight && Math.min(REMOTE_HAULER_MIN_WEIGHT, maxWeight);
+            if (_.isNumber(REMOTE_HAULER.ALLOW_OVER_CAPACITY)) {
+                maxWeight = Math.max(maxWeight, REMOTE_HAULER.ALLOW_OVER_CAPACITY);
+                minWeight = minWeight && Math.min(REMOTE_HAULER.MIN_WEIGHT, maxWeight);
+            } else if (REMOTE_HAULER.ALLOW_OVER_CAPACITY) {
+                maxWeight = Math.max(maxWeight, REMOTE_HAULER.MIN_WEIGHT);
+                minWeight = minWeight && Math.min(REMOTE_HAULER.MIN_WEIGHT, maxWeight);
             }
 
             // spawning a new hauler
