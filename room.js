@@ -8,9 +8,9 @@ mod.pathCache = {};
 mod.pathCacheLoaded = false;
 mod.pathCacheDirty = false;
 // cached costmatrices for rooms
-mod.pathfinderCache = {};
-mod.pathfinderCacheDirty = false;
-mod.pathfinderCacheLoaded = false;
+mod.costMatrixCache = {};
+mod.costMatrixCacheDirty = false;
+mod.costMatrixCacheLoaded = false;
 mod.COSTMATRIX_CACHE_VERSION = 3; // change this to invalidate previously cached costmatrices
 mod.extend = function(){
     let Container = function(room){
@@ -874,15 +874,15 @@ mod.extend = function(){
             get: function () {
                 if (_.isUndefined(this._structureMatrix)) {
                     const cacheValid = (roomName) => {
-                        if (_.isUndefined(mod.pathfinderCache)) {
-                            mod.pathfinderCache = {};
-                            mod.pathfinderCache[roomName] = {};
+                        if (_.isUndefined(mod.costMatrixCache)) {
+                            mod.costMatrixCache = {};
+                            mod.costMatrixCache[roomName] = {};
                             return false;
-                        } else if (_.isUndefined(mod.pathfinderCache[roomName])) {
-                            mod.pathfinderCache[roomName] = {};
+                        } else if (_.isUndefined(mod.costMatrixCache[roomName])) {
+                            mod.costMatrixCache[roomName] = {};
                             return false;
                         }
-                        const mem = mod.pathfinderCache[roomName];
+                        const mem = mod.costMatrixCache[roomName];
                         const ttl = Game.time - mem.updated;
                         if (mem.version === mod.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && ttl < COST_MATRIX_VALIDITY) {
                             if (DEBUG && TRACE) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
@@ -892,11 +892,11 @@ mod.extend = function(){
                     };
 
                     if (cacheValid(this.name)) {
-                        if (_.isUndefined(mod.pathfinderCache[this.name].costMatrix)) {
-                            const costMatrix = PathFinder.CostMatrix.deserialize(mod.pathfinderCache[this.name].serializedMatrix);
-                            mod.pathfinderCache[this.name].costMatrix = costMatrix;
+                        if (_.isUndefined(mod.costMatrixCache[this.name].costMatrix)) {
+                            const costMatrix = PathFinder.CostMatrix.deserialize(mod.costMatrixCache[this.name].serializedMatrix);
+                            mod.costMatrixCache[this.name].costMatrix = costMatrix;
                         } 
-                        this._structureMatrix = mod.pathfinderCache[this.name].costMatrix;
+                        this._structureMatrix = mod.costMatrixCache[this.name].costMatrix;
                     } else {
                         if (DEBUG) logSystem(this.name, 'Calculating cost matrix');
                         var costMatrix = new PathFinder.CostMatrix();
@@ -916,13 +916,14 @@ mod.extend = function(){
                         };
                         this.structures.all.forEach(setCosts);
                         this.constructionSites.forEach(setCosts);
-                        const prevTime = mod.pathfinderCache[this.name].updated;
-                        mod.pathfinderCache[this.name] = {
+                        this.immobileCreeps.forEach(c => costMatrix.set(c.pos.x, c.pos.y, 0xFF));
+                        const prevTime = mod.costMatrixCache[this.name].updated;
+                        mod.costMatrixCache[this.name] = {
                             costMatrix: costMatrix,
                             updated: Game.time,
                             version: mod.COSTMATRIX_CACHE_VERSION
                         };
-                        mod.pathfinderCacheDirty = true;
+                        mod.costMatrixCacheDirty = true;
                         if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
                         this._structureMatrix = costMatrix;
                     }
@@ -1150,8 +1151,8 @@ mod.extend = function(){
         const startID = startPos.x + ',' + startPos.y;
         const destPos = destination.pos || destination;
         const destID = destination.id || destination.roomName + ',' + destination.x + ',' + destination.y;
-        const pathCache = Util.get(mod.cachedPaths, startPos.roomName, {});
-        let path = Util.get(pathCache, destID, {});
+        Util.setDefault(mod.pathCache, startPos.roomName, {});
+        let path = Util.get(mod.pathCache[startPos.roomName], destID, {});
         if (!path || !path[startID]) {
             const ret = traveler.findTravelPath(startPos, destPos, options);
             if (!ret || ret.incomplete) {
@@ -1167,8 +1168,8 @@ mod.extend = function(){
                     else break; // we've hit an existing path
                 }
             }
-            mod.cachedPaths[destID] = path;
-            mod.cachedPathsDirty = true;
+            mod.pathCache[startPos.roomName][destID] = path;
+            mod.pathCacheDirty = true;
         }
         return path;
     };
@@ -2857,16 +2858,16 @@ mod.execute = function() {
     });
 };
 mod.cleanup = function() {
-    // flush changes to the pathfinderCache but wait until load
+    // flush changes to the costMatrixCache but wait until load
     if (!_.isUndefined(Memory.pathfinder)) {
         OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, Memory.pathfinder);
         delete Memory.pathfinder;
     }
-    if (mod.pathfinderCacheDirty && mod.pathfinderCacheLoaded) {
+    if (mod.costMatrixCacheDirty && mod.costMatrixCacheLoaded) {
         // store our updated cache in the memory segment
         let encodedCache = {};
-        for (const key in mod.pathfinderCache) {
-            const entry = mod.pathfinderCache[key];
+        for (const key in mod.costMatrixCache) {
+            const entry = mod.costMatrixCache[key];
             if (entry.version === mod.COSTMATRIX_CACHE_VERSION) {
                 encodedCache[key] = {
                     serializedMatrix: entry.serializedMatrix || entry.costMatrix.serialize(),
@@ -2876,7 +2877,7 @@ mod.cleanup = function() {
             }
         }
         OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, encodedCache);
-        mod.pathfinderCacheDirty = false;
+        mod.costMatrixCacheDirty = false;
     }
     if (mod.pathCacheDirty && mod.pathCacheLoaded) {
         OCSMemory.saveSegment(MEM_SEGMENTS.PATH_CACHE, mod.pathCache);
@@ -3006,22 +3007,29 @@ mod.roomDistance = function(roomName1, roomName2, diagonal, continuous){
     return xDif + yDif; // count diagonal as 2
 };
 mod.rebuildCostMatrix = function(roomName) {
-    mod.pathfinderCache[roomName] = {};
-    mod.pathfinderCacheDirty = true;
+    if (DEBUG) logSystem(roomName, 'Removing invalid costmatrix to force a rebuild.')
+    mod.costMatrixCache[roomName] = {};
+    mod.costMatrixCacheDirty = true;
 };
 mod.loadCostMatrixCache = function(cache) {
     let count = 0;
     for (const key in cache) {
-        if (!mod.pathfinderCache[key] || mod.pathfinderCache[key].updated < cache[key].updated) {
+        if (!mod.costMatrixCache[key] || mod.costMatrixCache[key].updated < cache[key].updated) {
             count++;
-            mod.pathfinderCache[key] = cache[key];
+            mod.costMatrixCache[key] = cache[key];
         }
     }
-    if (DEBUG && count > 0) logSystem('RawMemory', 'loading pathfinder cache.. updated ' + count + ' stale entries.');
-    mod.pathfinderCacheLoaded = true;
+    if (DEBUG && count > 0) logSystem('RawMemory', 'loading costMatrix cache.. updated ' + count + ' stale entries.');
+    mod.costMatrixCacheLoaded = true;
 };
 mod.loadPathCache = function(cache) {
-    mod.pathCache = cache;
+    let count = 0;
+    Util.setDefault(mod, 'pathCache', {});
+    for (const key in cache) {
+        count++;
+        mod.pathCache[key] = cache[key];
+    }
+    if (DEBUG && count > 0) logSystem('RawMemory', 'loading cached paths.. updated ' + count + ' entries.');
     mod.pathCacheLoaded = true;
 }
 mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {

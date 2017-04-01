@@ -49,6 +49,16 @@ module.exports = {
     },
     
     /**
+     * Sets a property on an object if and only if the property doesn't already exist
+     * @param {Object} object - The object
+     * @param {string} path - The path to the property within the object
+     * @param {*} value - The value to set
+     */
+    setDefault(object, path, value) {
+        this.set(object, path, value, true);
+    },
+    
+    /**
      * Sets a property on an object, optionally if the property doesn't already exist
      * @param {Object} object - The object
      * @param {string} path - The path to the property within the object
