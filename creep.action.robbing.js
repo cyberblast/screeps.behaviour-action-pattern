@@ -107,6 +107,7 @@ action.defaultStrategy.resourceValue = function(creep) {
     if (creep.data.homeRoom) {
         const room = Game.rooms[creep.data.homeRoom];
         if (room && !room.storage) {
+            // console.log(creep.name, 'only selecting energy');
             return function(type) { // no storage, only rob energy
                 return type === RESOURCE_ENERGY ? 1 : 0;
             };
