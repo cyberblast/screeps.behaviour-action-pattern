@@ -8,7 +8,7 @@ action.isAddableTarget = function(target){ return target &&
 };
 action.newTarget = function(creep){
     let validColor = flagEntry => (
-        (flagEntry.color == FLAG_COLOR.invade.attackController.color && flagEntry.secondaryColor == FLAG_COLOR.invade.attackController.secondaryColor)
+        Flag.compare(flagEntry, FLAG_COLOR.invade.attackController)
     );
 
     var flag;

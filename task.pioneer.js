@@ -4,6 +4,12 @@ module.exports = mod;
 // hook into events
 mod.register = () => {};
 mod.handleRoomDied = room => {
+    const recoveryType = 'collapseWorker';
+
+    if (room.population.typeCount[recoveryType]) {
+        return;
+    }
+
     // try to spawn a worker
     let pioneer = true;
     if( room.energyAvailable > 199 ) {
@@ -12,7 +18,7 @@ mod.handleRoomDied = room => {
         pioneer = !Task.spawn(
             Task.pioneer.creep.worker, // creepDefinition
             { // destiny
-                task: 'pioneer', // taskName
+                task: recoveryType, // taskName
                 targetName: room.name // targetName
             }, 
             { // spawn room selection params
@@ -32,7 +38,7 @@ mod.handleRoomDied = room => {
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a pioneer single or spawn
-    if( flag.color == FLAG_COLOR.claim.pioneer.color && flag.secondaryColor == FLAG_COLOR.claim.pioneer.secondaryColor ){
+    if( flag.compareTo(FLAG_COLOR.claim.pioneer)){
         // check if a new creep has to be spawned
         Task.pioneer.checkForRequiredCreeps(flag);
     }
@@ -194,7 +200,7 @@ mod.creep = {
     },
     worker: {
         fixedBody: [MOVE, CARRY, WORK],
-        behaviour: 'worker',
+        behaviour: 'collapseWorker',
         queue: 'High'
     }
 };

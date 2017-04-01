@@ -6,7 +6,15 @@ action.isValidAction = function(creep){
     return ( creep.sum < ( creep.carryCapacity * 0.95 ) && !creep.room.my);
 };
 action.isValidTarget = function(target){
-    return !_.some(target.pos.lookFor(LOOK_STRUCTURES), {'structureType':STRUCTURE_RAMPART }) && ( ( target.store && _.sum(target.store) > 20 ) || ( target.energy && target.energy > 20 ) || ( target.mineralAmount && target.mineralAmount > 20 ) );
+    if (_.some(target.pos.lookFor(LOOK_STRUCTURES), {structureType: STRUCTURE_RAMPART, isPublic: false, my: false})) {
+        return false;
+    }
+    
+    if (target.store && _.sum(target.store) > 20) return true;
+    if (target.energy && target.energy > 20) return true;
+    if (target.mineralAmount && target.mineralAmount > 20) return true;
+
+    return false;
 };
 action.newTarget = function(creep){
     let that = this;

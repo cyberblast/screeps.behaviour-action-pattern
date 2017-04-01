@@ -3,7 +3,10 @@ let find = Room.prototype.find;
 
 let mod = {};
 module.exports = mod;
-
+mod.pathfinderCache = {};
+mod.pathfinderCacheDirty = false;
+mod.pathfinderCacheLoaded = false;
+mod.COSTMATRIX_CACHE_VERSION = 3; // change this to invalidate previously cached costmatrices
 mod.extend = function(){
     let Container = function(room){
         this.room = room;
@@ -865,19 +868,18 @@ mod.extend = function(){
             configurable: true,
             get: function () {
                 if (_.isUndefined(this._structureMatrix)) {
-                    const COSTMATRIX_CACHE_VERSION = 2; // change this to invalidate previously cached costmatrices
                     const cacheValid = (roomName) => {
-                        if (_.isUndefined(Memory.pathfinder)) {
-                            Memory.pathfinder = {};
-                            Memory.pathfinder[roomName] = {};
+                        if (_.isUndefined(mod.pathfinderCache)) {
+                            mod.pathfinderCache = {};
+                            mod.pathfinderCache[roomName] = {};
                             return false;
-                        } else if (_.isUndefined(Memory.pathfinder[roomName])) {
-                            Memory.pathfinder[roomName] = {};
+                        } else if (_.isUndefined(mod.pathfinderCache[roomName])) {
+                            mod.pathfinderCache[roomName] = {};
                             return false;
                         }
-                        const mem = Memory.pathfinder[roomName];
+                        const mem = mod.pathfinderCache[roomName];
                         const ttl = Game.time - mem.updated;
-                        if (mem.version === COSTMATRIX_CACHE_VERSION && mem.costMatrix && ttl < COST_MATRIX_VALIDITY) {
+                        if (mem.version === mod.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && ttl < COST_MATRIX_VALIDITY) {
                             if (DEBUG && TRACE) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
                             return true;
                         }
@@ -885,9 +887,13 @@ mod.extend = function(){
                     };
 
                     if (cacheValid(this.name)) {
-                        this._structureMatrix = PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
+                        if (_.isUndefined(mod.pathfinderCache[this.name].costMatrix)) {
+                            const costMatrix = PathFinder.CostMatrix.deserialize(mod.pathfinderCache[this.name].serializedMatrix);
+                            mod.pathfinderCache[this.name].costMatrix = costMatrix;
+                        } 
+                        this._structureMatrix = mod.pathfinderCache[this.name].costMatrix;
                     } else {
-                        if (DEBUG) logSystem(this.name, 'Calulating cost matrix');
+                        if (DEBUG) logSystem(this.name, 'Calculating cost matrix');
                         var costMatrix = new PathFinder.CostMatrix();
                         let setCosts = structure => {
                             const site = structure instanceof ConstructionSite;
@@ -905,10 +911,13 @@ mod.extend = function(){
                         };
                         this.structures.all.forEach(setCosts);
                         this.constructionSites.forEach(setCosts);
-                        const prevTime = Memory.pathfinder[this.name].updated;
-                        Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
-                        Memory.pathfinder[this.name].updated = Game.time;
-                        Memory.pathfinder[this.name].version = COSTMATRIX_CACHE_VERSION;
+                        const prevTime = mod.pathfinderCache[this.name].updated;
+                        mod.pathfinderCache[this.name] = {
+                            costMatrix: costMatrix,
+                            updated: Game.time,
+                            version: mod.COSTMATRIX_CACHE_VERSION
+                        };
+                        mod.pathfinderCacheDirty = true;
                         if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
                         this._structureMatrix = costMatrix;
                     }
@@ -2842,7 +2851,29 @@ mod.execute = function() {
         }
     });
 };
-
+mod.cleanup = function() {
+    // flush changes to the pathfinderCache but wait until load
+    if (!_.isUndefined(Memory.pathfinder)) {
+        OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, Memory.pathfinder);
+        delete Memory.pathfinder;
+    }
+    if (mod.pathfinderCacheDirty && mod.pathfinderCacheLoaded) {
+        // store our updated cache in the memory segment
+        let encodedCache = {};
+        for (const key in mod.pathfinderCache) {
+            const entry = mod.pathfinderCache[key];
+            if (entry.version === mod.COSTMATRIX_CACHE_VERSION) {
+                encodedCache[key] = {
+                    serializedMatrix: entry.serializedMatrix || entry.costMatrix.serialize(),
+                    updated: entry.updated,
+                    version: entry.version
+                };
+            }
+        }
+        OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, encodedCache);
+        mod.pathfinderCacheDirty = false;
+    }
+};
 mod.bestSpawnRoomFor = function(targetRoomName) {
     var range = room => room.my ? routeRange(room.name, targetRoomName) : Infinity;
     return _.min(Game.rooms, range);
@@ -2964,6 +2995,21 @@ mod.roomDistance = function(roomName1, roomName2, diagonal, continuous){
     let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
     //if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1
     return xDif + yDif; // count diagonal as 2
+};
+mod.rebuildCostMatrix = function(roomName) {
+    mod.pathfinderCache[roomName] = {};
+    mod.pathfinderCacheDirty = true;
+};
+mod.loadCostMatrixCache = function(cache) {
+    let count = 0;
+    for (const key in cache) {
+        if (!mod.pathfinderCache[key] || mod.pathfinderCache[key].updated < cache[key].updated) {
+            count++;
+            mod.pathfinderCache[key] = cache[key];
+        }
+    }
+    if (DEBUG && count > 0) logSystem('RawMemory', 'loading pathfinder cache.. updated ' + count + ' stale entries.');
+    mod.pathfinderCacheLoaded = true;
 };
 mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
     const room = Game.rooms[roomName];

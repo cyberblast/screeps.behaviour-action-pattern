@@ -136,16 +136,19 @@ let mod = {
     CONTROLLER_SIGN_UPDATE: false, // Update sign message if user changes CONTROLLER_SIGN_MESSAGE
     MINERS_AUTO_BUILD: false, // miners and remoteMiners will build their own containers if they are missing.
     MINER_WORK_THRESHOLD: 50, // how long to wait before a miner checks for repairs/construction sites nearby again
-    REMOTE_HAULER_MULTIPLIER: 1, // Max number of haulers spawned per source in a remote mining room.
-    REMOTE_HAULER_CHECK_INTERVAL: 5, // how many ticks before we check to see if new haulers need spawninig?
+    REMOTE_HAULER: {
+        ALLOW_OVER_CAPACITY: false, // Hauler capacity rounds up by MIN_WEIGHT, or this number value.
+        CHECK_INTERVAL: 5, // how many ticks before we check to see if new haulers need spawninig?
+        DRIVE_BY_BUILD_ALL: false, // If REMOTE_HAULER.DRIVE_BY_BUILDING is enabled then this option will allow remote haulers will drive-by-build any of your structures.
+        DRIVE_BY_BUILD_RANGE: 1, // A creep's max build distance is 3 but cpu can be saved by dropping the search distance to 1.
+        DRIVE_BY_BUILDING: false, // Allows remote haulers to build roads and containers. Consider setting REMOTE_WORKER_MULTIPLIER to 0.
+        DRIVE_BY_REPAIR_RANGE: 0, // range that remote haulers should search when trying to repair and move
+        MIN_LOAD: 0.75, // Haulers will return home as long as their ratio of carrying/capacity is above this amount.
+        MIN_WEIGHT: 800, // Small haulers are a CPU drain.
+        MULTIPLIER: 1, // Max number of haulers spawned per source in a remote mining room.
+        REHOME: false, // May haulers choose closer storage for delivery?
+    },
     REMOTE_RESERVE_HAUL_CAPACITY: 0.1, // Percent of allocated haul capacity before sending reservers.
-    REMOTE_HAULER_REHOME: false, // May haulers choose closer storage for delivery?
-    REMOTE_HAULER_MIN_LOAD: 0.75, // Haulers will return home as long as their ratio of carrying/capacity is above this amount.
-    REMOTE_HAULER_MIN_WEIGHT: 800, // Small haulers are a CPU drain.
-    REMOTE_HAULER_ALLOW_OVER_CAPACITY: false, // Hauler capacity rounds up by MIN_WEIGHT, or this number value.
-    REMOTE_HAULER_DRIVE_BY_BUILDING: false, // Allows remote haulers to build roads and containers. Consider setting REMOTE_WORKER_MULTIPLIER to 0.
-    REMOTE_HAULER_DRIVE_BY_BUILD_RANGE: 1, // A creep's max build distance is 3 but cpu can be saved by dropping the search distance to 1.
-    REMOTE_HAULER_DRIVE_BY_BUILD_ALL: false, // If REMOTE_HAULER_DRIVE_BY_BUILDING is enabled then this option will allow remote haulers will drive-by-build any of your structures.
     PIONEER_UNOWNED: false, // True: pioneers may attempt to work in unowned rooms.
     DRIVE_BY_REPAIR_RANGE: 2, // range that creeps should search when trying to repair and move
     REMOTE_WORKER_MULTIPLIER: 1, // Number of workers spawned per remote mining room.
@@ -154,7 +157,7 @@ let mod = {
     DEFENSE_BLACKLIST: [], // Don't defend those rooms (add room names). Blocks spawning via defense task (will not prevent offensive actions at all)
     CRITICAL_BUCKET_LEVEL: 1000, // take action when the bucket drops below this value to prevent the bucket from actually running out
     CRITICAL_BUCKET_OVERFILL: 200, // Overfill the bucket by this amount before disabling CPU throttle, this can reduce thrashing because all creeps try to act at once
-    CRITICAL_ROLES: [ 'melee', 'ranger', 'healer', 'miner', 'hauler', 'upgrader' ], // when the bucket drops below the critical bucket level only these creep roles will be executed
+    CRITICAL_ROLES: [ 'worker', 'collapseWorker', 'melee', 'ranger', 'healer', 'miner', 'hauler', 'upgrader' ], // when the bucket drops below the critical bucket level only these creep roles will be executed
     ROBBER_REHOME: false, // May robbers choose closer storage for delivery?
     OBSERVER_OBSERVE_RANGE: 3, // the range for observers to look at
     OBSERVER_OBSERVE_HIGHWAYS_ONLY: true, // the observers will only look at highways - changing this will require you to clear cached rooms

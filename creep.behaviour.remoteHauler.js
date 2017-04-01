@@ -38,8 +38,12 @@ mod.nextAction = function(creep){
             // no deposit :/ 
             // try spawn & extensions
             if( this.assign(creep, Creep.action.feeding) ) return;
-            this.assign(creep, Creep.action.dropping);
-            return;
+            if( this.assign(creep, Creep.action.dropping) ) return;
+            else {
+                const drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
+                _.forEach(Object.keys(creep.carry), drop);
+                return this.assign(creep, Creep.action.idle);
+            }
         }
         // empty
         // travelling
@@ -50,7 +54,7 @@ mod.nextAction = function(creep){
     // at target room
     else if( creep.data.destiny.room == creep.pos.roomName ){
         // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
-        if( creep.sum / creep.carryCapacity > REMOTE_HAULER_MIN_LOAD) {
+        if( creep.sum / creep.carryCapacity > REMOTE_HAULER.MIN_LOAD) {
             this.goHome(creep);
             return;
         }
@@ -72,7 +76,7 @@ mod.nextAction = function(creep){
     else {
         let ret = false;
         // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
-        if( creep.sum / creep.carryCapacity > REMOTE_HAULER_MIN_LOAD )
+        if( creep.sum / creep.carryCapacity > REMOTE_HAULER.MIN_LOAD )
             ret = this.goHome(creep);
         else
             ret = this.gotoTargetRoom(creep);
