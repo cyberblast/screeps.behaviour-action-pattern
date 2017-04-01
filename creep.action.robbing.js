@@ -108,15 +108,19 @@ action.defaultStrategy.moveOptions = function(options) {
     // if (_.isUndefined(options.allowHostile)) options.allowHostile = true;
     return options;
 };
+action.minimumTTL = 500;
 action.defaultStrategy.resourceValue = function(creep) {
-    if (creep.data.homeRoom) {
+    let energyOnly = creep.ticksToLive < action.minimumTTL;
+    if (!energyOnly && creep.data.homeRoom) {
         const room = Game.rooms[creep.data.homeRoom];
-        if (room && !room.storage) {
-            // console.log(creep.name, 'only selecting energy');
-            return function(type) { // no storage, only rob energy
-                return type === RESOURCE_ENERGY ? 1 : 0;
-            };
-        }
+        energyOnly = room && !room.storage;
+    }
+
+    if (energyOnly) {
+        // console.log(creep.name, 'only selecting energy');
+        return function(type) { // no storage, only rob energy
+            return type === RESOURCE_ENERGY ? 1 : 0;
+        };
     }
     // console.log(creep.name, 'standard score');
     return function(type) {
@@ -125,14 +129,11 @@ action.defaultStrategy.resourceValue = function(creep) {
         return type.length;
     };
 };
-action.invasionAdjacentScore = 42;
-action.invasionScoreMultiplier = 1 / Math.log(1.1);
-action.normalAdjacentScore = 50;
-action.normalScoreMultiplier = 1 / Math.log(1.2);
+action.scoreMultiplier = 1 / Math.log(1.2);
 action.defaultStrategy.resourceScore = function(creep, target, resourceValue) {
     const range = creep.pos.getRangeTo(target);
-    const logBase = creep.room.situation.invasion ? action.invasionScoreMultiplier : action.normalScoreMultiplier;
-    const adjacentValue = creep.room.situation.invasion ? action.invasionAdjacentScore : action.normalAdjacentScore;
+    const logBase = action.scoreMultiplier;
+    const adjacentValue = 50;
     return function(type, amount, capacity) {
         if (amount === 0) return {amount: 0, score: 0};
 
