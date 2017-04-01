@@ -16,36 +16,20 @@ action.isValidTarget = function(target){
 
     return false;
 };
-action.invasionAdjacentScore = 42;
-action.invasionScoreMultiplier = 1 / Math.log(1.1);
-action.normalAdjacentScore = 50;
-action.normalScoreMultiplier = 1 / Math.log(1.2);
-/*
- container - pile or structure
- */
-action.resourceRobValue = function(type) {
-    if (type === RESOURCE_ENERGY) return 0.2;
-    if (type === RESOURCE_POWER) return 500;
-    return type.length;
-};
-const resourcesDescending = _.memoize(function(action) {
-    return _.chain(global).pick(function(v,k) {
-        return k.startsWith('RESOURCE_');
-    }).sortBy(action.resourceRobValue).values().value();
-});
 action.newTarget = function(creep){
-    // TODO RESOURCE_ priority
-    // LATER after scoring iterate thru top candidates and do pathfinding to find an accessible target!
     const targetPool = creep.room.structures.all;
 
     if (targetPool.length) {
         const targets = _.chain(targetPool)
-            .map(this.targetScore(creep))
+            .map(this.targetScore(creep)) // resource fill priority
             .filter('score')
             .sortBy('score').reverse()
             .value();
 
         const target = _.get(targets, [0, 'target'], null);
+
+        // after scoring iterate thru top candidates and do pathfinding to find an accessible target!
+
 
         // console.log(creep.name, targets.length, target);
 
@@ -54,7 +38,9 @@ action.newTarget = function(creep){
     return false;
 };
 action.work = function(creep){
-    return this.targetCall(creep, (target) => {
+    const resourceRobValue = creep.getStrategyHandler([action.name], 'resourceValue', creep);
+    const resourcesDescending = _.chain(Util.resources()).sortBy(resourceRobValue).values().value();
+    return this.targetCall(creep, resourcesDescending, (target) => {
         return (type, amount, capacity) => {
             // console.log(creep.name, target);
             const score = amount ? creep.withdraw(target, type, amount) : 0;
@@ -65,38 +51,27 @@ action.work = function(creep){
         };
     })(creep.target);
 };
-const identitySafe = function(count) {
-    return count || 0;
-};
 action.targetScore = function(creep) {
-    return this.targetCall(creep, (target) => {
-        const range = creep.pos.getRangeTo(target);
-        const logBase = creep.room.situation.invasion ? this.invasionScoreMultiplier : this.normalScoreMultiplier;
-        const adjacentValue = creep.room.situation.invasion ? this.invasionAdjacentScore : this.normalAdjacentScore;
-        return (type, amount, capacity) => {
-            if (amount) {
-                const multiplier = this.resourceRobValue(type);
-
-                return {amount, score: multiplier * amount * (adjacentValue - Math.log1p(range) * logBase)};
-            }
-            return {amount, score: 0};
-        };
+    const resourceRobValue = creep.getStrategyHandler([action.name], 'resourceValue', creep);
+    const resourcesDescending = _.chain(Util.resources()).sortBy(resourceRobValue).values().value();
+    return this.targetCall(creep, resourcesDescending, (target) => {
+        return creep.getStrategyHandler([action.name], 'resourceScore', creep, target, resourceRobValue);
     });
 };
-action.targetCall = function(creep, targetHandler) {
+action.targetCall = function(creep, resourcesDescending, targetHandler) {
     return target => {
         const valueCallback = targetHandler(target);
 
         let score = 0;
         if (target.store) {
-            score = this.storeCall(creep, target, target.store, identitySafe, valueCallback, resourcesDescending(this));
+            score = this.storeCall(creep, target, target.store, Util.valueOrZero, valueCallback, resourcesDescending);
         } else if (target.structureType === STRUCTURE_LAB) {
             score = this.storeCall(creep, target,
-                {[RESOURCE_ENERGY]: target.energy, [target.mineralType]: target.mineralAmount}, identitySafe, valueCallback);
+                {[RESOURCE_ENERGY]: target.energy, [target.mineralType]: target.mineralAmount}, Util.valueOrZero, valueCallback);
         } else {
-            score = this.storeCall(creep, target, {[RESOURCE_ENERGY]: target.energy}, identitySafe, valueCallback);
+            score = this.storeCall(creep, target, {[RESOURCE_ENERGY]: target.energy}, Util.valueOrZero, valueCallback);
             // TODO dropped resources are a combination of all drops under that point, their decay function relates to the number of separate resources
-            /* instead of identitySafe:
+            /* instead of valueOrZero:
              const valueTransform = function(count) {
              return decayFunction(count || 0, range);
              };
@@ -127,4 +102,37 @@ action.defaultStrategy.moveOptions = function(options) {
     // // allow routing in and through hostile rooms
     // if (_.isUndefined(options.allowHostile)) options.allowHostile = true;
     return options;
+};
+action.defaultStrategy.resourceValue = function(creep) {
+    if (creep.data.homeRoom) {
+        const room = Game.rooms[creep.data.homeRoom];
+        if (room && !room.storage) {
+            return function(type) { // no storage, only rob energy
+                return type === RESOURCE_ENERGY ? 1 : 0;
+            };
+        }
+    }
+    return function(type) {
+        if (type === RESOURCE_ENERGY) return 0.2;
+        if (type === RESOURCE_POWER) return 500;
+        return type.length;
+    };
+};
+action.invasionAdjacentScore = 42;
+action.invasionScoreMultiplier = 1 / Math.log(1.1);
+action.normalAdjacentScore = 50;
+action.normalScoreMultiplier = 1 / Math.log(1.2);
+action.defaultStrategy.resourceScore = function(creep, target, resourceValue) {
+    const range = creep.pos.getRangeTo(target);
+    const logBase = creep.room.situation.invasion ? action.invasionScoreMultiplier : action.normalScoreMultiplier;
+    const adjacentValue = creep.room.situation.invasion ? action.invasionAdjacentScore : action.normalAdjacentScore;
+    return function(type, amount, capacity) {
+        if (amount === 0) return {amount: 0, score: 0};
+
+        const multiplier = resourceValue(type);
+
+        // console.log(creep.name, 'resourceScore', type, amount, multiplier, range, logBase, adjacentValue);
+
+        return {amount, score: multiplier * amount * (adjacentValue - Math.log1p(range) * logBase)};
+    }
 };
