@@ -2698,6 +2698,8 @@ mod.extend = function(){
     Room.prototype.switchRamparts = function() {
         if (!this.my) return;
         
+        const accessString = String.fromCodePoint(0x1f44b) + String.fromCodePoint(0x1f3fe) + String.fromCodePoint(0x1F6AA) + String.fromCodePoint(0x1f510);
+        
         // Close Ramparts
         _(this.structures.all)                              // Iterate over all room structures
             .filter(s => s instanceof StructureRampart)     // Filter out structures not a rampart
@@ -2705,9 +2707,9 @@ mod.extend = function(){
             .forEach(rampart => rampart.setPublic(false));  // Close any public rampart
     
         // Open Ramparts
-        _(this.allCreeps)                                                       // Iterate over all creeps
-            .filter(creep => creep.saying === String.fromCodePoint(0x1F6AA))    // Filter out any creeps not requesting access
-            .filter(creep => Task.reputation.allyOwner(creep))                  // Filter out any non-friendly creeps
+        _(this.allCreeps)                                       // Iterate over all creeps
+            .filter(creep => creep.saying === accessString)     // Filter out any creeps not requesting access
+            .filter(creep => Task.reputation.allyOwner(creep))  // Filter out any non-friendly creeps
             .forEach(creep => {
                 const radius = 2;
                 const [x, y] = [creep.pos.x, creep.pos.y];
