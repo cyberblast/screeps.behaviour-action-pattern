@@ -23,10 +23,8 @@ action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say('\u{1F4E4}\u{FE0E}', SAY_PUBLIC);
 };
 action.debounce = function(creep, outflowActions, thisArg) {
-    let shouldCall = false;
     if (creep.data.lastAction === 'storing' && creep.data.lastTarget === creep.room.storage.id) {
         // cycle detected
-        //FIXME: How do I spoof creep.sum only for this call so we can check validAction & addableAction
         const dummyCreep = {};
         for (let key in creep) {
             dummyCreep[key] = creep[key];
@@ -35,9 +33,7 @@ action.debounce = function(creep, outflowActions, thisArg) {
             dummyCreep.carry[key] = 0;
         }
         dummyCreep.carry[RESOURCE_ENERGY] = dummyCreep.carryCapacity; // assume we get a full load of energy
-        shouldCall = _.some(outflowActions, a => a.name !== 'storing' && a.isValidAction(dummyCreep) && a.isAddableAction(dummyCreep) && a.newTarget(creep));
-    } else {
-        shouldCall = true;
+        return _.some(outflowActions, a => a.name !== 'storing' && a.isValidAction(dummyCreep) && a.isAddableAction(dummyCreep) && a.newTarget(creep));
     }
-    return shouldCall;
+    return true;
 };
