@@ -72,7 +72,7 @@ mod.extend = function(){
                         let r = _.filter(this.all, byType);
                         // add managed
                         const isEmpty = c => c.sum <= (c.storeCapacity * MANAGED_CONTAINER_TRIGGER);
-                        r = r.concat(this.managed.filter(isEmpty));
+                        return r.concat(this.managed.filter(isEmpty));
                     });
                 }
             },
@@ -88,10 +88,7 @@ mod.extend = function(){
             'managed': {
                 configurable: true,
                 get: function() {
-                    return Util.get(this, '_managed', () => {
-                        const byType = c => c.source === true && c.controller === true;
-                        return _.filter(this.all, byType);
-                    });
+                    return Util.get(this, '_managed', () => this.all.filter(c => c.source && c.controller));
                 }
             }
         });
@@ -107,58 +104,42 @@ mod.extend = function(){
                     if( _.isUndefined(this.room.memory.links)) {
                         this.room.saveLinks();
                     }
-                    if( _.isUndefined(this._all) ){
-                        this._all = [];
-                        let add = entry => {
-                            let o = Game.getObjectById(entry.id);
-                            if( o ) {
+                    return Util.get(this, '_all', () => {
+                        const r = [];
+                        const add = entry => {
+                            const o = Game.getObjectById(entry.id);
+                            if (o) {
                                 _.assign(o, entry);
-                                this._all.push(o);
+                                r.push(o);
                             }
                         };
                         _.forEach(this.room.memory.links, add);
-                    }
-                    return this._all;
+                        return r;
+                    });
                 }
             },
             'controller': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._controller) ){
-                        let byType = c => c.controller === true;
-                        this._controller = this.all.filter(byType);
-                    }
-                    return this._controller;
+                    return Util.get(this, '_controller', this.all.filter(c => c.controller));
                 }
             },
             'storage': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._storage) ) {
-                        let byType = l => l.storage == true;
-                        this._storage = this.all.filter(byType);
-                    }
-                    return this._storage;
+                    return Util.get(this, '_storage', this.all.filter(i => i.storage));
                 }
             },
             'in': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._in) ) {
-                        let byType = l => l.storage == false && l.controller == false;
-                        this._in = _.filter(this.all, byType);
-                    }
-                    return this._in;
+                    return Util.get(this, '_in', this.all.filter(i => !i.storage && !i.controller));
                 }
             },
             'privateers': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._privateers) ) {
-                        let byType = l => l.storage == false && l.controller == false && l.source == false && l.energy < l.energyCapacity * 0.85;
-                        this._privateers = _.filter(this.all, byType);
-                    }
-                    return this._privateers;
+                    return Util.get(this, '_privateers', this.all.filter(i => !i.storage && !i.controller && !i.source && i.energy < i.energyCapacity * 0.05));
                 }
             }
         });
@@ -174,28 +155,24 @@ mod.extend = function(){
                     if( _.isUndefined(this.room.memory.labs)) {
                         this.room.saveLabs();
                     }
-                    if( _.isUndefined(this._all) ){
-                        this._all = [];
-                        let add = entry => {
-                            let o = Game.getObjectById(entry.id);
-                            if( o ) {
+                    return Util.get(this, '_all', () => {
+                        const r = [];
+                        const add = entry => {
+                            const o = Game.getObjectById(entry.id);
+                            if (o) {
                                 _.assign(o, entry);
-                                this._all.push(o);
+                                r.push(o);
                             }
                         };
                         _.forEach(this.room.memory.labs, add);
-                    }
-                    return this._all;
+                        return r;
+                    });
                 }
             },
             'storage': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._storage) ) {
-                        let byType = l => l.storage == true;
-                        this._storage = this.all.filter(byType);
-                    }
-                    return this._storage;
+                    return Util.get(this, '_storage', this.all.filter(i => i.storage));
                 }
             }
         });
@@ -211,18 +188,18 @@ mod.extend = function(){
                     if( _.isUndefined(this.room.memory.powerSpawns)) {
                         this.room.savePowerSpawns();
                     }
-                    if( _.isUndefined(this._all) ){
-                        this._all = [];
-                        let add = entry => {
-                            let o = Game.getObjectById(entry.id);
-                            if( o ) {
+                    return Util.get(this, '_all', () => {
+                        const r = [];
+                        const add = entry => {
+                            const o = Game.getObjectById(entry.id);
+                            if (o) {
                                 _.assign(o, entry);
-                                this._all.push(o);
+                                r.push(o);
                             }
                         };
                         _.forEach(this.room.memory.powerSpawns, add);
-                    }
-                    return this._all;
+                        return r;
+                    })
                 }
             },
         });
@@ -238,18 +215,18 @@ mod.extend = function(){
                     if( _.isUndefined(this.room.memory.nukers)) {
                         this.room.saveNukers();
                     }
-                    if( _.isUndefined(this._all) ){
-                        this._all = [];
-                        let add = entry => {
-                            let o = Game.getObjectById(entry.id);
-                            if( o ) {
+                    return Util.get(this, '_all', () => {
+                        const r = [];
+                        const add = entry => {
+                            const o = Game.getObjectById(entry.id);
+                            if (o) {
                                 _.assign(o, entry);
-                                this._all.push(o);
+                                r.push(o);
                             }
                         };
                         _.forEach(this.room.memory.nukers, add);
-                    }
-                    return this._all;
+                        return r;
+                    })
                 }
             },
         });
@@ -262,19 +239,13 @@ mod.extend = function(){
             'all': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._all) ){
-                        this._all = this.room.find(FIND_STRUCTURES);
-                    }
-                    return this._all;
+                    return Util.get(this, '_all', this.room.find(FIND_STRUCTURES));
                 }
             },
             'my': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._my) ){
-                        this._my = this.room.find(FIND_MY_STRUCTURES);
-                    }
-                    return this._my;
+                    return Util.get(this, '_my', this.room.find(FIND_MY_STRUCTURES));
                 }
             },
             'spawns': {
@@ -283,12 +254,12 @@ mod.extend = function(){
                     if( _.isUndefined(this.room.memory.spawns) ) {
                         this.room.saveSpawns();
                     }
-                    if( _.isUndefined(this._spawns) ){
-                        this._spawns = [];
-                        var addSpawn = id => { addById(this._spawns, id); };
+                    return Util.get(this, '_spawns', () => {
+                        const r = [];
+                        const addSpawn = id => { Util.addById(r, id); };
                         _.forEach(this.room.memory.spawns, addSpawn);
-                    }
-                    return this._spawns;
+                        return r;
+                    });
                 }
             },
             'towers': {
@@ -297,134 +268,95 @@ mod.extend = function(){
                     if( _.isUndefined(this.room.memory.towers)) {
                         this.room.saveTowers();
                     }
-                    if( _.isUndefined(this._towers) ){
-                        this._towers = [];
-                        var add = id => { addById(this._towers, id); };
+                    return Util.get(this, '_towers', () => {
+                        const r = [];
+                        const add = id => { Util.addById(r, id) };
                         _.forEach(this.room.memory.towers, add);
-                    }
-                    return this._towers;
+                        return r;
+                    });
                 }
             },
             'repairable': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._repairable) ){
-                        let that = this;
-                        this._repairable = _.sortBy(
-                            that.all.filter(
-                                structure => (
-                                    // is not at 100%
-                                    structure.hits < structure.hitsMax &&
-                                    // not owned room or hits below RCL repair limit
-                                    ( !that.room.my || structure.hits < MAX_REPAIR_LIMIT[that.room.controller.level] || structure.hits < (LIMIT_URGENT_REPAIRING + (2*DECAY_AMOUNT[structure.structureType] || 0))) &&
-                                    // not decayable or below threshold
-                                    ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) &&
-                                    // not pavement art
-                                    ( Memory.pavementArt[that.room.name] === undefined || Memory.pavementArt[that.room.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y+'x') < 0 ) &&
-                                    // not flagged for removal
-                                    ( !FlagDir.list.some(f => f.roomName == structure.pos.roomName && f.color == COLOR_ORANGE && f.x == structure.pos.x && f.y == structure.pos.y) )
-                                )
-                            ),
-                            'hits'
-                        );
-                    }
-                    return this._repairable;
+                    return Util.get(this, '_repairable', () => {
+                        return _.sortBy(this.all.filter(structure => (
+                            // is not at 100%
+                            structure.hits < structure.hitsMax &&
+                            // not owned room or hits below RCL repair limit
+                            (!this.room.my || structure.hits < MAX_REPAIR_LIMIT[this.room.controller.level] || structure.hits < (LIMIT_URGENT_REPAIRING + (2 * DECAY_AMOUNT[structure.structureType] || 0))) &&
+                            // not decayable or below threshold
+                            (!DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE) &&
+                            // not pavement art
+                            (Memory.pavementArt[this.room.name] === undefined || !Memory.pavementArt[this.room.name].includes(`x${structure.pos.x}y${structure.pos.y}x`)) &&
+                            // not flagged for removal
+                            (!FlagDir.list.some(f => f.roomName === structure.pos.roomName && f.color === COLOR_ORANGE && f.x === structure.pos.x && f.y === structure.pos.y))
+                        )), 'hits');
+                    });
                 }
             },
             'urgentRepairable': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._urgentRepairableSites) ){
-                        var isUrgent = site => (site.hits < (LIMIT_URGENT_REPAIRING + (DECAY_AMOUNT[site.structureType] || 0)));
-                        this._urgentRepairableSites = _.filter(this.repairable, isUrgent);
-                    }
-                    return this._urgentRepairableSites;
+                    return Util.get(this, '_urgentRepairableSites', _.filter(this.repairable, site => (site.hits < (LIMIT_URGENT_REPAIRING + (DECAY_AMOUNT[site.structureType] || 0)))));
                 }
             },
             'fortifyable': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._fortifyableSites) ){
-                        let that = this;
-                        this._fortifyableSites = _.sortBy(
-                            that.all.filter(
-                                structure => (
-                                    that.room.my &&
-                                    structure.hits < structure.hitsMax &&
-                                    structure.hits < MAX_FORTIFY_LIMIT[that.room.controller.level] &&
-                                    ( structure.structureType != STRUCTURE_CONTAINER || structure.hits < MAX_FORTIFY_CONTAINER ) &&
-                                    ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE*3 ) &&
-                                    ( Memory.pavementArt[that.room.name] === undefined || Memory.pavementArt[that.room.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y+'x') < 0 ) &&
-                                    ( !FlagDir.list.some(f => f.roomName == structure.pos.roomName && f.color == COLOR_ORANGE && f.x == structure.pos.x && f.y == structure.pos.y) )
-                                )
-                            ),
-                            'hits'
-                        );
-                    }
-                    return this._fortifyableSites;
+                    return Util.get(this, '_fortifyableSites', () => {
+                        return _(this.all).filter(structure => (
+                            this.room.my && structure.hits < structure.hitsMax &&
+                            structure.hits < MAX_FORTIFY_LIMIT[this.room.controller.level] &&
+                            (structure.structureType !== STRUCTURE_CONTAINER || structure.hits < MAX_FORTIFY_CONTAINER) &&
+                            (!DECAYABLE.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE * 3) &&
+                            (Memory.pavementArt[this.room.name] === undefined || !Memory.pavementArt[this.room.name].includes(`x${structure.pos.x}y${structure.pos.y}x`)) &&
+                            (!FlagDir.list.some(f => f.roomName === structure.pos.roomName && f.color === COLOR_ORANGE && f.x === structure.pos.x && f.y === structure.pos.y))
+                        )).sortBy('hits').value();
+                    });
                 }
             },
             'fuelable': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._fuelables) ){
-                        var that = this;
-                        var factor = that.room.situation.invasion ? 1 : 0.82;
-                        var fuelable = target => (target.energy < (target.energyCapacity * factor));
-                        this._fuelables = _.sortBy( _.filter(this.towers, fuelable), 'energy') ; // TODO: Add Nuker
-                    }
-                    return this._fuelables;
+                    return Util.get(this, '_fuelables', () => {
+                        return _(this.towers).filter(t => (t.energy < (t.energyCapacity * (this.room.situation.invasion ? 1 : 0.82)))).sortBy('energy').value(); // TODO: Add Nuker
+                    });
                 }
             },
             'container' : {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._container) ){
-                        this._container = new Container(this.room);
-                    }
-                    return this._container;
+                    return Util.get(this, '_container', () => new Container(this.room));
                 }
             },
             'links' : {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._links) ){
-                        this._links = new Links(this.room);
-                    }
-                    return this._links;
+                    return Util.get(this, '_links', () => new Links(this.room));
                 }
             },
             'labs' : {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._labs) ){
-                        this._labs = new Labs(this.room);
-                    }
-                    return this._labs;
+                    return Util.get(this, '_labs', () => new Labs(this.room));
                 }
             },
             'virtual': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._virtual) ){
-                        this._virtual = _(this.all).concat(this.piles);
-                    }
-                    return this._virtual;
+                    return Util.get(this, '_virtual', () => _(this.all).concat(this.piles));
                 }
             },
             'piles': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._piles) ){
-                        const room = this.room;
-                        this._piles = FlagDir.filter(FLAG_COLOR.command.drop, room.getPositionAt(25,25), true)
-                            .map(function(flagInformation) {
-                                const flag = Game.flags[flagInformation.name];
-                                const piles = room.lookForAt(LOOK_ENERGY, flag.pos.x, flag.pos.y);
-                                return piles.length && piles[0] || flag;
-                            });
-                    }
-                    return this._piles;
+                    return Util.get(this, '_piles', () => FlagDir.filter(FLAG_COLOR.command.drop, this.room)
+                        .map(flagInformation => {
+                            const flag = Game.flags[flagInformation.name];
+                            const piles = room.lookForAt(LOOK_ENERGY, flag.pos.x, flag.pos.y);
+                            return piles.length && piles[0] || flag;
+                        }));
                 }
             },
             'observer': {
@@ -433,10 +365,7 @@ mod.extend = function(){
 	                if (_.isUndefined(this.room.memory.observer)) {
 		                this.room.saveObserver();
 	                }
-                    if (_.isUndefined(this._observer)) {
-	                    this._observer = Game.getObjectById(this.room.memory.observer.id);
-                    }
-                    return this._observer;
+                    return Util.get(this, '_observer', Game.getObjectById(this.room.memory.observer.id));
                 },
             },
             'nuker': {
@@ -445,21 +374,17 @@ mod.extend = function(){
                     if (_.isUndefined(this.room.memory.nukers)) {
                         this.room.saveNukers();
                     }
-                    if (_.isUndefined(this._nuker)) {
+                    return Util.get(this, '_nuker', () => {
                         if (this.room.memory.nukers.length > 0) {
-                            this._nuker = Game.getObjectById(this.room.memory.nukers[0].id);
+                            return Game.getObjectById(this.room.memory.nukers[0].id);
                         }
-                    }
-                    return this._nuker;
+                    });
                 },
             },
             'nukers': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._nukers) ){
-                        this._nukers = new Nukers(this.room);
-                    }
-                    return this._nukers;
+                    return Util.get(this, '_nukers', () => new Nukers(this.room));
                 }
             },
             'powerSpawn': {
@@ -468,21 +393,17 @@ mod.extend = function(){
                     if (_.isUndefined(this.room.memory.powerSpawns)) {
                         this.room.savePowerSpawns();
                     }
-                    if (_.isUndefined(this._powerSpawn)) {
+                    return Util.get(this, '_powerSpawn', () => {
                         if (this.room.memory.powerSpawns.length > 0) {
-                            this._powerSpawn = Game.getObjectById(this.room.memory.powerSpawns[0].id);
+                            return Game.getObjectById(this.room.memory.powerSpawns[0].id);
                         }
-                    }
-                    return this._powerSpawn;
+                    });
                 }
             },
             'powerSpawns': {
                 configurable: true,
                 get: function() {
-                    if( _.isUndefined(this._powerSpawns) ){
-                        this._powerSpawns = new PowerSpawns(this.room);
-                    }
-                    return this._powerSpawns;
+                    return Util.get(this, '_powerSpawns', () => new PowerSpawns(this.room));
                 }
             },
             'extensions': {
@@ -491,10 +412,7 @@ mod.extend = function(){
                     if (_.isUndefined(this.room.memory.extensions)) {
                         this.room.saveExtensions();
                     }
-                    if (_.isUndefined(this._extensions)) {
-                        this._extensions = this.room.memory.extensions.map(e => Game.getObjectById(e));
-                    }
-                    return this._extensions;
+                    return Util.get(this, '_extensions', this.room.memory.extensions.map(e => Game.getObjectById(e)));
                 },
             }
         });
@@ -504,27 +422,23 @@ mod.extend = function(){
         'structures': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._structures) ){
-                    this._structures = new Structures(this);
-                }
-                return this._structures;
+                return Util.get(this, '_structures', () => new Structures(this));
             }
         },
         'sources': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this.memory.sources) || this.name == 'sim') {
-                    this._sources = this.find(FIND_SOURCES);
-                    if( this._sources.length > 0 ){
-                        this.memory.sources = this._sources.map(s => s.id);
-                    } else this.memory.sources = [];
-                }
-                if( _.isUndefined(this._sources) ){
-                    this._sources = [];
-                    var addSource = id => { addById(this._sources, id); };
-                    this.memory.sources.forEach(addSource);
-                }
-                return this._sources;
+                return Util.get(this, '_sources', () => {
+                    const r = [];
+                    Util.get(this.memory, 'sources', () => {
+                        const r = this.find(FIND_SOURCES);
+                        if (r.length > 0) {
+                            return r.map(s => s.id);
+                        }
+                        return [];
+                    }).forEach(id => { Util.addById(r, id); });
+                    return r;
+                });
             }
         },
         'powerBank': {
@@ -538,73 +452,55 @@ mod.extend = function(){
                         this.memory.powerBank = this._powerBank.id;
                     }
                 }
-                if (_.isUndefined(this._powerBank)) {
-                    this._powerBank = Game.getObjectById(this.memory.powerBank);
-                }
-                return this._powerBank;
+                return Util.get(this, '_powerBank', Game.getObjectById(this.memory.powerBank));
             },
         },
         'droppedResources': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._droppedResources) ){
-                    this._droppedResources = this.find(FIND_DROPPED_RESOURCES);
-                }
-                return this._droppedResources;
+                return Util.get(this, '_droppedResources', this.find(FIND_DROPPED_RESOURCES));
             }
         },
         'sourceAccessibleFields': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this.memory.sourceAccessibleFields)) {
+                return Util.get(this.memory, 'sourceAccessibleFields', () => {
                     let sourceAccessibleFields = 0;
-                    let sources = this.sources;
-                    var countAccess = source => sourceAccessibleFields += source.accessibleFields;
-                    _.forEach(sources, countAccess);
-                    this.memory.sourceAccessibleFields = sourceAccessibleFields;
-                }
-                return this.memory.sourceAccessibleFields;
+                    const sources = this.sources;
+                    _.forEach(sources, source => sourceAccessibleFields += source.accessibleFields);
+                    return sourceAccessibleFields;
+                });
             }
         },
         'sourceEnergyAvailable': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._sourceEnergyAvailable) ){
-                    this._sourceEnergyAvailable = 0;
-                    var countEnergy = source => (this._sourceEnergyAvailable += source.energy);
-                    _.forEach(this.sources, countEnergy);
-                }
-                return this._sourceEnergyAvailable;
+                return Util.get(this, '_sourceEnergyAvailable', () => {
+                    let i = 0;
+                    _.forEach(this.sources, source => i += source.energy);
+                    return i;
+                });
             }
         },
         'ticksToNextRegeneration': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._ticksToNextRegeneration) ){
-                    this._ticksToNextRegeneration = _(this.sources).map('ticksToRegeneration').min() || 0;
-                }
-                return this._ticksToNextRegeneration;
+                return Util.get(this, '_ticksToNextRegeneration', _(this.sources).map('ticksToRegeneration').min() || 0);
             }
         },
         'relativeEnergyAvailable': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._relativeEnergyAvailable) ){
-                    this._relativeEnergyAvailable = this.energyCapacityAvailable > 0 ? this.energyAvailable / this.energyCapacityAvailable : 0;
-                }
-                return this._relativeEnergyAvailable;
+                return Util.get(this, '_relativeEnergyAvailable', this.energyCapacityAvailable && this.energyAvailable / this.energyCapacityAvailable || 0);
             }
         },
         'reservedSpawnEnergy': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._reservedSpawnEnergy) ) {
-                    this._reservedSpawnEnergy = 0;
-                }
-                return this._reservedSpawnEnergy;
+                return Util.get(this, '_reservedSpawnEnergy', 0);
             },
             set: function(value) {
-                this._reservedSpawnEnergy = value;;
+                this._reservedSpawnEnergy = value;
             }
         },
         'remainingEnergyAvailable': {
@@ -622,191 +518,152 @@ mod.extend = function(){
         'towerFreeCapacity': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._towerFreeCapacity) ) {
-                    this._towerFreeCapacity = 0;
-                    var addFreeCapacity = tower => this._towerFreeCapacity += (tower.energyCapacity - tower.energy);
-                    _.forEach(this.structures.towers, addFreeCapacity);
-                }
-                return this._towerFreeCapacity;
+                return Util.get(this, '_towerFreeCapacity', () => {
+                    let i = 0;
+                    _.forEach(this.structures.towers, tower => i += tower.energyCapacity - tower.energy);
+                    return i;
+                });
             }
         },
         'constructionSites': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._constructionSites) ) {
-                    this._constructionSites = this.find(FIND_CONSTRUCTION_SITES);
-                }
-                return this._constructionSites;
+                return Util.get(this, '_constructionSites', () => this.find(FIND_CONSTRUCTION_SITES));
             }
         },
         'myConstructionSites': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._myConstructionSites) ) {
-                    this._myConstructionSites = this.find(FIND_MY_CONSTRUCTION_SITES);
-                }
-                return this._myConstructionSites;
+                return Util.get(this, '_myConstructionSites', () => this.find(FIND_MY_CONSTRUCTION_SITES));
             }
         },
         'creeps': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._creeps) ){
-                    this._creeps = this.find(FIND_MY_CREEPS);
-                }
-                return this._creeps;
+                return Util.get(this, '_creeps', () => this.find(FIND_MY_CREEPS));
             }
         },
         'allCreeps': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._allCreeps) ){
-                    this._allCreeps = this.find(FIND_CREEPS);
-                }
-                return this._allCreeps;
+                return Util.get(this, '_allCreeps', () => this.find(FIND_CREEPS));
             }
         },
         'hostiles': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._hostiles) ){
-                    this._hostiles = this.find(FIND_HOSTILE_CREEPS, { filter : Task.reputation.hostileOwner });
-                }
-                return this._hostiles;
+                return Util.get(this, '_hostiles', () => this.find(FIND_HOSTILE_CREEPS, { filter: Task.reputation.hostileOwner }));
             }
         },
         'hostileIds': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._hostileIds) ){
-                    this._hostileIds = _.map(this.hostiles, 'id');
-                }
-                return this._hostileIds;
+                return Util.get(this, '_hostileIDs', () => _.map(this.hostiles, 'id'));
             }
         },
         'combatCreeps': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._combatCreeps) ){
-                    this._combatCreeps = this.creeps.filter( c => ['melee','ranger','healer', 'warrior'].includes(c.data.creepType) );
-                }
-                return this._combatCreeps;
+                return Util.get(this, '_combatCreeps', this.creeps.filter(c => ['melee', 'ranger', 'healer', 'warrior'].includes(c.data.creepType)));
             }
         },
         'casualties': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._casualties) ){
-                    var isInjured = creep => creep.hits < creep.hitsMax &&
-                        (creep.towers === undefined || creep.towers.length == 0);
-                    this._casualties = _.sortBy(_.filter(this.creeps, isInjured), 'hits');
-                }
-                return this._casualties;
+                return Util.get(this, '_casualties', () => {
+                    return _.sortBy(_.filter(this.creeps, c => {
+                        return c.hits < c.hitsMax && (c.towers === undefined || c.towers.length === 0);
+                    }), 'hits');
+                });
             }
         },
         'situation': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._situation) ){
-                    this._situation = {
-                        noEnergy: this.sourceEnergyAvailable == 0,
-                        invasion: this.hostiles.length > 0 && (!this.controller || !this.controller.safeMode)
-                    }
-                }
-                return this._situation;
+                return Util.get(this, '_situation', {
+                    noEnergy: this.sourceEnergyAvailable === 0,
+                    invasion: this.hostiles.length > 0 && (!this.controller || !this.controller.safeMode),
+                });
             }
         },
         'roadConstructionTrace': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this.memory.roadConstructionTrace) ) {
-                    this.memory.roadConstructionTrace = {};
-                }
-                return this.memory.roadConstructionTrace;
+                return Util.get(this.memory, 'roadConstructionTrace', {});
             }
         },
         'adjacentRooms': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this.memory.adjacentRooms) ) {
-                    this.memory.adjacentRooms = Room.adjacentRooms(this.name);
-                }
-                return this.memory.adjacentRooms;
+                return Util.get(this.memory, 'adjacentRooms', () => Room.adjacentRooms(this.name));
             }
         },
         'adjacentAccessibleRooms': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this.memory.adjacentAccessibleRooms) ) {
-                    this.memory.adjacentAccessibleRooms = Room.adjacentAccessibleRooms(this.name);
-                }
-                return this.memory.adjacentAccessibleRooms;
+                return Util.get(this.memory, 'adjacentAccessibleRooms', () => Room.adjacentAccessibleRooms(this.name));
             }
         },
         'privateerMaxWeight': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this._privateerMaxWeight) ) {
-                    this._privateerMaxWeight = 0;
-                    if ( !this.situation.invasion && !this.conserveForDefense ) {
-                        let base = this.controller.level * 1000;
-                        let that = this;
-                        let adjacent, ownNeighbor, room, mult;
-
-                        let flagEntries = FlagDir.filter([FLAG_COLOR.invade.robbing, FLAG_COLOR.invade.exploit]);
-                        let countOwn = roomName => {
-                            if( roomName == that.name ) return;
-                            if( Room.isMine(roomName) ) ownNeighbor++;
+                return Util.get(this, '_privateerMaxWeight', () => {
+                    let i = 0;
+                    if (!this.situation.invasion && !this.conserveForDefense) {
+                        const base = this.controller.level * 1000;
+                        let adjacent;
+                        let ownNeighbour;
+                        let room;
+                        let mult;
+                        
+                        const flagEntries = FlagDir.filter([FLAG_COLOR.invade.robbing, FLAG_COLOR.invade.exploit]);
+                        const countOwn = roomName => {
+                            if (roomName === this.name) return;
+                            if (Room.isMine(roomName)) ownNeighbour++;
                         };
-                        let calcWeight = flagEntry => {
-                            if( !this.adjacentAccessibleRooms.includes(flagEntry.roomName) ) return;
+                        const calcWeight = flagEntry => {
+                            if (!this.adjacentAccessibleRooms.includes(flagEntry.roomName)) return;
                             room = Game.rooms[flagEntry.roomName];
-                            if( room ) {
-                                adjacent = room.adjacentAccessibleRooms;
-                                mult = room.sources.length;
-                            } else {
-                                adjacent = Room.adjacentAccessibleRooms(flagEntry.roomName);
-                                mult = 1;
-                            }
-                            ownNeighbor = 1;
+                            adjacent = room ? room.adjacentAccessibleRooms : Room.adjacentAccessibleRooms(flagEntry.roomName);
+                            mult = room ? room.sources.length : 1;
+                            ownNeighbour = 1;
                             adjacent.forEach(countOwn);
-                            that._privateerMaxWeight += (mult * base / ownNeighbor);
+                            i += (mult * base / ownNeighbour);
                         };
                         flagEntries.forEach(calcWeight);
+                        return i;
                     }
-                };
-                return this._privateerMaxWeight;
+                });
             }
         },
         'claimerMaxWeight': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this._claimerMaxWeight) ) {
-                    this._claimerMaxWeight = 0;
-                    let base = 1250;
-                    let maxRange = 2;
-                    let that = this;
-                    let distance, reserved, flag;
-                    let rcl = this.controller.level;
-
-                    let flagEntries = FlagDir.filter([FLAG_COLOR.claim, FLAG_COLOR.claim.reserve, FLAG_COLOR.invade.exploit]);
-                    let calcWeight = flagEntry => {
-                        // don't spawn claimer for reservation at RCL < 4 (claimer not big enough)
-                        if( rcl > 3 || (flagEntry.color == FLAG_COLOR.claim.color && flagEntry.secondaryColor == FLAG_COLOR.claim.secondaryColor )) {
-                            distance = Room.roomDistance(that.name, flagEntry.roomName);
-                            if( distance > maxRange )
-                                return;
+                return Util.get(this, '_claimerMaxWeight', () => {
+                    let i = 0;
+                    const base = 1250;
+                    const maxRange = 2;
+                    let distance;
+                    let reserved;
+                    let flag;
+                    const rcl = this.controller.level;
+                    
+                    const flagEntries = FlagDir.filter([FLAG_COLOR.claim, FLAG_COLOR.claim.reserve, FLAG_COLOR.invade.exploit]);
+                    const calcWeight = flagEntry => {
+                        // don't spawn claimer for reservation at RCL < 3 (claimer not big enough)
+                        if (rcl > 3 || Flag.compare(flagEntry, FLAG_COLOR.claim)) {
+                            distance = Room.roomDistance(this.name, flagEntry.roomName);
+                            if (distance > maxRange) return;
                             flag = Game.flags[flagEntry.name];
-                            if( flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500)
-                                return;
-
-                            reserved = flag.targetOf && flag.targetOf ? _.sum( flag.targetOf.map( t => t.creepType == 'claimer' ? t.weight : 0 )) : 0;
-                            that._claimerMaxWeight += (base - reserved);
-                        };
+                            if (flag.room && flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd > 2500) return;
+                            
+                            reserved = flag.targetOf && flag.targetOf ? _.sum(flag.targetOf.map(t => t.creepType === 'claimer' ? t.weight : 0)) : 0;
+                            i += base - reserved;
+                        }
                     };
                     flagEntries.forEach(calcWeight);
-                };
-                return this._claimerMaxWeight;
+                    return i;
+                });
             }
         },
         'conserveForDefense': {
@@ -818,34 +675,28 @@ mod.extend = function(){
         'hostileThreatLevel': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this._hostileThreatLevel) ) {
-                    // TODO: add towers when in foreign room
-                    this._hostileThreatLevel = 0;
-                    let evaluateBody = creep => {
-                        this._hostileThreatLevel += creep.threat;
-                    };
-                    this.hostiles.forEach(evaluateBody);
-                }
-                return this._hostileThreatLevel;
+                return Util.get(this, '_hostileThreatLevel', () => {
+                    let i = 0;
+                    this.hostiles.forEach(c => i += c.threat);
+                    return i;
+                });
             }
         },
         'defenseLevel': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this._defenseLevel) ) {
-                    this._defenseLevel = {
+                return Util.get(this, '_defenseLevel', () => {
+                    const r = {
                         towers: 0,
                         creeps: 0,
-                        sum: 0
-                    }
-                    let evaluate = creep => {
-                        this._defenseLevel.creeps += creep.threat;
+                        sum: 0,
                     };
+                    const evaluate = creep => r.creeps += creep.threat;
                     this.combatCreeps.forEach(evaluate);
-                    this._defenseLevel.towers = this.structures.towers.length;
-                    this._defenseLevel.sum = this._defenseLevel.creeps + (this._defenseLevel.towers * Creep.partThreat.tower);
-                }
-                return this._defenseLevel;
+                    r.towers = this.structures.towers.length;
+                    r.sum = r.creeps + (r.towers + Creep.partThreat.tower);
+                    return r;
+                });
             }
         },
         'minerals': {
@@ -854,24 +705,24 @@ mod.extend = function(){
                 if( _.isUndefined(this.memory.minerals)) {
                     this.saveMinerals();
                 }
-                if( _.isUndefined(this._minerals) ){
-                    this._minerals = [];
-                    let add = id => { addById(this._minerals, id); };
+                return Util.get(this, '_minerals', () => {
+                    const r = [];
+                    const add = id => { addById(r, id); };
                     this.memory.minerals.forEach(add);
-                }
-                return this._minerals;
+                    return r;
+                });
             }
         },
         'mineralType': {
             configurable:true,
             get: function () {
-                if( _.isUndefined(this.memory.mineralType)) {
-                    let minerals = this.find(FIND_MINERALS);
-                    if( minerals && minerals.length > 0 )
-                        this.memory.mineralType = minerals[0].mineralType;
-                    else this.memory.mineralType = '';
-                }
-                return this.memory.mineralType;
+                return Util.get(this.memory, 'mineralType', () => {
+                    const minerals = this.find(FIND_MINERALS);
+                    if (minerals && minerals.length > 0) {
+                        return minerals[0].mineralType;
+                    }
+                    return '';
+                });
             }
         },
         'structureMatrix': {
@@ -938,139 +789,90 @@ mod.extend = function(){
         'creepMatrix': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this._creepMatrix) ) {
+                return Util.get(this, '_creepMatrix', () => {
                     const costs = this.structureMatrix.clone();
-                    // Avoid creeps in the room
-                    this.allCreeps.forEach(function(creep) {
-                        costs.set(creep.pos.x, creep.pos.y, 0xff);
-                    });
-                    this._creepMatrix = costs;
-                }
-                return this._creepMatrix;
+                    this.allCreeps.forEach(c => costs.set(c.pos.x, c.pos.y, 0xFF));
+                    return costs;
+                });
             }
         },
         'my': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this._my) ) {
-                    this._my = this.controller && this.controller.my;
-                }
-                return this._my;
+                return Util.get(this, '_my', this.controller && this.controller.my);
             }
         },
         'reserved': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this._reserved) ) {
+                return Util.get(this, '_reserved', () => {
                     if (this.controller) {
-                        const myName = _.find(Game.spawns).owner.username;
-                        this._reserved = this.controller.my || (this.controller.reservation
-                            && this.controller.reservation.username === myName);
-                    } else {
-                        this._reserved = false;
+                        return this.controller.my || (this.controller.reservation && this.controller.reservation.username === ME);
                     }
-                }
-                return this._reserved;
+                    return false;
+                });
             },
         },
         'owner': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this._owner)) {
-                    if (this.controller && this.controller.owner) {
-                        this._owner = this.controller.owner.username;
-                    } else {
-                        this._owner = false;
-                    }
-                }
-                return this._owner;
+                return Util.get(this, '_owner', this.controller && this.controller.owner && this.controller.owner.username);
             },
         },
         'reservation': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this._reservation)) {
-                    if (this.controller && this.controller.reservation) {
-                        this._reservation = this.controller.reservation.username;
-                    } else {
-                        this._reservation = false;
-                    }
-                }
-                return this._reservation;
+                return Util.get(this, '_reservation', this.controller && this.controller.reservation && this.controller.reservation.username);
             },
         },
         'ally': {
             configurable: true,
             get: function () {
-                if (_.isUndefined(this._ally)) {
-                    if (this.reserved) {
-                        this._ally = true;
-                    } else if (this.controller) {
-                        this._ally = Task.reputation.isAlly(this.owner) || Task.reputation.isAlly(this.reservation);
-                    } else {
-                        this._ally = false;
-                    }
-                }
-                return this._ally;
+                return Util.get(this, '_ally', () => {
+                    if (this.reserved) return true;
+                    if (this.controller) return Task.reputation.isAlly(this.owner) || Task.reputation.isAlly(this.reservation);
+                    return false;
+                })
             },
         },
         'spawnQueueHigh': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this.memory.spawnQueueHigh) ) {
-                    this.memory.spawnQueueHigh = [];
-                }
-                return this.memory.spawnQueueHigh;
+                return Util.get(this.memory, 'spawnQueueHigh', []);
             }
         },
         'spawnQueueMedium': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this.memory.spawnQueueMedium) ) {
-                    this.memory.spawnQueueMedium = [];
-                }
-                return this.memory.spawnQueueMedium;
+                return Util.get(this.memory, 'spawnQueueMedium', []);
             }
         },
         'spawnQueueLow': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this.memory.spawnQueueLow) ) {
-                    this.memory.spawnQueueLow = [];
-                }
-                return this.memory.spawnQueueLow;
+                return Util.get(this.memory, 'spawnQueueLow', []);
             }
         },
         'pavementArt': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this.memory.pavementArt) ) {
-                    this.memory.pavementArt = [];
-                }
-                return this.memory.pavementArt;
+                return Util.get(this.memory, 'pavementArt', []);
             }
         },
         'collapsed': {
             configurable: true,
             get: function() {
-                if( _.isUndefined(this._collapsed) ) {
+                return Util.get(this, '_collapsed', () => {
                     // only if owned
-                    if( !this.my ) {
-                        this._collapsed = false;
-                        return;
-                    }
-                    // no creeps ? collapsed!
-                    if( !this.population ) {
-                        this._collapsed = true;
-                        return;
-                    }
+                    if (!this.my) return false;
+                    // no creeps = collapsed!
+                    if (!this.population) return true;
                     // is collapsed if workers + haulers + pioneers in room = 0
-                    let workers = this.population.typeCount['worker'] ? this.population.typeCount['worker'] : 0;
-                    let haulers = this.population.typeCount['hauler'] ? this.population.typeCount['hauler'] : 0;
-                    let pioneers = this.population.typeCount['pioneer'] ? this.population.typeCount['pioneer'] : 0;
-                    this._collapsed = (workers + haulers + pioneers) === 0;
-                }
-                return this._collapsed;
+                    const workers = this.population.typeCount['worker'] || 0;
+                    const haulers = this.population.typeCount['hauler'] || 0;
+                    const pioneers = this.population.typeCount['pioneer'] || 0;
+                    return (workers + haulers + pioneers) === 0;
+                });
             }
         },
         'hostile': {
