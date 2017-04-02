@@ -1483,7 +1483,7 @@ mod.extend = function(){
             if (sitesSize >= 100) return;
             if (!flag) return;
             flag = Game.flags[flag.name];
-            const POS = flag.pos;
+            const POS = flag && flag.pos;
             if (!POS) return;
             const sites = POS.lookFor(LOOK_CONSTRUCTION_SITES);
             if (sites && sites.length) return; // already a construction site
