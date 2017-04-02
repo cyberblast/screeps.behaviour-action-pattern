@@ -490,5 +490,22 @@ module.exports = {
             };
         }
         return {checkCPU, totalCPU};
+    },
+
+    _resources: _.memoize(function() {
+        return _.chain(global).pick(function(v,k) {
+            return k.startsWith('RESOURCE_');
+        }).value();
+    }),
+
+    /**
+     * cached map of all the game's resources
+     */
+    resources() {
+        return this._resources();
+    },
+
+    valueOrZero(x) {
+        return x || 0;
     }
 };
