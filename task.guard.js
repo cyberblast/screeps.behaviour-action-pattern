@@ -7,7 +7,7 @@ mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a yellow/yellow flag
-    if( flag.color == FLAG_COLOR.defense.color && flag.secondaryColor == FLAG_COLOR.defense.secondaryColor ){
+    if (flag.compareTo(FLAG_COLOR.defense)) {
         // check if a new creep has to be spawned
         Task.guard.checkForRequiredCreeps(flag);
     }
@@ -44,7 +44,8 @@ mod.checkForRequiredCreeps = (flag) => {
             { // spawn room selection params
                 targetRoom: flag.pos.roomName, 
                 minEnergyCapacity: 200, 
-                rangeRclRatio: 1.8 // stronger preference of higher RCL rooms
+                rangeRclRatio: 1.8, // stronger preference of higher RCL rooms
+                allowTargetRoom: true,
             },
             creepSetup => { // callback onQueued
                 let memory = Task.guard.memory(Game.flags[creepSetup.destiny.targetName]);

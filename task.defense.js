@@ -12,7 +12,7 @@ mod.handleNewInvader = invaderCreep => {
     if( !invaderCreep.room.my && !invaderCreep.room.reserved ) {
         // if it is not our exploiting target
     let validColor = flagEntry => (
-    (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor) ||
+    (Flag.compare(flagEntry, FLAG_COLOR.invade.exploit)) ||
     (flagEntry.color == FLAG_COLOR.claim.color )
     );
         let flag = FlagDir.find(validColor, invaderCreep.pos, true);

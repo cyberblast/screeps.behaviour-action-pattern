@@ -89,5 +89,5 @@ action.run = function(creep) {
 };
 action.onAssignment = function(creep, target) {
     delete creep.data.safeSpot;
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(10532), SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.AVOIDING, SAY_PUBLIC);
 };

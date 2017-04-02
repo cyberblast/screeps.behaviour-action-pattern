@@ -227,17 +227,18 @@ mod.extend = function(){
         if (this.room.controller && this.room.controller.owner && !(this.room.my || this.room.reserved || this.room.ally)) return;
         // if it has energy and a work part, remoteMiners do repairs once the source is exhausted.
         if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
-            let nearby = this.pos.findInRange(this.room.structures.repairable, DRIVE_BY_REPAIR_RANGE);
+            const repairRange = this.data && this.data.creepType === 'remoteHauler' ? REMOTE_HAULER.DRIVE_BY_REPAIR_RANGE : DRIVE_BY_REPAIR_RANGE;
+            let nearby = this.pos.findInRange(this.room.structures.repairable, repairRange);
             if( nearby && nearby.length ){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
                 this.repair(nearby[0]);
             } else {
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'none');
                 // enable remote haulers to build their own roads and containers
-                if( REMOTE_HAULER_DRIVE_BY_BUILDING && this.data && this.data.creepType === 'remoteHauler' ) {
+                if( REMOTE_HAULER.DRIVE_BY_BUILDING && this.data && this.data.creepType === 'remoteHauler' ) {
                     // only search in a range of 1 to save cpu
-                    let nearby = this.pos.findInRange(this.room.myConstructionSites, REMOTE_HAULER_DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
-                        return site.my && REMOTE_HAULER_DRIVE_BY_BUILD_ALL ||
+                    let nearby = this.pos.findInRange(this.room.myConstructionSites, REMOTE_HAULER.DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
+                        return site.my && REMOTE_HAULER.DRIVE_BY_BUILD_ALL ||
                             (site.structureType === STRUCTURE_CONTAINER ||
                             site.structureType === STRUCTURE_ROAD);
                     }});

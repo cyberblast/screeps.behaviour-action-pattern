@@ -26,5 +26,5 @@ action.work = function(creep){
     }
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9960), SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.HEALING, SAY_PUBLIC);
 };

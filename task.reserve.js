@@ -19,9 +19,9 @@ mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a reserve, exploit or remote mine flag
-    if( flag.color == FLAG_COLOR.claim.reserve.color && flag.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor ||
-        flag.color == FLAG_COLOR.invade.exploit.color && flag.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor ||
-        flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor){
+    if( flag.compareTo(FLAG_COLOR.claim.reserve) ||
+        flag.compareTo(FLAG_COLOR.invade.exploit) ||
+        flag.compareTo(FLAG_COLOR.claim.mining)){
         // check if a new creep has to be spawned
         Task.reserve.checkForRequiredCreeps(flag);
     }
@@ -29,8 +29,11 @@ mod.handleFlagFound = flag => {
 // check if a new creep has to be spawned
 mod.checkForRequiredCreeps = (flag) => {
     let spawnParams;
-    if( flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor ) {
+    if (flag.compareTo(FLAG_COLOR.claim.mining)) {
         spawnParams = Task.mining.strategies.reserve.spawnParams(flag);
+    } else if( flag.compareTo(FLAG_COLOR.invade.exploit) ) {
+        spawnParams = mod.strategies.defaultStrategy.spawnParams(flag);
+        spawnParams.queue = 'Low'; // privateer reserve is always low queue
     } else {
         spawnParams = mod.strategies.defaultStrategy.spawnParams(flag);
     }

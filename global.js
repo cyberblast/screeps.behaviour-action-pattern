@@ -179,6 +179,12 @@ for (let a in REACTIONS) {
         mod.LAB_REACTIONS[REACTIONS[a][b]] = [a, b];
     }
 }
+mod.MEM_SEGMENTS = {
+    COSTMATRIX_CACHE: {
+        start: 99,
+        end: 95
+    }
+};
 // used to log something meaningful instead of numbers
 mod.translateErrorCode = function(code) {
     var codes = {
@@ -412,17 +418,19 @@ Object.defineProperty(global, 'observerRequests', {
         global._observerRequests.push(request);
     },
 });
-mod.memoryUsage = function(key) {
-    const mem = key ? Memory[key] : Memory;
-    let string = '<table><tr><th>Key</th><th>Size (kb)</th></tr>';
+mod.memoryUsage = function(mem) {
+    let string = '';
     let total = 0;
+    let biggestKey = '';
     for (const key in mem) {
+        if (key.length > biggestKey.length) biggestKey = key;
         const sum = JSON.stringify(mem[key]).length / 1024;
         total += sum;
         string += `<tr><td>${key}</td><td>${_.round(sum, 2)}</td></tr>`;
     }
     string += `<tr><td>Total</td><td>${_.round(total, 2)}</td></tr></table>`;
-    return string;
+    const padding = Array(biggestKey.length + 2).join(' ');
+    return `<table><tr><th>Key${padding}</th><th>Size (kb)</th></tr>`.concat(string);
 };
 mod.profiler = null;
 mod.resetProfiler = function() {

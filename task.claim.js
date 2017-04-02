@@ -7,7 +7,7 @@ mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a yellow/yellow flag
-    if( flag.color == FLAG_COLOR.claim.color && flag.secondaryColor == FLAG_COLOR.claim.secondaryColor ){
+    if( flag.compareTo(FLAG_COLOR.claim) ){
         // check if a new creep has to be spawned
         Task.claim.checkForRequiredCreeps(flag);
     }

@@ -6,7 +6,7 @@ mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a Green/Purple flag
-    if( flag.color == FLAG_COLOR.invade.attackController.color && flag.secondaryColor == FLAG_COLOR.invade.attackController.secondaryColor ){
+    if( flag.compareTo(FLAG_COLOR.invade.attackController) ){
         // check if a new creep has to be spawned
         
         Task.attackController.checkForRequiredCreeps(flag);
