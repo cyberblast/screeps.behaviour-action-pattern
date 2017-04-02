@@ -101,7 +101,7 @@ action.storeCall = function(creep, target, store, valueTransform, valueCallback,
     return value;
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9760), SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.ROBBING, SAY_PUBLIC);
 };
 action.defaultStrategy.moveOptions = function(options) {
     // // allow routing in and through hostile rooms

@@ -152,7 +152,7 @@ action.run = {
     }
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9876), SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.INVADING, SAY_PUBLIC);
 };
 action.defaultStrategy.moveOptions = function(options) {
     // allow routing in and through hostile rooms
