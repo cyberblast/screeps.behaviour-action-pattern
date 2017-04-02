@@ -15,15 +15,15 @@ mod.nextAction = function(creep){
             // Choose the closest
             if( deposit.length > 0 ){
                 let target = creep.pos.findClosestByRange(deposit);
-                if( target.structureType == STRUCTURE_STORAGE && this.assign(creep, Creep.action.storing, target) ) return;
-                else if( this.assign(creep, Creep.action.charging, target) ) return;
-                else if( this.assign(creep, Creep.action.storing) ) return; // prefer storage
+                if( target.structureType == STRUCTURE_STORAGE && this.assignAction(creep, Creep.action.storing, target) ) return;
+                else if( this.assignAction(creep, Creep.action.charging, target) ) return;
+                else if( this.assignAction(creep, Creep.action.storing) ) return; // prefer storage
             }
-            if( this.assign(creep, Creep.action.charging) ) return;
+            if( this.assignAction(creep, Creep.action.charging) ) return;
             // no deposit :/ 
             // try spawn & extensions
-            if( this.assign(creep, Creep.action.feeding) ) return;
-            this.assign(creep, Creep.action.dropping);
+            if( this.assignAction(creep, Creep.action.feeding) ) return;
+            this.assignAction(creep, Creep.action.dropping);
             return;
         }
         // empty
@@ -41,7 +41,7 @@ mod.nextAction = function(creep){
         }
         // picking last until we have strategies that can compare cost vs benefit otherwise remoteHaulers bounce between piles of dropped energy
         if( this.assignAction(creep, Creep.action.uncharging) ) return;
-        // if( this.assign(creep, Creep.action.robbing) ) return;
+        // if( this.assignAction(creep, Creep.action.robbing) ) return;
         if( this.assignAction(creep, Creep.action.picking) ) return;
         // wait
         if ( creep.sum === 0 ) {
@@ -69,7 +69,7 @@ mod.nextAction = function(creep){
     // recycle self
     let mother = Game.spawns[creep.data.motherSpawn];
     if( mother ) {
-        this.assign(creep, Creep.action.recycling, mother);
+        this.assignAction(creep, Creep.action.recycling, mother);
     }
 };
 mod.gotoTargetRoom = function(creep){
