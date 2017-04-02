@@ -275,6 +275,9 @@ module.exports.loop = function () {
     if( global.mainInjection.flush ) global.mainInjection.flush();
     p.checkCPU('flush', PROFILING.FLUSH_LIMIT);
 
+    // Room event hooks must be registered before analyze for costMatrixInvalid
+    Room.register();
+
     // analyze environment, wait a tick if critical failure
     if (!FlagDir.analyze()) {
         logError('FlagDir.analyze failed, waiting one tick to sync flags');
