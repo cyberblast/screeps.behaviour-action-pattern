@@ -1097,7 +1097,7 @@ mod.extend = function(){
             Room.costMatrixInvalid.trigger(this);
         }
         if (numStructures > 0) this.memory.myTotalStructures = numStructures;
-        else delete this.meory.myTotalStructures;
+        else delete this.memory.myTotalStructures;
     };
     Room.prototype.registerIsHostile = function() {
         if (this.controller) {
