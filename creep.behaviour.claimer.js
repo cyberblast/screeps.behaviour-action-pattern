@@ -1,6 +1,15 @@
 class Claimer extends Creep.Behaviour {
     constructor() {
-        return super('claimer');
+        super('claimer');
+        this.strategies = {
+            defaultStrategy: {
+                name: `default-claimer`,
+                moveOptions: function(options) {
+                    options.cacheRoutes = true;
+                    return options;
+                },
+            }
+        };
     }
     run(creep) {
         super.run(creep);
