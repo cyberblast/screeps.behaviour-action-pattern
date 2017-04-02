@@ -1,13 +1,13 @@
 // base class for every action
 const Action = class {
-    constructor(actionName) {
-        // action name
-        this.name = actionName;
+    constructor(...args) {
+        Action.prototype.constructor.apply(this, args);
     }
 };
 module.exports = Action;
 
 Action.extend = function() {
+    // INSTANCE
     Object.defineProperties(Action.prototype, {
         // max allowed creeps per target
         maxPerTarget: {
@@ -36,6 +36,10 @@ Action.extend = function() {
             configurable: true,
         },
     });
+    // class constructor
+    Action.prototype.constructor = function(actionName) {
+        this.name = actionName;
+    };
     // get unique identifier of any object (id or name)
     Action.prototype.getTargetId = function (target) {
         return target.id || target.name;
