@@ -23,21 +23,47 @@ const Behaviour = function(name) {
         return false;
     };
     this.selectInflowAction = function(creep) {
+        const actionChecked = {};
         for (const action of this.inflowActions(creep)) {
-            if (!action.debounce || action.debounce(creep, this.outflowActions(creep))) {
-                if (this.assignAction(creep, action)) return;
+            if (!actionChecked[action.name]) {
+                actionChecked[action.name] = true;
+                if (!action.debounce || action.debounce(creep, this.outflowActions(creep))) {
+                    if (this.assignAction(creep, action)) return;
+                }
             }
         }
         return Creep.action.idle.assign(creep);
     };
     this.selectAction = function(creep, actions) {
+        const actionChecked = {};
         for (const action of actions) {
-            if (this.assignAction(creep, action)) return;
+            if (!actionChecked[action.name]) {
+                actionChecked[action.name] = true;
+                if (this.assignAction(creep, action)) return;
+            }
         }
         return Creep.action.idle.assign(creep);
     };
     this.nextAction = function(creep) {
         return this.selectAction(creep, this.actions(creep));
+    };
+    this.run = function(creep) {
+        // Assign next Action
+        if (creep.action === null || creep.action.name === 'idle') {
+            if (creep.data.destiny && creep.data.destiny.task && Task[creep.data.destiny.task] && Task[creep.data.destiny.task].nextAction) {
+                Task[creep.data.destiny.task].nextAction(creep);
+            }
+            else {
+                this.nextAction(creep);
+            }
+        }
+        
+        // Do some work
+        if (creep.action && creep.target) {
+            creep.action.step(creep);
+        } else {
+            logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
+        }
     };
 };
 module.exports = Behaviour;

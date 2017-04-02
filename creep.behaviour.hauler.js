@@ -1,19 +1,5 @@
 const mod = new Creep.Behaviour('hauler');
 module.exports = mod;
-mod.run = function(creep) {
-    // Assign next Action
-    let oldTargetId = creep.data.targetId;
-    if( creep.action == null || creep.action.name == 'idle' ) {
-        this.nextAction(creep);
-    }
-    
-    // Do some work
-    if( creep.action && creep.target ) {
-        creep.action.step(creep);
-    } else {
-        logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
-    }
-};
 mod.inflowActions = (creep) => {
     return [
         Creep.action.uncharging,

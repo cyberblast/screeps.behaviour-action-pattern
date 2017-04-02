@@ -1,20 +1,5 @@
-let mod = {};
+let mod = new Creep.Behaviour('remoteHauler');
 module.exports = mod;
-mod.name = 'remoteHauler';
-mod.run = function(creep) {
-    // Assign next Action
-    let oldTargetId = creep.data.targetId;
-    if( creep.action == null || creep.action.name == 'idle' ) {
-        this.nextAction(creep);
-    }
-    
-    // Do some work
-    if( creep.action && creep.target ) {
-        creep.action.step(creep);
-    } else {
-        logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
-    }
-};
 mod.nextAction = function(creep){
     // at home
     if( creep.pos.roomName == creep.data.homeRoom ){
@@ -55,9 +40,9 @@ mod.nextAction = function(creep){
             return;
         }
         // picking last until we have strategies that can compare cost vs benefit otherwise remoteHaulers bounce between piles of dropped energy
-        if( this.assign(creep, Creep.action.uncharging) ) return;
+        if( this.assignAction(creep, Creep.action.uncharging) ) return;
         // if( this.assign(creep, Creep.action.robbing) ) return;
-        if( this.assign(creep, Creep.action.picking) ) return;
+        if( this.assignAction(creep, Creep.action.picking) ) return;
         // wait
         if ( creep.sum === 0 ) {
             let source = creep.pos.findClosestByRange(creep.room.sources);
@@ -66,7 +51,7 @@ mod.nextAction = function(creep){
                 return Creep.action.travelling.assign(creep, source);
             }
         }
-        return this.assign(creep, Creep.action.idle);
+        return Creep.action.idle.assign(creep);
     }
     // somewhere
     else {
@@ -86,9 +71,6 @@ mod.nextAction = function(creep){
     if( mother ) {
         this.assign(creep, Creep.action.recycling, mother);
     }
-};
-mod.assign = function(creep, action, target){        
-    return (action.isValidAction(creep) && action.isAddableAction(creep) && action.assign(creep, target));
 };
 mod.gotoTargetRoom = function(creep){
     const targetFlag = creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
