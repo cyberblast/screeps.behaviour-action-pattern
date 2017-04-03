@@ -20,7 +20,7 @@ const Action = class {
         return true;
     };
     
-    isValidTarget(object, target) {
+    isValidTarget(targt, object) {
         return !!target;
     };
     
@@ -28,7 +28,7 @@ const Action = class {
         return this.maxPerAction === Infinity;
     };
     
-    isAddableTarget(object, target) {
+    isAddableTarget(targt, object) {
         return !target.targetOf || this.maxPerTarget === Infinity || _.filter(target.targetOf, {actionName: this.name}).length < this.maxPerTarget;
     };
     
