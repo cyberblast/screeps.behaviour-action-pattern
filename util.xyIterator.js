@@ -73,8 +73,7 @@ class XYIterator {
         };
     }
 
-    static dirTransform(origin, dir)
-    {
+    static dirTransform(origin, dir) {
         switch (dir) {
             case TOP_RIGHT:
                 origin.x++;
