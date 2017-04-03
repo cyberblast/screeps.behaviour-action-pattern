@@ -432,7 +432,6 @@ mod.memoryUsage = function(mem) {
     const padding = Array(biggestKey.length + 2).join(' ');
     return `<table><tr><th>Key${padding}</th><th>Size (kb)</th></tr>`.concat(string);
 };
-mod.profiler = null;
 mod.resetProfiler = function() {
     mod.loadProfiler(true);
 };
