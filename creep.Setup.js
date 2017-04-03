@@ -158,8 +158,7 @@ let Setup = function(typeName){
         return mix;
     };
     this.maxCost = function(room){
-        let c = this;
-        return (Creep.bodyCosts( c.SelfOrCall(this._multiBody, room) ) * c.SelfOrCall(this._maxMulti, room)) + (Creep.bodyCosts(c.SelfOrCall(this._fixedBody, room)));
+        return (Creep.bodyCosts( Util.fieldOrFunction(this._multiBody, room) ) * Util.fieldOrFunction(this._maxMulti, room)) + (Creep.bodyCosts(Util.fieldOrFunction(this._fixedBody, room)));
     };
 };
 module.exports = Setup;
@@ -213,6 +212,6 @@ Setup.rclProperty = function(property) {
             return rcl;
         }
 
-        return creepSetup.SelfOrCall(rcl(room)[property], room);
+        return Util.fieldOrFunction(rcl(room)[property], room);
     };
 };
