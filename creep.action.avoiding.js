@@ -1,93 +1,99 @@
-const action = new Creep.Action('avoiding');
-module.exports = action;
-action.lairDangerTime = 24;
-action.targetRange = 0;
-action.reachedRange = 0;
-action.isActiveLair = function(target) {
-    return !(target.ticksToSpawn > action.lairDangerTime); // non-lair => true
-};
-action.isValidAction = function(creep){
-    return creep.data.destiny && creep.data.destiny.room === creep.room.name &&
-        (Room.isSKRoom(creep.room.name) || creep.room.situation.invasion);
-};
-action.isAddableAction = function(creep) {
-    return true;
-};
-action.isValidTarget = function(target, creep){
-    if (Task.reputation.npcOwner(target)) {
-        return action.isActiveLair(target);
-    } else if (Task.reputation.hostileOwner(target) && target.hasActiveBodyparts) {
-        return target.hasActiveBodyparts([ATTACK,RANGED_ATTACK]);
+const Avoiding = class extends Creep.Action {
+    
+    constructor(name) {
+        super(name);
+        this.lairDangerTime = 24;
+        this.targetRange = 0;
+        this.reachedRange = 0;
     }
-    return false;
-};
-action.newTarget = function(creep) {
-    if (Room.isSKRoom(creep.pos.roomName)) {
-        const target = _.first(creep.room.find(FIND_STRUCTURES, {filter: function (t) {
-            return !_.isUndefined(t.ticksToSpawn) && action.isActiveLair(t) && creep.pos.getRangeTo(t.pos) < 15;
-        }}));
-
-        if (target) {
-            return target;
+    
+    isActiveLair(target) {
+        return !(target.ticksToSpawn > this.lairDangerTime);
+    }
+    
+    isValidAction(creep) {
+        return creep.data.destiny && creep.data.destiny.room === creep.room.name &&
+            (Room.isSKRoom(creep.room.name) || creep.room.situation.invasion);
+    }
+    
+    isAddableAction(creep) {
+        return true;
+    }
+    
+    isValidTarget(target, creep) {
+        if (Task.reputation.npcOwner(target)) {
+            return this.isActiveLair(target);
+        }
+        if (Task.reputation.hostileOwner(target)) {
+            return Util.callIfExists(target.hasActiveBodyparts, [ATTACK, RANGED_ATTACK]);
+        }
+        return false;
+    }
+    
+    newTarget(creep) {
+        if (Room.isSKRoom(creep.room.name)) {
+            const target = _(creep.room.structures.all).filter(s => {
+                return !_.isUndefined(s.ticksToSpawn) && this.isActiveLair(s) && creep.pos.getRangeTo(s.pos) < 15;
+            }).first();
+            
+            if (target) return target;
+        }
+        
+        if (creep.room.situation.invasion) {
+            const target = _(creep.room.hostiles).filter(this.isValidTarget)
+                .map(target => {
+                    let score = 0;
+                    const range = creep.pos.getRangeTo(target);
+                    if (creep.owner.username === 'Invader') {
+                        score = range - 51;
+                    } else if (range < 10) {
+                        score = range - 11;
+                    }
+                    return {target, score};
+                }).filter('score').filter('target')
+                .sortBy('score').first().target;
+            
+            if (target) return target;
         }
     }
-
-    if (creep.room.situation.invasion) {
-        const target = _.chain(creep.room.hostiles).filter(function(target) {
-            return action.isValidTarget(target);
-        }).map(function(target) {
-            // TODO react to players? getStrategyHandler
-            let score = 0;
-            const range = creep.pos.getRangeTo(target);
-            if (creep.owner.username === "Invader") {
-                score = range - 51;
-            } else if (range < 10) {
-                score = range - 11;
+    
+    work(creep) {
+        if (!(creep.data.safeSpot && creep.data.safeSpot.roomName)) {
+            const flag = creep.data.destiny && Game.flags[creep.data.destiny.targetName];
+            if (flag) {
+                creep.data.safeSpot = flag.pos;
             } else {
-                score = 0;
+                const exit = _(creep.room.findRoute(creep.data.homeRoom)).filter('exit').first().exit;
+                if (exit) {
+                    creep.data.safeSpot = creep.pos.findClosestByRange(exit);
+                    creep.data.safeSpot.roomName = creep.pos.roomName;
+                }
             }
-            return {target, score};
-        }).filter('score').sortBy('score').first().get('target').value();
-
-        if (target) {
-            return target;
         }
-    }
-};
-action.work = function(creep) {
-    if (!(creep.data.safeSpot && creep.data.safeSpot.roomName)) {
-        const flag = creep.data.destiny && Game.flags[creep.data.destiny.targetName];
-        if (flag) {
-            creep.data.safeSpot = flag.pos;
-        } else {
-            // find the route home, move toward the exit until out of danger
-            const exit = _.chain(creep.room.findRoute(creep.data.homeRoom)).first().get('exit').value();
-            if (exit) {
-                creep.data.safeSpot = creep.pos.findClosestByRange(exit);
-                creep.data.safeSpot.roomName = creep.pos.roomName;
+        
+        if (creep.data.safeSpot) {
+            if (creep.pos.getRangeTo(creep.target) < 10) {
+                creep.travelTo(creep.data.safeSpot);
+            } else {
+                creep.idleMove();
             }
         }
     }
-
-    if (creep.data.safeSpot) {
-        if (creep.pos.getRangeTo(creep.target) < 10) {
-            creep.travelTo(creep.data.safeSpot);
-        } else {
-            creep.idleMove();
+    
+    run(creep) {
+        if (this.isValidAction(creep)) {
+            if (creep.action === this && this.isValidTarget(creep.target, creep) ||
+            this.isAddableAction(creep) && this.assign(creep)) {
+                this.work(creep);
+                return true;
+            }
         }
     }
-};
-action.run = function(creep) {
-    if( action.isValidAction(creep) ) {
-        if (creep.action === action && action.isValidTarget(creep.target, creep) ||
-            action.isAddableAction(creep) && action.assign(creep) ) {
-
-            action.work(creep);
-            return true;
-        }
+    
+    onAssignment(creep) {
+        delete creep.data.safeSpot;
+        if (SAY_ASSIGNMENT) creep.say(ACTION_SAY.AVOIDING, SAY_PUBLIC);
     }
+    
 };
-action.onAssignment = function(creep, target) {
-    delete creep.data.safeSpot;
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.AVOIDING, SAY_PUBLIC);
-};
+module.exports = new Avoiding('avoiding');
