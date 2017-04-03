@@ -238,6 +238,7 @@ require('traveler')({exportTraveler: false, installTraveler: true, installProtot
 
 let cpuAtFirstLoop;
 module.exports.loop = function () {
+    if (Memory.pause) return;
     const cpuAtLoop = Game.cpu.getUsed();
     let p = startProfiling('main', cpuAtLoop);
     p.checkCPU('deserialize memory', 5); // the profiler makes an access to memory on startup
