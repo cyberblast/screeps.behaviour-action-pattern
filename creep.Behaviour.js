@@ -2,6 +2,11 @@
 const Behaviour = class {
     constructor(name) {
         this.name = name;
+        this.strategies = {
+            defaultStrategy: {
+                name: `default-${this.name}`,
+            }
+        };
     }
     // priority list of non resource based actions
     actions(creep) {
@@ -55,6 +60,9 @@ const Behaviour = class {
         }
         return Creep.action.idle.assign(creep);
     }
+    selectStrategies(actionName) {
+        return [this.strategies.defaultStrategy, this.strategies[actionName]];
+    }
     nextAction(creep) {
         return this.selectAction(creep, this.actions(creep));
     }
@@ -65,7 +73,7 @@ const Behaviour = class {
                 Task[creep.data.destiny.task].nextAction(creep);
             }
             else {
-            this.nextAction(creep);
+                this.nextAction(creep);
             }
         }
         
