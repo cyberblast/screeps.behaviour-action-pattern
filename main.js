@@ -141,6 +141,7 @@ global.install = () => {
     });
     _.assign(global.Util, {
         DiamondIterator: load('util.diamond.iterator'),
+        SpiralIterator: load('util.spiral.iterator'),
     });
     _.assign(global.Task, {
         guard: load("task.guard"),

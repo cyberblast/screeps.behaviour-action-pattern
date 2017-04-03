@@ -1,5 +1,5 @@
 /**
- * An endless iterator which advances in a square box beginning at the top-left.
+ * An endless iterator which advances in a square box beginning at the top-center.
  *
  *     67 68 69 70 71
  *  19 P
@@ -11,7 +11,7 @@
  *
  *  Easy starting-points are 0, 1, A, etc. Use the ring number to indicate these.
  */
-class XYIterator {
+class SpiralIterator {
     // public y;
     // public x;
     // private _ring;
@@ -40,7 +40,7 @@ class XYIterator {
     }
 
     next() {
-        XYIterator.dirTransform(this, this._dir);
+        SpiralIterator.dirTransform(this, this._dir);
 
         --this._step;
 
@@ -105,4 +105,4 @@ class XYIterator {
         return origin;
     }
 }
-module.exports = XYIterator;
+module.exports = SpiralIterator;
