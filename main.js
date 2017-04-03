@@ -128,6 +128,7 @@ global.install = () => {
 
     // Load modules
     _.assign(global, {
+        Action: load('action'),
         Extensions: load("extensions"),
         Population: load("population"),
         FlagDir: load("flagDir"),
