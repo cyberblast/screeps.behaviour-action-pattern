@@ -69,3 +69,4 @@ const action = class extends Creep.Action {
     }
     
 };
+module.exports = new action('attackController');
