@@ -266,6 +266,12 @@ mod.execute = function(){
     p.checkCPU('triggerCompleted', PROFILING.EXECUTE_LIMIT / 4);
 
     // Creep.died.on(n => console.log(`Creep ${n} died!`));
+    Creep.died.on(c => {
+        const data = Memory.population[c];
+        if (data && data.determinatedSpot && data.roomName) {
+            Room.costMatrixInvalid.trigger(data.roomName);
+        }
+    });
     let triggerDied = name => Creep.died.trigger(name);
     this.died.forEach(triggerDied);
     p.checkCPU('triggerDied', PROFILING.EXECUTE_LIMIT / 4);

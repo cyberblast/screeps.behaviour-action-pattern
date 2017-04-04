@@ -668,6 +668,18 @@ mod.extend = function(){
                 return this._allCreeps;
             }
         },
+        'immobileCreeps': {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._immobileCreeps) ){
+                    this._immobileCreeps = _.filter(this.creeps, c => {
+                        const s = c.data && c.data.determinatedSpot;
+                        return s && c.pos.isEqualTo(c.room.getPositionAt(s.x, s.y));
+                    });
+                }
+                return this._immobileCreeps;
+            }
+        },
         'hostiles': {
             configurable: true,
             get: function() {
@@ -923,6 +935,7 @@ mod.extend = function(){
                         };
                         this.structures.all.forEach(setCosts);
                         this.constructionSites.forEach(setCosts);
+                        this.immobileCreeps.forEach(c => costMatrix.set(c.pos.x, c.pos.y, 0xFF));
                         const prevTime = mod.pathfinderCache[this.name].updated;
                         mod.pathfinderCache[this.name] = {
                             costMatrix: costMatrix,
@@ -2748,6 +2761,7 @@ mod.flush = function(){
         delete room._isReceivingEnergy;
         delete room._reservedSpawnEnergy;
         delete room._creeps;
+        delete room._immobileCreeps;
         delete room._allCreeps;
         delete room._privateerMaxWeight;
         delete room._claimerMaxWeight;
