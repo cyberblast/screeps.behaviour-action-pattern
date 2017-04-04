@@ -1,6 +1,6 @@
 class Claimer extends Creep.Behaviour {
-    constructor() {
-        super('claimer');
+    constructor(name = 'claimer') {
+        super(name);
         this.strategies.defaultStrategy.moveOptions = function(options) {
             options.cacheRoutes = true;
             return options;
@@ -30,4 +30,4 @@ class Claimer extends Creep.Behaviour {
         ];
     }
 }
-module.exports = new Claimer();
+module.exports = Claimer;

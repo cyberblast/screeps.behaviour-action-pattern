@@ -147,6 +147,23 @@ global.install = () => {
     });
     Creep.Action = load("creep.Action");
     Creep.Behaviour = load("creep.Behaviour");
+    _.assign(Creep.Behaviour, {
+            Claimer: load("creep.behaviour.claimer"),
+            Hauler: load("creep.behaviour.hauler"),
+            Healer: load("creep.behaviour.healer"),
+            Melee: load("creep.behaviour.melee"),
+            Miner: load("creep.behaviour.miner"),
+            MineralMiner: load("creep.behaviour.mineralMiner"),
+            RemoteMiner: load("creep.behaviour.remoteMiner"),
+            RemoteHauler: load("creep.behaviour.remoteHauler"),
+            RemoteWorker: load("creep.behaviour.remoteWorker"),
+            Pioneer: load("creep.behaviour.pioneer"),
+            Privateer: load("creep.behaviour.privateer"),
+            Recycler: load("creep.behaviour.recycler"),
+            Ranger: load("creep.behaviour.ranger"),
+            Upgrader: load("creep.behaviour.upgrader"),
+            Worker: load("creep.behaviour.worker"),
+    });
     Creep.Setup = load("creep.Setup");
     _.assign(Creep, {
         action: {
@@ -180,21 +197,21 @@ global.install = () => {
             withdrawing: load("creep.action.withdrawing"),
         },
         behaviour: {
-            claimer: load("creep.behaviour.claimer"),
-            hauler: load("creep.behaviour.hauler"),
-            healer: load("creep.behaviour.healer"),
-            melee: load("creep.behaviour.melee"),
-            miner: load("creep.behaviour.miner"),
-            mineralMiner: load("creep.behaviour.mineralMiner"),
-            remoteMiner: load("creep.behaviour.remoteMiner"),
-            remoteHauler: load("creep.behaviour.remoteHauler"),
-            remoteWorker: load("creep.behaviour.remoteWorker"),
-            pioneer: load("creep.behaviour.pioneer"),
-            privateer: load("creep.behaviour.privateer"),
-            recycler: load("creep.behaviour.recycler"),
-            ranger: load("creep.behaviour.ranger"),
-            upgrader: load("creep.behaviour.upgrader"),
-            worker: load("creep.behaviour.worker")
+            claimer: new Creep.Behaviour.Claimer(),
+            hauler: new Creep.Behaviour.Hauler(),
+            healer: new Creep.Behaviour.Healer(),
+            melee: new Creep.Behaviour.Melee(),
+            miner: new Creep.Behaviour.Miner(),
+            mineralMiner: new Creep.Behaviour.MineralMiner(),
+            remoteMiner: new Creep.Behaviour.RemoteMiner(),
+            remoteHauler: new Creep.Behaviour.RemoteHauler(),
+            remoteWorker: new Creep.Behaviour.RemoteWorker(),
+            pioneer: new Creep.Behaviour.Pioneer(),
+            privateer: new Creep.Behaviour.Privateer(),
+            recycler: new Creep.Behaviour.Recycler(),
+            ranger: new Creep.Behaviour.Ranger(),
+            upgrader: new Creep.Behaviour.Upgrader(),
+            worker: new Creep.Behaviour.Worker(),
         },
         setup: {
             hauler: load("creep.setup.hauler"),

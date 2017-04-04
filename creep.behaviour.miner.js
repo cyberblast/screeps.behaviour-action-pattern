@@ -1,195 +1,196 @@
-let mod = {};
-module.exports = mod;
-mod.name = 'miner';
-mod.approach = function(creep){
-    let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.homeRoom);
-    let range = creep.pos.getRangeTo(targetPos);
-    if( range > 0 )
-        creep.travelTo( targetPos, {range:0} );
-    return range;
-};
-mod.determineTarget = creep => {
-    let notDeterminated = source => {
-        let hasThisSource = data => {
-            const predictedRenewal = data.predictedRenewal ? data.predictedRenewal : data.spawningTime;
-            return data.determinatedTarget == source.id && data.ttl > predictedRenewal;
+class Miner extends Creep.Behaviour {
+    constructor(name = 'miner') {
+        super(name);
+    }
+    approach(creep) {
+        let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.homeRoom);
+        let range = creep.pos.getRangeTo(targetPos);
+        if( range > 0 )
+            creep.travelTo( targetPos, {range:0} );
+        return range;
+    }
+    determineTarget(creep) {
+        let notDeterminated = source => {
+            let hasThisSource = data => {
+                const predictedRenewal = data.predictedRenewal ? data.predictedRenewal : data.spawningTime;
+                return data.determinatedTarget == source.id && data.ttl > predictedRenewal;
+            };
+            let existingBranding = _.find(Memory.population, hasThisSource);
+                return !existingBranding;
         };
-        let existingBranding = _.find(Memory.population, hasThisSource);
-            return !existingBranding;
-    };
-    source = _.find(creep.room.sources, notDeterminated);
-    if( source ) {
-        creep.data.determinatedTarget = source.id;
+        source = _.find(creep.room.sources, notDeterminated);
+        if( source ) {
+            creep.data.determinatedTarget = source.id;
+        }
+        if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9935), SAY_PUBLIC);
     }
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9935), SAY_PUBLIC);
-};
-mod.run = function(creep, params = {}) {
-    if (_.isUndefined(params.approach)) params.approach = mod.approach;
-    if (_.isUndefined(params.determineTarget)) params.determineTarget = mod.determineTarget;
-    let source;
-    if( !creep.data.determinatedTarget ) { // select source
-        params.determineTarget(creep);
-    } else { // get dedicated source
-        source = Game.getObjectById(creep.data.determinatedTarget);
-    }
-
-    if( source ) {
-        if (!creep.action || creep.action.name !== 'harvesting') Population.registerAction(creep, Creep.action.harvesting, source);
-        if( !creep.data.determinatedSpot ) {
-            let args = {
-                spots: [{
-                    pos: source.pos,
-                    range: 1
-                }],
-                checkWalkable: true,
-                where: null,
-                roomName: creep.pos.roomName
-            };
-
-            let invalid = [];
-            let findInvalid = entry => {
-                const predictedRenewal = entry.predictedRenewal ? entry.predictedRenewal : entry.spawningTime;
-                if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot
-                    && entry.ttl > predictedRenewal )
-                    invalid.push(entry.determinatedSpot);
-            };
-            _.forEach(Memory.population, findInvalid);
-            args.where = pos => !_.some(invalid,{x:pos.x,y:pos.y});
-
-            if( source.container )
-                args.spots.push({
-                    pos: source.container.pos,
-                    range: 1
-                });
-            if( !params.remote && source.link )
-                args.spots.push({
-                    pos: source.link.pos,
-                    range: 1
-                });
-            let spots = Room.fieldsInRange(args);
-            if( spots.length > 0 ){
-                let spot = creep.pos.findClosestByPath(spots, {filter: pos => {
-                    return !_.some(
-                        creep.room.lookForAt(LOOK_STRUCTURES, pos),
-                        {'structureType': STRUCTURE_ROAD }
-                    );
-                }});
-                if( !spot ) spot = creep.pos.findClosestByPath(spots) || spots[0];
-                if( spot ) {
-                    creep.data.determinatedSpot = {
-                        x: spot.x,
-                        y: spot.y
-                    };
-                    if (!params.remote) {
-                        let spawn = Game.spawns[creep.data.motherSpawn];
-                        if( spawn ) {
-                            let path = spot.findPathTo(spawn, {ignoreCreeps: true});
-                            if( path ) creep.data.predictedRenewal = creep.data.spawningTime + path.length; // road assumed
-                        }
-                    }
-                    if (MINERS_AUTO_BUILD && !source.container) {
-                        const sites = _.filter(source.pos.findInRange(FIND_CONSTRUCTION_SITES, 2), s => s.structureType === STRUCTURE_CONTAINER);
-                        if (!sites.length && source.room) {
-                            source.room.createConstructionSite(spot, STRUCTURE_CONTAINER);
-                        }
-                    }
-                }
-            }
-            if( !creep.data.determinatedSpot ) logError('Unable to determine working location for miner in room ' + creep.pos.roomName);
+    run(creep) {
+        let source;
+        if( !creep.data.determinatedTarget ) { // select source
+            this.determineTarget(creep);
+        } else { // get dedicated source
+            source = Game.getObjectById(creep.data.determinatedTarget);
         }
 
-        if( creep.data.determinatedSpot ) {
-            const perHarvest = creep => creep.data.body && creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2);
-            if( source.energy === 0 ) { // for mineral miners source.energy is undefined so this is false
-                const carryThreshold = (creep.data.body&&creep.data.body.work ? (creep.data.body.work*5) : (creep.carryCapacity/2));
-                if( creep.carry.energy <= carryThreshold ) {
-                    const dropped = creep.pos.findInRange(FIND_DROPPED_ENERGY, 1);
-                    if (dropped.length) {
-                        if(CHATTY) creep.say('picking', SAY_PUBLIC);
-                        creep.pickup(dropped[0]);
-                    } else if (source.container && source.container.sum > 0) {
-                        if(CHATTY) creep.say('withdraw cont', SAY_PUBLIC);
-                        creep.withdraw(source.container, RESOURCE_ENERGY);
-                    } else if (!params.remote && source.link && source.link.energy > 0) {
-                        if(CHATTY) creep.say('withdraw link', SAY_PUBLIC);
-                        creep.withdraw(source.link, RESOURCE_ENERGY);
-                    } else if (creep.carry.energy === 0) {
-                        if(CHATTY) creep.say('waiting', SAY_PUBLIC);
-                        return; // idle
-                    }
-                    if (creep.carry.energy === 0) return; // we need at least some energy to do both in the same tick.
-                }
-                if (!creep.data.repairChecked || Game.time - creep.data.repairChecked > MINER_WORK_THRESHOLD) {
-                    let repairTarget = Game.getObjectById(creep.data.repairTarget);
-                    if (!repairTarget) {
-                        const targets = params.remote ? creep.room.structures.repairable : creep.room.structures.fortifyable;
-                        const repairs = creep.pos.findInRange(targets, 3);
-                        if (repairs.length) {
-                            repairTarget = repairs[0];
-                            creep.data.repairTarget = repairTarget.id;
+        if( source ) {
+            if (!creep.action || creep.action.name !== 'harvesting') Population.registerAction(creep, Creep.action.harvesting, source);
+            if( !creep.data.determinatedSpot ) {
+                let args = {
+                    spots: [{
+                        pos: source.pos,
+                        range: 1
+                    }],
+                    checkWalkable: true,
+                    where: null,
+                    roomName: creep.pos.roomName
+                };
+
+                let invalid = [];
+                let findInvalid = entry => {
+                    const predictedRenewal = entry.predictedRenewal ? entry.predictedRenewal : entry.spawningTime;
+                    if( entry.roomName == args.roomName && ['miner', 'upgrader'].includes(entry.creepType) && entry.determinatedSpot
+                        && entry.ttl > predictedRenewal )
+                        invalid.push(entry.determinatedSpot);
+                };
+                _.forEach(Memory.population, findInvalid);
+                args.where = pos => !_.some(invalid,{x:pos.x,y:pos.y});
+
+                if( source.container )
+                    args.spots.push({
+                        pos: source.container.pos,
+                        range: 1
+                    });
+                if( !this.remote && source.link )
+                    args.spots.push({
+                        pos: source.link.pos,
+                        range: 1
+                    });
+                let spots = Room.fieldsInRange(args);
+                if( spots.length > 0 ){
+                    let spot = creep.pos.findClosestByPath(spots, {filter: pos => {
+                        return !_.some(
+                            creep.room.lookForAt(LOOK_STRUCTURES, pos),
+                            {'structureType': STRUCTURE_ROAD }
+                        );
+                    }});
+                    if( !spot ) spot = creep.pos.findClosestByPath(spots) || spots[0];
+                    if( spot ) {
+                        creep.data.determinatedSpot = {
+                            x: spot.x,
+                            y: spot.y
+                        };
+                        if (!this.remote) {
+                            let spawn = Game.spawns[creep.data.motherSpawn];
+                            if( spawn ) {
+                                let path = spot.findPathTo(spawn, {ignoreCreeps: true});
+                                if( path ) creep.data.predictedRenewal = creep.data.spawningTime + path.length; // road assumed
+                            }
+                        }
+                        if (MINERS_AUTO_BUILD && !source.container) {
+                            const sites = _.filter(source.pos.findInRange(FIND_CONSTRUCTION_SITES, 2), s => s.structureType === STRUCTURE_CONTAINER);
+                            if (!sites.length && source.room) {
+                                source.room.createConstructionSite(spot, STRUCTURE_CONTAINER);
+                            }
                         }
                     }
-                    if (repairTarget) {
-                        if(CHATTY) creep.say('repairing', SAY_PUBLIC);
-                        return creep.repair(repairTarget);
-                    } else {
-                        delete creep.data.repairTarget;
-                        creep.data.repairChecked = Game.time;
-                    }
                 }
-                if (!creep.data.buildChecked || Game.time - creep.data.buildChecked > MINER_WORK_THRESHOLD) {
-                    let buildTarget = Game.getObjectById(creep.data.buildTarget);
-                    if (!buildTarget) {
-                        const sites = creep.pos.findInRange(creep.room.myConstructionSites, 3);
-                        if (sites.length) {
-                            buildTarget = sites[0];
-                            creep.data.buildTarget = buildTarget.id;
-                        }
-                    }
-                    if (buildTarget) {
-                        if(CHATTY) creep.say('building', SAY_PUBLIC);
-                        return creep.build(buildTarget);
-                    } else {
-                        delete creep.data.buildTarget;
-                        creep.data.buildChecked = Game.time;
-                    }
-                }
-                if(CHATTY) creep.say('waiting', SAY_PUBLIC);
-                return; // idle
-            } else if( !params.remote && source.link && source.link.energy < source.link.energyCapacity ) {
-                if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
-                let range = params.approach(creep);
-                if( range === 0 ){
-                    if(creep.carry.energy > ( creep.carryCapacity - ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) )))
-                        creep.transfer(source.link, RESOURCE_ENERGY);
-                    return creep.harvest(source);
-                }
-            } else if( source.container && source.container.sum < source.container.storeCapacity ) {
-                if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
-                let range = params.approach(creep);
-                if( range === 0 ){
-                    if( creep.sum > ( creep.carryCapacity - perHarvest(creep) )){
-                        let transfer = r => { if(creep.carry[r] > 0 ) creep.transfer(source.container, r); };
-                        _.forEach(Object.keys(creep.carry), transfer);
-                    }
-                    return creep.harvest(source);
-                }
-            } else {
-                if(CHATTY) creep.say('dropmining', SAY_PUBLIC);
-                let range = params.approach(creep);
-                if( range === 0 ){
-                    if( creep.sum > ( creep.carryCapacity - perHarvest(creep) )) {
-                        if( OOPS ) creep.say(String.fromCharCode(8681), SAY_PUBLIC);
-                        let drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
-                        _.forEach(Object.keys(creep.carry), drop);
-                    }
-                    return creep.harvest(source);
-                }
+                if( !creep.data.determinatedSpot ) logError('Unable to determine working location for miner in room ' + creep.pos.roomName);
             }
-        // move towards our source so we're ready to take over
-        } else if (creep.pos.getRangeTo(source) > 3) {
-            creep.data.travelRange = 3;
-            return Creep.action.travelling.assign(creep, source);
+
+            if( creep.data.determinatedSpot ) {
+                const perHarvest = creep => creep.data.body && creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2);
+                if( source.energy === 0 ) { // for mineral miners source.energy is undefined so this is false
+                    const carryThreshold = (creep.data.body&&creep.data.body.work ? (creep.data.body.work*5) : (creep.carryCapacity/2));
+                    if( creep.carry.energy <= carryThreshold ) {
+                        const dropped = creep.pos.findInRange(FIND_DROPPED_ENERGY, 1);
+                        if (dropped.length) {
+                            if(CHATTY) creep.say('picking', SAY_PUBLIC);
+                            creep.pickup(dropped[0]);
+                        } else if (source.container && source.container.sum > 0) {
+                            if(CHATTY) creep.say('withdraw cont', SAY_PUBLIC);
+                            creep.withdraw(source.container, RESOURCE_ENERGY);
+                        } else if (!this.remote && source.link && source.link.energy > 0) {
+                            if(CHATTY) creep.say('withdraw link', SAY_PUBLIC);
+                            creep.withdraw(source.link, RESOURCE_ENERGY);
+                        } else if (creep.carry.energy === 0) {
+                            if(CHATTY) creep.say('waiting', SAY_PUBLIC);
+                            return; // idle
+                        }
+                        if (creep.carry.energy === 0) return; // we need at least some energy to do both in the same tick.
+                    }
+                    if (!creep.data.repairChecked || Game.time - creep.data.repairChecked > MINER_WORK_THRESHOLD) {
+                        let repairTarget = Game.getObjectById(creep.data.repairTarget);
+                        if (!repairTarget) {
+                            const targets = this.remote ? creep.room.structures.repairable : creep.room.structures.fortifyable;
+                            const repairs = creep.pos.findInRange(targets, 3);
+                            if (repairs.length) {
+                                repairTarget = repairs[0];
+                                creep.data.repairTarget = repairTarget.id;
+                            }
+                        }
+                        if (repairTarget) {
+                            if(CHATTY) creep.say('repairing', SAY_PUBLIC);
+                            return creep.repair(repairTarget);
+                        } else {
+                            delete creep.data.repairTarget;
+                            creep.data.repairChecked = Game.time;
+                        }
+                    }
+                    if (!creep.data.buildChecked || Game.time - creep.data.buildChecked > MINER_WORK_THRESHOLD) {
+                        let buildTarget = Game.getObjectById(creep.data.buildTarget);
+                        if (!buildTarget) {
+                            const sites = creep.pos.findInRange(creep.room.myConstructionSites, 3);
+                            if (sites.length) {
+                                buildTarget = sites[0];
+                                creep.data.buildTarget = buildTarget.id;
+                            }
+                        }
+                        if (buildTarget) {
+                            if(CHATTY) creep.say('building', SAY_PUBLIC);
+                            return creep.build(buildTarget);
+                        } else {
+                            delete creep.data.buildTarget;
+                            creep.data.buildChecked = Game.time;
+                        }
+                    }
+                    if(CHATTY) creep.say('waiting', SAY_PUBLIC);
+                    return; // idle
+                } else if( !this.remote && source.link && source.link.energy < source.link.energyCapacity ) {
+                    if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
+                    let range = this.approach(creep);
+                    if( range === 0 ){
+                        if(creep.carry.energy > ( creep.carryCapacity - ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) )))
+                            creep.transfer(source.link, RESOURCE_ENERGY);
+                        return creep.harvest(source);
+                    }
+                } else if( source.container && source.container.sum < source.container.storeCapacity ) {
+                    if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
+                    let range = this.approach(creep);
+                    if( range === 0 ){
+                        if( creep.sum > ( creep.carryCapacity - perHarvest(creep) )){
+                            let transfer = r => { if(creep.carry[r] > 0 ) creep.transfer(source.container, r); };
+                            _.forEach(Object.keys(creep.carry), transfer);
+                        }
+                        return creep.harvest(source);
+                    }
+                } else {
+                    if(CHATTY) creep.say('dropmining', SAY_PUBLIC);
+                    let range = this.approach(creep);
+                    if( range === 0 ){
+                        if( creep.sum > ( creep.carryCapacity - perHarvest(creep) )) {
+                            if( OOPS ) creep.say(String.fromCharCode(8681), SAY_PUBLIC);
+                            let drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
+                            _.forEach(Object.keys(creep.carry), drop);
+                        }
+                        return creep.harvest(source);
+                    }
+                }
+            // move towards our source so we're ready to take over
+            } else if (creep.pos.getRangeTo(source) > 3) {
+                creep.data.travelRange = 3;
+                return Creep.action.travelling.assign(creep, source);
+            }
         }
     }
-};
+}
+module.exports = Miner;

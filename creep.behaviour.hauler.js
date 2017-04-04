@@ -1,6 +1,6 @@
 class Hauler extends Creep.Behaviour {
-    constructor() {
-        super('hauler');
+    constructor(name = 'hauler') {
+        super(name);
         this.strategies.picking = {
             name: `picking-${this.name}`,
             energyOnly: false
@@ -40,4 +40,4 @@ class Hauler extends Creep.Behaviour {
             return this.selectAction(creep, this.outflowActions(creep));
     }
 }
-module.exports = new Hauler();
+module.exports = Hauler;
