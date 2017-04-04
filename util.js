@@ -507,5 +507,19 @@ module.exports = {
 
     valueOrZero(x) {
         return x || 0;
-    }
+    },
+
+    chargeScale(amount, min, max) {
+        // TODO per-room strategy
+        if (max === min) {
+            if (amount > max) {
+                return Infinity;
+            } else {
+                return -Infinity;
+            }
+        }
+        const chargeScale = 1 / (max - min); // TODO cache
+
+        return (amount - max) * chargeScale + 1;
+    },
 };

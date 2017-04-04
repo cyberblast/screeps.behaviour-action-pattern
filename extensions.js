@@ -225,18 +225,9 @@ mod.extend = function(){
         configurable: true,
         get: function() {
             // TODO per-room strategy
-            const max = MAX_STORAGE_ENERGY[this.room.controller.level];
-            const min = MIN_STORAGE_ENERGY[this.room.controller.level];
-            if (max === min) {
-                if (this.store.energy > max) {
-                    return Infinity;
-                } else {
-                    return -Infinity;
-                }
-            }
-            const chargeScale = 1 / (max - min); // TODO cache
-
-            return (this.store.energy - max) * chargeScale + 1;
+            return Util.chargeScale(this.store.energy,
+                MIN_STORAGE_ENERGY[this.room.controller.level],
+                MAX_STORAGE_ENERGY[this.room.controller.level]);
         },
     });
     StructureStorage.prototype.getNeeds = function(resourceType) {
@@ -267,6 +258,14 @@ mod.extend = function(){
             }
             return this._sum;
         }
+    });
+    Object.defineProperty(StructureTerminal.prototype, 'charge', { // fraction indicating charge % relative to constants
+        configurable: true,
+        get: function() {
+            return Util.chargeScale(this.store.energy,
+                TERMINAL_ENERGY,
+                TERMINAL_ENERGY * 2);
+        },
     });
     StructureTerminal.prototype.getNeeds = function(resourceType) {
         var ret = 0;
