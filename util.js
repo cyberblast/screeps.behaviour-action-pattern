@@ -379,19 +379,20 @@ module.exports = {
      * @param {string} key - The location in memory to check eg 'rooms.E1S1.statistics'
      * @returns {string}
      */
-    memoryUsage(key) {
-        const mem = key ? Memory[key] : Memory;
-        let string = '<table><tr><th>Key</th><th>Size (kb)</th></tr>';
+    memoryUsage(mem) {
+        let string = '';
         let total = 0;
+        let biggestKey = '';
         for (const key in mem) {
+            if (key.length > biggestKey.length) biggestKey = key;
             const sum = JSON.stringify(mem[key]).length / 1024;
             total += sum;
             string += `<tr><td>${key}</td><td>${_.round(sum, 2)}</td></tr>`;
         }
         string += `<tr><td>Total</td><td>${_.round(total, 2)}</td></tr></table>`;
-        return string;
+        const padding = Array(biggestKey.length + 2).join(' ');
+        return `<table><tr><th>Key${padding}</th><th>Size (kb)</th></tr>`.concat(string);
     },
-    
     /**
      * Reset all profiling data
      */
@@ -422,10 +423,19 @@ module.exports = {
      * @param {Number} [startCPU] - Optional starting CPU usage to use as starting point
      * @returns {checkCPU, totalCPU} - functions to be called to check usage and output totals
      */
-    startProfiling(name, startCPU) {
-        let checkCPU;
-        let totalCPU;
-        if (PROFILE || DEBUG) {
+    startProfiling(name, options = {}) {
+        const enabled = _.get(options, 'enabled', true);
+        let checkCPU = function(localName, limit, type) {
+        };
+        let totalCPU = function() {
+            // if you would like to do a baseline comparison
+            // if (_.isUndefined(Memory.profiling)) Memory.profiling = {ticks:0, cpu: 0};
+            // let thisTick = Game.cpu.getUsed() - startCPU;
+            // Memory.profiling.ticks++;
+            // Memory.profiling.cpu += thisTick;
+            // logSystem('Total', _.round(thisTick, 2) + ' ' + _.round(Memory.profiling.cpu / Memory.profiling.ticks, 2));
+        };
+        if (PROFILE && enabled) {
             if (_.isUndefined(Memory.profiler)) {
                 Util.resetProfiler();
             } else if (!global.profiler ||
@@ -433,9 +443,9 @@ module.exports = {
                 global.profiler.totalTicks < Memory.profiler.totalTicks) {
                 Util.loadProfiler();
             }
-            const onLoad = startCPU || Game.cpu.getUsed();
+            const onLoad = options.startCPU || Game.cpu.getUsed();
             let start = onLoad;
-            if (PROFILE) {
+            if (PROFILE && !PROFILING.BASIC_ONLY) {
                 /**
                  * Compares usage since startProfiling or the last call to checkCPU and reports if over limit
                  * @param {string} localName - The local name to use when reporting
@@ -449,13 +459,9 @@ module.exports = {
                         Util.logSystem(name + ':' + localName, used);
                     }
                     if (type) {
-                        Util.set(global.profiler.types, type, {
-                            totalCPU: 0,
-                            count: 0,
-                            totalCount: 0,
-                        });
+                        if (_.isUndefined(global.profiler.types[type])) global.profiler.types[type] = {totalCPU: 0, count: 0, totalCount: 0};
                         global.profiler.types[type].totalCPU += used;
-                        glboal.profiler.types[type].count++;
+                        global.profiler.types[type].count++;
                     }
                     start = current;
                 };
@@ -468,23 +474,29 @@ module.exports = {
                 global.profiler.totalCPU += totalUsed;
                 global.profiler.totalTicks++;
                 const avgCPU = global.profiler.totalCPU / global.profiler.totalTicks;
-                if (PROFILE && PROFILING.AVERAGE_USAGE && _.size(global.profiler.types) > 0) {
-                    let heading = '';
-                    while (heading.length < 30) heading += ' ';
-                    Util.logSystem(heading, '(avg/creep/tick) (active) (weighted avg) (executions)');
-                    for (const type in global.profiler.types) {
-                        const data = global.profiler.types[type];
+                if (PROFILE && !PROFILING.BASIC_ONLY && PROFILING.AVERAGE_USAGE && _.size(global.profiler.types) > 0) {
+                    let string = '';
+                    let longestType = '';
+                    _(global.profiler.types).map((data, type) => {
                         data.totalCount += data.count;
                         const typeAvg = _.round(data.totalCPU / data.totalCount, 3);
-                        let heading = type + ': ';
-                        while (heading < 30) heading += ' ';
-                        Util.logSystem(heading, '\t' + typeAvg + '\t\t' +
-                            data.count + '\t\t' + _.round(typeAvg * data.count, 3) + '\t\t' + data.totalCount);
+                        const r = {
+                            type,
+                            typeAvg: typeAvg,
+                            active: data.count,
+                            weighted: _.round(typeAvg * data.count, 3),
+                            executions: data.totalCount
+                        };
                         data.count = 0;
-                    }
+                        return r;
+                    }).sortByOrder('weighted', 'desc').forEach(data => {
+                        if (data.type.length > longestType.length) longestType = data.type;
+                        string += `<tr><td>${data.type}</td><td>     ${data.typeAvg}</td><td>   ${data.active}</td><td>     ${data.weighted}</td><td>   ${data.executions}</td></tr>`;
+                    }).value();
+                    string += `</table>`;
+                    Util.logSystem('Average Usage', `<table style="font-size:80%;"><tr><th>Type${Array(longestType.length + 2).join(' ')}</th><th>(avg/creep/tick)</th><th>(active)</th><th>(weighted avg)</th><th>(executions)</th></tr>`.concat(string));
                 }
-                Util.logSystem(name, ' loop:' + _.round(totalUsed, 2), 'other:' + _.round(onLoad, 2), 'avg:' + _.round(avgCPU, 2), 'ticks:' +
-                    global.profiler.totalTicks, 'bucket:' + Game.cpu.bucket, 2);
+                Util.logSystem(name, ' loop:' + _.round(totalUsed, 2), 'other:' + _.round(onLoad, 2), 'avg:' + _.round(avgCPU, 2), 'ticks:' + global.profiler.totalTicks, 'bucket:' + Game.cpu.bucket);
                 if (PROFILE) console.log('\n');
                 Memory.profiler = global.profiler;
             };

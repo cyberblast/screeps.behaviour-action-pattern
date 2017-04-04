@@ -10,10 +10,17 @@ let mod = {
     PROFILE: false, // enable CPU profiling
     PROFILING: {
         ANALYZE_LIMIT: 2, // profile warning levels
-        AVERAGE_USAGE: true, // display average creep & flag usage
+        AVERAGE_USAGE: false, // display average creep & flag usage
+        BASIC_ONLY: true, // only display basic profiling information, disables all other profiling
+        CREEPS: false, // display creep profiling information
+        CREEP_TYPE: '', // define a specific creep to profile, requires CREEPS=true
         EXECUTE_LIMIT: 5, // profile warning levels
+        FLAGS: false, // display flag profiling information
         FLUSH_LIMIT: 5, // profile warning levels
+        MAIN: true, // profile main loop
+        MIN_THRESHOLD: 0.5, // set the bar for checks that involve very low usage (warning, chatty!)
         REGISTER_LIMIT: 2, // profile warning levels
+        ROOMS: false, // display room and structure profiling information
     },
     TRAVELER_STUCK_TICKS: 2, // Number of ticks not moving to be considered stuck by the Traveler API
     TRAVELER_THRESHOLD: 5, // Average creep CPU usage/tick before warning about pathing cost, starts after 25 ticks
