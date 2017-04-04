@@ -1,4 +1,4 @@
-const Avoiding = class extends Creep.Action {
+const action = class extends Creep.Action {
     
     constructor(name) {
         super(name);
@@ -96,4 +96,4 @@ const Avoiding = class extends Creep.Action {
     }
     
 };
-module.exports = new Avoiding('avoiding');
+module.exports = new action('avoiding');

@@ -5,7 +5,7 @@ const CreepAction = class extends Action {
     };
     
     isAddableAction(creep) {
-        return Action.prototype.isAddableAction.call(this, creep) || !creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction;
+        return super.isAddableAction(creep) || !creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction;
     };
     
     step(creep) {
