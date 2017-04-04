@@ -8,8 +8,7 @@ action.isAddableTarget = function(target, creep){ return target &&
 };
 action.newTarget = function(creep){
     let validColor = flagEntry => (
-        (flagEntry.color == FLAG_COLOR.claim.reserve.color && flagEntry.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor) ||
-        (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor)
+        Flag.compare(flagEntry, FLAG_COLOR.claim.reserve) || Flag.compare(flagEntry, FLAG_COLOR.invade.exploit)
     );
 
     let flag;
@@ -62,5 +61,5 @@ action.work = function(creep){
     return workResult;
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9971), SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.RESERVING, SAY_PUBLIC);
 };

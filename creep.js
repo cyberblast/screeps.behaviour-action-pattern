@@ -56,12 +56,17 @@ mod.extend = function(){
                     return;
                 }
             }
-            let p = startProfiling('Creep.run');
+            const total = Util.startProfiling('Creep.run', {enabled:PROFILING.CREEPS});
+            const p = Util.startProfiling(this.name + '.run', {enabled:this.data && this.data.creepType && PROFILING.CREEP_TYPE === this.data.creepType});
             if (this.data && !_.contains(['remoteMiner', 'miner', 'upgrader'], this.data.creepType)) {
                 this.repairNearby();
+                p.checkCPU('repairNearby', PROFILING.MIN_THRESHOLD);
             }
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Behaviour: behaviour && behaviour.name, Creep:'run'});
-            if( behaviour ) behaviour.run(this);
+            if( behaviour ) {
+                behaviour.run(this);
+                p.checkCPU('behaviour.run', PROFILING.MIN_THRESHOLD);
+            }
             else if(!this.data){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Creep:'run'}, 'memory init');
                 let type = this.memory.setup;
@@ -107,14 +112,17 @@ mod.extend = function(){
                         });
                         Population.countCreep(this.room, entry);
                     } else this.suicide();
+                    p.checkCPU('!this.data', PROFILING.MIN_THRESHOLD);
                 }
             }
             if( this.flee ) {
                 this.fleeMove();
+                p.checkCPU('fleeMove', PROFILING.MIN_THRESHOLD);
                 Creep.behaviour.ranger.heal(this);
+                p.checkCPU('heal', PROFILING.MIN_THRESHOLD);
                 if( SAY_ASSIGNMENT ) this.say(String.fromCharCode(10133), SAY_PUBLIC);
             }
-            p.checkCPU(this.name, 5, this.data ? this.data.creepType : 'noType');
+            total.checkCPU(this.name, PROFILING.EXECUTE_LIMIT / 3, this.data ? this.data.creepType : 'noType');
         }
 
         strategy.freeStrategy(this);
@@ -227,17 +235,18 @@ mod.extend = function(){
         if (this.room.controller && this.room.controller.owner && !(this.room.my || this.room.reserved || this.room.ally)) return;
         // if it has energy and a work part, remoteMiners do repairs once the source is exhausted.
         if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
-            let nearby = this.pos.findInRange(this.room.structures.repairable, DRIVE_BY_REPAIR_RANGE);
+            const repairRange = this.data && this.data.creepType === 'remoteHauler' ? REMOTE_HAULER.DRIVE_BY_REPAIR_RANGE : DRIVE_BY_REPAIR_RANGE;
+            let nearby = this.pos.findInRange(this.room.structures.repairable, repairRange);
             if( nearby && nearby.length ){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
                 this.repair(nearby[0]);
             } else {
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'none');
                 // enable remote haulers to build their own roads and containers
-                if( REMOTE_HAULER_DRIVE_BY_BUILDING && this.data && this.data.creepType === 'remoteHauler' ) {
+                if( REMOTE_HAULER.DRIVE_BY_BUILDING && this.data && this.data.creepType === 'remoteHauler' ) {
                     // only search in a range of 1 to save cpu
-                    let nearby = this.pos.findInRange(this.room.myConstructionSites, REMOTE_HAULER_DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
-                        return site.my && REMOTE_HAULER_DRIVE_BY_BUILD_ALL ||
+                    let nearby = this.pos.findInRange(this.room.myConstructionSites, REMOTE_HAULER.DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
+                        return site.my && REMOTE_HAULER.DRIVE_BY_BUILD_ALL ||
                             (site.structureType === STRUCTURE_CONTAINER ||
                             site.structureType === STRUCTURE_ROAD);
                     }});
@@ -360,7 +369,13 @@ mod.extend = function(){
 };
 mod.execute = function(){
     if ( DEBUG && Memory.CPU_CRITICAL ) logSystem('system',`${Game.time}: CPU Bucket level is critical (${Game.cpu.bucket}). Skipping non critical creep roles.`);
-    let run = creep => creep.run();
+    let run = creep => {
+        try {
+            creep.run();
+        } catch (e) {
+            console.log('<span style="color:FireBrick">Creep ' + creep.name + (e.stack || e.toString()) + '</span>');
+        }
+    };
     _.forEach(Game.creeps, run);
 };
 mod.bodyCosts = function(body){
@@ -401,8 +416,25 @@ mod.partsComparator = function (a, b) {
     let indexOfB = partsOrder.indexOf(b);
     return indexOfA - indexOfB;
 };
+mod.formatParts = function(parts) {
+    if (parts && !Array.isArray(parts) && typeof parts === 'object') {
+        const body = [];
+        for (const part of BODYPARTS_ALL) {
+            if (part in parts) body.push(..._.times(parts[part], n => part));
+        }
+        parts = body;
+    }
+    return parts;
+};
+mod.formatBody = function(fixedBody, multiBody) {
+    fixedBody = Creep.formatParts(fixedBody);
+    multiBody = Creep.formatParts(multiBody);
+    return {fixedBody, multiBody};
+};
 // params: {minThreat, maxWeight, maxMulti}
 mod.compileBody = function (room, params, sort = true) {
+    const {fixedBody, multiBody} = Creep.formatBody(params.fixedBody || [], params.multiBody || []);
+    _.assign(params, {fixedBody, multiBody});
     if (params.sort !== undefined) sort = params.sort;
     let parts = [];
     let multi = Creep.multi(room, params);
@@ -412,7 +444,10 @@ mod.compileBody = function (room, params, sort = true) {
     for (let iPart = 0; iPart < params.fixedBody.length; iPart++) {
         parts[parts.length] = params.fixedBody[iPart];
     }
-    if( sort ) parts.sort(Creep.partsComparator);            
+    if( sort ) {
+        const compareFunction = typeof sort === 'function' ? sort : Creep.partsComparator;
+        parts.sort(compareFunction);
+    }
     if( parts.includes(HEAL) ) {
         let index = parts.indexOf(HEAL);
         parts.splice(index, 1);

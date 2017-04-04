@@ -2,22 +2,11 @@
 let mod = {};
 module.exports = mod;
 // hook into events
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.attackController.handleFlagFound(flag) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.attackController.handleSpawningStarted(params) );
-    // a creep completed spawning
-    Creep.spawningCompleted.on( creep => Task.attackController.handleSpawningCompleted(creep) );
-    // a creep will die soon
-    Creep.predictedRenewal.on( creep => Task.attackController.handleCreepDied(creep.name) );
-    // a creep died
-    Creep.died.on( name => Task.attackController.handleCreepDied(name) );
-};
+mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a Green/Purple flag
-    if( flag.color == FLAG_COLOR.invade.attackController.color && flag.secondaryColor == FLAG_COLOR.invade.attackController.secondaryColor ){
+    if( flag.compareTo(FLAG_COLOR.invade.attackController) ){
         // check if a new creep has to be spawned
         
         Task.attackController.checkForRequiredCreeps(flag);
@@ -166,7 +155,10 @@ mod.nextAction = creep => {
 mod.creep = {
     attackController: {
         fixedBody: [],
-        multiBody: [CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE],
+        multiBody: {
+            [CLAIM]: 5,
+            [MOVE]: 5,
+        },
         minMulti: 1,
         maxMulti: 4,
         name: "Atk-Contr", 

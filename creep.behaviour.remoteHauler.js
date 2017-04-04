@@ -18,28 +18,30 @@ class RemoteHauler extends Creep.Behaviour {
                 if( deposit.length > 0 ){
                     let target = creep.pos.findClosestByRange(deposit);
                     if( target.structureType == STRUCTURE_STORAGE && this.assignAction(creep, Creep.action.storing, target) ) return;
-                    else if( this.assignAction(creep, Creep.action.charging, target) ) return;
-                    else if( this.assignAction(creep, Creep.action.storing) ) return; // prefer storage
+                    if( this.assignAction(creep, Creep.action.charging) ) return;
+                    // no deposit :/ 
+                    // try spawn & extensions
+                    if( this.assignAction(creep, Creep.action.feeding) ) return;
+                    if( this.assignAction(creep, Creep.action.dropping) ) return;
+                    else {
+                        const drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
+                        _.forEach(Object.keys(creep.carry), drop);
+                        return this.assignAction(creep, Creep.action.idle);
+                    }
                 }
-                if( this.assignAction(creep, Creep.action.charging) ) return;
-                // no deposit :/ 
-                // try spawn & extensions
-                if( this.assignAction(creep, Creep.action.feeding) ) return;
-                this.assignAction(creep, Creep.action.dropping);
-                return;
+                // empty
+                // travelling
+                if (this.gotoTargetRoom(creep)) {
+                    return;
+                }
             }
-            // empty
-            // travelling
-            if (this.gotoTargetRoom(creep)) {
-                return;
-            }
-        }
-        // at target room
-        else if( creep.data.destiny.room == creep.pos.roomName ){
-            // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
-            if( creep.sum / creep.carryCapacity > REMOTE_HAULER_MIN_LOAD) {
-                this.goHome(creep);
-                return;
+            // at target room
+            else if( creep.data.destiny.room == creep.pos.roomName ){
+                // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
+                if( creep.sum / creep.carryCapacity > REMOTE_HAULER.MIN_LOAD) {
+                    this.goHome(creep);
+                    return;
+                }
             }
             // picking last until we have strategies that can compare cost vs benefit otherwise remoteHaulers bounce between piles of dropped energy
             if( this.assignAction(creep, Creep.action.uncharging) ) return;
@@ -53,25 +55,19 @@ class RemoteHauler extends Creep.Behaviour {
                     return Creep.action.travelling.assign(creep, source);
                 }
             }
-            return Creep.action.idle.assign(creep);
+            return this.assignAction(creep, Creep.action.idle);
         }
         // somewhere
         else {
             let ret = false;
             // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
-            if( creep.sum / creep.carryCapacity > REMOTE_HAULER_MIN_LOAD )
+            if( creep.sum / creep.carryCapacity > REMOTE_HAULER.MIN_LOAD )
                 ret = this.goHome(creep);
             else
                 ret = this.gotoTargetRoom(creep);
             if (ret) {
                 return;
             }
-        }
-        // fallback
-        // recycle self
-        let mother = Game.spawns[creep.data.motherSpawn];
-        if( mother ) {
-            this.assignAction(creep, Creep.action.recycling, mother);
         }
     }
     gotoTargetRoom(creep){
