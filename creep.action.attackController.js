@@ -3,6 +3,8 @@ const action = class extends Creep.Action {
     constructor(...args) {
         super(...args);
         
+        this.statement = ACTION_SAY.ATTACK_CONTROLLER;
+        
         this.defaultStrategy.moveOptions = function(opts) {
             return opts;
         }
@@ -62,10 +64,6 @@ const action = class extends Creep.Action {
         
         const work = creep.target.owner && !creep.target.my ? creep.attackController : creep.claimController;
         return work.call(creep, creep.target);
-    }
-    
-    onAssignment(creep) {
-        if (SAY_ASSIGNMENT) creep.say(ACTION_SAY.ATTACK_CONTROLLER, SAY_PUBLIC);
     }
     
 };

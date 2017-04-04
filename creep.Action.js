@@ -1,5 +1,12 @@
 const CreepAction = class extends Action {
     
+    constructor(...args) {
+        super(...args);
+        
+        // should be changed in each action
+        this.statement = this.name;
+    }
+    
     getTargetByID(id) {
         return super.getTargetByID(id) || Game.spawns[id] || Game.flags[id];
     };
@@ -44,7 +51,7 @@ const CreepAction = class extends Action {
     };
     
     onAssignment(creep, target) {
-        return ERR_INVALID_ARGS;
+        if (SAY_ASSIGNMENT) creep.say(this.statement, SAY_PUBLIC);
     };
     
 };

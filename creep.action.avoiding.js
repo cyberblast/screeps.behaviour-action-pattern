@@ -5,6 +5,7 @@ const action = class extends Creep.Action {
         this.lairDangerTime = 24;
         this.targetRange = 0;
         this.reachedRange = 0;
+        this.statement = ACTION_SAY.AVOIDING;
     }
     
     isActiveLair(target) {
@@ -92,7 +93,7 @@ const action = class extends Creep.Action {
     
     onAssignment(creep) {
         delete creep.data.safeSpot;
-        if (SAY_ASSIGNMENT) creep.say(ACTION_SAY.AVOIDING, SAY_PUBLIC);
+        super.onAssignment(creep);
     }
     
 };

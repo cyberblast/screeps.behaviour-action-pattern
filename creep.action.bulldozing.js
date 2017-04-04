@@ -4,6 +4,7 @@ const action = class extends Creep.Action {
         super(...args);
         this.maxPerAction = 2;
         this.maxPerTarget = 1;
+        this.statement = ACTION_SAY.BULLDOZING;
     }
     
     isValidTarget(target) {
@@ -30,10 +31,6 @@ const action = class extends Creep.Action {
     
     work(creep) {
         return creep.move(creep.pos.getDirectionTo(creep.target));
-    }
-    
-    onAssignment(creep) {
-        if (SAY_ASSIGNMENT) creep.say(ACTION_SAY.BULLDOZING, SAY_PUBLIC);
     }
     
 };

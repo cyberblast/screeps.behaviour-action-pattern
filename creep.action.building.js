@@ -5,6 +5,7 @@ const action = class extends Creep.Action {
         this.maxPerTarget = 3;
         this.targetRange = 3;
         this.maxPerAction = 3;
+        this.statement = ACTION_SAY.BUILDING;
     }
     
     isValidAction(creep) {
@@ -30,10 +31,6 @@ const action = class extends Creep.Action {
     
     work(creep) {
         return creep.build(creep.target);
-    }
-    
-    onAssignment(creep) {
-        if (SAY_ASSIGNMENT) creep.say(ACTION_SAY.BUILDING, SAY_PUBLIC);
     }
     
 };
