@@ -275,6 +275,9 @@ mod.extend = function(){
                 this._sum = _.sum(this.store);
             }
             return this._sum;
+        },
+        set(val) {
+            this._sum = val;
         }
     });
     StructureContainer.prototype.getNeeds = function(resourceType) {
