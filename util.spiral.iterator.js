@@ -17,8 +17,9 @@ class SpiralIterator {
     // private _ring;
     // private _dir = TOP; // dir of next step
     // private _step;
+    // private _ringLimit;
 
-    constructor(xy, ring) { // TODO borders
+    constructor(xy, ring, ringLimit) { // TODO borders
         this._dir = TOP;
         this.x = xy.x;
         if (ring === undefined) {
@@ -29,6 +30,11 @@ class SpiralIterator {
             this._ring = ring - 1;
             this._step = 1;
             this.y = xy.y;
+        }
+        if (ringLimit === undefined) {
+            this._ringLimit = Math.min(2, this._ring + 1);
+        } else if (Number.isFinite(ringLimit)) {
+            this._ringLimit = ringLimit;
         }
     }
 
@@ -68,7 +74,7 @@ class SpiralIterator {
         }
 
         return {
-            done: false,
+            done: this._ring >= this._ringLimit,
             value: {x: this.x, y: this.y},
         };
     }
