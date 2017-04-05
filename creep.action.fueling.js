@@ -1,26 +1,34 @@
-let action = new Creep.Action('fueling');
-module.exports = action;
-action.maxPerTarget = 1;
-action.maxPerAction = 1;
-action.isValidAction = function(creep){
-    return ( creep.carry.energy > 0 && creep.room.towerFreeCapacity > 0 );
+const action = class extends Creep.Action {
+    
+    constructor(...args) {
+        super(...args);
+        
+        this.maxPerAction = 1;
+        this.maxPerTarget = 1;
+        this.statement = ACTION_SAY.FUELING;
+    }
+    
+    isValidAction(creep) {
+        return creep.carry.energy > 0 && creep.room.towerFreeCapacity > 0;
+    }
+    
+    isValidTarget(target) {
+        return super.isValidTarget(target) && target.energy && target.energy < target.energyCapacity;
+    }
+    
+    isAddableTarget(target) {
+        return target.my && this.isAddableTarget(target);
+    }
+    
+    newTarget(creep) {
+        return creep.room.structures.fuelable.length && creep.pos.findClosestByRange(creep.room.structures.fuelable);
+    }
+    
+    work(creep) {
+        const response = creep.transfer(creep.target, RESOURCE_ENERGY);
+        if (creep.target.energyCapacity - creep.target.energy < 20) delete creep.data.targetId;
+        return response;
+    }
+    
 };
-action.isValidTarget = function(target){
-    return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
-};
-action.isAddableTarget = function(target){
-    return ( target.my &&
-        (!target.targetOf || target.targetOf.length < this.maxPerTarget));
-};
-action.newTarget = function(creep){
-    return creep.room.structures.fuelable.length > 0 ? creep.pos.findClosestByRange(creep.room.structures.fuelable) : null;
-};
-action.work = function(creep){
-    let response = creep.transfer(creep.target, RESOURCE_ENERGY);
-    if( creep.target.energyCapacity - creep.target.energy < 20 )
-        creep.data.targetId = null;
-    return response;
-};
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.FUELING, SAY_PUBLIC);
-};
+module.exports = new action('fueling');
