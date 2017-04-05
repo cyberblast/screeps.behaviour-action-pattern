@@ -240,18 +240,16 @@ require('traveler')({exportTraveler: false, installTraveler: true, installProtot
 let cpuAtFirstLoop;
 module.exports.loop = function () {
     const cpuAtLoop = Game.cpu.getUsed();
-    let p = startProfiling('main', cpuAtLoop);
+    if (Memory.pause) return;
+    const totalUsage = Util.startProfiling('main', {startCPU: cpuAtLoop});
+    const p = Util.startProfiling('main', {enabled: PROFILING.MAIN});
     p.checkCPU('deserialize memory', 5); // the profiler makes an access to memory on startup
     // let the cpu recover a bit above the threshold before disengaging to prevent thrashing
     Memory.CPU_CRITICAL = Memory.CPU_CRITICAL ? Game.cpu.bucket < CRITICAL_BUCKET_LEVEL + CRITICAL_BUCKET_OVERFILL : Game.cpu.bucket < CRITICAL_BUCKET_LEVEL;
     if (!cpuAtFirstLoop) cpuAtFirstLoop = cpuAtLoop;
-
     // ensure required memory namespaces
     if (Memory.modules === undefined)  {
-        Memory.modules = {
-            viral: {},
-            internalViral: {}
-        };
+        global.install();
     }
     if (Memory.debugTrace === undefined) {
         Memory.debugTrace = {error:true, no:{}};
@@ -318,13 +316,13 @@ module.exports.loop = function () {
     if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
         load("statistics").process();
     processReports();
-    p.checkCPU('processReports', PROFILING.ANALYZE_LIMIT);
+    p.checkCPU('processReports', PROFILING.FLUSH_LIMIT);
     FlagDir.cleanup();
-    p.checkCPU('FlagDir.cleanup', PROFILING.ANALYZE_LIMIT);
+    p.checkCPU('FlagDir.cleanup', PROFILING.FLUSH_LIMIT);
     Population.cleanup();
-    p.checkCPU('Population.cleanup', PROFILING.ANALYZE_LIMIT);
+    p.checkCPU('Population.cleanup', PROFILING.FLUSH_LIMIT);
     Room.cleanup(); 
-    p.checkCPU('Room.cleanup', PROFILING.ANALYZE_LIMIT);
+    p.checkCPU('Room.cleanup', PROFILING.FLUSH_LIMIT);
     // custom cleanup
     if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
 
@@ -339,5 +337,5 @@ module.exports.loop = function () {
     Game.cacheTime = Game.time;
 
     if( DEBUG && TRACE ) trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
-    p.totalCPU();
+    totalUsage.totalCPU();
 };
