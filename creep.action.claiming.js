@@ -1,5 +1,11 @@
 const action = class extends Creep.Action {
     
+    constructor(...args) {
+        super(...args);
+        
+        this.statement = ACTION_SAY.CLAIMING;
+    }
+    
     isValidTarget(target) {
         return !target.room || !target.owner;
     }
