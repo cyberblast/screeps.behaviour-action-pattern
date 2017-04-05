@@ -4,7 +4,6 @@ const action = class extends Creep.Action {
         super(...args);
         
         this.renewTarget = false;
-        this.statement = ACTION_SAY.CHARGING;
     }
     
     isValidAction(creep) {

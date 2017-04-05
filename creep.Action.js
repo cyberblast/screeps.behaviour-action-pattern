@@ -3,8 +3,7 @@ const CreepAction = class extends Action {
     constructor(...args) {
         super(...args);
         
-        // should be changed in each action
-        this.statement = this.name;
+        this.statement = ACTION_SAY[this.name.toUpperCase()];
     }
     
     getTargetByID(id) {

@@ -4,7 +4,6 @@ const action = class extends Creep.Action {
         super(...args);
         this.maxPerAction = 2;
         this.maxPerTarget = 1;
-        this.statement = ACTION_SAY.BULLDOZING;
     }
     
     isValidTarget(target) {

@@ -4,7 +4,6 @@ const action = class extends Creep.Action {
         super(...args);
         
         this.targetRange = 3;
-        this.statement = ACTION_SAY.IDLE;
     }
     
     newTarget(creep) {

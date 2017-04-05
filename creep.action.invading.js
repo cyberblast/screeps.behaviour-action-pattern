@@ -3,8 +3,6 @@ const action = class extends Creep.Action {
     constructor(...args) {
         super(...args);
         
-        this.statement = ACTION_SAY.INVADING;
-        
         this.defaultStrategy.moveOptions = function(opts) {
             // allow routing in and through hostile rooms
             if (_.isUndefined(opts.allowHostile)) opts.allowHostile = true;

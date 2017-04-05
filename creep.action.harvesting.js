@@ -4,7 +4,6 @@ const action = class extends Creep.Action {
         super(...args);
         
         this.renewTarget = false;
-        this.statement = ACTION_SAY.HARVESTING;
     }
     
     isValidAction(creep) {

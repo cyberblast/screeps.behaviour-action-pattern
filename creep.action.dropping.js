@@ -4,7 +4,6 @@ const action = class extends Creep.Action {
         super(...args);
         
         this.reachedRange = 0;
-        this.statement = ACTION_SAY.DROPPING;
     }
     
     isValidAction(creep) {

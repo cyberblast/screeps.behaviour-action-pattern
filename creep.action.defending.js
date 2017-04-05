@@ -3,8 +3,6 @@ const action = class extends Creep.Action {
     constructor(...args) {
         super(...args);
         
-        this.statement = ACTION_SAY.DEFENDING;
-        
         this.defaultStrategy.priorityTargetFilter = function(creep) {
             return function(hostile) {
                 return true;

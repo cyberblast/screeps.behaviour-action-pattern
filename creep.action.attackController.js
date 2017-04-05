@@ -3,8 +3,6 @@ const action = class extends Creep.Action {
     constructor(...args) {
         super(...args);
         
-        this.statement = ACTION_SAY.ATTACK_CONTROLLER;
-        
         this.defaultStrategy.moveOptions = function(opts) {
             return opts;
         }

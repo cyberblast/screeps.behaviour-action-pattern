@@ -4,7 +4,6 @@ const action = class extends Creep.Action {
         super(...args);
         
         this.maxPerTarget = 1;
-        this.statement = ACTION_SAY.FEEDING;
     }
     
     isValidAction(creep) {

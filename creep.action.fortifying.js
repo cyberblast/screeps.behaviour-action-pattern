@@ -6,7 +6,6 @@ const action = class extends Creep.Action {
         this.maxPerTarget = 1;
         this.maxPerAction = 1;
         this.targetRange = 3;
-        this.statement = ACTION_SAY.FORTIFYING;
     }
     
     isValidAction(creep) {

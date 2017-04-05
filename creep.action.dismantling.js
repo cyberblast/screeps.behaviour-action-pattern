@@ -6,7 +6,6 @@ const action = class extends Creep.Action {
         this.maxPerAction = 3;
         this.maxperTarget = 3;
         this.renewTarget = false;
-        this.statement = ACTION_SAY.DISMANTLING;
     }
     
     isValidAction(creep) {
