@@ -1,18 +1,22 @@
-let action = new Creep.Action('idle');
-module.exports = action;
-action.targetRange = 3;
-action.isValidAction = function(creep){ return true; };
-action.isAddableAction = function(creep){ return true; };
-action.isAddableTarget = function(target){ return true; };
-action.newTarget = function(creep){
-    return FlagDir.specialFlag();
+const action = class extends Creep.Action {
+    
+    constructor(...args) {
+        super(...args);
+        
+        this.targetRange = 3;
+        this.statement = ACTION_SAY.IDLE;
+    }
+    
+    newTarget(creep) {
+        return FlagDir.specialFlag();
+    }
+    
+    step(creep) {
+        if (CHATTY) creep.say(this.name, SAY_PUBLIC);
+        creep.idleMove();
+        delete creep.data.actionName;
+        delete creep.data.targetId;
+    }
+    
 };
-action.step = function(creep){
-    if(CHATTY) creep.say(this.name, SAY_PUBLIC);
-    creep.idleMove();
-    delete creep.data.actionName;
-    delete creep.data.targetId;
-};
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.IDLE, SAY_PUBLIC);
-};
+module.exports = new action('idle');
