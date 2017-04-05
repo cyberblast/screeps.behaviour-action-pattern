@@ -1,59 +1,67 @@
-let action = new Creep.Action('harvesting');
-module.exports = action;
-action.renewTarget = false;
-action.isValidAction = function(creep){
-    return ( creep.sum < creep.carryCapacity && creep.room.sourceEnergyAvailable > 0 );
-};
-action.isValidTarget = function(target) {
-    return (target !== null && target.energy !== null && target.energy > 0 &&
-        (target.targetOf === undefined || 
-            (target.targetOf.length <= target.accessibleFields &&
-                !_.some(target.targetOf, c => (c.creepType === 'miner' || c.creepType === 'remoteMiner')
-                    && c.body.work >= 5
-                    && (c.ticksToLive || CREEP_LIFE_TIME) >= (c.data && c.data.predictedRenewal || 0)
+const action = class extends Creep.Action {
+    
+    constructor(...args) {
+        super(...args);
+        
+        this.renewTarget = false;
+        this.statement = ACTION_SAY.HARVESTING;
+    }
+    
+    isValidAction(creep) {
+        return creep.sum < creep.carryCapacity && creep.room.sourceEnergyAvailable > 0;
+    }
+    
+    isValidTarget(target) {
+        return super.isValidTarget(target) && target.energy && target.energy > 0 &&
+            (!target.targetOf ||
+                (target.targetOf.length <= target.accessibleFields &&
+                    !_.some(target.targetOf, c => (c.creepType === 'miner' || c.creepType === 'remoteMiner') &&
+                        c.body.work >= 5 &&
+                        (c.ticksToLive || CREEP_LIFE_TIME) >= (c.data && c.data.predictedRenewal || 0)
+                    )
+                )
+            );
+    }
+    
+    isAddableTarget(target, creep) {
+        return (
+            (!creep.room.controller ||
+                (
+                    (!creep.room.controller.owner || creep.room.controller.my) && // my room or not owned
+                    (!creep.room.controller.reservation || creep.room.controller.reservation.username === creep.owner.username) // my reservation or none
                 )
             )
-        ));
-};
-action.isAddableTarget = function(target, creep){
-    return (
-        (!creep.room.controller ||
-            (
-                (!creep.room.controller.owner || creep.room.controller.my) && // my room or not owned
-                (!creep.room.controller.reservation || creep.room.controller.reservation.username == creep.owner.username) // my reservation or none
-            )
-        )
-    ) && ( target.targetOf === undefined || target.targetOf.length < target.accessibleFields );
-};
-action.newTarget = function(creep){
-    let target = null;
-    let sourceGuests = 999;
-    var roomSources = _.sortBy(creep.room.sources, s => creep.pos.getRangeTo(s));
-    for( var iSource = 0; iSource < roomSources.length; iSource++ ){
-        let source = roomSources[iSource];
-        if( this.isValidTarget(source) && this.isAddableTarget(source, creep) ){
-            if( source.targetOf === undefined ) {
-                sourceGuests = 0;
-                target = source;
-                break;
-            } else {
-                let guests = _.countBy(source.targetOf, 'creepType');
-                let count = guests[creep.data.creepType];
-                if( !count ) {
+        ) && (!target.targetOf || target.targetOf.length < target.accessibleFields);
+    }
+    
+    newTarget(creep) {
+        let target;
+        let sourceGuests = 999;
+        const roomSources = _.sortBy(creep.room.sources, s => creep.pos.getRangeTo(s));
+        for (const source of roomSources) {
+            if (this.isValidTarget(source) && this.isAddableTarget(source, creep)) {
+                if (!source.targetOf) {
                     sourceGuests = 0;
                     target = source;
-                } else if( count < sourceGuests ) {
+                    break;
+                }
+                const guests = _.countBy(source.targetOf, 'creepType');
+                const count = guests[creep.data.creepType];
+                if (!count) {
+                    sourceGuests = 0;
+                    target = source;
+                } else if (count < sourceGuests) {
                     sourceGuests = count;
                     target = source;
                 }
             }
         }
+        return target;
     }
-    return target;
+    
+    work(creep) {
+        return creep.harvest(creep.target);
+    }
+    
 };
-action.work = function(creep){
-    return creep.harvest(creep.target);
-};
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.HARVESTING, SAY_PUBLIC);
-};
+module.exports = new action('harvesting');
