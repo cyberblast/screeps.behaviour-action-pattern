@@ -1,30 +1,32 @@
-let action = new Creep.Action('healing');
-module.exports = action;
-action.isAddableAction = function(){ return true; };
-action.isAddableTarget = function(){ return true; };
-action.isValidTarget = function(target){
-    return ( target != null &&
-        target.hits != null &&
-        target.hits < target.hitsMax &&
-        target.my );
-};
-action.newTarget = function(creep){
-    if(creep.room.casualties.length > 0){
-        return creep.room.casualties[0];
+const action = class extends Creep.Action {
+
+    constructor(...args) {
+        super(...args);
+        
+        this.statement = ACTION_SAY.HEALING;
     }
-    return null;
-};
-action.work = function(creep){
-    if( creep.target.hits < creep.target.hitsMax ){
-        if( creep.pos.isNearTo(creep.target) ){
-            return creep.heal(creep.target);
-        }
-        if(creep.pos.inRangeTo(creep.target, 3)) {
-            return creep.rangedHeal(creep.target);
-        }
-        return OK;
+    
+    isValidTarget(target) {
+        return super.isValidTarget(target) && target.hits && target.hits < target.hits && target.my;
     }
+    
+    newTarget(creep) {
+        if (creep.room.casualties.length > 0) {
+            return creep.room.casualties[0];
+        }
+    }
+    
+    work(creep) {
+        if (creep.target.hits < creep.target.hitsMax) {
+            if (creep.pos.isNearTo(creep.target)) {
+                return creep.heal(creep.target);
+            }
+            if (creep.pos.inRangeTo(creep.target, 3)) {
+                return creep.rangedHeal(creep.target);
+            }
+            return OK;
+        }
+    }
+
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.HEALING, SAY_PUBLIC);
-};
+module.exports = new action('healing');
