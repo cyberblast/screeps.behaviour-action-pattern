@@ -29,7 +29,7 @@ const Action = class {
     };
     
     isAddableTarget(targt, object) {
-        return !target.targetOf || this.maxPerTarget === Infinity || _.filter(target.targetOf, {actionName: this.name}).length < this.maxPerTarget;
+        return this.maxPerTarget === Infinity || !target.targetOf || _.filter(target.targetOf, {actionName: this.name}).length < this.maxPerTarget;
     };
     
     newTarget(object) {
