@@ -323,7 +323,7 @@ module.exports = {
             const room = fromRoom instanceof Room ? fromRoom : Game.rooms[fromRoom];
             if (!room) return Room.roomDistance(fromRoom, toRoom, false);
             
-            const route = room.findroute(toRoom, false, false);
+            const route = room.findRoute(toRoom, false, false);
             if (!route) return Room.roomDistance(fromRoom, toRoom, false);
             
             return route === ERR_NO_PATH ? Infinity : route.length;
