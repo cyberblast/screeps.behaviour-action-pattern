@@ -27,9 +27,11 @@ mod.nextAction = function(creep){
             if( creep.room.storage ) deposit.push(creep.room.storage);
             // containers?
             if( creep.room.structures.container ) deposit = deposit.concat( creep.room.structures.container.privateers );
+            if( creep.memory.lastLink ) deposit.push(Game.getObjectById(creep.memory.lastLink));
             // Choose the closest
             if( deposit.length > 0 ){
                 let target = creep.pos.findClosestByRange(deposit);
+                if( target.structureType == STRUCTURE_LINK ) creep.memory.lastLink = target.id;
                 if( target.structureType == STRUCTURE_STORAGE && this.assign(creep, Creep.action.storing, target) ) return;
                 else if( this.assign(creep, Creep.action.charging, target) ) return;
                 else if( this.assign(creep, Creep.action.storing) ) return; // prefer storage
@@ -44,7 +46,7 @@ mod.nextAction = function(creep){
                 _.forEach(Object.keys(creep.carry), drop);
                 return this.assign(creep, Creep.action.idle);
             }
-        }
+        } else if (creep.memory.lastLink) delete creep.memory.lastLink;
         // empty
         // travelling
         if (this.gotoTargetRoom(creep)) {
