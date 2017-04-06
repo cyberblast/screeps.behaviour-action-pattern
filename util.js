@@ -42,8 +42,7 @@ module.exports = {
         const r = _.get(object, path);
         if (!r && !_.isUndefined(defaultValue) && setDefault) {
             defaultValue = Util.fieldOrFunction(defaultValue);
-            _.set(object, path, defaultValue);
-            return defaultValue;
+            return _.set(object, path, defaultValue);
         }
         return r;
     },

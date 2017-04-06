@@ -416,17 +416,14 @@ mod.guid = function() {
 Object.defineProperty(global, 'observerRequests', {
     configurable: true,
     get: function() {
-        if (_.isUndefined(global._observerRequests)) {
-            global._observerRequests = [];
-        }
-        return global._observerRequests;
+        return Util.get(global, '_observerRequests', []);
     },
     /**
      * Pass an object containing room information to the requests
      * @param {Object} request - `roomName` property required
      */
     set: function(request) {
-        global._observerRequests.push(request);
+        Util.get(global, '_observerRequests', []).push(request);
     },
 });
 mod = _.bindAll(mod);
