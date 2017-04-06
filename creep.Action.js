@@ -4,6 +4,13 @@ const CreepAction = class extends Action {
         super(...args);
         
         this.statement = ACTION_SAY[this.name.toUpperCase()];
+        
+        this.defaultStrategy = {
+            name: `default-${this.name}`,
+            moveOptions: function(opts) {
+                return opts || {};
+            }
+        }
     }
     
     getTargetByID(id) {
@@ -20,14 +27,14 @@ const CreepAction = class extends Action {
         if (range <= this.targetRange) {
             const workResult = this.work(creep);
             if (workResult !== OK) {
-                const tryAction = creep.action;
-                const tryTarget = creep.target;
+                const action = creep.action;
+                const target = creep.target;
                 creep.action = null;
                 creep.target = null;
-                creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
+                creep.handleError({errorCode: workResult, action, target, range, creep});
                 return;
             }
-            range = creep.pos.getRangeTo(creep.target);
+            range = creep.pos.getRangeTo(creep.target); // target may have changed (e.g. hauler feed+move/tick)
         }
         if (creep.target) {
             if (range > this.targetRange) {
@@ -48,6 +55,10 @@ const CreepAction = class extends Action {
         Population.registerAction(creep, this, target);
         this.onAssignment(creep, target);
     };
+    
+    selectStrategies() {
+        return [this.defaultStrategy];
+    }
     
     onAssignment(creep, target) {
         if (SAY_ASSIGNMENT) creep.say(this.statement, SAY_PUBLIC);

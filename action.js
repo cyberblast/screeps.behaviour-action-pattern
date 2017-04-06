@@ -20,7 +20,7 @@ const Action = class {
         return true;
     };
     
-    isValidTarget(targt, object) {
+    isValidTarget(target, object) {
         return !!target;
     };
     
