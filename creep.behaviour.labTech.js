@@ -35,12 +35,9 @@ mod.nextAction = function(creep){
             Creep.action.reallocating,
             Creep.action.uncharging,
             Creep.action.picking,
+            Creep.action.withdrawing,
+            Creep.action.idle
         ];
-        Creep.action.withdrawing.debounce(creep, outflowPriority, function(withdrawing) {
-            priority.push(withdrawing);
-        });
-        priority.push(Creep.action.storing);
-        priority.push(Creep.action.idle);
     } else {
         priority = outflowPriority.concat([
             Creep.action.storing,
@@ -58,12 +55,15 @@ mod.nextAction = function(creep){
 
     for(var iAction = 0; iAction < priority.length; iAction++) {
         var a = priority[iAction];
-        if(a.isValidAction(creep) && a.isAddableAction(creep) && a.assign(creep)) {
-            if (a.name !== 'idle') {
-                creep.data.lastAction = a.name;
-                creep.data.lastTarget = creep.target.id;
+        if(a.isValidAction(creep) && a.isAddableAction(creep)) {
+            const assigned = a.assignDebounce ? a.assignDebounce(creep, outflowPriority) : a.assign(creep);
+            if (assigned) {
+                if (a.name !== 'idle') {
+                    creep.data.lastAction = a.name;
+                    creep.data.lastTarget = creep.target.id;
+                }
+                return;
             }
-            return;
         }
     }
 };
