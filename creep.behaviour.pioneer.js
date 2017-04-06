@@ -31,7 +31,7 @@ mod.nextAction = function(creep) {
             }
         }
         // if target room claimed      
-        if( flag.room && flag.room.controller.my ) {       
+        if( flag.room && flag.room.my ) {       
             let spawnFlag = FlagDir.find(FLAG_COLOR.claim.spawn, creep.pos, true) ;
             // and has spawn flag
             if( spawnFlag ) {

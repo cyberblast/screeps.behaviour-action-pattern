@@ -3,7 +3,7 @@ module.exports = mod;
 mod.name = 'recycler';
 mod.run = function(creep) {
     // Assign next Action
-    if( creep.action != 'recycling' ) {
+    if( !creep.action || creep.action.name != 'recycling' ) {
         delete creep.data.targetId;
         delete creep.data.path;
         this.nextAction(creep);

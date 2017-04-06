@@ -61,8 +61,10 @@ let Action = function(actionName){
                 return;
             }
         }
-        if( creep.target )
+        if( creep.target ) {
+            range = creep.pos.getRangeTo(creep.target);
             creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
+        }
     };
     // order for the creep to execute when at target
     this.work = function(creep){
@@ -87,7 +89,7 @@ let Action = function(actionName){
         if( target === undefined ) target = this.newTarget(creep);
         if( target != null ) {
             if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, assign:this.name, target:!target || target.name || target.id, Action:'assign'});
-            if( creep.action == null || creep.action.name != this.name || creep.target == null || creep.target.id != target.id ) {
+            if( creep.action == null || creep.action.name != this.name || creep.target == null || creep.target.id != target.id || creep.target.name != target.name ) {
                 Population.registerAction(creep, this, target);
                 this.onAssignment(creep, target);
             }

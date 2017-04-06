@@ -53,8 +53,16 @@ mod.handleFlagFound = flag => {
 // check if a new creep has to be spawned
 mod.checkForRequiredCreeps = (flag) => {
     //only when room is owned
-    if( !flag || (flag.room && !flag.room.controller.my) ) return console.log("Pioneer room not owned");
-    
+    if( !flag || (flag.room && !flag.room.my && !flag.room.reserved)) {
+        if (!PIONEER_UNOWNED) {
+            return console.log("Pioneer room not owned");
+        }
+        const owner = flag.room.owner || flag.room.reservation;
+        if (owner) {
+            return logError(`Pioneer target room owned by ${owner}`);
+        }
+    }
+
     // get task memory
     let memory = Task.pioneer.memory(flag);
 
@@ -73,7 +81,7 @@ mod.checkForRequiredCreeps = (flag) => {
             }, 
             { // spawn room selection params
                 targetRoom: flag.pos.roomName, 
-                minEnergyCapacity: 200, 
+                minEnergyCapacity: 400, // weight of fixedBody
                 rangeRclRatio: 2 // stronger preference of higher RCL rooms
             },
             creepSetup => { // callback onQueued
@@ -195,7 +203,6 @@ mod.creep = {
     },
     worker: {
         fixedBody: [MOVE, CARRY, WORK],
-        multiBody: [MOVE, CARRY, WORK], 
         behaviour: 'worker',
         queue: 'High'
     }

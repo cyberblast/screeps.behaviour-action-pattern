@@ -4,14 +4,20 @@ setup.maxWorker = room => {
     // no hauler and no miner => 1
     // if there is a miner it should be no problem to spawn a hauler, and vice versa. 
     // if none of them are present spawn a worker first
+    if (room.controller.level < 4) {
+        if (room.situation.invasion) return 1;
+        let max = room.controller.level === 2 ? 6 : 4;
+        const numPioneers = room.population && room.population.typeCount.pioneer || 0;
+        return max - numPioneers;
+    }
     if( !setup.hasMinerOrHauler(room))
         return 1;
     // constructionsites present & no strorage or storage > min
     if( room.constructionSites.length > 0 && (!room.storage
-        || room.storage.store && room.storage.store.energy > MIN_STORAGE_ENERGY[room.controller.level]))
+        || room.storage.store && room.storage.charge > 0))
         return 1;
     // storage full & base fortifyable
-    if( room.storage && room.storage.store.energy > MAX_STORAGE_ENERGY[room.controller.level] && room.structures.fortifyable.length > 0 )
+    if( room.storage && room.storage.charge > 1 && room.structures.fortifyable.length > 0 )
         return 1;
     return 0;
 };
@@ -37,7 +43,7 @@ setup.RCL = {
         minAbsEnergyAvailable: 200,
         minEnergyAvailable: setup.byPopulation(setup.type, 0, 1, 1),
         maxMulti: 8,
-        maxCount: room => ( room.situation.invasion ) ? 1 : 4,
+        maxCount: room => setup.maxWorker(room),
         maxWeight: 4000
     },
     2: {
@@ -46,7 +52,7 @@ setup.RCL = {
         minAbsEnergyAvailable: 200,
         minEnergyAvailable: setup.byPopulation(setup.type, 0, 0.5, 1),
         maxMulti: 8,
-        maxCount: room => ( room.situation.invasion ) ? 1 : 6,
+        maxCount: room => setup.maxWorker(room),
         maxWeight: 14400
     },
     3: {
@@ -55,7 +61,7 @@ setup.RCL = {
         minAbsEnergyAvailable: 200,
         minEnergyAvailable: room => setup.hasMinerOrHauler(room) ? 0.3 : 0,
         maxMulti: 8,
-        maxCount: room => ( room.situation.invasion ) ? 1 : 4,
+        maxCount: room => setup.maxWorker(room),
         maxWeight: 9600
     },
     4: {

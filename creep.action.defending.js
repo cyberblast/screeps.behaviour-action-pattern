@@ -12,10 +12,12 @@ action.isValidTarget = function(target){
 };
 action.newTarget = function(creep){
     var closestHostile = creep.pos.findClosestByRange(creep.room.hostiles, {
-        function(hostile){ return _.some(hostile.body, {'type': HEAL}); }
+        filter: creep.getStrategyHandler([action.name], 'priorityTargetFilter', creep)
     });
     if(!closestHostile) {
-        closestHostile = creep.pos.findClosestByRange(creep.room.hostiles);
+        closestHostile = creep.pos.findClosestByRange(creep.room.hostiles, {
+            filter: creep.getStrategyHandler([action.name], 'targetFilter', creep)
+        });
     }
     return closestHostile;
 };
@@ -84,4 +86,14 @@ action.run = {
 };
 action.onAssignment = function(creep, target) {
     if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9876), SAY_PUBLIC);
+};
+action.defaultStrategy.priorityTargetFilter = function(creep) {
+    return function(hostile) {
+        return hostile.hasBodyparts(HEAL);
+    }
+};
+action.defaultStrategy.targetFilter = function(creep) {
+    return function(hostile) {
+        return true;
+    }
 };

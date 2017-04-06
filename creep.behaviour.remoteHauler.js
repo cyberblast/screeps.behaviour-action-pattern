@@ -30,41 +30,59 @@ mod.nextAction = function(creep){
             // Choose the closest
             if( deposit.length > 0 ){
                 let target = creep.pos.findClosestByRange(deposit);
-                if( target.structureType == STRUCTURE_STORAGE && this.assign(creep, Creep.action.storing) ) return;
+                if( target.structureType == STRUCTURE_STORAGE && this.assign(creep, Creep.action.storing, target) ) return;
                 else if( this.assign(creep, Creep.action.charging, target) ) return;
+                else if( this.assign(creep, Creep.action.storing) ) return; // prefer storage
             }
             if( this.assign(creep, Creep.action.charging) ) return;
             // no deposit :/ 
             // try spawn & extensions
             if( this.assign(creep, Creep.action.feeding) ) return;
-            // TODO: hauler shouldn't work. drop at spawn instead of calling worker behaviour
-            Creep.behaviour.worker.nextAction(creep);
-            return;
+            if( this.assign(creep, Creep.action.dropping) ) return;
+            else {
+                const drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
+                _.forEach(Object.keys(creep.carry), drop);
+                return this.assign(creep, Creep.action.idle);
+            }
         }
         // empty
         // travelling
-        this.gotoTargetRoom(creep);
-        return;
+        if (this.gotoTargetRoom(creep)) {
+            return;
+        }
     }
     // at target room
     else if( creep.data.destiny.room == creep.pos.roomName ){
-        if( this.assign(creep, Creep.action.uncharging) ) return;
-        // if it's not full
-        if( creep.sum < (creep.carryCapacity*0.8) ) {
-            // get some energy
-            if( this.assign(creep, Creep.action.picking) ) return;
+        // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
+        if( creep.sum / creep.carryCapacity > REMOTE_HAULER_MIN_LOAD) {
+            this.goHome(creep);
+            return;
         }
-        // carrier full or everything picked
-        this.goHome(creep);
-        return;
+        // picking last until we have strategies that can compare cost vs benefit otherwise remoteHaulers bounce between piles of dropped energy
+        if( this.assign(creep, Creep.action.uncharging) ) return;
+        // if( this.assign(creep, Creep.action.robbing) ) return;
+        if( this.assign(creep, Creep.action.picking) ) return;
+        // wait
+        if ( creep.sum === 0 ) {
+            let source = creep.pos.findClosestByRange(creep.room.sources);
+            if (creep.room && source && creep.pos.getRangeTo(source) > 3) {
+                creep.moveTo(source);
+                return Creep.action.travelling.assign(creep, source);
+            }
+        }
+        return this.assign(creep, Creep.action.idle);
     }
     // somewhere
     else {
-        if( creep.sum > 0 )
-            this.goHome(creep);
+        let ret = false;
+        // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
+        if( creep.sum / creep.carryCapacity > REMOTE_HAULER_MIN_LOAD )
+            ret = this.goHome(creep);
         else
-            this.gotoTargetRoom(creep);
-        return;
+            ret = this.gotoTargetRoom(creep);
+        if (ret) {
+            return;
+        }
     }
     // fallback
     // recycle self

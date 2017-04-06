@@ -16,25 +16,30 @@ action.isAddableTarget = function(target, creep){
     let max;
     if( creep.data.creepType.indexOf('remote') > 0 ) max = Infinity;
     else max =  this.maxPerTarget;
-    return (!target.targetOf || ((
-        target.targetOf.length < max) &&
-        target.amount > _.sum( target.targetOf.map( t => ( t.actionName == 'picking' ? t.carryCapacityLeft : 0 )))));
+    let pickers = target.targetOf ? _.filter(target.targetOf, {actionName: 'picking'}) : [];
+    return (!target.targetOf || !pickers.length || ((pickers.length < max) && target.amount > _.sum( pickers.map( t => t.carryCapacityLeft))));
 };
 action.newTarget = function(creep){
     let target;
-    if( creep.room.situation.invasion ) {
+    if( creep.room.my && creep.room.situation.invasion ) {
         // pickup near sources only
         target = creep.pos.findClosestByPath(creep.room.droppedResources, {
             filter: (o) => this.isAddableTarget(o, creep) && o.pos.findInRange(creep.room.sources, 1).length > 0
         });
     } else {
-        target = creep.pos.findClosestByPath(creep.room.droppedResources, {
-            filter: (o) => ( o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep))
-        });
+        if ( creep.room.storage && creep.room.storage.my ) {
+            target = creep.pos.findClosestByPath(creep.room.droppedResources, {
+                filter: (o) => ( o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep))
+            });
 
-        if( !target ) target = creep.pos.findClosestByPath(creep.room.droppedResources, {
-            filter: (o) => this.isAddableTarget(o, creep)
-        });
+            if( !target ) target = creep.pos.findClosestByPath(creep.room.droppedResources, {
+                filter: (o) => this.isAddableTarget(o, creep)
+            });
+        } else {
+            target = creep.pos.findClosestByPath(creep.room.droppedResources, {
+                filter: (o) => ( o.resourceType == RESOURCE_ENERGY && this.isAddableTarget(o, creep))
+            });
+        }
     }
     return target;
 };
@@ -51,6 +56,16 @@ action.work = function(creep){
             });
             if( loot && loot.length > 0 ) {
                 this.assign(creep, loot[0]);
+                return result;
+            }
+        }
+        // Check for containers to uncharge
+        if( creep.sum < creep.carryCapacity) {
+            let containers = creep.pos.findInRange(creep.room.structures.container.in, 2, {
+               filter: (o) => Creep.action.uncharging.isValidTarget(o, creep)
+            });
+            if ( containers && containers.length > 0 ) {
+                Creep.action.uncharging.assign(creep, containers[0]);
                 return result;
             }
         }

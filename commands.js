@@ -31,10 +31,23 @@ Game.creeps['<creepName>'].data.creepType="recycler";
 // To override a module file create a copy of an existing module and name it "custom.<originalModuleName>". Then call this method (without ".js"): 
 getPath('<originalModuleName>', true);
 // To completely re-evaluate all modules:
-delete Memory.modules; 
+delete Memory.modules;
 
 // create market order (replace [roomName] with target room or remove it for subscription tokens)
 Game.market.createOrder(type, resourceType, price, totalAmount, roomName);
 
 //accept market sell or buy order
 Game.market.deal(orderId, amount, roomName);
+
+//flush visuals heatmap
+_.forEach(Memory.rooms, r => delete r.heatmap);
+
+// https://github.com/ScreepsOCS/screeps.behaviour-action-pattern/wiki/Resource-Management
+//resource management  - stat labs
+Game.rooms[<roomName>].placeReactionOrder(<labId>, <resourceId>, <amount>)
+
+//resource management - maintain set amount in container
+Game.rooms[<roomName>].setStore(<structure>, <resource>, <amount>)
+
+//resource management - one off amount in container
+Game.rooms[<roomName>].placeOrder(<structure>, <resource>, <amount>)

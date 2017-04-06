@@ -16,7 +16,7 @@ action.isAddableTarget = function(target){
 };
 action.newTarget = function(creep){
     var that = this;
-    return creep.pos.findClosestByPath(creep.room.structures.all, {
+    return creep.pos.findClosestByRange(creep.room.structures.all, {
         filter: (structure) => {
             return ((structure.structureType == STRUCTURE_EXTENSION ||
                 structure.structureType == STRUCTURE_SPAWN )
@@ -25,7 +25,12 @@ action.newTarget = function(creep){
     });
 };
 action.work = function(creep){
-    return creep.transfer(creep.target, RESOURCE_ENERGY);
+    let result = creep.transfer(creep.target, RESOURCE_ENERGY);
+    if (result == OK && creep.carry.energy > creep.target.energyCapacity-creep.target.energy) {
+        creep.target = null;
+        this.assign(creep);
+    }
+    return result;
 };
 action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);

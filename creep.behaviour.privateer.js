@@ -4,7 +4,7 @@ mod.name = 'privateer';
 mod.run = function(creep) {
     // Assign next Action
     let oldTargetId = creep.data.targetId;
-    if( creep.action == null  || creep.action.name == 'idle' ) {
+    if( creep.action === null  || creep.action.name == 'idle' ) {
         if( creep.data.destiny && creep.data.destiny.task && Task[creep.data.destiny.task] && Task[creep.data.destiny.task].nextAction )
         Task[creep.data.destiny.task].nextAction(creep);
                     
@@ -74,7 +74,7 @@ mod.nextAction = function(creep){
             // get some energy
             if( creep.sum < creep.carryCapacity*0.4 ) {
                 // sources depleted
-                if( creep.room.sourceEnergyAvailable == 0 ){
+                if( creep.room.sourceEnergyAvailable === 0 ){
                     // cloak flag
                     creep.flag.cloaking = _.max([creep.room.ticksToNextRegeneration-20,0]); // approach a bit earlier
                     // travelling
@@ -135,7 +135,7 @@ mod.exploitNextRoom = function(creep){
             (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor) ||
             (flagEntry.color == FLAG_COLOR.invade.robbing.color && flagEntry.secondaryColor == FLAG_COLOR.invade.robbing.secondaryColor)
         );
-        let flag = FlagDir.find(validColor, Game.rooms[creep.data.homeRoom].controller.pos, false, FlagDir.exploitMod, creep.name);
+        let flag = FlagDir.find(validColor, new RoomPosition(25, 25, creep.data.homeRoom), false, FlagDir.exploitMod, creep.name);
         // new flag found
         if( flag ) {
             // travelling
@@ -148,6 +148,9 @@ mod.exploitNextRoom = function(creep){
     // no new flag
     // go home
     Population.registerCreepFlag(creep, null);
-    Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+    if (creep.room.name !== creep.data.homeRoom) {
+        creep.data.travelRoom = creep.data.homeRoom;
+        Creep.action.travelling.assign(creep, creep);
+    }
     return false;
 };

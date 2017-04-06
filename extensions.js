@@ -63,6 +63,33 @@ mod.extend = function(){
             }
         }
     });
+    Object.defineProperty(RoomObject.prototype, 'cloak', {
+        configurable: true,
+        get: function() {
+            const value = Memory.cloaked[this.id];
+            if (!value) {
+                return false;
+            } else if (_.isNumber(value) && Game.time > value) {
+                delete Memory.cloaked[this.id];
+                return false;
+            } else {
+                return value;
+            }
+        },
+        set: function(value) {
+            if (!value) {
+                delete Memory.cloaked[this.id];
+                return undefined;
+            } else if (_.isNumber(value)) {
+                    if (value < Game.time) {
+                        value = Game.time + value;
+                    }
+            } else {
+                value = true;
+            }
+            return Memory.cloaked[this.id] = value;
+        }
+    });
     Object.defineProperty(Source.prototype, 'container', {
         configurable: true,
         get: function() {
@@ -176,6 +203,24 @@ mod.extend = function(){
             }
             return this._sum;
         }
+    });
+    Object.defineProperty(StructureStorage.prototype, 'charge', { // fraction indicating charge % relative to constants
+        configurable: true,
+        get: function() {
+            // TODO per-room strategy
+            const max = MAX_STORAGE_ENERGY[this.room.controller.level];
+            const min = MIN_STORAGE_ENERGY[this.room.controller.level];
+            if (max === min) {
+                if (this.store.energy > max) {
+                    return Infinity;
+                } else {
+                    return -Infinity;
+                }
+            }
+            const chargeScale = 1 / (max - min); // TODO cache
+
+            return (this.store.energy - max) * chargeScale + 1;
+        },
     });
     Object.defineProperty(StructureTerminal.prototype, 'sum', {
         configurable: true,

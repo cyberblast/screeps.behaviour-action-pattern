@@ -4,7 +4,7 @@ action.maxPerTarget = 3;
 action.targetRange = 3;
 action.maxPerAction = 3;
 action.isValidAction = function(creep){
-    return ( creep.carry.energy > 0 && creep.room.constructionSites.length > 0 );
+    return ( creep.carry.energy > 0 );
 };
 action.isAddableAction = function(creep){
     return ( !creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
