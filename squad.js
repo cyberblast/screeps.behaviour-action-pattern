@@ -1,52 +1,58 @@
-const Squad = function(squadType) {
-    this.type = squadType;
-    this.run = function(id) {
-
+class Squad {
+    constructor(squadType) {
+        this.type = squadType;
     };
-    this.elect = function(id, creep) {
 
+    run(id) {
     };
-    this.join = function(id, creep) {
 
+    elect(id, creep) {
     };
-    this.part = function(id, creep) {
 
+    join(id, creep) {
     };
-};
 
+    part(id, creep) {
+    };
+}
 module.exports = Squad;
 
 /*
 standard loop:
 
-squads
+squads (group key)
     ab-priority
 
-    spawning
-    loose
+    spawning (sector)
+    loose (sector)
 
-    per-room, roles:
-        healer
-        hopper
+    fixed roles: per-behaviour squads
+        hopper (target room)
 
-        claimer
-        upgrader
-        sourceKiller
-        miner
+        claimer (sector)
+        upgrader (room)
+        patrol / sourceKiller (route)
+        miner (room)
 
-        destroyer
-        privateer
+    dynamic roles: per-action squads (uniform low priority?)
+        scavenge drops / sources (room)
+            workers, haulers, pioneers, privateers, robbers, delivery
+        destroyer (task group)
+            attack train
+        energy distribution (room)
+            workers, haulers, pioneers
 
-        worker
-        pioneer
-        hauler
+
+
+        privateer (sector?)
+        worker (room)
+        pioneer (room)
+        hauler (route?)
 
     ab-priority
-
-        melee
-        warrior
-        ranger
-        turret
-        tower
+        healer (task group)
+        melee (task group)
+        ranged (task group)
+        tower (task group)
 
  */
