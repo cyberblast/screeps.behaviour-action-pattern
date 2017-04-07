@@ -173,19 +173,19 @@ let mod = {
         ATTACK_CONTROLLER: String.fromCodePoint(0x1F5E1) + String.fromCodePoint(0x26F3), // 🗡⛳
         AVOIDING: String.fromCodePoint(0x21A9), // ↩
         BUILDING: String.fromCodePoint(0x2692), // ⚒
-        BULLDOZING: String.fromCodePoint(0x1F4CC), // 📌
-        CHARGING: String.fromCodePoint(0x1F50B), // 🔋
+        BULLDOZING: String.fromCodePoint(0x1F69C), // 🚜
+        CHARGING: String.fromCodePoint(0x1F50C), // 🔌
         CLAIMING: String.fromCodePoint(0x26F3), // ⛳
         DEFENDING: String.fromCodePoint(0x2694), // ⚔
         DISMANTLING: String.fromCodePoint(0x1F527), // 🔧
         DROPPING: String.fromCodePoint(0x1F4A9), // 💩
-        FEEDING: String.fromCodePoint(0x1F355) + String.fromCodePoint(0x1F35F), // 🍕🍟
+        FEEDING: String.fromCodePoint(0x1F355), // 🍕
         FORTIFYING: String.fromCodePoint(0x1F528), // 🔨
         FUELING: String.fromCodePoint(0x26FD), // ⛽
         GUARDING: String.fromCodePoint(0x1F46E) + String.fromCodePoint(0x1F3FC), // 👮🏼
         HARVESTING: String.fromCodePoint(0x26CF), // ⛏
         HEALING: String.fromCodePoint(0x26E8), // ⛨
-        IDLE: String.fromCodePoint(0x1F3B6), // 🎶
+        IDLE: String.fromCodePoint(0x1F3B5), // 🎵
         INVADING: String.fromCodePoint(0x1F52B), // 🔫
         PICKING: String.fromCodePoint(0x23EC), // ⏬
         REALLOCATING: String.fromCodePoint(0x2194), // ↔
@@ -195,9 +195,9 @@ let mod = {
         ROBBING: String.fromCodePoint(0x1F480), // 💀
         STORING: String.fromCodePoint(0x1F4E5) + String.fromCodePoint(0xFE0E), // 📥
         TRAVELLING: String.fromCodePoint(0x1F3C3), // 🏃
-        UNCHARGING: String.fromCodePoint(0x1F4E4) + String.fromCodePoint(0xFE0E), // 📤
+        UNCHARGING: String.fromCodePoint(0x1F50B), // 🔋
         UPGRADING: String.fromCodePoint(0x1F5FD), // 🗽
-        WITHDRAWING: String.fromCodePoint(0x1F4E4), // 📤
+        WITHDRAWING: String.fromCodePoint(0x1F4E4) + String.fromCodePoint(0xFE0E), // 📤
     }
 };
 module.exports = mod;
