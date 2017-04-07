@@ -59,6 +59,10 @@ global.tryRequire = (path, silent = false) => {
 };
 // inject members of alien class into base class. specify a namespace to call originals from baseObject.baseOf[namespace]['<functionName>'] later
 global.inject = (base, alien, namespace) => {
+    if (typeof base === typeof alian && typeof base === 'function') { // both base and alien are Classes
+        [base, base['backup']] = [alien, base]; // alien class should extend base class, then we replace base with alien
+        return;
+    }
     let keys = _.keys(alien);
     for (const key of keys) {
         if (typeof alien[key] === "function") {
