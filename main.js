@@ -157,6 +157,7 @@ global.install = () => {
     });
     Creep.Action = load("creep.Action");
     Creep.Setup = load("creep.Setup");
+    _.assign(Creep, { action: {} }); // actions is not yet defined for the below
     _.assign(Creep, {
         action: {
             attackController: load("creep.action.attackController", Creep.action.attackController),
