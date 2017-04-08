@@ -162,6 +162,36 @@ mod.extend = function(){
             return Flag.compare(this, flag);
         },
     });
+    
+    Object.defineProperty(RoomPosition.prototype, 'newFlag', {
+        configurable: true,
+        /**
+         * Create a new flag at this position
+         * @param {Object|string} flagColour - An object with color and secondaryColor properties, or a string path for a FLAG_COLOR
+         * @param {string} [name] - Optional name for the flag
+         * @returns {string|Number} The name of the flag or an error code.
+         */
+        value: function(flagColour, name) {
+            if (!flagColour) flagColour = _.get(FLAG_COLOR, flagColour); // allows you to pass through a string (e.g. 'invade.robbing')
+            if (!flagColour) return;
+            return this.createFlag(name, flagColour.color, flagColour.secondaryColor);
+        },
+    });
+    
+    Object.defineProperty(Room.prototype, 'newFlag', {
+        configurable: true,
+        /**
+         * Create a new flag
+         * @param {Object|string} flagColour - An object with color and secondaryColor properties, or a string path for a FLAG_COLOR
+         * @param {RoomPosition} [pos] - The position to place the flag. Will assume (25, 25) if left undefined
+         * @param {string} [name] - Optional name for the flag
+         * @returns {string|Number} The name of the flag or an error code.
+         */
+        value: function(flagColour, pos, name) {
+            if (!pos) pos = this.getPositionAt(25, 25);
+            return pos.newFlag(flagColour, name);
+        },
+    });
 };
 mod.flush = function(){        
     let clear = flag => delete flag.targetOf;
@@ -199,10 +229,10 @@ mod.execute = function() {
 
     let triggerFound = entry => {
         if( !entry.cloaking || entry.cloaking == 0) {
-            let p = startProfiling('Flag.execute');
+            const p = Util.startProfiling('Flag.execute', {enabled:PROFILING.FLAGS});
             const flag = Game.flags[entry.name];
             Flag.found.trigger(flag);
-            p.checkCPU(entry.name, 2, mod.flagType(flag));
+            p.checkCPU(entry.name, PROFILING.EXECUTE_LIMIT, mod.flagType(flag));
         }
     };
     this.list.forEach(triggerFound);

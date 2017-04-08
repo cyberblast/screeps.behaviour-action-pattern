@@ -1,11 +1,15 @@
 let mod = {};
 module.exports = mod;
-mod.name = 'hauler';
+mod.name = 'labTech';
 mod.run = function(creep) {
     // Assign next Action
     let oldTargetId = creep.data.targetId;
     if( creep.action == null || creep.action.name == 'idle' ) {
-        this.nextAction(creep);
+        if( creep.data.destiny && creep.data.destiny.task && Task[creep.data.destiny.task] && Task[creep.data.destiny.task].nextAction ) {
+            Task[creep.data.destiny.task].nextAction(creep);
+        } else {
+            this.nextAction(creep);
+        }
     }
     
     // Do some work
@@ -20,27 +24,18 @@ mod.nextAction = function(creep){
         Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
         return;
     }
-    if (creep.data.nextAction && creep.data.nextTarget) {
-        const action = Creep.action[creep.data.nextAction];
-        const target = Game.getObjectById(creep.data.nextTarget);
-        delete creep.data.nextAction;
-        delete creep.data.nextTarget;
-        if (action && target && action.assign(creep, target)) {
-            return;   
-        }
-    }
     const outflowPriority = [
-        Creep.action.feeding,
         Creep.action.charging,
-        Creep.action.fueling,
+        Creep.action.feeding,
+        Creep.action.fueling
     ];
     let priority = outflowPriority;
-    if( creep.sum * 2 < creep.carryCapacity ) {
+    if( creep.sum < creep.carryCapacity / 2 ) {
         priority = [
+            Creep.action.reallocating,
             Creep.action.uncharging,
             Creep.action.picking,
             Creep.action.withdrawing,
-            Creep.action.reallocating,
             Creep.action.idle
         ];
     } else {
@@ -60,7 +55,7 @@ mod.nextAction = function(creep){
 
     for(var iAction = 0; iAction < priority.length; iAction++) {
         var a = priority[iAction];
-        if (a.isValidAction(creep) && a.isAddableAction(creep)) {
+        if(a.isValidAction(creep) && a.isAddableAction(creep)) {
             const assigned = a.assignDebounce ? a.assignDebounce(creep, outflowPriority) : a.assign(creep);
             if (assigned) {
                 if (a.name !== 'idle') {

@@ -1,4 +1,5 @@
 let mod = {
+    ME: _(Game.rooms).map('controller').filter('my').map('owner.username').first(),
     CHATTY: false, // creeps say their current action
     HONK: true, // HONK when stored path is blocked by other creeps
     OOPS: true, // Creeps say Oops when dropping energy during dropmining
@@ -9,10 +10,17 @@ let mod = {
     PROFILE: false, // enable CPU profiling
     PROFILING: {
         ANALYZE_LIMIT: 2, // profile warning levels
-        AVERAGE_USAGE: true, // display average creep & flag usage
+        AVERAGE_USAGE: false, // display average creep & flag usage
+        BASIC_ONLY: true, // only display basic profiling information, disables all other profiling
+        CREEPS: false, // display creep profiling information
+        CREEP_TYPE: '', // define a specific creep to profile, requires CREEPS=true
         EXECUTE_LIMIT: 5, // profile warning levels
+        FLAGS: false, // display flag profiling information
         FLUSH_LIMIT: 5, // profile warning levels
+        MAIN: true, // profile main loop
+        MIN_THRESHOLD: 0.5, // set the bar for checks that involve very low usage (warning, chatty!)
         REGISTER_LIMIT: 2, // profile warning levels
+        ROOMS: false, // display room and structure profiling information
     },
     TRAVELER_STUCK_TICKS: 2, // Number of ticks not moving to be considered stuck by the Traveler API
     TRAVELER_THRESHOLD: 5, // Average creep CPU usage/tick before warning about pathing cost, starts after 25 ticks
@@ -132,31 +140,64 @@ let mod = {
     // function parameters: room. expected result: array
     CONSTRUCTION_PRIORITY: [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_LINK,STRUCTURE_TERMINAL,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_POWER_SPAWN,STRUCTURE_NUKER,STRUCTURE_OBSERVER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_LAB,STRUCTURE_WALL,STRUCTURE_RAMPART],
     CONTROLLER_SIGN: true,
-    CONTROLLER_SIGN_MESSAGE: `Territory of ${_.chain(Game.spawns).values().first().get('owner.username').value()}, an Open Collaboration Society user! (https://github.com/ScreepsOCS)`,
+    CONTROLLER_SIGN_MESSAGE: `Territory of ${this.ME}, an Open Collaboration Society user! (https://github.com/ScreepsOCS)`,
     CONTROLLER_SIGN_UPDATE: false, // Update sign message if user changes CONTROLLER_SIGN_MESSAGE
     MINERS_AUTO_BUILD: false, // miners and remoteMiners will build their own containers if they are missing.
     MINER_WORK_THRESHOLD: 50, // how long to wait before a miner checks for repairs/construction sites nearby again
-    REMOTE_HAULER_MULTIPLIER: 1, // Max number of haulers spawned per source in a remote mining room.
-    REMOTE_HAULER_CHECK_INTERVAL: 5, // how many ticks before we check to see if new haulers need spawninig?
+    REMOTE_HAULER: {
+        ALLOW_OVER_CAPACITY: false, // Hauler capacity rounds up by MIN_WEIGHT, or this number value.
+        CHECK_INTERVAL: 5, // how many ticks before we check to see if new haulers need spawninig?
+        DRIVE_BY_BUILD_ALL: false, // If REMOTE_HAULER.DRIVE_BY_BUILDING is enabled then this option will allow remote haulers will drive-by-build any of your structures.
+        DRIVE_BY_BUILD_RANGE: 1, // A creep's max build distance is 3 but cpu can be saved by dropping the search distance to 1.
+        DRIVE_BY_BUILDING: false, // Allows remote haulers to build roads and containers. Consider setting REMOTE_WORKER_MULTIPLIER to 0.
+        DRIVE_BY_REPAIR_RANGE: 0, // range that remote haulers should search when trying to repair and move
+        MIN_LOAD: 0.75, // Haulers will return home as long as their ratio of carrying/capacity is above this amount.
+        MIN_WEIGHT: 800, // Small haulers are a CPU drain.
+        MULTIPLIER: 1, // Max number of haulers spawned per source in a remote mining room.
+        REHOME: false, // May haulers choose closer storage for delivery?
+    },
     REMOTE_RESERVE_HAUL_CAPACITY: 0.1, // Percent of allocated haul capacity before sending reservers.
-    REMOTE_HAULER_REHOME: false, // May haulers choose closer storage for delivery?
-    REMOTE_HAULER_MIN_LOAD: 0.75, // Haulers will return home as long as their ratio of carrying/capacity is above this amount.
-    REMOTE_HAULER_MIN_WEIGHT: 800, // Small haulers are a CPU drain.
-    REMOTE_HAULER_ALLOW_OVER_CAPACITY: false, // Hauler capacity rounds up by MIN_WEIGHT, or this number value.
-    REMOTE_HAULER_DRIVE_BY_BUILDING: false, // Allows remote haulers to build roads and containers. Consider setting REMOTE_WORKER_MULTIPLIER to 0.
-    REMOTE_HAULER_DRIVE_BY_BUILD_RANGE: 1, // A creep's max build distance is 3 but cpu can be saved by dropping the search distance to 1.
-    REMOTE_HAULER_DRIVE_BY_BUILD_ALL: false, // If REMOTE_HAULER_DRIVE_BY_BUILDING is enabled then this option will allow remote haulers will drive-by-build any of your structures.
     PIONEER_UNOWNED: false, // True: pioneers may attempt to work in unowned rooms.
     DRIVE_BY_REPAIR_RANGE: 2, // range that creeps should search when trying to repair and move
     REMOTE_WORKER_MULTIPLIER: 1, // Number of workers spawned per remote mining room.
-    PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah','fsck-u','FaceWound','forkmantis','Migaaresno','xAix1999','silentpoots','arguinyano','OokieCookie','OverlordQ','Nibinhilion','Crowsbane','Yew','BogdanBiv','s1akr','Pandabear41','Logmadr','Patrik','novice','Conquest','ofirl','GeorgeBerkeley','TTR','tynstar','K-C','Hoekynl','Sunri5e','AgOrange','distantcam','Lisp','bbdMinimbl','Twill','Logxen','miR','Spedwards','Krazyfuq','Icesory','chobobobo','deft-code','mmmd','DKPlugins','pavelnieks','buckley310','almaravarion','SSH','Perrytheplatypus','Jnesselr','ryagas','xXtheguy52Xx','SEATURTLEKING','DasBrain','C00k1e_93','Currency','Vykook','shedletsky','Aranatha','Montblanc'],
+    PLAYER_WHITELIST: ['cyberblast','SirLovi','Asku','Kazume','Noxeth','MrDave','Telemac','Xephael','Zoiah','fsck-u','FaceWound','forkmantis','Migaaresno','xAix1999','silentpoots','arguinyano','OokieCookie','OverlordQ','Nibinhilion','Crowsbane','Yew','BogdanBiv','s1akr','Pandabear41','Logmadr','Patrik','novice','Conquest','ofirl','GeorgeBerkeley','TTR','tynstar','K-C','Hoekynl','Sunri5e','AgOrange','distantcam','Lisp','bbdMinimbl','Twill','Logxen','miR','Spedwards','Krazyfuq','Icesory','chobobobo','deft-code','mmmd','DKPlugins','pavelnieks','buckley310','almaravarion','SSH','Perrytheplatypus','Jnesselr','ryagas','xXtheguy52Xx','SEATURTLEKING','DasBrain','C00k1e_93','Currency','Vykook','shedletsky','Aranatha','Montblanc','emb3r','Mudla'],
     // Don't attack. Must be a member of OCS for permanent whitelisting in git repository. But you can change your own copy... Please ask if you are interested in joining OCS :)
     DEFENSE_BLACKLIST: [], // Don't defend those rooms (add room names). Blocks spawning via defense task (will not prevent offensive actions at all)
     CRITICAL_BUCKET_LEVEL: 1000, // take action when the bucket drops below this value to prevent the bucket from actually running out
     CRITICAL_BUCKET_OVERFILL: 200, // Overfill the bucket by this amount before disabling CPU throttle, this can reduce thrashing because all creeps try to act at once
-    CRITICAL_ROLES: [ 'melee', 'ranger', 'healer', 'miner', 'hauler', 'upgrader' ], // when the bucket drops below the critical bucket level only these creep roles will be executed
+    CRITICAL_ROLES: [ 'worker', 'collapseWorker', 'melee', 'ranger', 'healer', 'miner', 'hauler', 'upgrader' ], // when the bucket drops below the critical bucket level only these creep roles will be executed
     ROBBER_REHOME: false, // May robbers choose closer storage for delivery?
     OBSERVER_OBSERVE_RANGE: 3, // the range for observers to look at
     OBSERVER_OBSERVE_HIGHWAYS_ONLY: true, // the observers will only look at highways - changing this will require you to clear cached rooms
+    ACTION_SAY: { // what gets said on creep.action.*.onAssignment
+        ATTACK_CONTROLLER: String.fromCodePoint(0x1F5E1) + String.fromCodePoint(0x26F3), // 🗡⛳
+        AVOIDING: String.fromCodePoint(0x21A9), // ↩
+        BUILDING: String.fromCodePoint(0x2692), // ⚒
+        BULLDOZING: String.fromCodePoint(0x1F69C), // 🚜
+        CHARGING: String.fromCodePoint(0x1F50C), // 🔌
+        CLAIMING: String.fromCodePoint(0x26F3), // ⛳
+        DEFENDING: String.fromCodePoint(0x2694), // ⚔
+        DISMANTLING: String.fromCodePoint(0x1F527), // 🔧
+        DROPPING: String.fromCodePoint(0x1F4A9), // 💩
+        FEEDING: String.fromCodePoint(0x1F355), // 🍕
+        FORTIFYING: String.fromCodePoint(0x1F528), // 🔨
+        FUELING: String.fromCodePoint(0x26FD), // ⛽
+        GUARDING: String.fromCodePoint(0x1F46E) + String.fromCodePoint(0x1F3FC), // 👮🏼
+        HARVESTING: String.fromCodePoint(0x26CF), // ⛏
+        HEALING: String.fromCodePoint(0x26E8), // ⛨
+        IDLE: String.fromCodePoint(0x1F3B5), // 🎵
+        INVADING: String.fromCodePoint(0x1F52B), // 🔫
+        PICKING: String.fromCodePoint(0x23EC), // ⏬
+        REALLOCATING: String.fromCodePoint(0x2194), // ↔
+        RECYCLING: String.fromCodePoint(0x267B), // ♻
+        REPAIRING: String.fromCodePoint(0x1F528), // 🔨
+        RESERVING: String.fromCodePoint(0x26F3), // ⛳
+        ROBBING: String.fromCodePoint(0x1F480), // 💀
+        STORING: String.fromCodePoint(0x1F4E5) + String.fromCodePoint(0xFE0E), // 📥
+        TRAVELLING: String.fromCodePoint(0x1F3C3), // 🏃
+        UNCHARGING: String.fromCodePoint(0x1F50B), // 🔋
+        UPGRADING: String.fromCodePoint(0x1F5FD), // 🗽
+        WITHDRAWING: String.fromCodePoint(0x1F4E4) + String.fromCodePoint(0xFE0E), // 📤
+    }
 };
 module.exports = mod;

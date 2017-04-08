@@ -30,5 +30,5 @@ action.work = function(creep, range){
 };
 action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9962), SAY_PUBLIC);
-    if( SAY_ASSIGNMENT ) creep.say('\u{26EA}\u{FE0E}', SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.UPGRADING, SAY_PUBLIC);
 };

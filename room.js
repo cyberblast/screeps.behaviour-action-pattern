@@ -3,7 +3,13 @@ let find = Room.prototype.find;
 
 let mod = {};
 module.exports = mod;
-
+mod.register = function() {
+    Room.costMatrixInvalid.on(room => Room.rebuildCostMatrix(room.name || room));
+};
+mod.pathfinderCache = {};
+mod.pathfinderCacheDirty = false;
+mod.pathfinderCacheLoaded = false;
+mod.COSTMATRIX_CACHE_VERSION = 3; // change this to invalidate previously cached costmatrices
 mod.extend = function(){
     let Container = function(room){
         this.room = room;
@@ -262,6 +268,15 @@ mod.extend = function(){
                         this._all = this.room.find(FIND_STRUCTURES);
                     }
                     return this._all;
+                }
+            },
+            'my': {
+                configurable: true,
+                get: function() {
+                    if( _.isUndefined(this._my) ){
+                        this._my = this.room.find(FIND_MY_STRUCTURES);
+                    }
+                    return this._my;
                 }
             },
             'spawns': {
@@ -653,6 +668,18 @@ mod.extend = function(){
                 return this._allCreeps;
             }
         },
+        'immobileCreeps': {
+            configurable: true,
+            get: function() {
+                if( _.isUndefined(this._immobileCreeps) ){
+                    this._immobileCreeps = _.filter(this.creeps, c => {
+                        const s = c.data && c.data.determinatedSpot;
+                        return s && c.pos.isEqualTo(c.room.getPositionAt(s.x, s.y));
+                    });
+                }
+                return this._immobileCreeps;
+            }
+        },
         'hostiles': {
             configurable: true,
             get: function() {
@@ -865,19 +892,18 @@ mod.extend = function(){
             configurable: true,
             get: function () {
                 if (_.isUndefined(this._structureMatrix)) {
-                    const COSTMATRIX_CACHE_VERSION = 2; // change this to invalidate previously cached costmatrices
                     const cacheValid = (roomName) => {
-                        if (_.isUndefined(Memory.pathfinder)) {
-                            Memory.pathfinder = {};
-                            Memory.pathfinder[roomName] = {};
+                        if (_.isUndefined(mod.pathfinderCache)) {
+                            mod.pathfinderCache = {};
+                            mod.pathfinderCache[roomName] = {};
                             return false;
-                        } else if (_.isUndefined(Memory.pathfinder[roomName])) {
-                            Memory.pathfinder[roomName] = {};
+                        } else if (_.isUndefined(mod.pathfinderCache[roomName])) {
+                            mod.pathfinderCache[roomName] = {};
                             return false;
                         }
-                        const mem = Memory.pathfinder[roomName];
+                        const mem = mod.pathfinderCache[roomName];
                         const ttl = Game.time - mem.updated;
-                        if (mem.version === COSTMATRIX_CACHE_VERSION && mem.costMatrix && ttl < COST_MATRIX_VALIDITY) {
+                        if (mem.version === mod.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && ttl < COST_MATRIX_VALIDITY) {
                             if (DEBUG && TRACE) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
                             return true;
                         }
@@ -885,9 +911,13 @@ mod.extend = function(){
                     };
 
                     if (cacheValid(this.name)) {
-                        this._structureMatrix = PathFinder.CostMatrix.deserialize(Memory.pathfinder[this.name].costMatrix);
+                        if (_.isUndefined(mod.pathfinderCache[this.name].costMatrix)) {
+                            const costMatrix = PathFinder.CostMatrix.deserialize(mod.pathfinderCache[this.name].serializedMatrix);
+                            mod.pathfinderCache[this.name].costMatrix = costMatrix;
+                        } 
+                        this._structureMatrix = mod.pathfinderCache[this.name].costMatrix;
                     } else {
-                        if (DEBUG) logSystem(this.name, 'Calulating cost matrix');
+                        if (DEBUG) logSystem(this.name, 'Calculating cost matrix');
                         var costMatrix = new PathFinder.CostMatrix();
                         let setCosts = structure => {
                             const site = structure instanceof ConstructionSite;
@@ -905,10 +935,14 @@ mod.extend = function(){
                         };
                         this.structures.all.forEach(setCosts);
                         this.constructionSites.forEach(setCosts);
-                        const prevTime = Memory.pathfinder[this.name].updated;
-                        Memory.pathfinder[this.name].costMatrix = costMatrix.serialize();
-                        Memory.pathfinder[this.name].updated = Game.time;
-                        Memory.pathfinder[this.name].version = COSTMATRIX_CACHE_VERSION;
+                        this.immobileCreeps.forEach(c => costMatrix.set(c.pos.x, c.pos.y, 0xFF));
+                        const prevTime = mod.pathfinderCache[this.name].updated;
+                        mod.pathfinderCache[this.name] = {
+                            costMatrix: costMatrix,
+                            updated: Game.time,
+                            version: mod.COSTMATRIX_CACHE_VERSION
+                        };
+                        mod.pathfinderCacheDirty = true;
                         if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
                         this._structureMatrix = costMatrix;
                     }
@@ -1061,6 +1095,23 @@ mod.extend = function(){
             }
         },
     });
+    Room.prototype.countMySites = function() {
+        const numSites = _.size(this.myConstructionSites);
+        if (!_.isUndefined(this.memory.myTotalSites) && numSites !== this.memory.myTotalSites) {
+            Room.costMatrixInvalid.trigger(this);
+        }
+        if (numSites > 0) this.memory.myTotalSites = numSites;
+        else delete this.memory.myTotalSites;
+    };
+    Room.prototype.countMyStructures = function() {
+        const numStructures = _.size(this.structures.my);
+        // only trigger when a structure has been destroyed, we already avoid unpathable construction sites, and treat road sites like roads
+        if (!_.isUndefined(this.memory.myTotalStructures) && numStructures < this.memory.myTotalStructures) {
+            Room.costMatrixInvalid.trigger(this);
+        }
+        if (numStructures > 0) this.memory.myTotalStructures = numStructures;
+        else delete this.memory.myTotalStructures;
+    };
     Room.prototype.registerIsHostile = function() {
         if (this.controller) {
             if (_.isUndefined(this.hostile) || typeof this.hostile === 'number') { // not overridden by user
@@ -1444,8 +1495,7 @@ mod.extend = function(){
         const CONSTRUCT = (flag, type) => {
             if (sitesSize >= 100) return;
             if (!flag) return;
-            flag = Game.flags[flag.name];
-            const POS = flag.pos;
+            const POS = new RoomPosition(flag.x, flag.y, flag.roomName);
             if (!POS) return;
             const sites = POS.lookFor(LOOK_CONSTRUCTION_SITES);
             if (sites && sites.length) return; // already a construction site
@@ -1453,7 +1503,10 @@ mod.extend = function(){
             if (structures && structures.length) return; // pre-existing structure here
             const r = POS.createConstructionSite(type);
             if (Util.fieldOrFunction(REMOVE_CONSTRUCTION_FLAG, this, type) && r === OK) {
-                flag.remove();
+                if (flag.name) {
+                    flag = Game.flags[flag.name];
+                    if (flag instanceof Flag) flag.remove();
+                }
                 sitesSize++;
             }
         };
@@ -1538,11 +1591,7 @@ mod.extend = function(){
             const [mineral] = this.find(FIND_MINERALS);
             const extractor = mineral.pos.lookFor(LOOK_STRUCTURES);
             if (extractor.length && extractor[0] instanceof StructureExtractor) return;
-            const flagName = mineral.pos.createFlag('_tempExtractor', FLAG_COLOR.construct.color, FLAG_COLOR.construct.secondaryColor);
-            if (typeof flagName !== 'string') return;
-            CONSTRUCT({
-                flagName,
-            }, STRUCTURE_EXTRACTOR);
+            CONSTRUCT(mineral.pos, STRUCTURE_EXTRACTOR);
         }
     };
     Room.prototype.updateResourceOrders = function () {
@@ -2741,6 +2790,7 @@ mod.flush = function(){
         delete room._isReceivingEnergy;
         delete room._reservedSpawnEnergy;
         delete room._creeps;
+        delete room._immobileCreeps;
         delete room._allCreeps;
         delete room._privateerMaxWeight;
         delete room._claimerMaxWeight;
@@ -2779,8 +2829,25 @@ mod.flush = function(){
         delete Memory.rooms.hostileRooms;
     }
 };
-mod.analyze = function(){
-    let getEnvironment = room => {
+mod.totalSitesChanged = function() {
+    const numSites = _.size(Game.constructionSites);
+    const oldSites = Memory.rooms.myTotalSites || 0;
+    if (numSites > 0) Memory.rooms.myTotalSites = numSites;
+    else delete Memory.rooms.myTotalSites;
+    return oldSites && oldSites !== numSites;
+};
+mod.totalStructuresChanged = function() {
+    const numStructures = _.size(Game.structures);
+    const oldStructures = Memory.rooms.myTotalStructures || 0;
+    if (numStructures > 0) Memory.rooms.myTotalStructures = numStructures;
+    else delete Memory.rooms.myTotalStructures;
+    return oldStructures && oldStructures !== numStructures;
+};
+mod.analyze = function() {
+    const p = Util.startProfiling('Room.analyze', {enabled:PROFILING.ROOMS});
+    const totalSitesChanged = Room.totalSitesChanged();
+    const totalStructuresChanged = Room.totalStructuresChanged();
+    const getEnvironment = room => {
         try {
             if( Game.time % MEMORY_RESYNC_INTERVAL == 0 || room.name == 'sim' ) {
                 room.saveMinerals();
@@ -2805,15 +2872,21 @@ mod.analyze = function(){
             room.processLabs();
             room.processPower();
             room.switchRamparts();
+            if (totalSitesChanged) room.countMySites();
+            if (totalStructuresChanged) room.countMyStructures();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
             console.log( dye(CRAYON.error, 'Error in room.js (Room.prototype.loop) for "' + room.name + '": <br/>' + (err.stack || err.toString()) + '<br/>' + err.stack));
         }
     };
-    _.forEach(Game.rooms, getEnvironment);
+    _.forEach(Game.rooms, r => {
+        getEnvironment(r);
+        p.checkCPU(r.name, PROFILING.ANALYZE_LIMIT / 5);
+    });
 };
 mod.execute = function() {
+    const p = Util.startProfiling('Room.execute', {enabled:PROFILING.ROOMS});
     let triggerNewInvaders = creep => {
         // create notification
         let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
@@ -2827,27 +2900,58 @@ mod.execute = function() {
     let triggerKnownInvaders = id =>  Room.knownInvader.trigger(id);
     let triggerGoneInvaders = id =>  Room.goneInvader.trigger(id);
     let run = (memory, roomName) => {
+        const p2 = Util.startProfiling(roomName, {enabled:PROFILING.ROOMS});
         let room = Game.rooms[roomName];
         if( room ){ // has sight
             room.goneInvader.forEach(triggerGoneInvaders);
+            p2.checkCPU('Creep.execute.run:goneInvader', 0.5);
             room.hostileIds.forEach(triggerKnownInvaders);
+            p2.checkCPU('Creep.execute.run:knownInvaders', 0.5);
             room.newInvader.forEach(triggerNewInvaders);
-            Tower.loop(room);
+            p2.checkCPU('Creep.execute.run:newInvaders', 0.5);
+            if (room.structures.towers.length > 0) Tower.loop(room);
+            p2.checkCPU('Creep.execute.run:tower.loop', 0.5);
             if( room.collapsed ) Room.collapsed.trigger(room);
+            p2.checkCPU('Creep.execute.run:collapsed', 0.5);
         }
         else { // no sight
             if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
+            p2.checkCPU('Creep.execute.run:knownInvadersNoSight', 0.5);
         }
     };
     _.forEach(Memory.rooms, (memory, roomName) => {
         run(memory, roomName);
+        p.checkCPU(roomName + '.run', 1);
         let room = Game.rooms[roomName];
         if (room) {
             if (room.structures.observer) room.controlObserver();
+            p.checkCPU(roomName + '.controlObserver', 0.5);
         }
     });
 };
-
+mod.cleanup = function() {
+    // flush changes to the pathfinderCache but wait until load
+    if (!_.isUndefined(Memory.pathfinder)) {
+        OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, Memory.pathfinder);
+        delete Memory.pathfinder;
+    }
+    if (mod.pathfinderCacheDirty && mod.pathfinderCacheLoaded) {
+        // store our updated cache in the memory segment
+        let encodedCache = {};
+        for (const key in mod.pathfinderCache) {
+            const entry = mod.pathfinderCache[key];
+            if (entry.version === mod.COSTMATRIX_CACHE_VERSION) {
+                encodedCache[key] = {
+                    serializedMatrix: entry.serializedMatrix || entry.costMatrix.serialize(),
+                    updated: entry.updated,
+                    version: entry.version
+                };
+            }
+        }
+        OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, encodedCache);
+        mod.pathfinderCacheDirty = false;
+    }
+};
 mod.bestSpawnRoomFor = function(targetRoomName) {
     var range = room => room.my ? routeRange(room.name, targetRoomName) : Infinity;
     return _.min(Game.rooms, range);
@@ -2859,7 +2963,8 @@ mod.findSpawnRoom = function(params){
     if( !params || !params.targetRoom ) return null;
     // filter validRooms
     let isValidRoom = room => (
-        room.my &&
+        room.my && 
+        (params.maxRange === undefined || Util.routeRange(room.name, params.targetRoom) <= params.maxRange) &&
         (params.minEnergyCapacity === undefined || params.minEnergyCapacity <= room.energyCapacityAvailable) &&
         (params.minEnergyAvailable === undefined || params.minEnergyAvailable <= room.energyAvailable) &&
         (room.name != params.targetRoom || params.allowTargetRoom === true) &&
@@ -2969,6 +3074,22 @@ mod.roomDistance = function(roomName1, roomName2, diagonal, continuous){
     let yDif = posA[3] == posB[3] ? Math.abs(posA[4]-posB[4]) : posA[4]+posB[4]+1;
     //if( diagonal ) return Math.max(xDif, yDif); // count diagonal as 1
     return xDif + yDif; // count diagonal as 2
+};
+mod.rebuildCostMatrix = function(roomName) {
+    if (DEBUG) logSystem(roomName, 'Removing invalid costmatrix to force a rebuild.')
+    mod.pathfinderCache[roomName] = {};
+    mod.pathfinderCacheDirty = true;
+};
+mod.loadCostMatrixCache = function(cache) {
+    let count = 0;
+    for (const key in cache) {
+        if (!mod.pathfinderCache[key] || mod.pathfinderCache[key].updated < cache[key].updated) {
+            count++;
+            mod.pathfinderCache[key] = cache[key];
+        }
+    }
+    if (DEBUG && count > 0) logSystem('RawMemory', 'loading pathfinder cache.. updated ' + count + ' stale entries.');
+    mod.pathfinderCacheLoaded = true;
 };
 mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
     const room = Game.rooms[roomName];

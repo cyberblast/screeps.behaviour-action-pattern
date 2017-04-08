@@ -58,6 +58,17 @@ mod.FLAG_COLOR = {
         }
     },
     //COLOR_PURPLE - Reserved labs
+    labs: { // could be used to define certain lab commands
+        color: COLOR_PURPLE,
+        secondaryColor: COLOR_PURPLE,
+        filter: {'color': COLOR_PURPLE, 'secondaryColor': COLOR_PURPLE },
+        labTech: { // spawn lab tech when required
+            color: COLOR_PURPLE,
+            secondaryColor: COLOR_WHITE,
+            filter: {'color': COLOR_PURPLE, 'secondaryColor': COLOR_WHITE }
+        }
+
+    },
     //COLOR_BLUE - Reserved (internal use)
     //COLOR_CYAN - Reserved (build related)
     construct: { // construct an extension at flag when available
@@ -179,6 +190,12 @@ for (let a in REACTIONS) {
         mod.LAB_REACTIONS[REACTIONS[a][b]] = [a, b];
     }
 }
+mod.MEM_SEGMENTS = {
+    COSTMATRIX_CACHE: {
+        start: 99,
+        end: 95
+    }
+};
 // used to log something meaningful instead of numbers
 mod.translateErrorCode = function(code) {
     var codes = {
@@ -399,117 +416,14 @@ mod.guid = function() {
 Object.defineProperty(global, 'observerRequests', {
     configurable: true,
     get: function() {
-        if (_.isUndefined(global._observerRequests)) {
-            global._observerRequests = [];
-        }
-        return global._observerRequests;
+        return Util.get(global, '_observerRequests', []);
     },
     /**
      * Pass an object containing room information to the requests
      * @param {Object} request - `roomName` property required
      */
     set: function(request) {
-        global._observerRequests.push(request);
+        Util.get(global, '_observerRequests', []).push(request);
     },
 });
-mod.memoryUsage = function(mem) {
-    let string = '';
-    let total = 0;
-    let biggestKey = '';
-    for (const key in mem) {
-        if (key.length > biggestKey.length) biggestKey = key;
-        const sum = JSON.stringify(mem[key]).length / 1024;
-        total += sum;
-        string += `<tr><td>${key}</td><td>${_.round(sum, 2)}</td></tr>`;
-    }
-    string += `<tr><td>Total</td><td>${_.round(total, 2)}</td></tr></table>`;
-    const padding = Array(biggestKey.length + 2).join(' ');
-    return `<table><tr><th>Key${padding}</th><th>Size (kb)</th></tr>`.concat(string);
-};
-mod.profiler = null;
-mod.resetProfiler = function() {
-    mod.loadProfiler(true);
-};
-mod.loadProfiler = function(reset) {
-    if (reset) {
-        logSystem('Profiler', 'resetting profiler data.');
-        Memory.profiler = {
-            totalCPU: 0,
-            totalTicks: 0,
-            types: {},
-            validTick: Game.time
-        };
-    }
-    mod.profiler = Memory.profiler;
-};
-mod.startProfiling = function(name, startCPU) {
-    let checkCPU = function(localName, limit, type) {
-    };
-    let totalCPU = function() {
-        // if you would like to do a baseline comparison
-        // if (_.isUndefined(Memory.profiling)) Memory.profiling = {ticks:0, cpu: 0};
-        // let thisTick = Game.cpu.getUsed() - startCPU;
-        // Memory.profiling.ticks++;
-        // Memory.profiling.cpu += thisTick;
-        // logSystem('Total', _.round(thisTick, 2) + ' ' + _.round(Memory.profiling.cpu / Memory.profiling.ticks, 2));
-    };
-    if (PROFILE || DEBUG) {
-        if (_.isUndefined(Memory.profiler)) resetProfiler();
-        else if (!mod.profiler ||
-            mod.profiler.validTick !== Memory.profiler.validTick ||
-            mod.profiler.totalTicks < Memory.profiler.totalTicks) {
-            loadProfiler();
-        }
-        const onLoad = startCPU || Game.cpu.getUsed();
-        let start = onLoad;
-        if (PROFILE) {
-            checkCPU = function(localName, limit, type) {
-                let current = Game.cpu.getUsed();
-                let used = _.round(current - start, 2);
-                if (!limit || used > limit) {
-                    logSystem(name + ':' + localName, used);
-                }
-                if (type) {
-                    if (_.isUndefined(mod.profiler.types[type])) mod.profiler.types[type] = {
-                        totalCPU: 0,
-                        count: 0,
-                        totalCount: 0
-                    };
-                    mod.profiler.types[type].totalCPU = mod.profiler.types[type].totalCPU + used;
-                    mod.profiler.types[type].count++;
-                }
-                start = current;
-            };
-        }
-        totalCPU = function() {
-            const totalUsed = Game.cpu.getUsed() - onLoad;
-            mod.profiler.totalCPU = mod.profiler.totalCPU + totalUsed;
-            mod.profiler.totalTicks = mod.profiler.totalTicks + 1;
-            const avgCPU = mod.profiler.totalCPU / mod.profiler.totalTicks;
-            if (PROFILE && PROFILING.AVERAGE_USAGE && _.size(mod.profiler.types) > 0) {
-                let heading = '';
-                while (heading.length < 30) heading += ' ';
-                global.logSystem(heading, '(avg/creep/tick) (active) (weighted avg) (executions)');
-                for (let type in mod.profiler.types) {
-                    let data = mod.profiler.types[type];
-                    data.totalCount = data.totalCount + data.count;
-                    const typeAvg = _.round(data.totalCPU / data.totalCount, 3);
-                    let heading = type + ': ';
-                    while (heading.length < 30) heading += ' ';
-                    global.logSystem(heading, '     ' + typeAvg + '          ' +
-                        data.count + '       ' + (_.round(typeAvg * data.count, 3)) + '          ' + data.totalCount);
-                    data.count = 0;
-                }
-            }
-            logSystem(name, ' loop:' + _.round(totalUsed, 2) + ' other:' + _.round(onLoad, 2) + ' avg:' + _.round(avgCPU, 2) + ' ticks:' +
-                mod.profiler.totalTicks + ' bucket:' + Game.cpu.bucket, 2);
-            if (PROFILE) console.log('\n');
-            Memory.profiler = mod.profiler;
-        };
-    }
-    return {
-        checkCPU: checkCPU,
-        totalCPU: totalCPU,
-    };
-};
 mod = _.bindAll(mod);

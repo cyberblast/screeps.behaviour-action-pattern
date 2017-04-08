@@ -44,7 +44,8 @@ mod.checkForRequiredCreeps = (flag) => {
             { // spawn room selection params
                 targetRoom: flag.pos.roomName, 
                 minEnergyCapacity: 200, 
-                rangeRclRatio: 1.8 // stronger preference of higher RCL rooms
+                rangeRclRatio: 1.8, // stronger preference of higher RCL rooms
+                allowTargetRoom: true,
             },
             creepSetup => { // callback onQueued
                 let memory = Task.guard.memory(Game.flags[creepSetup.destiny.targetName]);

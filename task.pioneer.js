@@ -6,7 +6,7 @@ mod.register = () => {};
 mod.handleRoomDied = room => {
     const recoveryType = 'collapseWorker';
 
-    if (room.population.typeCount[recoveryType]) {
+    if (room.population && room.population.typeCount[recoveryType]) {
         return;
     }
 

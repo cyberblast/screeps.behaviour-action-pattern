@@ -19,5 +19,5 @@ action.work = function(creep){
     creep.target.recycleCreep(creep);
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9851), SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.RECYCLING, SAY_PUBLIC);
 };

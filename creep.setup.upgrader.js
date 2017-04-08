@@ -25,7 +25,9 @@ setup.maxCount = function(room){
             // No energy structures built near controller
             (room.structures.container.controller.length + room.structures.links.controller.length) === 0 ||
             // Upgrading blocked -> http://support.screeps.com/hc/en-us/articles/207711889-StructureController#upgradeBlocked
-            room.controller.upgradeBlocked
+            room.controller.upgradeBlocked ||
+            // don't spawn a new upgrader while there are construction sites (and no storage)
+            (room.myConstructionSites.length > 0 && !room.store)
         ) return 0;
     if( room.controller.level == 8 ) return 1;
     // if there is no energy for the upgrader return 0
@@ -36,8 +38,6 @@ setup.maxCount = function(room){
     room.structures.links.controller.forEach(sumLink);
     if( upgraderEnergy === 0 ) return 0;
     if( room.storage ) return Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000));
-    // dont spawn a new upgrader while there are construction sites (and no storage)
-    if( room.myConstructionSites.length > 0 ) return 0;
     // if energy on the ground next to source > 700 return 3
     if( room.droppedResources ) {
         let dropped = 0;
