@@ -4,7 +4,10 @@ module.exports = mod;
 mod.name = 'reserve';
 mod.creep = {
     reserver: {
-        fixedBody: [CLAIM, CLAIM, MOVE, MOVE],
+        fixedBody: {
+            [CLAIM]: 2,
+            [MOVE]: 2,
+        },
         multiBody: [CLAIM, MOVE],
         maxMulti: 7,
         name: "reserver", 
@@ -12,24 +15,13 @@ mod.creep = {
     },
 };
 // hook into events
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.reserve.handleFlagFound(flag) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.reserve.handleSpawningStarted(params) );
-    // a creep completed spawning
-    Creep.spawningCompleted.on( creep => Task.reserve.handleSpawningCompleted(creep) );
-    // a creep will die soon
-    Creep.predictedRenewal.on( creep => Task.reserve.handleCreepDied(creep.name) );
-    // a creep died
-    Creep.died.on( name => Task.reserve.handleCreepDied(name) );
-};
+mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a reserve, exploit or remote mine flag
-    if( flag.color == FLAG_COLOR.claim.reserve.color && flag.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor ||
-        flag.color == FLAG_COLOR.invade.exploit.color && flag.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor ||
-        flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor){
+    if( flag.compareTo(FLAG_COLOR.claim.reserve) ||
+        flag.compareTo(FLAG_COLOR.invade.exploit) ||
+        flag.compareTo(FLAG_COLOR.claim.mining)){
         // check if a new creep has to be spawned
         Task.reserve.checkForRequiredCreeps(flag);
     }
@@ -37,8 +29,11 @@ mod.handleFlagFound = flag => {
 // check if a new creep has to be spawned
 mod.checkForRequiredCreeps = (flag) => {
     let spawnParams;
-    if( flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor ) {
+    if (flag.compareTo(FLAG_COLOR.claim.mining)) {
         spawnParams = Task.mining.strategies.reserve.spawnParams(flag);
+    } else if( flag.compareTo(FLAG_COLOR.invade.exploit) ) {
+        spawnParams = mod.strategies.defaultStrategy.spawnParams(flag);
+        spawnParams.queue = 'Low'; // privateer reserve is always low queue
     } else {
         spawnParams = mod.strategies.defaultStrategy.spawnParams(flag);
     }
@@ -142,7 +137,10 @@ mod.handleCreepDied = name => {
 mod.nextAction = creep => {
     // override behaviours nextAction function
     // this could be a global approach to manipulate creep behaviour
-
+    if (creep.data.destiny && creep.data.destiny.room !== creep.room.name) {
+        // go to target room
+        return Creep.action.travelling.assignRoom(creep, creep.data.destiny.room);
+    }
     //Reserve if possible, if not (should be never) then recycle
     let priority = [
         Creep.action.reserving,
@@ -169,7 +167,7 @@ mod.memory = (flag) => {
             queued: [], 
             spawning: [],
             running: []
-        }
+        };
     }
     let memory = flag.memory.tasks.reserve;
     if( !memory.valid || memory.valid < ( Game.time - MEMORY_RESYNC_INTERVAL ) )
@@ -178,7 +176,7 @@ mod.memory = (flag) => {
 };
 mod.validateMemoryQueued = memory => {
     // clean/validate task memory queued creeps
-    let queued = []
+    let queued = [];
     let validateQueued = entry => {
         let room = Game.rooms[entry.room];
         if( (room.spawnQueueMedium.some( c => c.name == entry.name)) || (room.spawnQueueLow.some( c => c.name == entry.name)) ){
@@ -190,7 +188,7 @@ mod.validateMemoryQueued = memory => {
 };
 mod.validateMemorySpawning = memory => {
     // clean/validate task memory spawning creeps
-    let spawning = []
+    let spawning = [];
     let validateSpawning = entry => {
         let spawn = Game.spawns[entry.spawn];
         if( spawn && ((spawn.spawning && spawn.spawning.name == entry.name) || (spawn.newSpawn && spawn.newSpawn.name == entry.name))) {
@@ -202,7 +200,7 @@ mod.validateMemorySpawning = memory => {
 };
 mod.validateMemoryRunning = memory => {
     // clean/validate task memory running creeps
-    let running = []
+    let running = [];
     let validateRunning = entry => {
         // invalidate dead or old creeps for predicted spawning
         let creep = Game.creeps[entry];

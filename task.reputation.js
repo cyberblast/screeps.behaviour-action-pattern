@@ -12,7 +12,7 @@ const CONST = {
 
 const mod = {
     name: 'reputation',
-    myName: () => _.chain(Game.rooms).map('controller').flatten().filter('my').map('owner.username').first().value(),
+    myName: () => ME,
     isNPC: username => NPC[username] === true,
     npcOwner: creep => creep.owner && mod.isNPC(creep.owner.username),
     isAlly: username => mod.score(username) >= CONST.ALLY,
@@ -90,8 +90,8 @@ const mod = {
                 }
                 return list;
             }, score);
-
-            score[mod.myName()] = CONST.MY_SCORE;
+    
+            mod.setScore(mod.myName(), CONST.MY_SCORE);
         }
     },
     _loadWhitelist: () => {

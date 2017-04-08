@@ -2,21 +2,14 @@
 let mod = {};
 module.exports = mod;
 // hook into events
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.pioneer.handleFlagFound(flag) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.pioneer.handleSpawningStarted(params) );
-    // a creep completed spawning
-    Creep.spawningCompleted.on( creep => Task.pioneer.handleSpawningCompleted(creep) );
-    // a creep will die soon
-    Creep.predictedRenewal.on( creep => Task.pioneer.handleCreepDied(creep.name) );
-    // a creep died
-    Creep.died.on( name => Task.pioneer.handleCreepDied(name) );
-    // a room collapsed
-    Room.collapsed.on( room => Task.pioneer.handleRoomDied(room) );
-};
+mod.register = () => {};
 mod.handleRoomDied = room => {
+    const recoveryType = 'collapseWorker';
+
+    if (room.population && room.population.typeCount[recoveryType]) {
+        return;
+    }
+
     // try to spawn a worker
     let pioneer = true;
     if( room.energyAvailable > 199 ) {
@@ -25,7 +18,7 @@ mod.handleRoomDied = room => {
         pioneer = !Task.spawn(
             Task.pioneer.creep.worker, // creepDefinition
             { // destiny
-                task: 'pioneer', // taskName
+                task: recoveryType, // taskName
                 targetName: room.name // targetName
             }, 
             { // spawn room selection params
@@ -45,7 +38,7 @@ mod.handleRoomDied = room => {
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a pioneer single or spawn
-    if( flag.color == FLAG_COLOR.claim.pioneer.color && flag.secondaryColor == FLAG_COLOR.claim.pioneer.secondaryColor ){
+    if( flag.compareTo(FLAG_COLOR.claim.pioneer)){
         // check if a new creep has to be spawned
         Task.pioneer.checkForRequiredCreeps(flag);
     }
@@ -58,7 +51,7 @@ mod.checkForRequiredCreeps = (flag) => {
             return console.log("Pioneer room not owned");
         }
         const owner = flag.room.owner || flag.room.reservation;
-        if (owner) {
+        if (owner && !Task.reputation.isAlly(owner)) {
             return logError(`Pioneer target room owned by ${owner}`);
         }
     }
@@ -195,7 +188,11 @@ mod.memory = (flag) => {
 };
 mod.creep = {
     pioneer: {
-        fixedBody: [WORK, WORK, MOVE, MOVE, CARRY, CARRY],
+        fixedBody: {
+            [CARRY]: 2,
+            [MOVE]: 2,
+            [WORK]: 2,
+        },
         multiBody: [WORK, MOVE, CARRY],
         name: "pioneer", 
         behaviour: "pioneer", 
@@ -203,7 +200,7 @@ mod.creep = {
     },
     worker: {
         fixedBody: [MOVE, CARRY, WORK],
-        behaviour: 'worker',
+        behaviour: 'collapseWorker',
         queue: 'High'
     }
 };

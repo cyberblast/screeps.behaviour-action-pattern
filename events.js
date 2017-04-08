@@ -44,4 +44,7 @@ mod.flush = function(){
     // ocurrs when a room is considered to have collapsed. Will occur each tick until solved.
     // param: room
     Room.collapsed = new LiteEvent();
+
+    // occurs when a room needs to rebuild its costMatrix
+    Room.costMatrixInvalid = new LiteEvent();
 };

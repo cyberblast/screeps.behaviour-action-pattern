@@ -71,7 +71,7 @@ action.work = function(creep) {
 
     if (creep.data.safeSpot) {
         if (creep.pos.getRangeTo(creep.target) < 10) {
-            creep.drive(creep.data.safeSpot, 0, 1);
+            creep.travelTo(creep.data.safeSpot);
         } else {
             creep.idleMove();
         }
@@ -89,5 +89,5 @@ action.run = function(creep) {
 };
 action.onAssignment = function(creep, target) {
     delete creep.data.safeSpot;
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(10532), SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.AVOIDING, SAY_PUBLIC);
 };

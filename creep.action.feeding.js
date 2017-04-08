@@ -15,6 +15,9 @@ action.isAddableTarget = function(target){
         (!target.targetOf || _.filter(target.targetOf, {'actionName':'feeding'}).length < this.maxPerTarget));
 };
 action.newTarget = function(creep){
+    if (creep.room.energyAvailable === creep.room.energyCapacityAvailable) {
+        return null;
+    }
     var that = this;
     return creep.pos.findClosestByRange(creep.room.structures.all, {
         filter: (structure) => {
@@ -34,5 +37,5 @@ action.work = function(creep){
 };
 action.onAssignment = function(creep, target) {
     //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
-    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.FEEDING, SAY_PUBLIC);
 };

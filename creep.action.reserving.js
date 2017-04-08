@@ -3,13 +3,12 @@ module.exports = action;
 action.isValidAction = function(creep){ return true; };
 action.isValidTarget = function(target){  return target && (!target.reservation || target.reservation.ticksToEnd < 4999 ) };
 action.isAddableAction = function(){ return true; };
-action.isAddableTarget = function(){ return target &&
+action.isAddableTarget = function(target, creep){ return target &&
     ( target instanceof Flag || ( target.structureType === 'controller' && !target.owner ) );
 };
 action.newTarget = function(creep){
     let validColor = flagEntry => (
-        (flagEntry.color == FLAG_COLOR.claim.reserve.color && flagEntry.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor) ||
-        (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor)
+        Flag.compare(flagEntry, FLAG_COLOR.claim.reserve) || Flag.compare(flagEntry, FLAG_COLOR.invade.exploit)
     );
 
     let flag;
@@ -32,11 +31,10 @@ action.newTarget = function(creep){
 
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
-    if( creep.target.color ){
-        if( creep.flag.pos.roomName == creep.pos.roomName )
+    if( creep.target.color ){ 
+        if( creep.flag.pos.roomName == creep.pos.roomName ) // change target from flag to controller
             creep.data.targetId = null;
-        creep.drive( creep.target.pos, 0, 1, Infinity );
-        return;
+        return creep.travelTo( creep.target.pos );
     }
 
     let range = creep.pos.getRangeTo(creep.target);
@@ -45,8 +43,9 @@ action.step = function(creep){
         if( workResult != OK ) {
             creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
         }
+        return workResult;
     }
-    creep.drive( creep.target.pos, this.reachedRange, this.targetRange, range );
+    return creep.travelTo( creep.target.pos );
 };
 action.work = function(creep){
     var workResult;
@@ -62,5 +61,5 @@ action.work = function(creep){
     return workResult;
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9971), SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.RESERVING, SAY_PUBLIC);
 };

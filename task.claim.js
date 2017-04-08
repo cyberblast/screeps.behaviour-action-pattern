@@ -3,22 +3,11 @@ let mod = {};
 module.exports = mod; 
 mod.minControllerLevel = 3;
 // hook into events
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.claim.handleFlagFound(flag) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.claim.handleSpawningStarted(params) );
-    // a creep completed spawning
-    Creep.spawningCompleted.on( creep => Task.claim.handleSpawningCompleted(creep) );
-    // a creep will die soon
-    Creep.predictedRenewal.on( creep => Task.claim.handleCreepDied(creep.name) );
-    // a creep died
-    Creep.died.on( name => Task.claim.handleCreepDied(name) );
-};
+mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a yellow/yellow flag
-    if( flag.color == FLAG_COLOR.claim.color && flag.secondaryColor == FLAG_COLOR.claim.secondaryColor ){
+    if( flag.compareTo(FLAG_COLOR.claim) ){
         // check if a new creep has to be spawned
         Task.claim.checkForRequiredCreeps(flag);
     }

@@ -10,11 +10,11 @@ action.isAddableAction = function(creep){
     return ( !creep.room.population || !creep.room.population.actionCount[this.name] || creep.room.population.actionCount[this.name] < this.maxPerAction);
 };
 action.isValidTarget = function(target){
-    return (target != null && target.my && target.progress && target.progress < target.progressTotal);
+    return (target != null && (target.my || Task.reputation.allyOwner(target)) && target.progress && target.progress < target.progressTotal);
 };  
 action.isAddableTarget = function(target) {
     //  our site?
-    return target && target.my && (!target.targetOf || target.targetOf.length < this.maxPerTarget);
+    return target && (target.my || Task.reputation.allyOwner(target)) && (!target.targetOf || target.targetOf.length < this.maxPerTarget);
 };
 action.newTarget = function(creep){
     var that = this;
@@ -25,5 +25,5 @@ action.work = function(creep){
     return creep.build(creep.target);
 };
 action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9874), SAY_PUBLIC); 
+    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.BUILDING, SAY_PUBLIC);
 };

@@ -34,6 +34,9 @@ mod.decorateAgent = function(prototype, ...definitions) {
         }
         return key;
     };
+    prototype.selectClient = function(ids, index) {
+        return ids[index] && definitions[index].select(ids[index]);
+    };
     prototype.strategy = function(ids) {
         const key = this.strategyKey(ids);
 
@@ -55,6 +58,24 @@ mod.decorateAgent = function(prototype, ...definitions) {
         mod.putCachedStrategy(this, key, strategy);
         return mod.customizeStrategy(this, key, strategy);
     };
+    // Explain current activity
+    prototype.explain = function() {
+        const strategyKey = this.strategyKey([]);
+        let explained = this.toString() + ': ';
+        if (this.explainAgent) {
+            explained += this.explainAgent() + ' ';
+        }
+        explained += `assigned:[${strategyKey}]`;
+        for (let i = 0; i < strategyKey.length; i++) {
+            const client = this.selectClient(i);
+            if (client && client.explain) {
+                explained += `\n\t${strategyKey[i]}: ${client.explain(this)}`;
+            }
+        }
+
+        return explained;
+    };
+
 };
 
 // agent will prefer this strategy until it is free'd

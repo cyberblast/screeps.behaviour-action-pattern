@@ -3,22 +3,11 @@ let mod = {};
 module.exports = mod;
 mod.minControllerLevel = 3;
 // hook into events
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.guard.handleFlagFound(flag) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.guard.handleSpawningStarted(params) );
-    // a creep completed spawning
-    Creep.spawningCompleted.on( creep => Task.guard.handleSpawningCompleted(creep) );
-    // a creep will die soon
-    Creep.predictedRenewal.on( creep => Task.guard.handleCreepDied(creep.name) );
-    // a creep died
-    Creep.died.on( name => Task.guard.handleCreepDied(name) );
-};
+mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a yellow/yellow flag
-    if( flag.color == FLAG_COLOR.defense.color && flag.secondaryColor == FLAG_COLOR.defense.secondaryColor ){
+    if (flag.compareTo(FLAG_COLOR.defense)) {
         // check if a new creep has to be spawned
         Task.guard.checkForRequiredCreeps(flag);
     }
@@ -26,7 +15,12 @@ mod.handleFlagFound = flag => {
 mod.creep = {
     guard: {
         fixedBody: [RANGED_ATTACK, MOVE],
-        multiBody: [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE],
+        multiBody: {
+            [HEAL]: 1,
+            [MOVE]: 2,
+            [RANGED_ATTACK]: 2,
+            [TOUGH]: 1,
+        },
         name: "guard", 
         behaviour: "ranger", 
         queue: 'Low'
@@ -50,7 +44,8 @@ mod.checkForRequiredCreeps = (flag) => {
             { // spawn room selection params
                 targetRoom: flag.pos.roomName, 
                 minEnergyCapacity: 200, 
-                rangeRclRatio: 1.8 // stronger preference of higher RCL rooms
+                rangeRclRatio: 1.8, // stronger preference of higher RCL rooms
+                allowTargetRoom: true,
             },
             creepSetup => { // callback onQueued
                 let memory = Task.guard.memory(Game.flags[creepSetup.destiny.targetName]);
