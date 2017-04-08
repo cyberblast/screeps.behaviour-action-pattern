@@ -20,12 +20,6 @@ action.newTarget = function(creep) {
     if (!drop) {
         drop = creep.room.controller;
     }
-    if (!drop) {
-        drop = creep.pos.findClosestByRange(_.filter(creep.room.constructionSites, {structureType: STRUCTURE_SPAWN}));
-    }
-    if (!drop) {
-        drop = creep.room.controller;
-    }
     return drop;
 };
 action.work = function(creep) {
