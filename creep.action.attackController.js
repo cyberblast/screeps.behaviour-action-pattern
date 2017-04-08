@@ -8,8 +8,8 @@ const action = class extends Creep.Action {
         }
     }
     
-    isValidTarget(target) {
-        return super.isValidTarget(target) && !target.reservation;
+    isValidTarget(target, creep) {
+        return super.isValidTarget(target) && (!target.reservation || !Task.reputation.allyOwner(target.reservation)) && creep.flag;
     }
     
     isAddableAction() {
@@ -17,7 +17,7 @@ const action = class extends Creep.Action {
     }
     
     isAddableTarget(target) {
-        return target && (target instanceof Flag || (target instanceof StructureController && target.owner));
+        return target && (target instanceof Flag || (target instanceof StructureController && (target.reservation || target.owner)));
     }
     
     newTarget(creep) {
@@ -53,14 +53,17 @@ const action = class extends Creep.Action {
             if (workResult !== OK) {
                 creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
             }
+        } else {
+            creep.travelTo(creep.target);
         }
-        creep.travelTo(creep.target);
     }
     
     work(creep) {
         creep.controllerSign();
         
-        const work = creep.target.owner && !creep.target.my ? creep.attackController : creep.claimController;
+        const work = (creep.target.owner && !creep.target.my) || (creep.target.reservation && !Task.reputation.allyOwner(creep.target.reservation))
+            ? creep.attackController
+            : creep.claimController;
         return work.call(creep, creep.target);
     }
     

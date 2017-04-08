@@ -58,6 +58,17 @@ mod.FLAG_COLOR = {
         }
     },
     //COLOR_PURPLE - Reserved labs
+    labs: { // could be used to define certain lab commands
+        color: COLOR_PURPLE,
+        secondaryColor: COLOR_PURPLE,
+        filter: {'color': COLOR_PURPLE, 'secondaryColor': COLOR_PURPLE },
+        labTech: { // spawn lab tech when required
+            color: COLOR_PURPLE,
+            secondaryColor: COLOR_WHITE,
+            filter: {'color': COLOR_PURPLE, 'secondaryColor': COLOR_WHITE }
+        }
+
+    },
     //COLOR_BLUE - Reserved (internal use)
     //COLOR_CYAN - Reserved (build related)
     construct: { // construct an extension at flag when available
@@ -405,17 +416,14 @@ mod.guid = function() {
 Object.defineProperty(global, 'observerRequests', {
     configurable: true,
     get: function() {
-        if (_.isUndefined(global._observerRequests)) {
-            global._observerRequests = [];
-        }
-        return global._observerRequests;
+        return Util.get(global, '_observerRequests', []);
     },
     /**
      * Pass an object containing room information to the requests
      * @param {Object} request - `roomName` property required
      */
     set: function(request) {
-        global._observerRequests.push(request);
+        Util.get(global, '_observerRequests', []).push(request);
     },
 });
 mod = _.bindAll(mod);

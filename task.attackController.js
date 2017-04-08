@@ -30,7 +30,8 @@ mod.checkForRequiredCreeps = (flag) => {
             }, 
             { // spawn room selection params
                 targetRoom: flag.pos.roomName, 
-                minEnergyCapacity: 9750
+                minEnergyCapacity: 9750,
+                maxRange: 5
             },
             creepSetup => { // onQueued callback
                     memory.queued.push({

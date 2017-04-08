@@ -1495,8 +1495,7 @@ mod.extend = function(){
         const CONSTRUCT = (flag, type) => {
             if (sitesSize >= 100) return;
             if (!flag) return;
-            flag = Game.flags[flag.name];
-            const POS = flag && flag.pos;
+            const POS = new RoomPosition(flag.x, flag.y, flag.roomName);
             if (!POS) return;
             const sites = POS.lookFor(LOOK_CONSTRUCTION_SITES);
             if (sites && sites.length) return; // already a construction site
@@ -1504,7 +1503,10 @@ mod.extend = function(){
             if (structures && structures.length) return; // pre-existing structure here
             const r = POS.createConstructionSite(type);
             if (Util.fieldOrFunction(REMOVE_CONSTRUCTION_FLAG, this, type) && r === OK) {
-                flag.remove();
+                if (flag.name) {
+                    flag = Game.flags[flag.name];
+                    if (flag instanceof Flag) flag.remove();
+                }
                 sitesSize++;
             }
         };
@@ -1589,11 +1591,7 @@ mod.extend = function(){
             const [mineral] = this.find(FIND_MINERALS);
             const extractor = mineral.pos.lookFor(LOOK_STRUCTURES);
             if (extractor.length && extractor[0] instanceof StructureExtractor) return;
-            const flagName = mineral.pos.createFlag('_tempExtractor', FLAG_COLOR.construct.color, FLAG_COLOR.construct.secondaryColor);
-            if (typeof flagName !== 'string') return;
-            CONSTRUCT({
-                flagName,
-            }, STRUCTURE_EXTRACTOR);
+            CONSTRUCT(mineral.pos, STRUCTURE_EXTRACTOR);
         }
     };
     Room.prototype.updateResourceOrders = function () {
@@ -2933,7 +2931,8 @@ mod.findSpawnRoom = function(params){
     if( !params || !params.targetRoom ) return null;
     // filter validRooms
     let isValidRoom = room => (
-        room.my &&
+        room.my && 
+        (params.maxRange === undefined || Util.routeRange(room.name, params.targetRoom) <= params.maxRange) &&
         (params.minEnergyCapacity === undefined || params.minEnergyCapacity <= room.energyCapacityAvailable) &&
         (params.minEnergyAvailable === undefined || params.minEnergyAvailable <= room.energyAvailable) &&
         (room.name != params.targetRoom || params.allowTargetRoom === true) &&

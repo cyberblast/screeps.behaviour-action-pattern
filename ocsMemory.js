@@ -31,7 +31,7 @@ mod.processSegment = (id, process) => {
     const segment = RawMemory.segments[id];
     if (!mod.cacheValid(id)) {
         try {
-            const data = segment ? JSON.parse(segment) : '';
+            let data = segment ? JSON.parse(segment) : {};
             process(data);
             global.cacheValid[id] = Memory.cacheValid[id];
         } catch (e) {
@@ -56,8 +56,8 @@ mod.saveSegment = (range, inputData) => {
     let keyNum = 0;
     let encodedData;
     for (let id = range.start; id >= range.end; id--) {
-        if (keyNum < keys.length || encodedData.length > 1) { // more data to save
-            if (RawMemory.segments[id] || numActive + mod.numSaved < 10) {
+        if ((keys && keyNum < keys.length) || (encodedData && encodedData.length > 1)) { // more data to save
+            if (!_.isUndefined(RawMemory.segments[id]) || numActive + mod.numSaved < 10) {
                 let temp;
                 let full = false;
                 while (keyNum < keys.length) {
@@ -78,10 +78,10 @@ mod.saveSegment = (range, inputData) => {
                 Memory.cacheValid[id] = Game.time;
                 encodedData = full && temp ? '{' + temp : '{';
                 if (_.isUndefined(RawMemory.segments[id])) mod.numSaved++;
-            } else if (numActive >= 10) {
-                // TODO: also defer?
+            } else if (numActive > 10) {
+                // TODO: also defer? (This should be impossible)
                 return logError('RawMemory', 'cannot save segment ' + id + ' too many active segments.');
-            } else if (numActive + mod.numSaved >= 10) {
+            } else if (numActive + mod.numSaved > 10) {
                 // TODO: defer one tick?
                 return logError('RawMemory', 'cannot save segment ' + id + ' loaded + saved exceeds limit(10).');
             } else {
