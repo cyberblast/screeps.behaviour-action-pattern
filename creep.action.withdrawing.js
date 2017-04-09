@@ -15,7 +15,7 @@ action.isValidTarget = function(target){
 };
 action.newTarget = function(creep){
     const validTargets = [creep.room.storage, creep.room.terminal].filter(this.isValidTarget);
-    return validTargets.length ? validTargets.max('charge') : null;
+    return validTargets.length ? _.max(validTargets, 'charge') : null;
 };
 action.work = function(creep){
     return creep.withdraw(creep.target, RESOURCE_ENERGY);
