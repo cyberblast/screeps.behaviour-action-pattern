@@ -316,10 +316,12 @@ module.exports.loop = function () {
     if( global.mainInjection.execute ) global.mainInjection.execute();
 
     // Postprocessing
-    if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
-        load("statistics").process();
-    processReports();
-    p.checkCPU('processReports', PROFILING.FLUSH_LIMIT);
+    if (SEND_STATISTIC_REPORTS) {
+        if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
+            load("statistics").process();
+        processReports();
+      p.checkCPU('processReports', PROFILING.FLUSH_LIMIT);
+    }
     FlagDir.cleanup();
     p.checkCPU('FlagDir.cleanup', PROFILING.FLUSH_LIMIT);
     Population.cleanup();

@@ -1,5 +1,11 @@
 const action = class extends Creep.Action {
     
+    constructor(...args) {
+        super(...args);
+        
+        this.targetRange = 3;
+    }
+    
     isValidTarget(target) {
         return super.isValidTarget(target) && target.hits && target.hits < target.hits && target.my;
     }

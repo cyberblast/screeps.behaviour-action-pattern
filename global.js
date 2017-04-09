@@ -156,11 +156,24 @@ mod.FLAG_COLOR = {
         secondaryColor: COLOR_BROWN,
     },
     // COLOR_GREY
+    // COLOR_WHITE
     command: { // command api
         color: COLOR_WHITE,
         drop: { // haulers drop energy in a pile here
             color: COLOR_WHITE,
             secondaryColor: COLOR_YELLOW,
+        },
+        _OCS: {
+            color: COLOR_WHITE,
+            secondaryColor: COLOR_PURPLE,
+        },
+        roomLayout: {
+            color: COLOR_WHITE,
+            secondaryColor: COLOR_CYAN,
+        },
+        invalidPosition: {
+            color: COLOR_WHITE,
+            secondaryColor: COLOR_RED,
         }
     },
 };

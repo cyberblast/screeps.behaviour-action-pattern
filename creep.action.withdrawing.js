@@ -11,10 +11,11 @@ action.isValidAction = function(creep){
 };
 action.isValidTarget = function(target){
     if (target instanceof StructureTerminal && target.charge <= 0) return false;
-    return target && !!target.store;
+    return target && !!target.store && target.store[RESOURCE_ENERGY];
 };
 action.newTarget = function(creep){
-    return _([creep.room.storage, creep.room.terminal]).filter(this.isValidTarget).max('charge');
+    const validTargets = [creep.room.storage, creep.room.terminal].filter(this.isValidTarget);
+    return validTargets.length ? _.max(validTargets, 'charge') : null;
 };
 action.work = function(creep){
     return creep.withdraw(creep.target, RESOURCE_ENERGY);
