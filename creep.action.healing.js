@@ -11,7 +11,11 @@ action.isValidTarget = function(target){
 };
 action.newTarget = function(creep){
     if(creep.room.casualties.length > 0){
-        return creep.room.casualties[0];
+        for (const target of creep.room.casualties) {
+            if (target.name !== creep.name) {
+                return target;
+            }
+        }
     }
     return null;
 };
