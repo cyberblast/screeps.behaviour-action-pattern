@@ -5,6 +5,7 @@ let mod = {};
 module.exports = mod;
 mod.register = function() {
     Room.costMatrixInvalid.on(room => Room.rebuildCostMatrix(room.name || room));
+    Flag.found.on(flag => Room.roomLayout(flag));
 };
 mod.pathfinderCache = {};
 mod.pathfinderCacheDirty = false;
@@ -3067,4 +3068,59 @@ mod.fieldsInRange = function(args) {
     let minY = Math.max(...minusRangeY);
     let maxY = Math.min(...plusRangeY);
     return Room.validFields(args.roomName, minX, maxX, minY, maxY, args.checkWalkable, args.where);
+};
+mod.roomLayoutArray = [[,,,,,,,STRUCTURE_ROAD],[,,,,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_SPAWN,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_SPAWN,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_SPAWN,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,,,,STRUCTURE_ROAD]];
+mod.roomLayout = function(flag) {
+    if (!Flag.compare(flag, FLAG_COLOR.command.roomLayout)) return;
+    flag = Game.flags[flag.name];
+    const room = flag.room;
+    if (!room) return;
+    const layout = Room.roomLayoutArray;
+    const constructionFlags = {
+        [STRUCTURE_SPAWN]: FLAG_COLOR.construct.spawn,
+        [STRUCTURE_TOWER]: FLAG_COLOR.construct.tower,
+        [STRUCTURE_EXTENSION]: FLAG_COLOR.construct,
+    };
+    
+    const [centerX, centerY] = [flag.pos.x, flag.pos.y];
+    
+    const placed = [];
+    const sites = [];
+    
+    const failed = () => {
+        flag.pos.newFlag(FLAG_COLOR.command.invalidPosition, 'NO_ROOM');
+        flag.remove();
+        return false;
+    };
+    
+    for (let x = 0; x < layout.length; x++) {
+        for (let y = 0; y < layout[x].length; y++) {
+            const xPos = Math.floor(centerX + (x - layout.length / 2) + 1);
+            const yPos = Math.floor(centerY + (y - layout.length / 2) + 1);
+            if (xPos >= 50 || xPos < 0 || yPos >= 50 || yPos < 0) return failed();
+            const pos = room.getPositionAt(xPos, yPos);
+            const structureType = layout[x] && layout[x][y];
+            if (structureType) {
+                if (Game.map.getTerrainAt(pos) === 'wall') return failed();
+                if (structureType === STRUCTURE_ROAD) {
+                    sites.push(pos);
+                } else {
+                    const flagColour = constructionFlags[structureType];
+                    placed.push({
+                        flagColour, pos
+                    });
+                }
+            }
+        }
+    }
+    
+    placed.forEach(f => {
+        f.pos.newFlag(f.flagColour);
+    });
+    _.forEach(sites, p => {
+        if (_.size(Game.constructionSites) >= 100) return false;
+        p.createConstructionSite(STRUCTURE_ROAD);
+    });
+    
+    flag.remove();
 };
