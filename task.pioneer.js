@@ -28,10 +28,9 @@ mod.handleRoomDied = room => {
     } 
     if( pioneer ){
         // ensure room has a pioneer flag
-        let pos = new RoomPosition(25, 25, room.name);
-        let flag = FlagDir.find(FLAG_COLOR.claim.pioneer, pos, true);
+        let flag = FlagDir.find(FLAG_COLOR.claim.pioneer, room);
         if( !flag ){
-            room.createFlag(pos, null, FLAG_COLOR.claim.pioneer.color, FLAG_COLOR.claim.pioneer.secondaryColor);
+            room.newFlag(FLAG_COLOR.claim.pioneer);
         }
     }
 }
