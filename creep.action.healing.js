@@ -1,5 +1,6 @@
 let action = new Creep.Action('healing');
 module.exports = action;
+action.targetRange = 3;
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.isValidTarget = function(target){
