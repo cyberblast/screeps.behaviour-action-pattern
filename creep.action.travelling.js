@@ -27,6 +27,12 @@ action.step = function(creep){
         const range = creep.pos.getRangeTo(target);
         if( range <= targetRange ) {
             return action.unregister(creep);
+        } else if (targetRange === 0 && creep.pos.isNearTo(target)) {
+            if (target.pos.lookFor(LOOK_CREEPS).length > 0) {
+                // avoid trying to pathfind to a blocked location
+                if (DEBUG) logSystem(creep.name, 'travelling.step: destination blocked, stopping.');
+                return action.unregister(creep);
+            }
         }
         creep.travelTo(target, {range:targetRange, ignoreCreeps:creep.data.ignoreCreeps || true});
     } else {
