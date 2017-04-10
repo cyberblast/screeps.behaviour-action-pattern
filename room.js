@@ -897,8 +897,9 @@ mod.extend = function(){
                             } else if (OBSTACLE_OBJECT_TYPES.includes(structure.structureType)) {
                                 if (!site || Task.reputation.allyOwner(structure)) // don't set for hostile construction sites
                                     return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
-                            } else if (structure.structureType === STRUCTURE_RAMPART && !(structure.my || structure.isPublic)) {
-                                return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
+                            } else if (structure.structureType === STRUCTURE_RAMPART && !structure.my && !structure.isPublic) {
+                                if (!site || Task.reputation.allyOwner(structure)) // don't set for hostile construction sites
+                                    return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
                             }
                         };
                         this.structures.all.forEach(setCosts);
