@@ -116,6 +116,7 @@ global.install = () => {
     // ensure required memory namespaces
     if (Memory.modules === undefined)  {
         Memory.modules = {
+            valid: Game.time,
             viral: {},
             internalViral: {}
         };
@@ -234,6 +235,8 @@ global.install = () => {
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
     OCSMemory.activateSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, true);
+
+    global.modulesValid = Memory.modules.valid;
     if (DEBUG) logSystem('Global.install', 'Code reloaded.');
 };
 global.install();
@@ -250,7 +253,7 @@ module.exports.loop = function () {
     Memory.CPU_CRITICAL = Memory.CPU_CRITICAL ? Game.cpu.bucket < CRITICAL_BUCKET_LEVEL + CRITICAL_BUCKET_OVERFILL : Game.cpu.bucket < CRITICAL_BUCKET_LEVEL;
     if (!cpuAtFirstLoop) cpuAtFirstLoop = cpuAtLoop;
     // ensure required memory namespaces
-    if (Memory.modules === undefined)  {
+    if (_.isUndefined(Memory.modules) || _.isUndefined(global.modulesValid) || global.modulesValid !== Memory.modules.valid)  {
         global.install();
     }
     if (Memory.debugTrace === undefined) {
