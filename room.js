@@ -2853,19 +2853,19 @@ mod.execute = function() {
         let room = Game.rooms[roomName];
         if( room ){ // has sight
             room.goneInvader.forEach(triggerGoneInvaders);
-            p2.checkCPU('Creep.execute.run:goneInvader', 0.5);
+            p2.checkCPU('Room.execute.run:goneInvader', 0.5);
             room.hostileIds.forEach(triggerKnownInvaders);
-            p2.checkCPU('Creep.execute.run:knownInvaders', 0.5);
+            p2.checkCPU('Room.execute.run:knownInvaders', 0.5);
             room.newInvader.forEach(triggerNewInvaders);
-            p2.checkCPU('Creep.execute.run:newInvaders', 0.5);
+            p2.checkCPU('Room.execute.run:newInvaders', 0.5);
             if (room.structures.towers.length > 0) Tower.loop(room);
-            p2.checkCPU('Creep.execute.run:tower.loop', 0.5);
+            p2.checkCPU('Room.execute.run:tower.loop', 0.5);
             if( room.collapsed ) Room.collapsed.trigger(room);
-            p2.checkCPU('Creep.execute.run:collapsed', 0.5);
+            p2.checkCPU('Room.execute.run:collapsed', 0.5);
         }
         else { // no sight
             if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
-            p2.checkCPU('Creep.execute.run:knownInvadersNoSight', 0.5);
+            p2.checkCPU('Room.execute.run:knownInvadersNoSight', 0.5);
         }
     };
     _.forEach(Memory.rooms, (memory, roomName) => {
