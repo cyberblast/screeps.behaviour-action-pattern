@@ -172,7 +172,7 @@ mod.checkForRequiredCreeps = (flag) => {
 
     if( DEBUG && TRACE ) trace('Task', {Task:mod.name, flagName:flag.name, sourceCount, haulerCount, minerCount, workerCount, [mod.name]:'Flag.found'}, 'checking flag@', flag.pos);
 
-    if(minerCount < sourceCount) {
+    if(mod.strategies.miner.shouldSpawn(minerCount, sourceCount)) {
         if( DEBUG && TRACE ) trace('Task', {Task:mod.name, room:roomName, minerCount,
             minerTTLs: _.map(_.map(memory.running.remoteMiner, n=>Game.creeps[n]), "ticksToLive"), [mod.name]:'minerCount'});
 
@@ -370,10 +370,15 @@ mod.creep = {
     worker: {
         fixedBody: {
             [CARRY]: 3,
-            [MOVE]: 3,
-            [WORK]: 3,
+            [MOVE]: 4,
+            [WORK]: 4,
         },
-        multiBody: [], 
+        multiBody: {
+            [CARRY]: 1,
+            [MOVE]: 2,
+            [WORK]: 2,
+        },
+        maxMulti: 3,
         behaviour: 'remoteWorker',
         queue: 'Low'
     }
@@ -494,7 +499,10 @@ mod.strategies = {
         name: `miner-${mod.name}`,
         setup: function(roomName) {
             return Task.mining.setupCreep(roomName, Task.mining.creep.miner);
-        }
+        },
+        shouldSpawn: function(minerCount, sourceCount) {
+            return minerCount < sourceCount;
+        },
     },
     hauler: {
         name: `hauler-${mod.name}`,
