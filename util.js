@@ -426,8 +426,8 @@ module.exports = {
     startProfiling(name, options = {}) {
         const enabled = _.get(options, 'enabled', true);
         let checkCPU = function(localName, limit, type) {};
-        let checkAndRun = function(object, methodName, limit, type) {};
-        let wrap = function(ret, localName, limit, type) {};
+        let checkAndRun = (object, methodName, limit, type) => object[methodName]();
+        let wrap = (ret, localName, limit, type) => ret;
         let totalCPU = function() {
             // if you would like to do a baseline comparison
             // if (_.isUndefined(Memory.profiling)) Memory.profiling = {ticks:0, cpu: 0};
