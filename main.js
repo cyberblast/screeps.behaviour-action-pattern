@@ -120,6 +120,8 @@ global.install = () => {
             viral: {},
             internalViral: {}
         };
+    } else if (_.isUndefined(Memory.modules.valid)) {
+        Memory.modules.valid = Game.time;
     }
     // Initialize global & parameters
     //let glob = load("global");
