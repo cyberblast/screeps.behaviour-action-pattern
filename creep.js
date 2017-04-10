@@ -3,6 +3,11 @@ const strategy = load("strategy");
 let mod = {};
 module.exports = mod;
 mod.extend = function(){
+    Creep.prototype.assignAction = function(action, target) {
+        if (typeof action === 'string') action = Creep.action[action];
+        if (!action || !(action instanceof Creep.Action)) return;
+        return action.assign(this, target);
+    };
     Creep.prototype.findGroupMemberByType = function(creepType, flagName) {
         let creep;
         if(creepType && flagName) {
