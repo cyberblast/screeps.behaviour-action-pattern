@@ -894,6 +894,8 @@ mod.extend = function(){
                             if (structure.structureType === STRUCTURE_ROAD) {
                                 if (!site || USE_UNBUILT_ROADS)
                                     return costMatrix.set(structure.pos.x, structure.pos.y, 1);
+                            } else if (structure.structureType === STRUCTURE_PORTAL) {
+                                return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF); // only take final step onto portals
                             } else if (OBSTACLE_OBJECT_TYPES.includes(structure.structureType)) {
                                 if (!site || Task.reputation.allyOwner(structure)) // don't set for hostile construction sites
                                     return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
