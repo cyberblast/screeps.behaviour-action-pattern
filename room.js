@@ -2834,7 +2834,6 @@ mod.analyze = function() {
     _.forEach(Game.rooms, r => p.wrap(getEnvironment(r), r.name, PROFILING.ANALYZE_LIMIT / 5));
 };
 mod.execute = function() {
-    const p = Util.startProfiling('Room.execute', {enabled:PROFILING.ROOMS});
     let triggerNewInvaders = creep => {
         // create notification
         let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
@@ -2862,6 +2861,7 @@ mod.execute = function() {
         }
     };
     _.forEach(Memory.rooms, (memory, roomName) => {
+        const p = Util.startProfiling(roomName + '.execute', {enabled:PROFILING.ROOMS});
         p.wrap(run(memory, roomName), '.run', 1);
         let room = Game.rooms[roomName];
         if (room) {
