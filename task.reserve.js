@@ -227,34 +227,42 @@ mod.strategies = {
     defaultStrategy: {
         name: `default-${mod.name}`,
         spawnParams: function(flag) { //:{count:number, priority:string}
-            let count = 1;
-
-            const myName = _.find(Game.spawns).owner.username;
-            // Don't spawn if...
+            const params = {count: 0, queue: 'Low'}; // default to no spawn
             const hasFlag = !!flag;
-            const hasController = Room.isControllerRoom(flag.pos.roomName) || (flag.room && flag.room.controller);
-            const hasReservation = (flag.room && flag.room.controller && flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 1000 || flag.room.controller.reservation.username != myName) );
-            const isOwned = (flag.room && flag.room.controller && flag.room.controller.owner);
-            if( // Flag was removed
-                !hasFlag ||
-                // No controller in room
-                !hasController ||
-                // My reservation is already sufficiently high or reserved by another player
-                hasReservation ||
-                // Room is owned
-                isOwned ) {
-                if( DEBUG && TRACE ) trace('Task', {hasFlag, hasController, hasReservation, isOwned, checkForRequiredCreeps:'skipping room', [mod.name]:'checkForRequiredCreeps', Task:mod.name});
-                count = 0;
+            const hasController = hasFlag && (Room.isControllerRoom(flag.pos.roomName) || (flag.room && flag.room.controller));
+            if (!hasFlag || !hasController) {
+                if( DEBUG && TRACE ) trace('Task', {hasFlag, hasController, checkForRequiredCreeps:'skipping room, missing flag or controller',
+                    [mod.name]:'checkForRequiredCreeps', Task:mod.name});
+                return params;
             }
-
-            // check reservation level
-            let lowReservation = (count > 0 && flag.room &&
-                ((flag.room.controller && !flag.room.controller.reservation) ||
-                (flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd < 250)));
-
-            const queue = lowReservation ? 'Medium' : 'Low';
-
-            return {count, queue};
+            if (flag.room) {
+                flag.memory.lastVisible = Game.time;
+                flag.memory.ticksToEnd = flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd;
+                const validReservation = flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 1000
+                    || flag.room.controller.reservation.username !== ME);
+                const isOwned = !!(flag.room.controller.owner);
+                if (isOwned || validReservation) {
+                    if( DEBUG && TRACE ) trace('Task', {validReservation, isOwned, checkForRequiredCreeps:'skipping room, reserved or owned',
+                        [mod.name]:'checkForRequiredCreeps', Task:mod.name});
+                    return params;
+                }
+                const urgent = !flag.room.controller.reservation || flag.room.controller.reservation.ticksToEnd < 250;
+                params.count = 1;
+                if (urgent) params.queue = 'Medium';
+                if( DEBUG && TRACE ) {
+                    const type = urgent ? 'urgent' : ' ';
+                    trace('Task', {validReservation, isOwned, urgent, checkForRequiredCreeps:`sending${type}reserver`,
+                        [mod.name]:'checkForRequiredCreeps', Task:mod.name});
+                }
+            } else if (_.isUndefined(flag.memory.lastVisible) ||
+                Game.time - flag.memory.lastVisible > ((flag.memory.ticksToEnd - 250) || 250)) {
+                params.count = 1;
+                params.queue = 'Medium';
+                if( DEBUG && TRACE ) trace('Task', {lastVisible: flag.memory.lastVisible,
+                    tickToEnd: flag.memory.ticksToEnd, checkForRequiredCreeps:'sending urgent reserver, no visibility',
+                    [mod.name]:'checkForRequiredCreeps', Task:mod.name});                
+            }
+            return params;
         },
     },
-}
+};
