@@ -425,8 +425,9 @@ module.exports = {
      */
     startProfiling(name, options = {}) {
         const enabled = _.get(options, 'enabled', true);
-        let checkCPU = function(localName, limit, type) {
-        };
+        let checkCPU = function(localName, limit, type) {};
+        let checkAndRun = function(object, methodName, limit, type) {};
+        let wrap = function(ret, localName, limit, type) {};
         let totalCPU = function() {
             // if you would like to do a baseline comparison
             // if (_.isUndefined(Memory.profiling)) Memory.profiling = {ticks:0, cpu: 0};
@@ -452,10 +453,10 @@ module.exports = {
                  * @param {Number} limit - CPU threshold for reporting usage
                  * @param {string} [type] - Optional, will store average usage for all calls that share this type
                  */
-                checkCPU = function(localName, limit, type) {
+                checkCPU = function(localName, limit = PROFILING.MIN_THRESHOLD, type = undefined) {
                     const current = Game.cpu.getUsed();
                     const used = _.round(current - start, 2);
-                    if (!limit || used > limit) {
+                    if (used > limit) {
                         Util.logSystem(name + ':' + localName, used);
                     }
                     if (type) {
@@ -464,6 +465,13 @@ module.exports = {
                         global.profiler.types[type].count++;
                     }
                     start = current;
+                };
+                checkAndRun = function(object, methodName, limit = PROFILING.MIN_THRESHOLD, type = undefined) {
+                    object[methodName]();
+                    return this.checkCPU(methodName, limit, type);
+                };
+                wrap = function(ret, localName, limit = PROFILING.MIN_THRESHOLD, type = undefined) {
+                    return this.checkCPU(localName, limit, type);
                 };
             }
             /**
@@ -501,7 +509,7 @@ module.exports = {
                 Memory.profiler = global.profiler;
             };
         }
-        return {checkCPU, totalCPU};
+        return {checkCPU, checkAndRun, wrap, totalCPU};
     },
 
     _resources: _.memoize(function() {

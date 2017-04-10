@@ -2795,44 +2795,43 @@ mod.analyze = function() {
     const totalSitesChanged = Room.totalSitesChanged();
     const totalStructuresChanged = Room.totalStructuresChanged();
     const getEnvironment = room => {
+        const p2 = Util.startProfiling(room.name + '.analyze', {enabled:PROFILING.ROOMS});
         try {
             if (!room.memory.initialized || Game.time % MEMORY_RESYNC_INTERVAL == 0 || room.name == 'sim' ) {
                 room.memory.initialized = Game.time;
-                room.saveMinerals();
-                room.saveTowers();
-                room.saveSpawns();
-                room.saveObserver();
-                room.saveNukers();
-                room.savePowerSpawns();
-                room.saveExtensions();
-                room.saveContainers();
-                room.saveLinks();
-                room.saveLabs();
-                if (room.structures.observer) room.initObserverRooms(); // to re-evaluate rooms, in case parameters are changed
-                room.processConstructionFlags();
+                p2.checkAndRun(room, 'saveMinerals');
+                p2.checkAndRun(room, 'saveTowers');
+                p2.checkAndRun(room, 'saveSpawns');               
+                p2.checkAndRun(room, 'saveObserver');
+                p2.checkAndRun(room, 'saveNukers');
+                p2.checkAndRun(room, 'savePowerSpawns');
+                p2.checkAndRun(room, 'saveExtensions');
+                p2.checkAndRun(room, 'saveContainers');
+                p2.checkAndRun(room, 'saveLinks');
+                p2.checkAndRun(room, 'saveLabs');
+                // to re-evaluate rooms, in case parameters are changed
+                if (room.structures.observer) p2.checkAndRun(room, 'initObserverRooms');
+                p2.checkAndRun(room, 'processConstructionFlags');
             }
             if (Game.time % PROCESS_ORDERS_INTERVAL === 0 || room.name === 'sim') {
-                room.updateResourceOrders();
-                room.updateRoomOrders();
-                room.terminalBroker();
+                p2.checkAndRun(room, 'updateResourceOrders');
+                p2.checkAndRun(room, 'updateRoomOrders');
+                p2.checkAndRun(room, 'terminalBroker');
             }
-            room.roadConstruction();
-            if (room.structures.links.all.length > 0) room.linkDispatcher();
-            if (room.hostiles.length > 0) room.processInvaders();
-            if (room.structures.labs.all.length > 0) room.processLabs();
-            if (room.structures.powerSpawn) room.processPower();
-            if (totalSitesChanged) room.countMySites();
-            if (totalStructuresChanged) room.countMyStructures();
+            p2.checkAndRun(room, 'roadConstruction');
+            if (room.structures.links.all.length > 0) p2.checkAndRun(room, 'linkDispatcher');
+            if (room.hostiles.length > 0) p2.checkAndRun(room, 'processInvaders');
+            if (room.structures.labs.all.length > 0) p2.checkAndRun(room, 'processLabs');
+            if (room.structures.powerSpawn) p2.checkAndRun(room, 'processPower');
+            if (totalSitesChanged) p2.checkAndRun(room, 'countMySites');
+            if (totalStructuresChanged) p2.checkAndRun(room, 'countMyStructures');
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
             console.log( dye(CRAYON.error, 'Error in room.js (Room.prototype.loop) for "' + room.name + '": <br/>' + (err.stack || err.toString()) + '<br/>' + err.stack));
         }
     };
-    _.forEach(Game.rooms, r => {
-        getEnvironment(r);
-        p.checkCPU(r.name, PROFILING.ANALYZE_LIMIT / 5);
-    });
+    _.forEach(Game.rooms, r => p.wrap(getEnvironment(r), r.name, PROFILING.ANALYZE_LIMIT / 5));
 };
 mod.execute = function() {
     const p = Util.startProfiling('Room.execute', {enabled:PROFILING.ROOMS});
@@ -2849,32 +2848,24 @@ mod.execute = function() {
     let triggerKnownInvaders = id =>  Room.knownInvader.trigger(id);
     let triggerGoneInvaders = id =>  Room.goneInvader.trigger(id);
     let run = (memory, roomName) => {
-        const p2 = Util.startProfiling(roomName, {enabled:PROFILING.ROOMS});
+        const p2 = Util.startProfiling(roomName + '.execute', {enabled:PROFILING.ROOMS});
         let room = Game.rooms[roomName];
         if( room ){ // has sight
-            room.goneInvader.forEach(triggerGoneInvaders);
-            p2.checkCPU('Room.execute.run:goneInvader', 0.5);
-            room.hostileIds.forEach(triggerKnownInvaders);
-            p2.checkCPU('Room.execute.run:knownInvaders', 0.5);
-            room.newInvader.forEach(triggerNewInvaders);
-            p2.checkCPU('Room.execute.run:newInvaders', 0.5);
-            if (room.structures.towers.length > 0) Tower.loop(room);
-            p2.checkCPU('Room.execute.run:tower.loop', 0.5);
-            if( room.collapsed ) Room.collapsed.trigger(room);
-            p2.checkCPU('Room.execute.run:collapsed', 0.5);
+            p2.wrap(room.goneInvader.forEach(triggerGoneInvaders), 'goneInvader');
+            p2.wrap(room.hostileIds.forEach(triggerKnownInvaders), 'knownInvaders');
+            p2.wrap(room.newInvader.forEach(triggerNewInvaders), 'newInvaders');
+            if (room.structures.towers.length > 0) p2.wrap(Tower.loop(room), 'tower.loop');
+            if( room.collapsed ) p2.wrap(Room.collapsed.trigger(room), 'collapsed');
         }
         else { // no sight
-            if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
-            p2.checkCPU('Room.execute.run:knownInvadersNoSight', 0.5);
+            if( memory.hostileIds ) p2.wrap(_.forEach(memory.hostileIds, triggerKnownInvaders), 'knownInvadersNoSight');
         }
     };
     _.forEach(Memory.rooms, (memory, roomName) => {
-        run(memory, roomName);
-        p.checkCPU(roomName + '.run', 1);
+        p.wrap(run(memory, roomName), '.run', 1);
         let room = Game.rooms[roomName];
         if (room) {
-            if (room.structures.observer) room.controlObserver();
-            p.checkCPU(roomName + '.controlObserver', 0.5);
+            if (room.structures.observer) p.wrap(room.controlObserver(), 'controlObserver');
         }
     });
 };
