@@ -251,7 +251,7 @@ module.exports.loop = function () {
     if (!cpuAtFirstLoop) cpuAtFirstLoop = cpuAtLoop;
     // ensure required memory namespaces
     if (Memory.modules === undefined)  {
-        global.install();
+        p.wrap(global.install(), 'install');
     }
     if (Memory.debugTrace === undefined) {
         Memory.debugTrace = {error:true, no:{}};
@@ -263,8 +263,7 @@ module.exports.loop = function () {
     _.assign(global, load("parameter"));
     
     // process loaded memory segments
-    OCSMemory.processSegments();
-    p.checkCPU('processSegments', PROFILING.ANALYZE_LIMIT);
+    p.checkAndRun(OCSMemory, 'processSegments', PROFILING.ANALYZE_LIMIT);
 
     // Flush cache
     Events.flush();
@@ -277,42 +276,33 @@ module.exports.loop = function () {
     p.checkCPU('flush', PROFILING.FLUSH_LIMIT);
 
     // Room event hooks must be registered before analyze for costMatrixInvalid
-    Room.register();
+    p.wrap(Room.register(), 'Room.register', PROFILING.REGISTER_LIMIT);
 
     // analyze environment, wait a tick if critical failure
-    if (!FlagDir.analyze()) {
+    if (!p.wrap(FlagDir.analyze(), 'FlagDir.analyze', PROFILING.ANALYZE_LIMIT)) {
         logError('FlagDir.analyze failed, waiting one tick to sync flags');
         return;
     }
-    p.checkCPU('FlagDir.analyze', PROFILING.ANALYZE_LIMIT);
-    Room.analyze();
-    p.checkCPU('Room.analyze', PROFILING.ANALYZE_LIMIT);
-    Population.analyze();
-    p.checkCPU('Population.analyze', PROFILING.ANALYZE_LIMIT);
+    p.wrap(Room.analyze(), 'Room.analyze', PROFILING.ANALYZE_LIMIT);
+    p.wrap(Population.analyze(), 'Population.analyze', PROFILING.ANALYZE_LIMIT);
     // custom analyze
-    if( global.mainInjection.analyze ) global.mainInjection.analyze();
+    if( global.mainInjection.analyze ) p.wrap(global.mainInjection.analyze(), 'mainInjection.analyze', PROFILING.ANALYZE_LIMIT);
 
     // Register event hooks
-    Creep.register();
-    Spawn.register();
-    Task.register();
+    p.wrap(Creep.register(), 'Creep.register', PROFILING.REGISTER_LIMIT);
+    p.wrap(Spawn.register(), 'Spawn.register', PROFILING.REGISTER_LIMIT);
+    p.wrap(Task.register(), 'Task.register', PROFILING.REGISTER_LIMIT);
     // custom register
-    if( global.mainInjection.register ) global.mainInjection.register();
-    p.checkCPU('register', PROFILING.REGISTER_LIMIT);
+    if( global.mainInjection.register ) p.wrap(global.mainInjection.register(), 'mainInjection.register', PROFILING.REGISTER_LIMIT);
 
     // Execution
-    Population.execute();
-    p.checkCPU('population.execute', PROFILING.EXECUTE_LIMIT);
-    FlagDir.execute();
-    p.checkCPU('flagDir.execute', PROFILING.EXECUTE_LIMIT);
-    Room.execute();
-    p.checkCPU('room.execute', PROFILING.EXECUTE_LIMIT);
-    Creep.execute();
-    p.checkCPU('creep.execute', PROFILING.EXECUTE_LIMIT);
-    Spawn.execute();
-    p.checkCPU('spawn.execute', PROFILING.EXECUTE_LIMIT);
+    p.wrap(Population.execute(), 'Population.execute', PROFILING.EXECUTE_LIMIT);
+    p.wrap(FlagDir.execute(), 'FlagDir.execute', PROFILING.EXECUTE_LIMIT);
+    p.wrap(Room.execute(), 'Room.execute', PROFILING.EXECUTE_LIMIT);
+    p.wrap(Creep.execute(), 'creep.execute', PROFILING.EXECUTE_LIMIT);
+    p.wrap(Spawn.execute(), 'spawn.execute', PROFILING.EXECUTE_LIMIT);
     // custom execute
-    if( global.mainInjection.execute ) global.mainInjection.execute();
+    if( global.mainInjection.execute ) p.wrap(global.mainInjection.execute(), 'mainInjection.execute', PROFILING.EXECUTE_LIMIT);
 
     // Postprocessing
     if (SEND_STATISTIC_REPORTS) {
@@ -321,22 +311,16 @@ module.exports.loop = function () {
         processReports();
       p.checkCPU('processReports', PROFILING.FLUSH_LIMIT);
     }
-    FlagDir.cleanup();
-    p.checkCPU('FlagDir.cleanup', PROFILING.FLUSH_LIMIT);
-    Population.cleanup();
-    p.checkCPU('Population.cleanup', PROFILING.FLUSH_LIMIT);
-    Room.cleanup(); 
-    p.checkCPU('Room.cleanup', PROFILING.FLUSH_LIMIT);
+    p.wrap(FlagDir.cleanup(), 'FlagDir.cleanup', PROFILING.FLUSH_LIMIT);
+    p.wrap(Population.cleanup(), 'Population.cleanup', PROFILING.FLUSH_LIMIT);
+    p.wrap(Room.cleanup(), 'Room.cleanup', PROFILING.FLUSH_LIMIT); 
     // custom cleanup
-    if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
+    if( global.mainInjection.cleanup ) p.wrap(global.mainInjection.cleanup(), 'mainInjection.cleanup', PROFILING.FLUSH_LIMIT);
 
-    OCSMemory.cleanup(); // must come last
-    p.checkCPU('OCSMemory.cleanup', PROFILING.ANALYZE_LIMIT);
-    if ( ROOM_VISUALS && !Memory.CPU_CRITICAL && Visuals ) Visuals.run(); // At end to correctly display used CPU.
-    p.checkCPU('visuals', PROFILING.EXECUTE_LIMIT);
+    p.wrap(OCSMemory.cleanup(), 'OCSMemory.cleanup', PROFILING.ANALYZE_LIMIT); // must come last
+    if ( ROOM_VISUALS && !Memory.CPU_CRITICAL && Visuals ) p.wrap(Visuals.run(), 'visuals', PROFILING.EXECUTE_LIMIT); // At end to correctly display used CPU.
 
-    if ( GRAFANA && Game.time % GRAFANA_INTERVAL === 0 ) Grafana.run();
-    p.checkCPU('grafana', PROFILING.EXECUTE_LIMIT);
+    if ( GRAFANA && Game.time % GRAFANA_INTERVAL === 0 ) p.wrap(Grafana.run(), 'grafana', PROFILING.EXECUTE_LIMIT);
 
     Game.cacheTime = Game.time;
 

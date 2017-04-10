@@ -467,11 +467,13 @@ module.exports = {
                     start = current;
                 };
                 checkAndRun = function(object, methodName, limit = PROFILING.MIN_THRESHOLD, type = undefined) {
-                    object[methodName]();
-                    return this.checkCPU(methodName, limit, type);
+                    const ret = object[methodName]();
+                    this.checkCPU(methodName, limit, type);
+                    return ret;
                 };
                 wrap = function(ret, localName, limit = PROFILING.MIN_THRESHOLD, type = undefined) {
-                    return this.checkCPU(localName, limit, type);
+                    this.checkCPU(localName, limit, type);
+                    return ret;
                 };
             }
             /**
