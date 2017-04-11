@@ -2,6 +2,7 @@
 let mod = {};
 module.exports = mod;
 mod.name = 'reserve';
+mod.spawnRoomMaxRange = 6;
 mod.creep = {
     reserver: {
         fixedBody: {
@@ -27,7 +28,7 @@ mod.handleFlagFound = flag => {
     }
 };
 // check if a new creep has to be spawned
-mod.checkForRequiredCreeps = (flag) => {
+mod.checkForRequiredCreeps = function(flag) {
     let spawnParams;
     if (flag.compareTo(FLAG_COLOR.claim.mining)) {
         spawnParams = Task.mining.strategies.reserve.spawnParams(flag);
@@ -69,7 +70,8 @@ mod.checkForRequiredCreeps = (flag) => {
             }, 
             { // spawn room selection params
                 targetRoom: flag.pos.roomName, 
-                minEnergyCapacity: 1300
+                minEnergyCapacity: 1300,
+                maxRange: this.spawnRoomMaxRange,
             },
             creepSetup => { // callback onQueued
                 let memory = Task.reserve.memory(Game.flags[creepSetup.destiny.targetName]);
