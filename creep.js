@@ -8,18 +8,21 @@ mod.extend = function(){
         if (!action || !(action instanceof Creep.Action)) return;
         return action.assign(this, target);
     };
+    // to maintain legacy code for now
     Creep.prototype.findGroupMemberByType = function(creepType, flagName) {
-        let creep;
-        if(creepType && flagName) {
-            for(let i in Memory.population) {
-                creep = Memory.population[i];
-
-                if(creep.creepType === creepType && creep.flagName === flagName) {
-                    return i;
+        return Creep.prototype.findGroupMemberBy('creepType', creepType, flagName);
+    };
+    Creep.prototype.findGroupMemberBy = function(property, targetValue, flagName) {
+        if (_.isUndefined(flagName)) flagName = this.data.flagName;
+        if (!_.isUndefined(targetValue) && flagName) {
+            for(const creepName in Memory.population) {
+                const data = Memory.population[creepName];
+                if (_.get(data, property) === targetValue && data.flagName === flagName) {
+                    return creepName;
                 }
             }
         } else {
-            logError("Invalid arguments for Creep.findGroupMemberByType");
+            logError(`Invalid arguments for Creep.findGroupMemberBy ${property} ${targetValue} ${flagName}`);
         }
         return null;
     };
