@@ -7,9 +7,6 @@ action.isValidAction = function(creep){
 action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };
-action.isAddableAction = function(creep){
-    return true;
-};
 action.isAddableTarget = function(target){
     return ( target.my &&
         (!target.targetOf || _.filter(target.targetOf, {'actionName':'feeding'}).length < this.maxPerTarget));
