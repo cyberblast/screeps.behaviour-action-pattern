@@ -72,3 +72,15 @@ mod.nextAction = function(creep){
         }
     }
 };
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`
+    },
+    picking: {
+        name: `picking-${mod.name}`,
+        energyOnly: false
+    }
+};
