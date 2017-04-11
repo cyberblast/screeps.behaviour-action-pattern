@@ -140,7 +140,7 @@ global.install = () => {
         Events: load('events'),
         OCSMemory: load('ocsMemory'),
         Grafana: GRAFANA ? load('grafana') : undefined,
-        Visuals: ROOM_VISUALS ? load('visuals') : undefined,
+        Visuals: load('visuals'),
     });
     _.assign(global.Util, {
         DiamondIterator: load('util.diamond.iterator'),
@@ -233,8 +233,7 @@ global.install = () => {
     Spawn.extend();
     FlagDir.extend();
     Task.populate();
-    
-    if (ROOM_VISUALS) Visuals.extend();
+    Visuals.extend();
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
     OCSMemory.activateSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, true);
@@ -338,7 +337,7 @@ module.exports.loop = function () {
 
     OCSMemory.cleanup(); // must come last
     p.checkCPU('OCSMemory.cleanup', PROFILING.ANALYZE_LIMIT);
-    if ( ROOM_VISUALS && !Memory.CPU_CRITICAL && Visuals ) Visuals.run(); // At end to correctly display used CPU.
+    if (ROOM_VISUALS && !Memory.CPU_CRITICAL) Visuals.run(); // At end to correctly display used CPU.
     p.checkCPU('visuals', PROFILING.EXECUTE_LIMIT);
 
     if ( GRAFANA && Game.time % GRAFANA_INTERVAL === 0 ) Grafana.run();

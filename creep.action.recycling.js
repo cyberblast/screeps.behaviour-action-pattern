@@ -18,6 +18,3 @@ action.newTarget = function(creep){
 action.work = function(creep){
     creep.target.recycleCreep(creep);
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.RECYCLING, SAY_PUBLIC);
-};

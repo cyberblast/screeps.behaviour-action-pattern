@@ -24,6 +24,3 @@ action.newTarget = function(creep){
 action.work = function(creep){
     return creep.build(creep.target);
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.BUILDING, SAY_PUBLIC);
-};

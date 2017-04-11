@@ -503,6 +503,18 @@ Visuals.extend = function() {
         });
     };
     
+    Visuals.drawLine = function(from, to, style) {
+        if (from instanceof RoomObject) from = from.pos;
+        if (to instanceof RoomObject) to = to.pos;
+        if (!(from instanceof RoomPosition || to instanceof RoomPosition)) throw new Error('Visuals: Point not a Room Position');
+        if (from.roomName !== to.roomName) return;
+        const vis = new RoomVisual(from.roomName);
+        style = style instanceof Creep
+            ? Visuals.creepPathStyle(style)
+            : (style || {});
+        vis.line(from, to, style);
+    };
+    
 };
 
 Visuals.run = function() {

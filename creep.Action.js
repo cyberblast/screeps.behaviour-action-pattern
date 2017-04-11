@@ -108,8 +108,12 @@ let Action = function(actionName){
         return false;
     };
     // assignment postprocessing
-    // needs implementation in derived action
-    this.onAssignment = (creep, target) => {};
+    this.onAssignment = function(creep, target) {
+        if (SAY_ASSIGNMENT) creep.say(ACTION_SAY[this.name.toUpperCase()], SAY_PUBLIC);
+        if (target instanceof RoomObject || target instanceof RoomPosition && VISUALS.ACTION_ASSIGNMENT) {
+            Visuals.drawLine(creep, target);
+        }
+    };
     // empty default strategy
     this.defaultStrategy = {
         name: `default-${actionName}`,

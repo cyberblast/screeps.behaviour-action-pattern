@@ -89,9 +89,6 @@ action.run = {
         } else creep.attacking = attacking == OK;
     }
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.DEFENDING, SAY_PUBLIC);
-};
 action.defaultStrategy.priorityTargetFilter = function(creep) {
     return function(hostile) {
         return hostile.hasBodyparts(HEAL);

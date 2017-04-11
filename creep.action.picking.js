@@ -62,7 +62,4 @@ action.work = function(creep){
     }
     return result;
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.PICKING, SAY_PUBLIC);
-};
 action.defaultStrategy.energyOnly = true;

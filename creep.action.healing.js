@@ -30,6 +30,3 @@ action.work = function(creep){
         return OK;
     }
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.HEALING, SAY_PUBLIC);
-};
