@@ -148,7 +148,7 @@ module.exports = {
         if (entityWhere) {
             Util.trace('error', entityWhere, msg);
         } else {
-            console.log(msg);
+            console.log(msg, Util.stack());
         }
     },
     
@@ -166,7 +166,7 @@ module.exports = {
             }
             Game.notify(message, 120);
         }
-        console.log(Util.dye(CRAYON.error, message));
+        console.log(Util.dye(CRAYON.error, message), Util.stack());
     },
     
     /**
@@ -176,9 +176,20 @@ module.exports = {
      */
     logSystem(roomName, ...message) {
         const text = Util.dye(CRAYON.system, roomName);
-        console.log(Util.dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt;`), ...message);
+        console.log(Util.dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt;`), ...message, Util.stack());
     },
-    
+
+    /**
+     * Build a stacktrace if DEBUG_STACKS or the first argument is true.
+     */
+    stack(force = false, placeholder = ' ') {
+        if (DEBUG_STACKS || force) {
+            return new Error(`\nSTACK; param:${DEBUG_STACKS}, force:${force}`).stack;
+        }
+
+        return placeholder;
+    },
+
     /**
      * Trace an error or debug statement
      * @param {string} category - The error category
@@ -221,7 +232,7 @@ module.exports = {
             }
         }
         
-        console.log(Game.time, Util.dye(CRAYON.error, category), ...msg, Util.dye(CRAYON.birth, JSON.stringify(entityWhere)));
+        console.log(Game.time, Util.dye(CRAYON.error, category), ...msg, Util.dye(CRAYON.birth, JSON.stringify(entityWhere)), Util.stack());
     },
     
     /**

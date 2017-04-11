@@ -431,7 +431,7 @@ mod.checkCapacity= function(roomName) {
             message = 'with ' + totalDropped + ' dropped energy.';
         }
         if (population <= minPopulation || totalDropped >= maxDropped) {
-            console.log(mod.carry(roomName), message);
+            console.log(mod.carry(roomName), message, Util.stack());
             return true;
         }
         return false;

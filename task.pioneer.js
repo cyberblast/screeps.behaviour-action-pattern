@@ -47,7 +47,7 @@ mod.checkForRequiredCreeps = (flag) => {
     //only when room is owned
     if( !flag || (flag.room && !flag.room.my && !flag.room.reserved)) {
         if (!PIONEER_UNOWNED) {
-            return console.log("Pioneer room not owned");
+            return console.log("Pioneer room not owned", Util.stack());
         }
         const owner = flag.room.owner || flag.room.reservation;
         if (owner && !Task.reputation.isAlly(owner)) {
