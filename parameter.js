@@ -175,6 +175,7 @@ let mod = {
     ACTION_SAY: { // what gets said on creep.action.*.onAssignment
         ATTACK_CONTROLLER: String.fromCodePoint(0x1F5E1) + String.fromCodePoint(0x26F3), // 🗡⛳
         AVOIDING: String.fromCodePoint(0x21A9), // ↩
+        BOOSTING: String.fromCodePoint(0x1F4AA), // 💪🏼
         BUILDING: String.fromCodePoint(0x2692), // ⚒
         BULLDOZING: String.fromCodePoint(0x1F69C), // 🚜
         CHARGING: String.fromCodePoint(0x1F50C), // 🔌
