@@ -2020,16 +2020,18 @@ mod.extend = function(){
             for (let i=0;i<data.container.length;i++) {
                 let d = data.container[i];
                 let container = Game.getObjectById(d.id);
-                let amt = -container.getNeeds(resourceType);
-                if (container && !(this.structures.container.out.includes(container) && resourceType === RESOURCE_ENERGY) && amt > 0) {
-                    let amount = amt;
-                    if (amount >= amountMin) return { structure: container, amount: amount };
+                if (container) {
+                    let amt = -container.getNeeds(resourceType);
+                    if (!(this.structures.container.out.includes(container) && resourceType === RESOURCE_ENERGY) && amt > 0) {
+                        let amount = amt;
+                        if (amount >= amountMin) return { structure: container, amount: amount };
+                    }
                 }
             }
         }
 
         return null;
-    }
+    };
     Room.prototype.prepareResourceOrder = function(containerId, resourceType, amount) {
         let container = Game.getObjectById(containerId);
         if (!this.my || !container || !container.room.name == this.name ||
