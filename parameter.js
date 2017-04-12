@@ -23,6 +23,8 @@ let mod = {
         MIN_THRESHOLD: 0.5, // set the bar for checks that involve very low usage (warning, chatty!)
         REGISTER_LIMIT: 2, // profile warning levels
         ROOMS: false, // display room and structure profiling information
+        VISUALS: false, // profile visuals
+        VISUALS_LIMIT: 0.2, // CPU usage in each part of visuals above this limit will be displayed
     },
     TRAVELER_STUCK_TICKS: 2, // Number of ticks not moving to be considered stuck by the Traveler API
     TRAVELER_THRESHOLD: 5, // Average creep CPU usage/tick before warning about pathing cost, starts after 25 ticks
