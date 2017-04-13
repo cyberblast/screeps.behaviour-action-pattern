@@ -2760,92 +2760,100 @@ mod.totalStructuresChanged = function() {
     return oldStructures && oldStructures !== numStructures;
 };
 mod.analyze = function() {
-    const p = Util.startProfiling('Room.analyze', {enabled:PROFILING.ROOMS});
-    const totalSitesChanged = Room.totalSitesChanged();
-    const totalStructuresChanged = Room.totalStructuresChanged();
-    const getEnvironment = room => {
-        try {
-            if (!room.memory.initialized || Game.time % MEMORY_RESYNC_INTERVAL == 0 || room.name == 'sim' ) {
-                room.memory.initialized = Game.time;
-                room.saveMinerals();
-                room.saveTowers();
-                room.saveSpawns();
-                room.saveObserver();
-                room.saveNukers();
-                room.savePowerSpawns();
-                room.saveExtensions();
-                room.saveContainers();
-                room.saveLinks();
-                room.saveLabs();
-                if (room.structures.observer) room.initObserverRooms(); // to re-evaluate rooms, in case parameters are changed
-                room.processConstructionFlags();
+    try {
+        const p = Util.startProfiling('Room.analyze', {enabled:PROFILING.ROOMS});
+        const totalSitesChanged = Room.totalSitesChanged();
+        const totalStructuresChanged = Room.totalStructuresChanged();
+        const getEnvironment = room => {
+            try {
+                if (!room.memory.initialized || Game.time % MEMORY_RESYNC_INTERVAL == 0 || room.name == 'sim' ) {
+                    room.memory.initialized = Game.time;
+                    room.saveMinerals();
+                    room.saveTowers();
+                    room.saveSpawns();
+                    room.saveObserver();
+                    room.saveNukers();
+                    room.savePowerSpawns();
+                    room.saveExtensions();
+                    room.saveContainers();
+                    room.saveLinks();
+                    room.saveLabs();
+                    if (room.structures.observer) room.initObserverRooms(); // to re-evaluate rooms, in case parameters are changed
+                    room.processConstructionFlags();
+                }
+                if (Game.time % PROCESS_ORDERS_INTERVAL === 0 || room.name === 'sim') {
+                    room.updateResourceOrders();
+                    room.updateRoomOrders();
+                    room.terminalBroker();
+                }
+                room.roadConstruction();
+                if (room.structures.links.all.length > 0) room.linkDispatcher();
+                if (room.hostiles.length > 0) room.processInvaders();
+                if (room.structures.labs.all.length > 0) room.processLabs();
+                if (room.structures.powerSpawn) room.processPower();
+                if (totalSitesChanged) room.countMySites();
+                if (totalStructuresChanged) room.countMyStructures();
             }
-            if (Game.time % PROCESS_ORDERS_INTERVAL === 0 || room.name === 'sim') {
-                room.updateResourceOrders();
-                room.updateRoomOrders();
-                room.terminalBroker();
+            catch(err) {
+                Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
+                console.log( dye(CRAYON.error, 'Error in room.js (Room.prototype.loop) for "' + room.name + '": <br/>' + (err.stack || err.toString()) + '<br/>' + err.stack));
             }
-            room.roadConstruction();
-            if (room.structures.links.all.length > 0) room.linkDispatcher();
-            if (room.hostiles.length > 0) room.processInvaders();
-            if (room.structures.labs.all.length > 0) room.processLabs();
-            if (room.structures.powerSpawn) room.processPower();
-            if (totalSitesChanged) room.countMySites();
-            if (totalStructuresChanged) room.countMyStructures();
-        }
-        catch(err) {
-            Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
-            console.log( dye(CRAYON.error, 'Error in room.js (Room.prototype.loop) for "' + room.name + '": <br/>' + (err.stack || err.toString()) + '<br/>' + err.stack));
-        }
-    };
-    _.forEach(Game.rooms, r => {
-        getEnvironment(r);
-        p.checkCPU(r.name, PROFILING.ANALYZE_LIMIT / 5);
-    });
+        };
+        _.forEach(Game.rooms, r => {
+            getEnvironment(r);
+            p.checkCPU(r.name, PROFILING.ANALYZE_LIMIT / 5);
+        });
+    } catch(e) {
+        Util.logError(e.stack || e.message);
+    }
 };
 mod.execute = function() {
-    const p = Util.startProfiling('Room.execute', {enabled:PROFILING.ROOMS});
-    let triggerNewInvaders = creep => {
-        // create notification
-        let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-        if( DEBUG || NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.room.my) || NOTIFICATE_HOSTILES ) logSystem(creep.pos.roomName, `Hostile intruder (${bodyCount}) from "${creep.owner.username}".`);
-        if( NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.owner.username !== 'Invader' && creep.room.my) || (NOTIFICATE_HOSTILES && creep.owner.username !== 'Invader') ){
-            Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${creep.pos.roomName} at ${toDateTimeString(toLocalDate(new Date()))}`);
+    try {
+        const p = Util.startProfiling('Room.execute', {enabled:PROFILING.ROOMS});
+        let triggerNewInvaders = creep => {
+            // create notification
+            let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
+            if( DEBUG || NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.room.my) || NOTIFICATE_HOSTILES ) logSystem(creep.pos.roomName, `Hostile intruder (${bodyCount}) from "${creep.owner.username}".`);
+            if( NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.owner.username !== 'Invader' && creep.room.my) || (NOTIFICATE_HOSTILES && creep.owner.username !== 'Invader') ){
+                Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${creep.pos.roomName} at ${toDateTimeString(toLocalDate(new Date()))}`);
+            }
+            // trigger subscribers
+            Room.newInvader.trigger(creep);
         }
-        // trigger subscribers
-        Room.newInvader.trigger(creep);
+        let triggerKnownInvaders = id =>  Room.knownInvader.trigger(id);
+        let triggerGoneInvaders = id =>  Room.goneInvader.trigger(id);
+        let run = (memory, roomName) => {
+            const p2 = Util.startProfiling(roomName, {enabled:PROFILING.ROOMS});
+            let room = Game.rooms[roomName];
+            if( room ){ // has sight
+                room.goneInvader.forEach(triggerGoneInvaders);
+                p2.checkCPU('Creep.execute.run:goneInvader', 0.5);
+                room.hostileIds.forEach(triggerKnownInvaders);
+                p2.checkCPU('Creep.execute.run:knownInvaders', 0.5);
+                room.newInvader.forEach(triggerNewInvaders);
+                p2.checkCPU('Creep.execute.run:newInvaders', 0.5);
+                if (room.structures.towers.length > 0) Tower.loop(room);
+                p2.checkCPU('Creep.execute.run:tower.loop', 0.5);
+                if( room.collapsed ) Room.collapsed.trigger(room);
+                p2.checkCPU('Creep.execute.run:collapsed', 0.5);
+            }
+            else { // no sight
+                if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
+                p2.checkCPU('Creep.execute.run:knownInvadersNoSight', 0.5);
+            }
+        };
+        _.forEach(Memory.rooms, (memory, roomName) => {
+            run(memory, roomName);
+            p.checkCPU(roomName + '.run', 1);
+            let room = Game.rooms[roomName];
+            if (room) {
+                if (room.structures.observer) room.controlObserver();
+                p.checkCPU(roomName + '.controlObserver', 0.5);
+            }
+        });
+    } catch(e) {
+        Util.logError(e.stack || e.message);
     }
-    let triggerKnownInvaders = id =>  Room.knownInvader.trigger(id);
-    let triggerGoneInvaders = id =>  Room.goneInvader.trigger(id);
-    let run = (memory, roomName) => {
-        const p2 = Util.startProfiling(roomName, {enabled:PROFILING.ROOMS});
-        let room = Game.rooms[roomName];
-        if( room ){ // has sight
-            room.goneInvader.forEach(triggerGoneInvaders);
-            p2.checkCPU('Creep.execute.run:goneInvader', 0.5);
-            room.hostileIds.forEach(triggerKnownInvaders);
-            p2.checkCPU('Creep.execute.run:knownInvaders', 0.5);
-            room.newInvader.forEach(triggerNewInvaders);
-            p2.checkCPU('Creep.execute.run:newInvaders', 0.5);
-            if (room.structures.towers.length > 0) Tower.loop(room);
-            p2.checkCPU('Creep.execute.run:tower.loop', 0.5);
-            if( room.collapsed ) Room.collapsed.trigger(room);
-            p2.checkCPU('Creep.execute.run:collapsed', 0.5);
-        }
-        else { // no sight
-            if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
-            p2.checkCPU('Creep.execute.run:knownInvadersNoSight', 0.5);
-        }
-    };
-    _.forEach(Memory.rooms, (memory, roomName) => {
-        run(memory, roomName);
-        p.checkCPU(roomName + '.run', 1);
-        let room = Game.rooms[roomName];
-        if (room) {
-            if (room.structures.observer) room.controlObserver();
-            p.checkCPU(roomName + '.controlObserver', 0.5);
-        }
-    });
 };
 mod.cleanup = function() {
     // flush changes to the pathfinderCache but wait until load

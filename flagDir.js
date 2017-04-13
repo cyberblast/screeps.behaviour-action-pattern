@@ -201,44 +201,51 @@ mod.flush = function(){
     delete this._hasInvasionFlag;
 };
 mod.analyze = function(){
-    let register = flag => {
-        flag.creeps = {};
-        if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
-        this.list.push({
-            name: flag.name,
-            color: flag.color,
-            secondaryColor: flag.secondaryColor,
-            roomName: flag.pos.roomName,
-            x: flag.pos.x,
-            y: flag.pos.y,
-            cloaking: flag.cloaking
-        });
-    };
-    _.forEach(Game.flags, register);
-    
-    let findStaleFlags = (entry, flagName) => {
-        if(!Game.flags[flagName]) {
-            this.stale.push(flagName);
-        }
-    };
-    _.forEach(Memory.flags, findStaleFlags);
-    const specialFlag = mod.specialFlag(true);
-    return !!specialFlag;
+    try {
+        let register = flag => {
+            flag.creeps = {};
+            if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
+            this.list.push({
+                name: flag.name,
+                color: flag.color,
+                secondaryColor: flag.secondaryColor,
+                roomName: flag.pos.roomName,
+                x: flag.pos.x,
+                y: flag.pos.y,
+                cloaking: flag.cloaking
+            });
+        };
+        _.forEach(Game.flags, register);
+        
+        let findStaleFlags = (entry, flagName) => {
+            if(!Game.flags[flagName]) {
+                this.stale.push(flagName);
+            }
+        };
+        _.forEach(Memory.flags, findStaleFlags);
+        const specialFlag = mod.specialFlag(true);
+        return !!specialFlag;
+    } catch (e) {
+        Util.logError(e.stack || e.message);
+    }
 };
 mod.execute = function() {
+    try {
+        let triggerFound = entry => {
+            if( !entry.cloaking || entry.cloaking == 0) {
+                const p = Util.startProfiling('Flag.execute', {enabled:PROFILING.FLAGS});
+                const flag = Game.flags[entry.name];
+                Flag.found.trigger(flag);
+                p.checkCPU(entry.name, PROFILING.EXECUTE_LIMIT, mod.flagType(flag));
+            }
+        };
+        this.list.forEach(triggerFound);
 
-    let triggerFound = entry => {
-        if( !entry.cloaking || entry.cloaking == 0) {
-            const p = Util.startProfiling('Flag.execute', {enabled:PROFILING.FLAGS});
-            const flag = Game.flags[entry.name];
-            Flag.found.trigger(flag);
-            p.checkCPU(entry.name, PROFILING.EXECUTE_LIMIT, mod.flagType(flag));
-        }
-    };
-    this.list.forEach(triggerFound);
-
-    let triggerRemoved = flagName => Flag.FlagRemoved.trigger(flagName);
-    this.stale.forEach(triggerRemoved);
+        let triggerRemoved = flagName => Flag.FlagRemoved.trigger(flagName);
+        this.stale.forEach(triggerRemoved);
+    } catch (e) {
+        Util.logError(e.stack || e.message);
+    }
 };
 mod.cleanup = function(){
     let clearMemory = flagName => delete Memory.flags[flagName];
