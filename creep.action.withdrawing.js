@@ -20,10 +20,6 @@ action.newTarget = function(creep){
 action.work = function(creep){
     return creep.withdraw(creep.target, RESOURCE_ENERGY);
 };
-action.onAssignment = function(creep, target) {
-    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9738), SAY_PUBLIC);
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.WITHDRAWING, SAY_PUBLIC);
-};
 action.assignDebounce = function(creep, outflowActions) {
     if (creep.data.lastAction === 'storing' && creep.data.lastTarget === creep.room.storage.id) {
         // cycle detected

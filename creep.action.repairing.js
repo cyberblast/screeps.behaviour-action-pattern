@@ -30,6 +30,3 @@ action.newTarget = function(creep){
 action.work = function(creep){
     return creep.repair(creep.target);
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.REPAIRING, SAY_PUBLIC);
-};

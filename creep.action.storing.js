@@ -70,7 +70,3 @@ action.work = function(creep){
     delete creep.data.targetId;
     return workResult;
 };
-action.onAssignment = function(creep, target) {
-    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.STORING, SAY_PUBLIC);
-};

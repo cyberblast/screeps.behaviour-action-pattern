@@ -503,82 +503,119 @@ Visuals.extend = function() {
         });
     };
     
+    Visuals.drawLine = function(from, to, style) {
+        if (from instanceof RoomObject) from = from.pos;
+        if (to instanceof RoomObject) to = to.pos;
+        if (!(from instanceof RoomPosition || to instanceof RoomPosition)) throw new Error('Visuals: Point not a Room Position');
+        if (from.roomName !== to.roomName) return;
+        const vis = new RoomVisual(from.roomName);
+        style = style instanceof Creep
+            ? Visuals.creepPathStyle(style)
+            : (style || {});
+        vis.line(from, to, style);
+    };
+    
 };
 
 Visuals.run = function() {
+    const p = Util.startProfiling('Visuals', {enabled:PROFILING.VISUALS});
     for (let roomName in Game.rooms) {
         const room = Game.rooms[roomName];
         if (!ROOM_VISUALS_ALL && !room.my) continue;
         if (!room.controller) continue;
+        const p2 = Util.startProfiling('Visuals:' + roomName, {enabled:PROFILING.VISUALS});
         
         if (Memory.heatmap === undefined) Memory.heatmap = false;
         
         if (VISUALS.HEATMAP) {
             if (Game.time % VISUALS.HEATMAP_INTERVAL === 0) {
                 Visuals.setHeatMapData(room);
+                p2.checkCPU('Heatmap.set', PROFILING.VISUALS_LIMIT);
             }
             
             if (Memory.heatmap) {
                 Visuals.drawHeatMapData(room);
+                p2.checkCPU('Heatmap.draw', PROFILING.VISUALS_LIMIT);
                 continue;
             }
         }
         
         if (VISUALS.ROOM) {
             Visuals.drawRoomInfo(room, VISUALS.ROOM_GLOBAL);
+            p2.checkCPU('Room Info', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.ROOM_ORDERS) {
             Visuals.drawRoomOrders(room);
+            p2.checkCPU('Room Orders', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.ROOM_OFFERS) {
             Visuals.drawRoomOffers(room);
+            p2.checkCPU('Room Offers', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.CONTROLLER) {
             Visuals.drawControllerInfo(room.controller);
+            p2.checkCPU('Controller', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.SPAWN) {
             room.structures.spawns.filter(s => s.spawning).forEach(Visuals.drawSpawnInfo);
+            p2.checkCPU('Spawns', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.MINERAL) {
             let [mineral] = room.minerals;
-            if (mineral) Visuals.drawMineralInfo(mineral);
+            if (mineral) {
+                Visuals.drawMineralInfo(mineral);
+                p2.checkCPU('Mineral', PROFILING.VISUALS_LIMIT);
+            }
         }
         if (VISUALS.SOURCE) {
             room.sources.forEach(Visuals.drawSourceInfo);
+            p2.checkCPU('Sources', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.WALL) {
             Visuals.highlightWeakest(room, STRUCTURE_WALL);
+            p2.checkCPU('Walls', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.RAMPART) {
             Visuals.highlightWeakest(room, STRUCTURE_RAMPART);
+            p2.checkCPU('Ramparts', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.ROAD) {
             Visuals.highlightWeakest(room, STRUCTURE_ROAD);
+            p2.checkCPU('Roads', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.STORAGE) {
             Visuals.storage(room);
+            p2.checkCPU('Storage', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.TERMINAL) {
             Visuals.terminal(room);
+            p2.checkCPU('Terminal', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.TOWER) {
             room.structures.towers.forEach(Visuals.drawTowerInfo);
+            p2.checkCPU('Towers', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.TRANSACTIONS) {
             Visuals.drawTransactions(room);
+            p2.checkCPU('Transactions', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.LABS) {
             Visuals.drawLabs(room);
+            p2.checkCPU('Labs', PROFILING.VISUALS_LIMIT);
         }
         if (VISUALS.CREEP) {
             Visuals.drawCreepPath(room);
+            p2.checkCPU('Creep Paths', PROFILING.VISUALS_LIMIT);
         }
     }
+    p.checkCPU('Total for all rooms', PROFILING.VISUALS_LIMIT);
     if (VISUALS.ROOM_GLOBAL) {
         if (VISUALS.CPU) {
             Visuals.collectSparklineStats();
+            p.checkCPU('CPU Sparklines', PROFILING.VISUALS_LIMIT);
         }
         Visuals.drawGlobal();
+        p.checkCPU('Global', PROFILING.VISUALS_LIMIT);
     }
 };
 

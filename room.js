@@ -894,6 +894,8 @@ mod.extend = function(){
                             if (structure.structureType === STRUCTURE_ROAD) {
                                 if (!site || USE_UNBUILT_ROADS)
                                     return costMatrix.set(structure.pos.x, structure.pos.y, 1);
+                            } else if (structure.structureType === STRUCTURE_PORTAL) {
+                                return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF); // only take final step onto portals
                             } else if (OBSTACLE_OBJECT_TYPES.includes(structure.structureType)) {
                                 if (!site || Task.reputation.allyOwner(structure)) // don't set for hostile construction sites
                                     return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
@@ -1106,42 +1108,6 @@ mod.extend = function(){
                 .value();
         } else
             return find.apply(this, arguments);
-    };
-
-    Room.routeCallback = function(origin, destination, options) {
-        return function(roomName) {
-            if (Game.map.getRoomLinearDistance(origin, roomName) > options.restrictDistance)
-                return false;
-            if( roomName !== destination && ROUTE_ROOM_COST[roomName]) {
-                return ROUTE_ROOM_COST[roomName];
-            }
-            let isHighway = false;
-            if( options.preferHighway ){
-                const parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
-                isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
-            }
-            let isMyOrNeutralRoom = false;
-            if( options.checkOwner ){
-                const room = Game.rooms[roomName];
-                // allow for explicit overrides of hostile rooms using hostileRooms[roomName] = false
-                isMyOrNeutralRoom = this.hostile === false || (room &&
-                                    room.controller &&
-                                    (room.controller.my ||
-                                    (room.controller.owner === undefined)));
-            }
-            if (!options.allowSK && mod.isSKRoom(roomName)) return 10;
-            if (!options.allowHostile && this.hostile &&
-                roomName !== destination && roomName !== origin) {
-                return Number.POSITIVE_INFINITY;
-            }
-            if (isMyOrNeutralRoom || roomName == origin || roomName == destination)
-                return 1;
-            else if (isHighway)
-                return 3;
-            else if( Game.map.isRoomAvailable(roomName))
-                return (options.checkOwner || options.preferHighway) ? 11 : 1;
-            return Number.POSITIVE_INFINITY;
-        };
     };
 
     Room.prototype.findRoute = function(destination, checkOwner = true, preferHighway = true){
@@ -2054,16 +2020,18 @@ mod.extend = function(){
             for (let i=0;i<data.container.length;i++) {
                 let d = data.container[i];
                 let container = Game.getObjectById(d.id);
-                let amt = -container.getNeeds(resourceType);
-                if (container && !(this.structures.container.out.includes(container) && resourceType === RESOURCE_ENERGY) && amt > 0) {
-                    let amount = amt;
-                    if (amount >= amountMin) return { structure: container, amount: amount };
+                if (container) {
+                    let amt = -container.getNeeds(resourceType);
+                    if (!(this.structures.container.out.includes(container) && resourceType === RESOURCE_ENERGY) && amt > 0) {
+                        let amount = amt;
+                        if (amount >= amountMin) return { structure: container, amount: amount };
+                    }
                 }
             }
         }
 
         return null;
-    }
+    };
     Room.prototype.prepareResourceOrder = function(containerId, resourceType, amount) {
         let container = Game.getObjectById(containerId);
         if (!this.my || !container || !container.room.name == this.name ||
@@ -2932,6 +2900,42 @@ mod.findSpawnRoom = function(params){
         ( roomTime(room) / (params.rangeQueueRatio||51) );
     }
     return _.min(validRooms, evaluation);
+};
+mod.routeCallback = function(origin, destination, options) {
+    return function(roomName) {
+        if (Game.map.getRoomLinearDistance(origin, roomName) > options.restrictDistance)
+            return false;
+        if( roomName !== destination && ROUTE_ROOM_COST[roomName]) {
+            return ROUTE_ROOM_COST[roomName];
+        }
+        let isHighway = false;
+        if( options.preferHighway ){
+            const parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+            isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
+        }
+        let isMyOrNeutralRoom = false;
+        const hostile = _.get(Memory.rooms[roomName], 'hostile', false);
+        if( options.checkOwner ){
+            const room = Game.rooms[roomName];
+            // allow for explicit overrides of hostile rooms using hostileRooms[roomName] = false
+            isMyOrNeutralRoom = !hostile || (room &&
+                                room.controller &&
+                                (room.controller.my ||
+                                (room.controller.owner === undefined)));
+        }
+        if (!options.allowSK && mod.isSKRoom(roomName)) return 10;
+        if (!options.allowHostile && hostile &&
+            roomName !== destination && roomName !== origin) {
+            return Number.POSITIVE_INFINITY;
+        }
+        if (isMyOrNeutralRoom || roomName == origin || roomName == destination)
+            return 1;
+        else if (isHighway)
+            return 3;
+        else if( Game.map.isRoomAvailable(roomName))
+            return (options.checkOwner || options.preferHighway) ? 11 : 1;
+        return Number.POSITIVE_INFINITY;
+    };
 };
 mod.getCostMatrix = function(roomName) {
     var room = Game.rooms[roomName];

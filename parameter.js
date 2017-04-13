@@ -7,6 +7,7 @@ let mod = {
     SAY_ASSIGNMENT: true, // say a symbol representing the assiged action
     SAY_PUBLIC: true, // creeps talk public
     DEBUG: true, // gimme some more details, use false not undefined to unset
+    DEBUG_STACKS: false, // add stack frame to EVERY console.log message (spammy!)
     TRACE: false, // use Memory.debugTrace for low-level information
     PROFILE: false, // enable CPU profiling
     PROFILING: {
@@ -22,6 +23,8 @@ let mod = {
         MIN_THRESHOLD: 0.5, // set the bar for checks that involve very low usage (warning, chatty!)
         REGISTER_LIMIT: 2, // profile warning levels
         ROOMS: false, // display room and structure profiling information
+        VISUALS: false, // profile visuals
+        VISUALS_LIMIT: 0.2, // CPU usage in each part of visuals above this limit will be displayed
     },
     TRAVELER_STUCK_TICKS: 2, // Number of ticks not moving to be considered stuck by the Traveler API
     TRAVELER_THRESHOLD: 5, // Average creep CPU usage/tick before warning about pathing cost, starts after 25 ticks
@@ -54,6 +57,7 @@ let mod = {
         ROAD: false, // highlight weakest road and display hits
         HEATMAP: false, // collects creep positioning to display a heatmap. WARNING: HIGH MEMORY USAGE
         HEATMAP_INTERVAL: 2, // intervals between collections
+        ACTION_ASSIGNMENT: true, // draws a line from a creep and it's new assignment
     },
     // function parameters: room. expected result: boolean
     SEMI_AUTOMATIC_CONSTRUCTION: true, // enables semi-automatic construction. Will construct based on flags.
@@ -174,6 +178,7 @@ let mod = {
     ACTION_SAY: { // what gets said on creep.action.*.onAssignment
         ATTACK_CONTROLLER: String.fromCodePoint(0x1F5E1) + String.fromCodePoint(0x26F3), // 🗡⛳
         AVOIDING: String.fromCodePoint(0x21A9), // ↩
+        BOOSTING: String.fromCodePoint(0x1F4AA), // 💪🏼
         BUILDING: String.fromCodePoint(0x2692), // ⚒
         BULLDOZING: String.fromCodePoint(0x1F69C), // 🚜
         CHARGING: String.fromCodePoint(0x1F50C), // 🔌

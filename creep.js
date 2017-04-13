@@ -8,18 +8,21 @@ mod.extend = function(){
         if (!action || !(action instanceof Creep.Action)) return;
         return action.assign(this, target);
     };
+    // to maintain legacy code for now
     Creep.prototype.findGroupMemberByType = function(creepType, flagName) {
-        let creep;
-        if(creepType && flagName) {
-            for(let i in Memory.population) {
-                creep = Memory.population[i];
-
-                if(creep.creepType === creepType && creep.flagName === flagName) {
-                    return i;
+        return Creep.prototype.findGroupMemberBy('creepType', creepType, flagName);
+    };
+    Creep.prototype.findGroupMemberBy = function(property, targetValue, flagName) {
+        if (_.isUndefined(flagName)) flagName = this.data.flagName;
+        if (!_.isUndefined(targetValue) && flagName) {
+            for(const creepName in Memory.population) {
+                const data = Memory.population[creepName];
+                if (_.get(data, property) === targetValue && data.flagName === flagName) {
+                    return creepName;
                 }
             }
         } else {
-            logError("Invalid arguments for Creep.findGroupMemberByType");
+            logError(`Invalid arguments for Creep.findGroupMemberBy ${property} ${targetValue} ${flagName}`);
         }
         return null;
     };
@@ -96,7 +99,7 @@ mod.extend = function(){
                     });
                     Population.countCreep(this.room, entry);
                 } else {
-                    console.log( dye(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ));
+                    console.log( dye(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ), Util.stack());
                     // trying to import creep
                     let counts = _.countBy(this.body, 'type');
                     if( counts[WORK] && counts[CARRY])
@@ -378,7 +381,7 @@ mod.execute = function(){
         try {
             creep.run();
         } catch (e) {
-            console.log('<span style="color:FireBrick">Creep ' + creep.name + (e.stack || e.toString()) + '</span>');
+            console.log('<span style="color:FireBrick">Creep ' + creep.name + (e.stack || e.toString()) + '</span>', Util.stack());
         }
     };
     _.forEach(Game.creeps, run);

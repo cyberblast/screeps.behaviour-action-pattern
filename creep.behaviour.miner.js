@@ -130,15 +130,16 @@ mod.run = function(creep, params = {}) {
                     }
                     if (creep.carry.energy === 0) return; // we need at least some energy to do both in the same tick.
                 }
-                if (!creep.data.repairChecked || Game.time - creep.data.repairChecked > MINER_WORK_THRESHOLD) {
+                if (creep.data.repairTarget || !creep.data.repairChecked || Game.time - creep.data.repairChecked > MINER_WORK_THRESHOLD) {
                     let repairTarget = Game.getObjectById(creep.data.repairTarget);
-                    if (!repairTarget) {
-                        const targets = params.remote ? creep.room.structures.repairable : creep.room.structures.fortifyable;
-                        const repairs = creep.pos.findInRange(targets, 3);
+                    if (!repairTarget || repairTarget.hits === repairTarget.hitsMax) {
+                        const repairs = creep.pos.findInRange(FIND_STRUCTURES, 3, {
+                            filter: s => (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_ROAD) && s.hits < s.hitsMax
+                        });
                         if (repairs.length) {
                             repairTarget = repairs[0];
                             creep.data.repairTarget = repairTarget.id;
-                        }
+                        } else repairTarget = null;
                     }
                     if (repairTarget) {
                         if(CHATTY) creep.say('repairing', SAY_PUBLIC);
@@ -148,14 +149,16 @@ mod.run = function(creep, params = {}) {
                         creep.data.repairChecked = Game.time;
                     }
                 }
-                if (!creep.data.buildChecked || Game.time - creep.data.buildChecked > MINER_WORK_THRESHOLD) {
+                if (creep.data.buildTarget || !creep.data.buildChecked || Game.time - creep.data.buildChecked > MINER_WORK_THRESHOLD) {
                     let buildTarget = Game.getObjectById(creep.data.buildTarget);
-                    if (!buildTarget) {
-                        const sites = creep.pos.findInRange(creep.room.myConstructionSites, 3);
+                    if (!buildTarget || buildTarget.progress === buildTarget.progressMax) {
+                        const sites = creep.pos.findInRange(creep.room.myConstructionSites, 3, {
+                            filter: s => (s.structureType === STRUCTURE_CONTAINER || s.structureType === STRUCTURE_ROAD) && s.progress < s.progressMax
+                        });
                         if (sites.length) {
                             buildTarget = sites[0];
                             creep.data.buildTarget = buildTarget.id;
-                        }
+                        } else buildTarget = null;
                     }
                     if (buildTarget) {
                         if(CHATTY) creep.say('building', SAY_PUBLIC);

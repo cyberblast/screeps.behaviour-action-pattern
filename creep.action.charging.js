@@ -1,6 +1,7 @@
 let action = new Creep.Action('charging'); // store into container
 module.exports = action;
 action.renewTarget = false;
+action.maxPerTarget = 1;
 action.isValidAction = function(creep){ return creep.carry.energy > 0; }
 action.isAddableAction = function(creep){ return true; }
 action.isValidTarget = function(target){
@@ -12,8 +13,10 @@ action.isValidTarget = function(target){
     }
     return false;
 };
+const super_isAddableTarget = action.isAddableTarget;
 action.isAddableTarget = function(target, creep){
-    return (
+    return super_isAddableTarget.apply(this, [target, creep]) &&
+    (
         (target instanceof OwnedStructure && target.my) ||
         (
             (!creep.room.controller ||
@@ -92,8 +95,4 @@ action.work = function(creep){
     }
     return workResult;
     */
-};
-action.onAssignment = function(creep, target) {
-    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.CHARGING, SAY_PUBLIC);
 };

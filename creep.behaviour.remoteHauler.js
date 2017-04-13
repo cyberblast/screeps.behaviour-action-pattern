@@ -101,3 +101,15 @@ mod.gotoTargetRoom = function(creep){
 mod.goHome = function(creep){
     return Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
 };
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`
+    },
+    picking: {
+        name: `picking-${mod.name}`,
+        energyOnly: false
+    }
+};

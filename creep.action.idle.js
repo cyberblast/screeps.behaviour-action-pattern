@@ -13,6 +13,3 @@ action.step = function(creep){
     delete creep.data.actionName;
     delete creep.data.targetId;
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.IDLE, SAY_PUBLIC);
-};

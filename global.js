@@ -260,11 +260,11 @@ mod.logErrorCode = function(creep, code) {
             else creep.say(code);
         }
         var message = error + '\nroom: ' + creep.pos.roomName + '\ncreep: ' + creep.name + '\naction: ' + creep.data.actionName + '\ntarget: ' + creep.data.targetId;
-        console.log(dye(CRAYON.error, message));
+        console.log(dye(CRAYON.error, message), Util.stack());
         Game.notify(message, 120);
     } else {
         var message = 'unknown error code\nroom: ' + creep.pos.roomName + '\ncreep: ' + creep.name + '\naction: ' + creep.data.actionName + '\ntarget: ' + creep.data.targetId;
-        console.log(dye(CRAYON.error, message));
+        console.log(dye(CRAYON.error, message), Util.stack());
     }
 };
 // log some text as error
@@ -272,7 +272,7 @@ mod.logError = function(message, entityWhere) {
     if (entityWhere) {
         trace('error', entityWhere, dye(CRAYON.error, message));
     } else {
-        console.log(dye(CRAYON.error, message));
+        console.log(dye(CRAYON.error, message), Util.stack());
     }
 };
 // trace an error or debug statement
@@ -298,12 +298,12 @@ mod.trace = function(category, entityWhere, ...message) {
         }
     }
     
-    console.log(Game.time, dye(CRAYON.error, category), ...msg, dye(CRAYON.birth, JSON.stringify(entityWhere)));
+    console.log(Game.time, dye(CRAYON.error, category), ...msg, dye(CRAYON.birth, JSON.stringify(entityWhere)), Util.stack());
 };
 // log some text as "system message" showing a "referrer" as label
 mod.logSystem = function(roomName, message) {
     let text = dye(CRAYON.system, roomName);
-    console.log(dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt; `) + message);
+    console.log(dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt; `) + message, Util.stack());
 };
 mod.isObj = function(val) {
     if (val === null) {

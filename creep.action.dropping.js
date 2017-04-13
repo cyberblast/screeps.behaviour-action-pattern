@@ -46,6 +46,3 @@ action.work = function(creep) {
     }
     return ret;
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.DROPPING, SAY_PUBLIC);
-};
