@@ -33,6 +33,9 @@ getPath('<originalModuleName>', true);
 // To completely re-evaluate all modules:
 delete Memory.modules;
 
+// Safely wipe all Memory
+_.forEach(Memory, (v, k) => !['population'].includes(k) && delete Memory[k]);
+
 // create market order (replace [roomName] with target room or remove it for subscription tokens)
 Game.market.createOrder(type, resourceType, price, totalAmount, roomName);
 
