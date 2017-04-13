@@ -109,7 +109,7 @@ let Action = function(actionName){
     };
     // assignment postprocessing
     this.onAssignment = function(creep, target) {
-        if (SAY_ASSIGNMENT) creep.say(ACTION_SAY[this.name.toUpperCase()], SAY_PUBLIC);
+        if (SAY_ASSIGNMENT && ACTION_SAY[this.name.toUpperCase()]) creep.say(ACTION_SAY[this.name.toUpperCase()], SAY_PUBLIC);
         if (target instanceof RoomObject || target instanceof RoomPosition && VISUALS.ACTION_ASSIGNMENT) {
             Visuals.drawLine(creep, target);
         }
