@@ -62,7 +62,7 @@ let Action = function(actionName){
             }
             range = creep.pos.getRangeTo(creep.target); // target may have changed (eg. hauler feed+move/tick)
         }
-        if( creep.target ) {
+        if( creep.target && creep.hasActiveBodyparts(MOVE) ) {
             if (range > this.targetRange) creep.travelTo(creep.target, {range: this.targetRange});
             // low CPU pathfinding for last few steps.
             else if (range > this.reachedRange) {
