@@ -22,6 +22,13 @@ Memory.rooms['<roomName>'].spawnQueueMedium = [0];
 // clear high priority queue 
 Memory.rooms['<roomName>'].spawnQueueHigh = [0];
 
+// check if a specific creep type is in queue
+Util.inQueue('defender');
+// or
+Util.inQueue({behaviour: 'defender'});
+// You can also limit by target room:
+Util.inQueue({behaviour: 'remoteMiner', room: 'W0N0'});
+
 // move Creep
 Game.creeps['<creepName>'].move(RIGHT);
 

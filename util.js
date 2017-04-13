@@ -386,6 +386,23 @@ module.exports = {
     },
     
     /**
+     * Checks if a specific creep type is in queue, either globally or for a room
+     * @param {Object|String} opts - Behaviour if string, else an object with either behaviour, setup, or name. Optionally a room name.
+     * @returns {boolean} - True if the creep is in queue somewhere, otherwise false.
+     */
+    inQueue(opts) {
+        if (!opts) return false;
+        // string check
+        if (opts.link) opts = {behaviour: opts};
+        if (!opts.name && !opts.behaviour && !opts.setup) return false;
+        return _(Game.rooms).filter('my').map('memory').map(m => m.spawnQueueHigh.concat(m.spawnQueueMedium, m.spawnQueueLow)).flatten().some(q => {
+            if (opts.room) if (q.destiny && q.destiny.room !== opts.room) return false;
+            if (opts.behaviour) return (q.behaviour && q.behaviour === opts.behaviour) || q.name.includes(opts.behaviour);
+            if (opts.setup) return q.setup === opts.setup;
+        });
+    },
+    
+    /**
      * List the current memory usage of a given path in memory in kb
      * @param {string} key - The location in memory to check eg 'rooms.E1S1.statistics'
      * @returns {string}
