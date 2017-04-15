@@ -2,6 +2,11 @@ let mod = {};
 module.exports = mod;
 mod.name = 'remoteMiner';
 mod.run = function(creep) {
+    const flag = creep.data.destiny && Game.flags[creep.data.destiny.targetName];
+    if (!flag && (!creep.action || creep.action.name !== 'recycling')) {
+        return Creep.action.recycling.assign(creep);
+    }
+
     if (Creep.action.avoiding.run(creep)) {
         return;
     }
