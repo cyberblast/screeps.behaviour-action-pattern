@@ -525,7 +525,7 @@ module.exports = {
                     Util.logSystem('Average Usage', `<table style="font-size:80%;"><tr><th>Type${Array(longestType.length + 2).join(' ')}</th><th>(avg/creep/tick)</th><th>(active)</th><th>(weighted avg)</th><th>(executions)</th></tr>`.concat(string));
                 }
                 Util.logSystem(name, ' loop:' + _.round(totalUsed, 2), 'other:' + _.round(onLoad, 2), 'avg:' + _.round(avgCPU, 2), 'ticks:' + global.profiler.totalTicks, 'bucket:' + Game.cpu.bucket);
-                if (PROFILE) console.log('\n');
+                if (PROFILE && !PROFILING.BASIC_ONLY) console.log('\n');
                 Memory.profiler = global.profiler;
             };
         }
