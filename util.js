@@ -40,7 +40,7 @@ module.exports = {
      */
     get(object, path, defaultValue, setDefault = true) {
         const r = _.get(object, path);
-        if (!r && !_.isUndefined(defaultValue) && setDefault) {
+        if (_.isUndefined(r) && !_.isUndefined(defaultValue) && setDefault) {
             defaultValue = Util.fieldOrFunction(defaultValue);
             _.set(object, path, defaultValue);
             return _.get(object, path);
