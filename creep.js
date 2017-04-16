@@ -3,18 +3,26 @@ const strategy = load("strategy");
 let mod = {};
 module.exports = mod;
 mod.extend = function(){
+    Creep.prototype.assignAction = function(action, target) {
+        if (typeof action === 'string') action = Creep.action[action];
+        if (!action || !(action instanceof Creep.Action)) return;
+        return action.assign(this, target);
+    };
+    // to maintain legacy code for now
     Creep.prototype.findGroupMemberByType = function(creepType, flagName) {
-        let creep;
-        if(creepType && flagName) {
-            for(let i in Memory.population) {
-                creep = Memory.population[i];
-
-                if(creep.creepType === creepType && creep.flagName === flagName) {
-                    return i;
+        return Creep.prototype.findGroupMemberBy('creepType', creepType, flagName);
+    };
+    Creep.prototype.findGroupMemberBy = function(property, targetValue, flagName) {
+        if (_.isUndefined(flagName)) flagName = this.data.flagName;
+        if (!_.isUndefined(targetValue) && flagName) {
+            for(const creepName in Memory.population) {
+                const data = Memory.population[creepName];
+                if (_.get(data, property) === targetValue && data.flagName === flagName) {
+                    return creepName;
                 }
             }
         } else {
-            logError("Invalid arguments for Creep.findGroupMemberByType");
+            logError(`Invalid arguments for Creep.findGroupMemberBy ${property} ${targetValue} ${flagName}`);
         }
         return null;
     };
@@ -56,12 +64,17 @@ mod.extend = function(){
                     return;
                 }
             }
-            let p = startProfiling('Creep.run');
+            const total = Util.startProfiling('Creep.run', {enabled:PROFILING.CREEPS});
+            const p = Util.startProfiling(this.name + '.run', {enabled:this.data && this.data.creepType && PROFILING.CREEP_TYPE === this.data.creepType});
             if (this.data && !_.contains(['remoteMiner', 'miner', 'upgrader'], this.data.creepType)) {
                 this.repairNearby();
+                p.checkCPU('repairNearby', PROFILING.MIN_THRESHOLD);
             }
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Behaviour: behaviour && behaviour.name, Creep:'run'});
-            if( behaviour ) behaviour.run(this);
+            if( behaviour ) {
+                behaviour.run(this);
+                p.checkCPU('behaviour.run', PROFILING.MIN_THRESHOLD);
+            }
             else if(!this.data){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Creep:'run'}, 'memory init');
                 let type = this.memory.setup;
@@ -86,7 +99,7 @@ mod.extend = function(){
                     });
                     Population.countCreep(this.room, entry);
                 } else {
-                    console.log( dye(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ));
+                    console.log( dye(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ), Util.stack());
                     // trying to import creep
                     let counts = _.countBy(this.body, 'type');
                     if( counts[WORK] && counts[CARRY])
@@ -107,14 +120,17 @@ mod.extend = function(){
                         });
                         Population.countCreep(this.room, entry);
                     } else this.suicide();
+                    p.checkCPU('!this.data', PROFILING.MIN_THRESHOLD);
                 }
             }
             if( this.flee ) {
                 this.fleeMove();
+                p.checkCPU('fleeMove', PROFILING.MIN_THRESHOLD);
                 Creep.behaviour.ranger.heal(this);
+                p.checkCPU('heal', PROFILING.MIN_THRESHOLD);
                 if( SAY_ASSIGNMENT ) this.say(String.fromCharCode(10133), SAY_PUBLIC);
             }
-            p.checkCPU(this.name, 5, this.data ? this.data.creepType : 'noType');
+            total.checkCPU(this.name, PROFILING.EXECUTE_LIMIT / 3, this.data ? this.data.creepType : 'noType');
         }
 
         strategy.freeStrategy(this);
@@ -365,7 +381,7 @@ mod.execute = function(){
         try {
             creep.run();
         } catch (e) {
-            console.log('<span style="color:FireBrick">Creep ' + creep.name + (e.stack || e.toString()) + '</span>');
+            console.log('<span style="color:FireBrick">Creep ' + creep.name + (e.stack || e.toString()) + '</span>', Util.stack());
         }
     };
     _.forEach(Game.creeps, run);

@@ -2,12 +2,18 @@ let mod = {};
 module.exports = mod;
 mod.name = 'remoteHauler';
 mod.run = function(creep) {
+    const flag = creep.data.destiny && Game.flags[creep.data.destiny.targetName];
+    if (!flag && (!creep.action || creep.action.name !== 'recycling')) {
+        //TODO: in the future look for a nearby room we can support
+        return Creep.action.recycling.assign(creep);
+    }
+
     // Assign next Action
     let oldTargetId = creep.data.targetId;
     if( creep.action == null || creep.action.name == 'idle' ) {
         this.nextAction(creep);
     }
-    
+
     // Do some work
     if( creep.action && creep.target ) {
         creep.action.step(creep);
@@ -114,4 +120,16 @@ mod.strategies = {
             return options;
         },
     },
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`
+    },
+    picking: {
+        name: `picking-${mod.name}`,
+        energyOnly: false
+    }
 };

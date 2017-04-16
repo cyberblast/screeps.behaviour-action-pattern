@@ -7,6 +7,7 @@ mod.populate = function() {
         Task.claim,
         Task.defense,
         Task.guard,
+        Task.labTech,
         Task.mining,
         Task.pioneer,
         Task.reputation,
@@ -58,6 +59,32 @@ mod.memory = (task, s) => { // task:  (string) name of the task, s: (string) any
     if( !Memory.tasks[task] ) Memory.tasks[task] = {};
     if( !Memory.tasks[task][s] ) Memory.tasks[task][s] = {};
     return Memory.tasks[task][s];
+};
+mod.cleanup = function(subKeys, task, s) {
+    mod.removeQueued(mod.memory(task, s), subKeys);
+    mod.clearMemory(task, s);
+};
+mod.removeQueued = function(memory, subKeys) {
+    const removeEntries = mem => {
+        for (const entry of mem) {
+            const room = Game.rooms[entry.room];
+            for (const priority of ['spawnQueueLow', 'spawnQueueMedium', 'spawnQueueHigh']) {
+                const queue = room[priority];
+                const index = _.findIndex(queue, {name: entry.name});
+                if (index >= 0) {
+                    queue.splice(index, 1);
+                    break;
+                }
+            }
+        }
+    };
+    if (subKeys) {
+        for (const subKey of subKeys) {
+            removeEntries(memory[subKey]);
+        }
+    } else {
+        removeEntries(memory);
+    }
 };
 mod.clearMemory = (task, s) => {
     if( Memory.tasks[task] && Memory.tasks[task][s] )

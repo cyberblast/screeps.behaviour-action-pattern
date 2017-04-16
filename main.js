@@ -116,9 +116,12 @@ global.install = () => {
     // ensure required memory namespaces
     if (Memory.modules === undefined)  {
         Memory.modules = {
+            valid: Game.time,
             viral: {},
             internalViral: {}
         };
+    } else if (_.isUndefined(Memory.modules.valid)) {
+        Memory.modules.valid = Game.time;
     }
     // Initialize global & parameters
     //let glob = load("global");
@@ -137,10 +140,11 @@ global.install = () => {
         Events: load('events'),
         OCSMemory: load('ocsMemory'),
         Grafana: GRAFANA ? load('grafana') : undefined,
-        Visuals: ROOM_VISUALS ? load('visuals') : undefined,
+        Visuals: load('visuals'),
     });
     _.assign(global.Util, {
         DiamondIterator: load('util.diamond.iterator'),
+        SpiralIterator: load('util.spiral.iterator'),
     });
     _.assign(global.Task, {
         guard: load("task.guard"),
@@ -152,6 +156,7 @@ global.install = () => {
         attackController: load("task.attackController"),
         robbing: load("task.robbing"),
         reputation: load("task.reputation"),
+        labTech: load("task.labTech"),
     });
     Creep.Action = load("creep.Action");
     Creep.Setup = load("creep.Setup");
@@ -159,6 +164,7 @@ global.install = () => {
         action: {
             attackController: load("creep.action.attackController"),
             avoiding: load("creep.action.avoiding"),
+            boosting: load("creep.action.boosting"),
             building: load("creep.action.building"),
             bulldozing: load('creep.action.bulldozing'),
             charging: load("creep.action.charging"),
@@ -191,6 +197,7 @@ global.install = () => {
             collapseWorker: load("creep.behaviour.collapseWorker"),
             hauler: load("creep.behaviour.hauler"),
             healer: load("creep.behaviour.healer"),
+            labTech: load("creep.behaviour.labTech"),
             melee: load("creep.behaviour.melee"),
             miner: load("creep.behaviour.miner"),
             mineralMiner: load("creep.behaviour.mineralMiner"),
@@ -226,115 +233,124 @@ global.install = () => {
     Spawn.extend();
     FlagDir.extend();
     Task.populate();
-    
-    if (ROOM_VISUALS) Visuals.extend();
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
     OCSMemory.activateSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, true);
     OCSMemory.activateSegment(MEM_SEGMENTS.PATH_CACHE, true);
+
+    global.modulesValid = Memory.modules.valid;
     if (DEBUG) logSystem('Global.install', 'Code reloaded.');
 };
 global.install();
-require('traveler')({exportTraveler: false, installTraveler: true, installPrototype: true, defaultStuckValue: TRAVELER_STUCK_TICKS, reportThreshold: TRAVELER_THRESHOLD});
+load('traveler')({exportTraveler: false, installTraveler: true, installPrototype: true, defaultStuckValue: TRAVELER_STUCK_TICKS, reportThreshold: TRAVELER_THRESHOLD});
 
 let cpuAtFirstLoop;
 module.exports.loop = function () {
     const cpuAtLoop = Game.cpu.getUsed();
-    let p = startProfiling('main', cpuAtLoop);
-    p.checkCPU('deserialize memory', 5); // the profiler makes an access to memory on startup
-    // let the cpu recover a bit above the threshold before disengaging to prevent thrashing
-    Memory.CPU_CRITICAL = Memory.CPU_CRITICAL ? Game.cpu.bucket < CRITICAL_BUCKET_LEVEL + CRITICAL_BUCKET_OVERFILL : Game.cpu.bucket < CRITICAL_BUCKET_LEVEL;
-    if (!cpuAtFirstLoop) cpuAtFirstLoop = cpuAtLoop;
-
-    // ensure required memory namespaces
-    if (Memory.modules === undefined)  {
-        Memory.modules = {
-            viral: {},
-            internalViral: {}
-        };
-    }
-    if (Memory.debugTrace === undefined) {
-        Memory.debugTrace = {error:true, no:{}};
-    }
-    if (Memory.cloaked === undefined) {
-        Memory.cloaked = {};
-    }
-    // ensure up to date parameters
-    _.assign(global, load("parameter"));
+    if (Memory.pause) return;
     
-    // process loaded memory segments
-    OCSMemory.processSegments();
-    p.checkCPU('processSegments', PROFILING.ANALYZE_LIMIT);
+    try {
+        const totalUsage = Util.startProfiling('main', {startCPU: cpuAtLoop});
+        const p = Util.startProfiling('main', {enabled: PROFILING.MAIN, startCPU: cpuAtLoop});
+        p.checkCPU('deserialize memory', 5); // the profiler makes an access to memory on startup
+        // let the cpu recover a bit above the threshold before disengaging to prevent thrashing
+        Memory.CPU_CRITICAL = Memory.CPU_CRITICAL ? Game.cpu.bucket < CRITICAL_BUCKET_LEVEL + CRITICAL_BUCKET_OVERFILL : Game.cpu.bucket < CRITICAL_BUCKET_LEVEL;
+        if (!cpuAtFirstLoop) cpuAtFirstLoop = cpuAtLoop;
+        // ensure required memory namespaces
+        if (_.isUndefined(Memory.modules) || _.isUndefined(global.modulesValid) || global.modulesValid !== Memory.modules.valid)  {
+            global.install();
+        }
+        if (Memory.debugTrace === undefined) {
+            Memory.debugTrace = {error:true, no:{}};
+        }
+        if (Memory.cloaked === undefined) {
+            Memory.cloaked = {};
+        }
+        // ensure up to date parameters
+        _.assign(global, load("parameter"));
+        
+        // process loaded memory segments
+        OCSMemory.processSegments();
+        p.checkCPU('processSegments', PROFILING.ANALYZE_LIMIT);
+    
+        // Flush cache
+        Events.flush();
+        FlagDir.flush();
+        Population.flush();
+        Room.flush();
+        Task.flush();
+        // custom flush
+        if( global.mainInjection.flush ) global.mainInjection.flush();
+        p.checkCPU('flush', PROFILING.FLUSH_LIMIT);
+    
+        // Room event hooks must be registered before analyze for costMatrixInvalid
+        Room.register();
+    
+        // analyze environment, wait a tick if critical failure
+        if (!FlagDir.analyze()) {
+            logError('FlagDir.analyze failed, waiting one tick to sync flags');
+            return;
+        }
+        p.checkCPU('FlagDir.analyze', PROFILING.ANALYZE_LIMIT);
+        Room.analyze();
+        p.checkCPU('Room.analyze', PROFILING.ANALYZE_LIMIT);
+        Population.analyze();
+        p.checkCPU('Population.analyze', PROFILING.ANALYZE_LIMIT);
+        // custom analyze
+        if( global.mainInjection.analyze ) global.mainInjection.analyze();
 
-    // Flush cache
-    Events.flush();
-    FlagDir.flush();
-    Population.flush();
-    Room.flush();
-    Task.flush();
-    // custom flush
-    if( global.mainInjection.flush ) global.mainInjection.flush();
-    p.checkCPU('flush', PROFILING.FLUSH_LIMIT);
+        // Register event hooks
+        Creep.register();
+        Spawn.register();
+        Task.register();
+        // custom register
+        if( global.mainInjection.register ) global.mainInjection.register();
+        p.checkCPU('register', PROFILING.REGISTER_LIMIT);
 
-    // analyze environment, wait a tick if critical failure
-    if (!FlagDir.analyze()) {
-        logError('FlagDir.analyze failed, waiting one tick to sync flags');
-        return;
+        // Execution
+        Population.execute();
+        p.checkCPU('population.execute', PROFILING.EXECUTE_LIMIT);
+        FlagDir.execute();
+        p.checkCPU('flagDir.execute', PROFILING.EXECUTE_LIMIT);
+        Room.execute();
+        p.checkCPU('room.execute', PROFILING.EXECUTE_LIMIT);
+        Creep.execute();
+        p.checkCPU('creep.execute', PROFILING.EXECUTE_LIMIT);
+        Spawn.execute();
+        p.checkCPU('spawn.execute', PROFILING.EXECUTE_LIMIT);
+        // custom execute
+        if( global.mainInjection.execute ) global.mainInjection.execute();
+
+        // Postprocessing
+        if (SEND_STATISTIC_REPORTS) {
+            if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
+                load("statistics").process();
+            processReports();
+        p.checkCPU('processReports', PROFILING.FLUSH_LIMIT);
+        }
+        FlagDir.cleanup();
+        p.checkCPU('FlagDir.cleanup', PROFILING.FLUSH_LIMIT);
+        Population.cleanup();
+        p.checkCPU('Population.cleanup', PROFILING.FLUSH_LIMIT);
+        Room.cleanup(); 
+        p.checkCPU('Room.cleanup', PROFILING.FLUSH_LIMIT);
+        // custom cleanup
+        if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
+
+        OCSMemory.cleanup(); // must come last
+        p.checkCPU('OCSMemory.cleanup', PROFILING.ANALYZE_LIMIT);
+        if (ROOM_VISUALS && !Memory.CPU_CRITICAL) Visuals.run(); // At end to correctly display used CPU.
+        p.checkCPU('visuals', PROFILING.EXECUTE_LIMIT);
+
+        if ( GRAFANA && Game.time % GRAFANA_INTERVAL === 0 ) Grafana.run();
+        p.checkCPU('grafana', PROFILING.EXECUTE_LIMIT);
+
+        Game.cacheTime = Game.time;
+    
+        if( DEBUG && TRACE ) trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
+        totalUsage.totalCPU();
     }
-    p.checkCPU('FlagDir.analyze', PROFILING.ANALYZE_LIMIT);
-    Room.analyze();
-    p.checkCPU('Room.analyze', PROFILING.ANALYZE_LIMIT);
-    Population.analyze();
-    p.checkCPU('Population.analyze', PROFILING.ANALYZE_LIMIT);
-    // custom analyze
-    if( global.mainInjection.analyze ) global.mainInjection.analyze();
-
-    // Register event hooks
-    Creep.register();
-    Spawn.register();
-    Task.register();
-    // custom register
-    if( global.mainInjection.register ) global.mainInjection.register();
-    p.checkCPU('register', PROFILING.REGISTER_LIMIT);
-
-    // Execution
-    Population.execute();
-    p.checkCPU('population.execute', PROFILING.EXECUTE_LIMIT);
-    FlagDir.execute();
-    p.checkCPU('flagDir.execute', PROFILING.EXECUTE_LIMIT);
-    Room.execute();
-    p.checkCPU('room.execute', PROFILING.EXECUTE_LIMIT);
-    Creep.execute();
-    p.checkCPU('creep.execute', PROFILING.EXECUTE_LIMIT);
-    Spawn.execute();
-    p.checkCPU('spawn.execute', PROFILING.EXECUTE_LIMIT);
-    // custom execute
-    if( global.mainInjection.execute ) global.mainInjection.execute();
-
-    // Postprocessing
-    if( !Memory.statistics || ( Memory.statistics.tick && Memory.statistics.tick + TIME_REPORT <= Game.time ))
-        load("statistics").process();
-    processReports();
-    p.checkCPU('processReports', PROFILING.ANALYZE_LIMIT);
-    FlagDir.cleanup();
-    p.checkCPU('FlagDir.cleanup', PROFILING.ANALYZE_LIMIT);
-    Population.cleanup();
-    p.checkCPU('Population.cleanup', PROFILING.ANALYZE_LIMIT);
-    Room.cleanup(); 
-    p.checkCPU('Room.cleanup', PROFILING.ANALYZE_LIMIT);
-    // custom cleanup
-    if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
-
-    OCSMemory.cleanup(); // must come last
-    p.checkCPU('OCSMemory.cleanup', PROFILING.ANALYZE_LIMIT);
-    if ( ROOM_VISUALS && !Memory.CPU_CRITICAL && Visuals ) Visuals.run(); // At end to correctly display used CPU.
-    p.checkCPU('visuals', PROFILING.EXECUTE_LIMIT);
-
-    if ( GRAFANA && Game.time % GRAFANA_INTERVAL === 0 ) Grafana.run();
-    p.checkCPU('grafana', PROFILING.EXECUTE_LIMIT);
-
-    Game.cacheTime = Game.time;
-
-    if( DEBUG && TRACE ) trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
-    p.totalCPU();
+    catch (e) {
+        Util.logError(e.stack || e.message);
+    }
 };

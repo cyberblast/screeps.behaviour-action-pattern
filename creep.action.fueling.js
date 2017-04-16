@@ -21,6 +21,3 @@ action.work = function(creep){
         creep.data.targetId = null;
     return response;
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say('\u{26FD}\u{FE0E}', SAY_PUBLIC);
-};

@@ -46,6 +46,3 @@ action.work = function(creep) {
     }
     return ret;
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(8681), SAY_PUBLIC);
-};

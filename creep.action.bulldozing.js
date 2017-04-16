@@ -25,6 +25,3 @@ action.newTarget = function(creep) {
 action.work = function(creep) {
     return creep.move(creep.pos.getDirectionTo(creep.target));
 };
-action.onAssignment = function(creep) {
-    if (SAY_ASSIGNMENT) creep.say(String.fromCodePoint(0x1F4CC), SAY_PUBLIC);
-};

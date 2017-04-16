@@ -7,6 +7,7 @@ mod.approach = function(creep){
     let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.pos.roomName);
     let range = creep.pos.getRangeTo(targetPos);
     if( range > 0 ) {
+        creep.data.movingToTarget = true;
         if (range === 1) {
             const creeps = targetPos.lookFor(LOOK_CREEPS);
             if (creeps.length && _.some(creeps, invalidCreep)) {
@@ -15,6 +16,10 @@ mod.approach = function(creep){
             }
         }
         creep.travelTo( targetPos, {range:0} );
+    } else if (creep.data.movingToTarget) {
+        // we have arrived at our determinatedSpot
+        creep.room.invalidateCostMatrix();
+        delete creep.data.movingToTarget;
     }
     return range;
 };
@@ -85,8 +90,9 @@ mod.run = function(creep) {
                 }
             }
         }
-        if( !creep.data.determinatedSpot ) logError('Unable to determine working location for upgrader in room ' + creep.pos.roomName);
-        else if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9962), SAY_PUBLIC);
+        if( !creep.data.determinatedSpot ) {
+            logError('Unable to determine working location for upgrader in room ' + creep.pos.roomName);  
+        } else if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9962), SAY_PUBLIC);
     }
     if( creep.data.determinatedSpot ) {
         if(CHATTY) creep.say('upgrading', SAY_PUBLIC);
