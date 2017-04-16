@@ -342,6 +342,16 @@ module.exports = {
     },
     
     /**
+     * Get the distance between two points.
+     * @param {RoomPosition|Object} point1 - The first point
+     * @param {RoomPosition|Object} point2 - The second point
+     * @returns {Number}
+     */
+    getDistance(point1, point2) {
+        return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
+    },
+    
+    /**
      * Gets the distances between two rooms, respecting natural walls
      * @param {string} fromRoom - Starting room
      * @param {string} toRoom - Ending room

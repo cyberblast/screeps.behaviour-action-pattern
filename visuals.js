@@ -52,6 +52,28 @@ const Visuals = class {
         vis.line(from, to, style);
     }
     
+    drawArrow(from, to, style) {
+        if (from instanceof RoomObject) from = from.pos;
+        if (to instanceof RoomObject) to = to.pos;
+        if (!(from instanceof RoomPosition || to instanceof RoomPosition)) throw new Error('Visuals: Point not a RoomPosition');
+        if (from.roomName !== to.roomName) return; // cannot draw lines to another room
+        const vis = new RoomVisual(from.roomName);
+        this.drawLine(from, to, style);
+    
+        const delta_x = from.x - to.x;
+        const delta_y = from.y - to.y;
+        const theta_radians = Math.atan2(delta_y, delta_x);
+        const base_angle = 0.610865;
+        const new_angle = theta_radians + base_angle;
+        const length = Util.getDistance(from, to) * .25;
+        style = style instanceof Creep
+            ? this.creepPathStyle(style)
+            : (style || {});
+        
+        vis.line(to.x, to.y, to.x + length * Math.cos(theta_radians + base_angle), to.y + length * Math.sin(theta_radians + base_angle), style);
+        vis.line(to.x, to.y, to.x + length * Math.cos(theta_radians - base_angle), to.y + length * Math.sin(theta_radians - base_angle), style);
+    }
+    
     constructor() {
         this.barStyle = {fill: '#2B2B2B', opacity: 0.8, stroke: BLACK};
         this.sparklineStyle = [
