@@ -6,7 +6,7 @@ action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){ return null; };
 action.step = function(creep){
     if(CHATTY) creep.say(this.name, SAY_PUBLIC);
-    let targetRange = creep.data.travelRange || this.targetRange;
+    let targetRange = _.get(creep, ['data', 'travelRange'], this.targetRange);
     let target = creep.target;
     if (FlagDir.isSpecialFlag(creep.target)) {
         if (creep.data.travelRoom) {
@@ -15,7 +15,7 @@ action.step = function(creep){
                 creep.leaveBorder(); // TODO unregister / return false? and immediately acquire new action & target
                 target = null;
             } else {
-                targetRange = creep.data.travelRange || TRAVELLING_BORDER_RANGE || 22;
+                targetRange = _.get(creep, ['data', 'travelRange'],  TRAVELLING_BORDER_RANGE || 22);
                 target = new RoomPosition(25, 25, creep.data.travelRoom);
             }
         } else {

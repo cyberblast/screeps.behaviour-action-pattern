@@ -23,6 +23,8 @@ let mod = {
         MIN_THRESHOLD: 0.5, // set the bar for checks that involve very low usage (warning, chatty!)
         REGISTER_LIMIT: 2, // profile warning levels
         ROOMS: false, // display room and structure profiling information
+        VISUALS: false, // profile visuals
+        VISUALS_LIMIT: 0.2, // CPU usage in each part of visuals above this limit will be displayed
     },
     TRAVELER_STUCK_TICKS: 2, // Number of ticks not moving to be considered stuck by the Traveler API
     TRAVELER_THRESHOLD: 5, // Average creep CPU usage/tick before warning about pathing cost, starts after 25 ticks
@@ -35,6 +37,7 @@ let mod = {
     ROOM_VISUALS: false, // display basic room statistics with RoomVisuals
     ROOM_VISUALS_ALL: false, // displays visuals in all rooms you have vision in. Only your rooms when false.
     VISUALS: { // if ROOM_VISUALS is enabled, you can select what you want to display - All is a bit much for some people.
+        VISIBLE_ONLY: false, // depends on userscript: https://github.com/Esryok/screeps-browser-ext/blob/master/visible-room-tracker.user.js
         ROOM: true, // displays basic info relative to the room
         ROOM_GLOBAL: true, // displays basic info relative to your account - requires ROOM: true
         CPU: true, // display a graph containing CPU used, CPU limit, and bucket

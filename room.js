@@ -2020,16 +2020,18 @@ mod.extend = function(){
             for (let i=0;i<data.container.length;i++) {
                 let d = data.container[i];
                 let container = Game.getObjectById(d.id);
-                let amt = -container.getNeeds(resourceType);
-                if (container && !(this.structures.container.out.includes(container) && resourceType === RESOURCE_ENERGY) && amt > 0) {
-                    let amount = amt;
-                    if (amount >= amountMin) return { structure: container, amount: amount };
+                if (container) {
+                    let amt = -container.getNeeds(resourceType);
+                    if (!(this.structures.container.out.includes(container) && resourceType === RESOURCE_ENERGY) && amt > 0) {
+                        let amount = amt;
+                        if (amount >= amountMin) return { structure: container, amount: amount };
+                    }
                 }
             }
         }
 
         return null;
-    }
+    };
     Room.prototype.prepareResourceOrder = function(containerId, resourceType, amount) {
         let container = Game.getObjectById(containerId);
         if (!this.my || !container || !container.room.name == this.name ||
@@ -2688,6 +2690,9 @@ mod.extend = function(){
             }
         }
     };
+    Room.prototype.invalidateCostMatrix = function() {
+        Room.costMatrixInvalid.trigger(this.name);
+    };
 };
 mod.flush = function(){
     let clean = room => {
@@ -2816,23 +2821,27 @@ mod.execute = function() {
     let triggerKnownInvaders = id =>  Room.knownInvader.trigger(id);
     let triggerGoneInvaders = id =>  Room.goneInvader.trigger(id);
     let run = (memory, roomName) => {
-        const p2 = Util.startProfiling(roomName, {enabled:PROFILING.ROOMS});
-        let room = Game.rooms[roomName];
-        if( room ){ // has sight
-            room.goneInvader.forEach(triggerGoneInvaders);
-            p2.checkCPU('Creep.execute.run:goneInvader', 0.5);
-            room.hostileIds.forEach(triggerKnownInvaders);
-            p2.checkCPU('Creep.execute.run:knownInvaders', 0.5);
-            room.newInvader.forEach(triggerNewInvaders);
-            p2.checkCPU('Creep.execute.run:newInvaders', 0.5);
-            if (room.structures.towers.length > 0) Tower.loop(room);
-            p2.checkCPU('Creep.execute.run:tower.loop', 0.5);
-            if( room.collapsed ) Room.collapsed.trigger(room);
-            p2.checkCPU('Creep.execute.run:collapsed', 0.5);
-        }
-        else { // no sight
-            if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
-            p2.checkCPU('Creep.execute.run:knownInvadersNoSight', 0.5);
+        try {
+            const p2 = Util.startProfiling(roomName, {enabled:PROFILING.ROOMS});
+            let room = Game.rooms[roomName];
+            if( room ){ // has sight
+                room.goneInvader.forEach(triggerGoneInvaders);
+                p2.checkCPU('Creep.execute.run:goneInvader', 0.5);
+                room.hostileIds.forEach(triggerKnownInvaders);
+                p2.checkCPU('Creep.execute.run:knownInvaders', 0.5);
+                room.newInvader.forEach(triggerNewInvaders);
+                p2.checkCPU('Creep.execute.run:newInvaders', 0.5);
+                if (room.structures.towers.length > 0) Tower.loop(room);
+                p2.checkCPU('Creep.execute.run:tower.loop', 0.5);
+                if( room.collapsed ) Room.collapsed.trigger(room);
+                p2.checkCPU('Creep.execute.run:collapsed', 0.5);
+            }
+            else { // no sight
+                if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
+                p2.checkCPU('Creep.execute.run:knownInvadersNoSight', 0.5);
+            }
+        } catch (e) {
+            Util.logError(e.stack || e.message);
         }
     };
     _.forEach(Memory.rooms, (memory, roomName) => {
@@ -2900,6 +2909,7 @@ mod.findSpawnRoom = function(params){
     return _.min(validRooms, evaluation);
 };
 mod.routeCallback = function(origin, destination, options) {
+    if (_.isUndefined(origin) || _.isUndefined(destination)) logError('Room.routeCallback', 'both origin and destination must be defined - origin:' + origin + ' destination:' + destination);
     return function(roomName) {
         if (Game.map.getRoomLinearDistance(origin, roomName) > options.restrictDistance)
             return false;

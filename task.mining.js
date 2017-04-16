@@ -20,9 +20,8 @@ mod.handleFlagRemoved = flagName => {
         if( flags && flags.length > 0 ) 
             return;
         else {
-            // no more mining in that room. 
-            // clear memory
-            Task.clearMemory(mod.name, flagMem.roomName);
+            // no more mining in that room.
+            Task.cleanup(['remoteMiner', 'remoteWorker', 'remoteHauler'], mod.name, flagMem.roomName);
         }
     }
 };

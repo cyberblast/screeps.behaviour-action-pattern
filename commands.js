@@ -22,6 +22,13 @@ Memory.rooms['<roomName>'].spawnQueueMedium = [0];
 // clear high priority queue 
 Memory.rooms['<roomName>'].spawnQueueHigh = [0];
 
+// check if a specific creep type is in queue
+Util.inQueue('defender');
+// or
+Util.inQueue({behaviour: 'defender'});
+// You can also limit by target room:
+Util.inQueue({behaviour: 'remoteMiner', room: 'W0N0'});
+
 // move Creep
 Game.creeps['<creepName>'].move(RIGHT);
 
@@ -32,6 +39,9 @@ Game.creeps['<creepName>'].data.creepType="recycler";
 getPath('<originalModuleName>', true);
 // To completely re-evaluate all modules:
 delete Memory.modules;
+
+// Safely wipe all Memory
+_.forEach(Memory, (v, k) => !['population'].includes(k) && delete Memory[k]);
 
 // create market order (replace [roomName] with target room or remove it for subscription tokens)
 Game.market.createOrder(type, resourceType, price, totalAmount, roomName);

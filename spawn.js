@@ -16,16 +16,17 @@ mod.extend = function(){
         let that = this;
         let probe = setup => {
             return setup.isValidSetup(room) && that.createCreepBySetup(setup);
-        }
-
-        let busy = this.createCreepByQueue(room.spawnQueueHigh);
+        };
+        
+        const spawnDelay = Util.get(this.room.memory, 'spawnDelay', {});
+        let busy = this.createCreepByQueue(room.spawnQueueHigh, 'High');
         // don't spawn lower if there is one waiting in the higher queue 
-        if( !busy && room.spawnQueueHigh.length == 0 && Game.time % SPAWN_INTERVAL == 0 ) {
+        if( !busy && (room.spawnQueueHigh.length === 0  || room.spawnQueueHigh.length === spawnDelay.High) && Game.time % SPAWN_INTERVAL === 0 ) {
             busy = _.some(Spawn.priorityHigh, probe);
-            if( !busy ) busy = this.createCreepByQueue(room.spawnQueueMedium);
-            if( !busy && room.spawnQueueMedium.length == 0 ) {
+            if( !busy ) busy = this.createCreepByQueue(room.spawnQueueMedium, 'Medium');
+            if( !busy && (room.spawnQueueMedium.length === 0 || room.spawnQueueMedium.length === spawnDelay.Medium)) {
                 busy = _.some(Spawn.priorityLow, probe);
-                if( !busy ) busy = this.createCreepByQueue(room.spawnQueueLow);
+                if( !busy ) busy = this.createCreepByQueue(room.spawnQueueLow, 'Low');
             }
         }
         return busy;
@@ -37,9 +38,22 @@ mod.extend = function(){
             return params;
         return null;
     };
-    Spawn.prototype.createCreepByQueue = function(queue){
-        if( !queue || queue.length == 0 ) return null;
-        let params = queue.shift();
+    Spawn.prototype.createCreepByQueue = function(queue, level){
+        const spawnDelay = Util.get(this.room.memory, 'spawnDelay', {});
+        if (!queue) return null;
+        else if (Memory.CPU_CRITICAL && spawnDelay[level] === queue.length) return null;
+        let params;
+        for (const index in queue) {
+            const entry = queue[index];
+            if (Memory.CPU_CRITICAL && !CRITICAL_ROLES.includes(entry.behaviour)) continue;
+            else params = queue.splice(index, 1)[0];
+        }
+        if (!params) {
+            if (queue.length && DEBUG) global.logSystem(this.pos.roomName, 'No non-CRITICAL creeps to spawn, delaying spawn until CPU is not CRITICAL, or new entries are added.');
+            spawnDelay[level] = queue.length;
+            return null;
+        }
+        delete spawnDelay[level];
         let cost = 0;
         params.parts.forEach(function(part){
             cost += BODYPART_COST[part];

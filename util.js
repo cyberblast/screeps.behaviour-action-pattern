@@ -1,6 +1,26 @@
 // All methods require a JSDoc comment describing it.
 // http://usejsdoc.org/
 module.exports = {
+    
+    /**
+     * Gets currently visible rooms.
+     * Dependant on userscript: {@link https://github.com/Esryok/screeps-browser-ext/blob/master/visible-room-tracker.user.js Visible Room Tracker}
+     * @param {Number} [age]
+     * @returns {Array}
+     */
+    getVisibleRooms(age) {
+        const since = Game.time - (age || 5);
+        const visibleRooms = [];
+        //return _(Memory.rooms).filter(r => r.lastViewed && r.lastViewed > since).keys().value();
+        for (const roomName in Memory.rooms) {
+            const room = Memory.rooms[roomName];
+            if (room.lastViewed && room.lastViewed > since) {
+                visibleRooms.push(roomName);
+            }
+        }
+        
+        return visibleRooms;
+    },
     /**
      * formats an integer into a readable value
      * @param {Number} number
@@ -12,7 +32,7 @@ module.exports = {
         } else if (number >= 1000) {
             return (number / 1000).toFixed(1) + 'K';
         }
-        return number.toString();
+        return _.isUndefined(number) ? number : number.toString();
     },
     
     /**
@@ -40,7 +60,7 @@ module.exports = {
      */
     get(object, path, defaultValue, setDefault = true) {
         const r = _.get(object, path);
-        if (!r && !_.isUndefined(defaultValue) && setDefault) {
+        if (_.isUndefined(r) && !_.isUndefined(defaultValue) && setDefault) {
             defaultValue = Util.fieldOrFunction(defaultValue);
             _.set(object, path, defaultValue);
             return _.get(object, path);
@@ -322,6 +342,16 @@ module.exports = {
     },
     
     /**
+     * Get the distance between two points.
+     * @param {RoomPosition|Object} point1 - The first point
+     * @param {RoomPosition|Object} point2 - The second point
+     * @returns {Number}
+     */
+    getDistance(point1, point2) {
+        return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
+    },
+    
+    /**
      * Gets the distances between two rooms, respecting natural walls
      * @param {string} fromRoom - Starting room
      * @param {string} toRoom - Ending room
@@ -382,6 +412,23 @@ module.exports = {
             const r = Math.random() * 16 | 0;
             const v = c === 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
+        });
+    },
+    
+    /**
+     * Checks if a specific creep type is in queue, either globally or for a room
+     * @param {Object|String} opts - Behaviour if string, else an object with either behaviour, setup, or name. Optionally a room name.
+     * @returns {boolean} - True if the creep is in queue somewhere, otherwise false.
+     */
+    inQueue(opts) {
+        if (!opts) return false;
+        // string check
+        if (opts.link) opts = {behaviour: opts};
+        if (!opts.name && !opts.behaviour && !opts.setup) return false;
+        return _(Game.rooms).filter('my').map('memory').map(m => m.spawnQueueHigh.concat(m.spawnQueueMedium, m.spawnQueueLow)).flatten().some(q => {
+            if (opts.room) if (q.destiny && q.destiny.room !== opts.room) return false;
+            if (opts.behaviour) return (q.behaviour && q.behaviour === opts.behaviour) || q.name.includes(opts.behaviour);
+            if (opts.setup) return q.setup === opts.setup;
         });
     },
     
@@ -508,7 +555,7 @@ module.exports = {
                     Util.logSystem('Average Usage', `<table style="font-size:80%;"><tr><th>Type${Array(longestType.length + 2).join(' ')}</th><th>(avg/creep/tick)</th><th>(active)</th><th>(weighted avg)</th><th>(executions)</th></tr>`.concat(string));
                 }
                 Util.logSystem(name, ' loop:' + _.round(totalUsed, 2), 'other:' + _.round(onLoad, 2), 'avg:' + _.round(avgCPU, 2), 'ticks:' + global.profiler.totalTicks, 'bucket:' + Game.cpu.bucket);
-                if (PROFILE) console.log('\n');
+                if (PROFILE && !PROFILING.BASIC_ONLY) console.log('\n');
                 Memory.profiler = global.profiler;
             };
         }
