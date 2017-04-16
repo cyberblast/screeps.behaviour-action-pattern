@@ -20,7 +20,7 @@ mod.determineTarget = creep => {
         let existingBranding = _.find(Memory.population, hasThisSource);
             return !existingBranding;
     };
-    source = _.find(creep.room.sources, notDeterminated);
+    const source = _.find(creep.room.sources, notDeterminated);
     if( source ) {
         creep.data.determinatedTarget = source.id;
     }
