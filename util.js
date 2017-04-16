@@ -404,6 +404,33 @@ module.exports = {
     },
     
     /**
+     * Iterates over all your structures and adds them to a layout array, and returns the JSON.
+     * @param {RoomPosition|Object} pos - A room position of the top left corner of the layout
+     * @param {Function} [filter] - Optional filter.
+     * @returns {string} A JSON string of the room layout.
+     */
+    getRoomLayout(pos, filter) {
+        const layout = [];
+        const room = Game.rooms[pos.roomName];
+        if (!room) return;
+        const startX = pos.x;
+        const startY = pos.y;
+        _(room.find(FIND_STRUCTURES))
+            .reject(s => s instanceof StructureController)
+            .filter(s => s.pos.x >= startX && s.pos.y >= startY)
+            .filter(s => {
+                if (filter) return filter(s);
+                return true;
+            })
+            .value() // for some reason _.set is broken in _.forEach
+            .forEach(s => _.set(layout, [s.pos.x - startX, s.pos.y - startY], s.structureType));
+        // RegEx Magic
+        const replacementMap = {['null']:'',['"extension"']:'STRUCTURE_EXTENSION',['"road"']:'STRUCTURE_ROAD',['"tower"']:'STRUCTURE_TOWER',['"spawn"']:'STRUCTURE_SPAWN',['"link"']:'STRUCTURE_LINK',['"storage"']:'STRUCTURE_STORAGE',['"terminal"']:'STRUCTURE_TERMINAL',['"nuker"']:'STRUCTURE_NUKER',['"powerSpawn"']:'STRUCTURE_POWER_SPAWN',['"observer"']:'STRUCTURE_OBSERVER',['"rampart"']:'STRUCTURE_RAMPART',['"lab"']:'STRUCTURE_LAB'};
+        const re = new RegExp(Object.keys(replacementMap).join('|'), 'g');
+        return JSON.stringify(layout).replace(re, match => replacementMap[match]);
+    },
+    
+    /**
      * Generate a GUID. Note: This is not guaranteed to be 100% unique.
      * @returns {string}
      */
