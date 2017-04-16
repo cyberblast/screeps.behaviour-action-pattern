@@ -201,6 +201,7 @@ mod.extend = function(){
         // check if on road/structure
         let here = _.chain(this.room.structures.piles).filter('pos', this.pos)
             .concat(this.room.lookForAt(LOOK_STRUCTURES, this.pos))
+            .concat(this.room.lookForAt(LOOK_CONSTRUCTION_SITES, this.pos, {filter: s => s.my}))
             .value();
         if( here && here.length > 0 ) {
             let path;
@@ -211,6 +212,8 @@ mod.extend = function(){
                     return { pos: s.pos, range: 2 };
                 })).concat(this.pos.findInRange(FIND_EXIT, 2).map(function (e) {
                     return { pos: e, range: 1 };
+                })).concat(this.room.myConstructionSites.map(function(o) {
+                    return { pos: o.pos, range: 1};
                 }));
 
                 let ret = PathFinder.search(
