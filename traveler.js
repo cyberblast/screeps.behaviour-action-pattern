@@ -354,6 +354,7 @@ module.exports = function(globalOpts = {}){
         }
 
         Creep.prototype.travelTo = function (destination, options = {}) {
+            destination = destination.pos || destination;
             if(global.traveler && global.travelerTick !== Game.time){
                 global.traveler = new Traveler();
             }

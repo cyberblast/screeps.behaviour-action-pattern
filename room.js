@@ -2909,6 +2909,7 @@ mod.findSpawnRoom = function(params){
     return _.min(validRooms, evaluation);
 };
 mod.routeCallback = function(origin, destination, options) {
+    if (_.isUndefined(origin) || _.isUndefined(destination)) logError('Room.routeCallback', 'both origin and destination must be defined - origin:' + origin + ' destination:' + destination);
     return function(roomName) {
         if (Game.map.getRoomLinearDistance(origin, roomName) > options.restrictDistance)
             return false;
