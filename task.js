@@ -132,4 +132,40 @@ mod.spawn = (creepDefinition, destiny, roomParams, onQueued) => {
     if( onQueued ) onQueued(creepSetup);
     return creepSetup;
 };
+mod.addToQueue = (creepDef, roomParams, target) => {
+    if (roomParams.link) roomParams = {targetRoom: roomParams};
+    if (!roomParams.targetRoom) return;
+    const destiny = {};
+    if (target) {
+        destiny.targetName = target.name || target.id;
+    } else {
+        destiny.targetName = roomParams.targetRoom;
+    }
+    return Task.spawn(creepDef, destiny, roomParams);
+};
+mod.forceSpawn = (creepDef, roomParams, target) => {
+    if (roomParams.link) roomParams = {targetRoom: roomParams};
+    if (!roomParams.targetRoom) return;
+    const room = roomParams.explicit ? Game.rooms[roomParams.explicit] : Room.findSpawnRoom(roomParams);
+    if (!room) return;
+    
+    const destiny = {};
+    if (target) {
+        destiny.targetName = target.name || target.id;
+    } else {
+        destiny.targetName = roomParams.targetRoom;
+    }
+    
+    const parts = Creep.compileBody(room, creepDef);
+    if (!parts.length) return;
+    const name = `${creepDef.name || creepDef.behaviour}-${destiny.targetName}`;
+    const creepSetup = {
+        parts, destiny, name,
+        behaviour: creepDef.behaviour,
+        queueRoom: room.name,
+    };
+    const queue = room.spawnQueueHigh;
+    queue.unshift(creepSetup);
+    return creepSetup;
+};
 const cache = {};

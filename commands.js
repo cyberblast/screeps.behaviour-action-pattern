@@ -13,6 +13,10 @@ _.forEach(Game.constructionSites, s => s.remove());
 Game.spawns['<spawnName>'].createCreepBySetup(Creep.setup.worker);
 // or
 Game.rooms['<roomName>'].spawnQueueLow.push({parts:[MOVE,WORK,CARRY],name:'max',setup:'worker'});
+// or
+Task.forceSpawn(Task.claim.creep.claimer, 'W0N0');
+// or
+Task.forceSpawn(Task.guard.creep.guard, {targetRoom: 'W0N0', allowTargetRoom: true}, 'Flag22');
 
 // clear spawn queues for a room
 // clear low priority queue
