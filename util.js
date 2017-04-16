@@ -1,6 +1,26 @@
 // All methods require a JSDoc comment describing it.
 // http://usejsdoc.org/
 module.exports = {
+    
+    /**
+     * Gets currently visible rooms.
+     * Dependant on userscript: {@link https://github.com/Esryok/screeps-browser-ext/blob/master/visible-room-tracker.user.js Visible Room Tracker}
+     * @param {Number} [age]
+     * @returns {Array}
+     */
+    getVisibleRooms(age) {
+        const since = Game.time - (age || 5);
+        const visibleRooms = [];
+        //return _(Memory.rooms).filter(r => r.lastViewed && r.lastViewed > since).keys().value();
+        for (const roomName in Memory.rooms) {
+            const room = Memory.rooms[roomName];
+            if (room.lastViewed && room.lastViewed > since) {
+                visibleRooms.push(roomName);
+            }
+        }
+        
+        return visibleRooms;
+    },
     /**
      * formats an integer into a readable value
      * @param {Number} number
