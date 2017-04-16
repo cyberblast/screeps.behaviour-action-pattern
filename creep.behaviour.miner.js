@@ -5,9 +5,15 @@ mod.approach = function(creep){
     const targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.homeRoom);
     const range = creep.pos.getRangeTo(targetPos);
     if (range > 0) {
+        creep.data.movingToTarget = true;
         const targetRange = targetPos.lookFor(LOOK_CREEPS).length ? 1 : 0;
-        if (range > targetRange)
+        if (range > targetRange) {
             creep.travelTo( targetPos, {range:targetRange} );
+        }
+    } else if (creep.data.movingToTarget) {
+        // we have arrived at our determinatedSpot
+        creep.room.invalidateCostMatrix();
+        delete creep.data.movingToTarget;
     }
     return range;
 };
@@ -105,7 +111,9 @@ mod.run = function(creep, params = {}) {
                     }
                 }
             }
-            if( !creep.data.determinatedSpot ) logError('Unable to determine working location for miner in room ' + creep.pos.roomName);
+            if( !creep.data.determinatedSpot ) {
+                logError('Unable to determine working location for miner in room ' + creep.pos.roomName);
+            }
         }
 
         if( creep.data.determinatedSpot ) {

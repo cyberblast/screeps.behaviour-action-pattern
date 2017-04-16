@@ -2690,6 +2690,9 @@ mod.extend = function(){
             }
         }
     };
+    Room.prototype.invalidateCostMatrix = function() {
+        Room.costMatrixInvalid.trigger(this.name);
+    };
 };
 mod.flush = function(){
     let clean = room => {
