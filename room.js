@@ -1146,7 +1146,25 @@ mod.extend = function(){
             routeCallback: Room.routeCallback(this.name, destination, options)
         });
     };
-
+    Room.prototype.showCachedPath = function(destination) {
+        // unique identifier for each position within the starting room
+        const getPosId = (pos) => {
+            return `${pos.x},${pos.y})`;
+        };
+        // unique destination identifier for room positions
+        const getDestId = (pos) => {
+            return `${pos.roomName},${pos.x},${pos.y}`;
+        };
+        const destId = destination.id || getDestID(destination);
+        const path = Util.get(mod.pathCache, [this.name, destId], {});
+        const vis = new RoomVisual(this.name);
+        for (var y = 0; y < 50; y++) {
+            for (var x = 0; x < 50; x++) {
+                const dir = path[getPosId({x, y})];
+                vis.text(dir, x, y);
+            }
+        }
+    };
     Room.prototype.getPath = function(startPos, destination, options) {
         // unique identifier for each position within the starting room
         const getPosId = (pos) => {
@@ -1159,8 +1177,8 @@ mod.extend = function(){
         const startID = getPosId(startPos);
         const destPos = destination.pos || destination;
         const destID = destination.id || getDestId(destination);
-        Util.setDefault(mod.pathCache, startPos.roomName, {});
-        const path = Util.get(mod.pathCache, [startPos.roomName, destID], {});
+        Util.setDefault(mod.pathCache, this.name, {});
+        const path = Util.get(mod.pathCache, [this.name, destID], {});
         if (_.isUndefined(path[startID])) {
             const ret = traveler.findTravelPath(startPos, destPos, options);
             if (!ret || ret.incomplete) {
@@ -1179,7 +1197,7 @@ mod.extend = function(){
                     return logError('Room.getPath', `no directions from ${startPos} following ${ret.path} lengths ${ret.path.length} ${directions.length}`);
                 }
             }
-            _.set(mod.pathCache, [startPos.roomName, destID], path);
+            _.set(mod.pathCache, [this.name, destID], path);
             mod.pathCacheDirty = true;
         }
         return path;
