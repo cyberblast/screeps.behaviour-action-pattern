@@ -232,7 +232,7 @@ module.exports = function(globalOpts = {}){
                 }
                 if (ret.incomplete) {
                     const route = ret.route && ret.route.length;
-                    console.log(`TRAVELER: incomplete path for ${creep.name} from ${creep.pos} to ${destPos}. Route length ${route}.`);
+                    console.log(`TRAVELER: incomplete path for ${creep.name} from ${creep.pos} to ${destPos}, range ${options.range}. Route length ${route}.`);
                     if (route > 1) {
                         ret = this.findTravelPath(creep, new RoomPosition(25, 25, ret.route[1].room),
                             _.create(options, {
@@ -241,10 +241,10 @@ module.exports = function(globalOpts = {}){
                             }));
                         console.log(`attempting path through next room using known route was ${ret.incomplete ? "not" : ""} successful`);
                     }
-                    if (ret.incomplete && ret.ops < 2000 && options.useFindRoute === undefined && travelData.stuck < gOpts.defaultStuckValue) {
+                    if (ret.incomplete && ret.ops < 2000 && travelData.stuck < gOpts.defaultStuckValue) {
                         options.useFindRoute = false;
                         ret = this.findTravelPath(creep, destPos, options);
-                        console.log(`attempting path without findRoute was ${ret.incomplete ? "not" : ""} successful`);
+                        console.log(`attempting path without findRoute was ${ret.incomplete ? "not " : ""}successful`);
                     }
                 }
                 travelData.path = Traveler.serializePath(creep.pos, ret.path);
@@ -360,7 +360,7 @@ module.exports = function(globalOpts = {}){
             }
             options = this.getStrategyHandler([], 'moveOptions', options);
             if (_.isUndefined(options.reportThreshold)) options.reportThreshold = TRAVELER_THRESHOLD;
-            if (_.isUndefined(options.useFindRoute)) options.useFindRoute = global.ROUTE_PRECALCULATION;
+            if (_.isUndefined(options.useFindRoute)) options.useFindRoute = _.get(global, 'ROUTE_PRECALCULATION', true);
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
             if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
             if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => room.structureMatrix;
