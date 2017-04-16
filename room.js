@@ -2818,23 +2818,27 @@ mod.execute = function() {
     let triggerKnownInvaders = id =>  Room.knownInvader.trigger(id);
     let triggerGoneInvaders = id =>  Room.goneInvader.trigger(id);
     let run = (memory, roomName) => {
-        const p2 = Util.startProfiling(roomName, {enabled:PROFILING.ROOMS});
-        let room = Game.rooms[roomName];
-        if( room ){ // has sight
-            room.goneInvader.forEach(triggerGoneInvaders);
-            p2.checkCPU('Creep.execute.run:goneInvader', 0.5);
-            room.hostileIds.forEach(triggerKnownInvaders);
-            p2.checkCPU('Creep.execute.run:knownInvaders', 0.5);
-            room.newInvader.forEach(triggerNewInvaders);
-            p2.checkCPU('Creep.execute.run:newInvaders', 0.5);
-            if (room.structures.towers.length > 0) Tower.loop(room);
-            p2.checkCPU('Creep.execute.run:tower.loop', 0.5);
-            if( room.collapsed ) Room.collapsed.trigger(room);
-            p2.checkCPU('Creep.execute.run:collapsed', 0.5);
-        }
-        else { // no sight
-            if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
-            p2.checkCPU('Creep.execute.run:knownInvadersNoSight', 0.5);
+        try {
+            const p2 = Util.startProfiling(roomName, {enabled:PROFILING.ROOMS});
+            let room = Game.rooms[roomName];
+            if( room ){ // has sight
+                room.goneInvader.forEach(triggerGoneInvaders);
+                p2.checkCPU('Creep.execute.run:goneInvader', 0.5);
+                room.hostileIds.forEach(triggerKnownInvaders);
+                p2.checkCPU('Creep.execute.run:knownInvaders', 0.5);
+                room.newInvader.forEach(triggerNewInvaders);
+                p2.checkCPU('Creep.execute.run:newInvaders', 0.5);
+                if (room.structures.towers.length > 0) Tower.loop(room);
+                p2.checkCPU('Creep.execute.run:tower.loop', 0.5);
+                if( room.collapsed ) Room.collapsed.trigger(room);
+                p2.checkCPU('Creep.execute.run:collapsed', 0.5);
+            }
+            else { // no sight
+                if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
+                p2.checkCPU('Creep.execute.run:knownInvadersNoSight', 0.5);
+            }
+        } catch (e) {
+            Util.logError(e.stack || e.message);
         }
     };
     _.forEach(Memory.rooms, (memory, roomName) => {
