@@ -365,14 +365,13 @@ module.exports = function(globalOpts = {}){
             if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => room.structureMatrix;
             if (options.cacheRoutes && options.ignoreCreeps) {
                 const path = this.room.getPath(this.pos, destination, options);
-                if (path){
+                if (path) {
                     const next = path[this.pos.x + ',' + this.pos.y];
                     if (next) {
                         //console.log(this.name, this.pos, 'cached', next);
                         return this.move(next); // take next step
                     }
-                }
-                else { // TODO:find closest place to get on the path
+                } else { // TODO:find closest place to get on the path
                     console.log(this.name, 'could not generate or use cached route, falling back to traveler.');
                     options.cacheRoutes = false;
                     if (_.isUndefined(this.data.travelOptions)) this.data.travelOptions = options;

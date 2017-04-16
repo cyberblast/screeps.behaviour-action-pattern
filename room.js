@@ -1148,27 +1148,38 @@ mod.extend = function(){
     };
 
     Room.prototype.getPath = function(startPos, destination, options) {
-        const startID = startPos.x + ',' + startPos.y;
+        // unique identifier for each position within the starting room
+        const getPosId = (pos) => {
+            return `${pos.x},${pos.y})`;
+        };
+        // unique destination identifier for room positions
+        const getDestId = (pos) => {
+            return `${pos.roomName},${pos.x},${pos.y}`;
+        };
+        const startID = getPosId(startPos);
         const destPos = destination.pos || destination;
-        const destID = destination.id || destination.roomName + ',' + destination.x + ',' + destination.y;
+        const destID = destination.id || getDestId(destination);
         Util.setDefault(mod.pathCache, startPos.roomName, {});
-        let path = Util.get(mod.pathCache[startPos.roomName], destID, {});
-        if (!path || !path[startID]) {
+        const path = Util.get(mod.pathCache, [startPos.roomName, destID], {});
+        if (_.isUndefined(path[startID])) {
             const ret = traveler.findTravelPath(startPos, destPos, options);
             if (!ret || ret.incomplete) {
-                logError('Room.getPath incomplete path', 'from ' + startPos + ' to ' + destPos);
-                return;
+                return logError('Room.getPath',  `incomplete path from ${startPos} to ${destPos} ${ret.path}`);
             } else {
                 const directions = Traveler.serializePath(startPos, ret.path);
-                path[startID] = directions[0];
-                for (let i = 0; i < ret.path.length; i++) {
-                    const id = ret.path[i].x+','+ret.path[i].y;
-                    // use existing path
-                    if (_.isUndefined(path[id])) path[id] = directions[i+1];
-                    else break; // we've hit an existing path
+                if (directions && directions.length === ret.path.length) {
+                    path[startID] = directions[0];
+                    for (let i = 0; i < ret.path.length; i++) {
+                        const id = getPosId(ret.path[i]);
+                        // use existing path
+                        if (_.isUndefined(path[id])) path[id] = directions[i+1];
+                        else break; // we've hit an existing path
+                    }
+                } else {
+                    return logError('Room.getPath', `no directions from ${startPos} following ${ret.path} lengths ${ret.path.length} ${directions.length}`);
                 }
             }
-            mod.pathCache[startPos.roomName][destID] = path;
+            _.set(mod.pathCache, [startPos.roomName, destID], path);
             mod.pathCacheDirty = true;
         }
         return path;
