@@ -24,7 +24,7 @@ const getResourceColour = (resourceType) => {
         [RESOURCE_OXYGEN]: '#CCCCCC',
         [RESOURCE_ZYNTHIUM]: '#F2D28B',
     };
-    
+
     let colour = BASE[resourceType];
     
     if (colour) return colour;
@@ -496,7 +496,7 @@ const Visuals = class {
     }
     
     drawLabInfo(lab) {
-        const vis = new RoomVisual(room.name);
+        const vis = new RoomVisual(lab.room.name);
         if (!lab.energy && !lab.mineralAmount && !lab.cooldown) return;
         const x = lab.pos.x + 0.8;
         let y = lab.pos.y - 0.5;
