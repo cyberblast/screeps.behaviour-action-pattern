@@ -519,8 +519,10 @@ Visuals.extend = function() {
 
 Visuals.run = function() {
     const p = Util.startProfiling('Visuals', {enabled:PROFILING.VISUALS});
-    for (let roomName in Game.rooms) {
+    const VISUAL_ROOMS = VISUALS.VISIBLE_ONLY ? Util.getVisibleRooms() : Object.keys(Game.rooms);
+    for (let roomName of VISUAL_ROOMS) {
         const room = Game.rooms[roomName];
+        if (!room) continue;
         if (!ROOM_VISUALS_ALL && !room.my) continue;
         if (!room.controller) continue;
         const p2 = Util.startProfiling('Visuals:' + roomName, {enabled:PROFILING.VISUALS});
