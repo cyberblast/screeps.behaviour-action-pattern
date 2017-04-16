@@ -241,7 +241,7 @@ global.install = () => {
     if (DEBUG) logSystem('Global.install', 'Code reloaded.');
 };
 global.install();
-require('traveler')({exportTraveler: false, installTraveler: true, installPrototype: true, defaultStuckValue: TRAVELER_STUCK_TICKS, reportThreshold: TRAVELER_THRESHOLD});
+load('traveler')({exportTraveler: false, installTraveler: true, installPrototype: true, defaultStuckValue: TRAVELER_STUCK_TICKS, reportThreshold: TRAVELER_THRESHOLD});
 
 let cpuAtFirstLoop;
 module.exports.loop = function () {
