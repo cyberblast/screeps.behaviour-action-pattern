@@ -77,7 +77,7 @@ module.exports = function(globalOpts = {}){
                     return 2.5;
                 }
             });
-            if (!_.isArray(ret)) {
+            if (options.debug && !_.isArray(ret)) {
                 console.log(`couldn't findRoute to ${destination}`);
                 return;
             }
@@ -227,24 +227,36 @@ module.exports = function(globalOpts = {}){
                 travelData.count++;
                 travelData.avg = _.round(travelData.cpu / travelData.count, 2);
                 if (travelData.count > 25 && travelData.avg > options.reportThreshold) {
-                    console.log(`TRAVELER: heavy cpu use: ${creep.name}, avg: ${travelData.cpu / travelData.count}, total: ${_.round(travelData.cpu, 2)},` +
-                        `origin: ${creep.pos}, dest: ${destPos}`);
+                    if (options.debug){
+                        console.log(`TRAVELER: heavy cpu use: ${creep.name}, avg: ${travelData.cpu / travelData.count}, total: ${_.round(travelData.cpu, 2)},` +
+                            `origin: ${creep.pos}, dest: ${destPos}`); 
+                    }
                 }
                 if (ret.incomplete) {
                     const route = ret.route && ret.route.length;
-                    console.log(`TRAVELER: incomplete path for ${creep.name} from ${creep.pos} to ${destPos}, range ${options.range}. Route length ${route}.`);
+                    if (options.debug) {
+                        if (options.range === 0) {
+                            console.log(`TRAVELER: incomplete path for ${creep.name} from ${creep.pos} to ${destPos}, destination may be blocked.`);
+                        } else {
+                            console.log(`TRAVELER: incomplete path for ${creep.name} from ${creep.pos} to ${destPos}, range ${options.range}. Route length ${route}.`);
+                        }
+                    }
                     if (route > 1) {
                         ret = this.findTravelPath(creep, new RoomPosition(25, 25, ret.route[1].room),
                             _.create(options, {
                                 range: gOpts.roomRange,
                                 useFindRoute: false,
                             }));
-                        console.log(`attempting path through next room using known route was ${ret.incomplete ? "not" : ""} successful`);
+                        if (options.debug) {
+                            console.log(`attempting path through next room using known route was ${ret.incomplete ? "not" : ""} successful`);
+                        }
                     }
                     if (ret.incomplete && ret.ops < 2000 && travelData.stuck < gOpts.defaultStuckValue) {
                         options.useFindRoute = false;
                         ret = this.findTravelPath(creep, destPos, options);
-                        console.log(`attempting path without findRoute was ${ret.incomplete ? "not " : ""}successful`);
+                        if (options.debug) {
+                            console.log(`attempting path without findRoute was ${ret.incomplete ? "not " : ""}successful`);
+                        }
                     }
                 }
                 travelData.path = Traveler.serializePath(creep.pos, ret.path);
@@ -360,6 +372,7 @@ module.exports = function(globalOpts = {}){
             }
             options = this.getStrategyHandler([], 'moveOptions', options);
             options.avoidSK = !options.allowSK;
+            if (_.isUndefined(options.debug)) options.debug = global.DEBUG;
             if (_.isUndefined(options.allowSK)) options.allowSK = true;
             if (_.isUndefined(options.reportThreshold)) options.reportThreshold = TRAVELER_THRESHOLD;
             if (_.isUndefined(options.useFindRoute)) options.useFindRoute = _.get(global, 'ROUTE_PRECALCULATION', true);
