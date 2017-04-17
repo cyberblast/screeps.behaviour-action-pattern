@@ -41,7 +41,7 @@ const action = class extends Creep.Action {
     }
     
     step(creep) {
-        if (CHATTY) creep.say(this.name, SAY_PUBLIC);
+        this.chatty(creep);
         if (creep.target.color) {
             if (creep.flag.pos.roomName === creep.pos.roomName) delete creep.data.targetId;
             creep.travelTo(creep.target);

@@ -1,7 +1,7 @@
 const action = class extends Creep.Action {
     
     step(creep) {
-        if (CHATTY) creep.say(this.name, SAY_PUBLIC);
+        this.chatty(creep);
         let targetRange = _.get(creep, ['data', 'travelRange'], this.targetRange);
         let target = creep.target;
         if (FlagDir.isSpecialFlag(creep.target)) {

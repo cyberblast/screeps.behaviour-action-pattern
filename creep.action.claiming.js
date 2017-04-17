@@ -32,7 +32,7 @@ const action = class extends Creep.Action {
     }
     
     step(creep) {
-        if (CHATTY) creep.say(this.name, SAY_PUBLIC);
+        this.chatty(creep);
         if (creep.target.color) {
             if (creep.flag.pos.roomName === creep.pos.roomName) { // change target from flag to controller
                 delete creep.data.targetId;

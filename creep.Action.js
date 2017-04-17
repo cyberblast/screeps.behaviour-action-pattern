@@ -22,7 +22,7 @@ const CreepAction = class extends Action {
     };
     
     step(creep) {
-        if (CHATTY) creep.say(this.name, SAY_PUBLIC);
+        this.chatty(creep);
         let range = creep.pos.getRangeTo(creep.target);
         if (range <= this.targetRange) {
             const workResult = this.work(creep);
@@ -68,8 +68,16 @@ const CreepAction = class extends Action {
         }
     }
     
+    say(creep, statement) {
+        creep.say(statement, SAY_PUBLIC);
+    }
+    
+    chatty(creep, statement=this.name) {
+        if (CHATTY) this.say(creep, statement);
+    }
+    
     onAssignment(creep, target) {
-        if (SAY_ASSIGNMENT && this.statement) creep.say(this.statement, SAY_PUBLIC);
+        if (SAY_ASSIGNMENT && this.statement) this.say(creep, this.statement);
         if (target instanceof RoomObject || target instanceof RoomPosition && VISUALS.ACTION_ASSIGNMENT) {
             Visuals.drawArrow(creep, target);
         }
