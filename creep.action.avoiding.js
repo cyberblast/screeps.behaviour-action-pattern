@@ -82,6 +82,10 @@ action.run = function(creep) {
         if (creep.action === action && action.isValidTarget(creep.target, creep) ||
             action.isAddableAction(creep) && action.assign(creep) ) {
 
+            if (creep.leaveBorder()) {
+                return true;
+            }
+
             action.work(creep);
             return true;
         }

@@ -1,21 +1,22 @@
 let mod = {};
 module.exports = mod;
 mod.name = 'upgrader';
-let invalidCreep = c => ['miner', 'upgrader'].includes(c.data.creepType) && c.data.determinatedSpot &&
+mod.invalidCreep = c => ['miner', 'upgrader'].includes(c.data.creepType) && c.data.determinatedSpot &&
     (c.data.ttl > c.data.spawningTime || c.data.ttl > c.data.predictedRenewal);
 mod.approach = function(creep){
     let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.pos.roomName);
     let range = creep.pos.getRangeTo(targetPos);
     if( range > 0 ) {
         creep.data.movingToTarget = true;
+        const creepAtSpot = targetPos.lookFor(LOOK_CREEPS);
+        const targetRange =  creepAtSpot.length ? 1 : 0;
         if (range === 1) {
-            const creeps = targetPos.lookFor(LOOK_CREEPS);
-            if (creeps.length && _.some(creeps, invalidCreep)) {
+            if (creepAtSpot.length && _.some(creepAtSpot, mod.invalidCreep)) {
                 // forget spots that have been improperly selected/unable to move to
                 delete creep.data.determinatedSpot;
             }
         }
-        creep.travelTo( targetPos, {range:0} );
+        creep.travelTo( targetPos, {range:targetRange} );
     } else if (creep.data.movingToTarget) {
         // we have arrived at our determinatedSpot
         creep.room.invalidateCostMatrix();
@@ -43,7 +44,7 @@ mod.run = function(creep) {
                         range: 1
                     }],
                     checkWalkable: true,
-                    where: pos => !_.some(pos.lookFor(LOOK_CREEPS), invalidCreep) && (ignoreSources || pos.findInRange(creep.room.sources, 1).length === 0),
+                    where: pos => !_.some(pos.lookFor(LOOK_CREEPS), mod.invalidCreep) && (ignoreSources || pos.findInRange(creep.room.sources, 1).length === 0),
                     roomName: creep.pos.roomName
                 };
                 return Room.fieldsInRange(args);

@@ -930,7 +930,7 @@ mod.extend = function(){
             configurable: true,
             get: function () {
                 if (_.isUndefined(this._creepMatrix) ) {
-                    const costs = this.structureMatrix.clone();
+                    const costs = Room.isSKRoom(this.name) ? this.structureMatrix.clone() : this.avoidSKMatrix.clone();
                     // Avoid creeps in the room
                     this.allCreeps.forEach(function(creep) {
                         costs.set(creep.pos.x, creep.pos.y, 0xff);
@@ -938,6 +938,16 @@ mod.extend = function(){
                     this._creepMatrix = costs;
                 }
                 return this._creepMatrix;
+            }
+        },
+        'avoidSKMatrix': {
+            configurable: true,
+            get: function () {
+                if (_.isUndefined(this._avoidSKMatrix)) {
+                    const SKCreeps = this.hostiles.filter(c => c.owner.username === 'Source Keeper');
+                    this._avoidSKMatrix = this.getAvoidMatrix({'Source Keeper': SKCreeps});
+                }
+                return this._avoidSKMatrix;
             }
         },
         'my': {
@@ -2646,8 +2656,9 @@ mod.extend = function(){
         }
         return ret;
     }
-    Room.prototype.printCostMatrix = function(creepMatrix, aroundPos) {
-        const matrix = creepMatrix ? this.creepMatrix : this.costMatrix;
+    Room.prototype.showCostMatrix = function(matrixName, aroundPos) {
+        const matrix = this[matrixName] || this.structureMatrix;
+        const vis = new RoomVisual(this.name);
         let startY = 0;
         let endY = 50;
         let startX = 0;
@@ -2658,15 +2669,17 @@ mod.extend = function(){
             startX = Math.max(0, aroundPos.x - 3);
             endX = Math.min(50, aroundPos.x + 4);
         }
-        logSystem(this.name, "costMatrix:");
+        const maxCost = _.max(matrix._bits);
+        const getColourByPercentage = (value) => {
+            const hue = ((1 - value) * 120).toString(10);
+            return `hsl(${hue}, 100%, 50%)`;
+        };
         for (var y = startY; y < endY; y++) {
-            var line = "";
             for (var x = startX; x < endX; x++) {
-                var val = matrix.get(x, y).toString(16);
-                if (val == "0") val = "";
-                line += ("   " + val).slice(-3);
+                const cost = matrix.get(x, y);
+                if (cost) vis.text(cost, x, y);
+                vis.rect(x - 0.5, y - 0.5, 1, 1, {fill: getColourByPercentage(cost / maxCost)});
             }
-            logSystem(this.name, line);
         }
     };
     Room.prototype.controlObserver = function() {
@@ -2708,6 +2721,24 @@ mod.extend = function(){
             Memory.observerSchedule.splice(Memory.observerSchedule.indexOf(nextRoom), 1); // remove invalid room from list
             this.controlObserver(); // should look at the next room (latest call will override previous calls on the same tick)
         }
+    };
+    // toAvoid - a list of creeps to avoid sorted by owner
+    Room.prototype.getAvoidMatrix = function(toAvoid) {
+        const avoidMatrix = this.structureMatrix.clone();
+        for (const owner in toAvoid) {
+            const creeps = toAvoid[owner];
+            for (const creep of creeps) {
+                for (let x = Math.max(0, creep.pos.x - 3); x <= Math.min(49, creep.pos.x + 3); x++) {
+                    const deltaX = x < creep.pos.x ? creep.pos.x - x : x - creep.pos.x;
+                    for (let y = Math.max(0, creep.pos.y - 3); y <= Math.min(49, creep.pos.y + 3); y++) {
+                        const deltaY = y < creep.pos.y ? creep.pos.y - y : y - creep.pos.y;
+                        const cost = 17 - (2 * Math.max(deltaX, deltaY));
+                        avoidMatrix.set(x, y, cost) // make it less desirable than a swamp
+                    }
+                }
+            }
+        }
+        return avoidMatrix;
     };
     Room.prototype.initObserverRooms = function() {
         const OBSERVER_RANGE = OBSERVER_OBSERVE_RANGE > 10 ? 10 : OBSERVER_OBSERVE_RANGE; // can't be > 10
@@ -2766,6 +2797,7 @@ mod.flush = function(){
         delete room._defenseLevel;
         delete room._hostileThreatLevel;
         delete room._collapsed;
+        delete room._feedable;
         if( global.isNewServer ) {
             delete room._my;
             delete room._constructionSites;
@@ -3145,7 +3177,7 @@ mod.fieldsInRange = function(args) {
     let maxY = Math.min(...plusRangeY);
     return Room.validFields(args.roomName, minX, maxX, minY, maxY, args.checkWalkable, args.where);
 };
-mod.roomLayoutArray = [[,,,,,,,STRUCTURE_ROAD],[,,,,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_SPAWN,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_SPAWN,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_SPAWN,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,,,,STRUCTURE_ROAD]];
+mod.roomLayoutArray = [[,,,,,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION],[,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION],[STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_NUKER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION],[STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_EXTENSION,STRUCTURE_SPAWN,STRUCTURE_ROAD,STRUCTURE_POWER_SPAWN,STRUCTURE_LINK,STRUCTURE_TERMINAL,STRUCTURE_ROAD,STRUCTURE_OBSERVER,STRUCTURE_EXTENSION,STRUCTURE_TOWER,STRUCTURE_ROAD],[STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_STORAGE,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION],[,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION],[,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_TOWER,STRUCTURE_ROAD,STRUCTURE_EXTENSION,STRUCTURE_ROAD],[,,,,,STRUCTURE_EXTENSION,STRUCTURE_ROAD,STRUCTURE_EXTENSION]];
 mod.roomLayout = function(flag) {
     if (!Flag.compare(flag, FLAG_COLOR.command.roomLayout)) return;
     flag = Game.flags[flag.name];
@@ -3156,6 +3188,12 @@ mod.roomLayout = function(flag) {
         [STRUCTURE_SPAWN]: FLAG_COLOR.construct.spawn,
         [STRUCTURE_TOWER]: FLAG_COLOR.construct.tower,
         [STRUCTURE_EXTENSION]: FLAG_COLOR.construct,
+        [STRUCTURE_LINK]: FLAG_COLOR.construct.link,
+        [STRUCTURE_STORAGE]: FLAG_COLOR.construct.storage,
+        [STRUCTURE_TERMINAL]: FLAG_COLOR.construct.terminal,
+        [STRUCTURE_NUKER]: FLAG_COLOR.construct.nuker,
+        [STRUCTURE_POWER_SPAWN]: FLAG_COLOR.construct.powerSpawn,
+        [STRUCTURE_OBSERVER]: FLAG_COLOR.construct.observer,
     };
     
     const [centerX, centerY] = [flag.pos.x, flag.pos.y];
