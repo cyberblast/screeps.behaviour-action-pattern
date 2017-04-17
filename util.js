@@ -27,12 +27,22 @@ module.exports = {
      * @returns {string}
      */
     formatNumber(number) {
-        if (number >= 1000000) {
-            return (number / 1000000).toFixed(2) + 'M';
-        } else if (number >= 1000) {
-            return (number / 1000).toFixed(1) + 'K';
+        let ld = Math.log10(number) / 3;
+        if (!number) return number;
+        let n = number.toString();
+        if (ld < 1) {
+            return n;
         }
-        return _.isUndefined(number) ? number : number.toString();
+        if (ld < 2) {
+            return n.substring(0, n.length - 3) + 'k';
+        }
+        if (ld < 3) {
+            return n.substring(0, n.length - 6) + 'M';
+        }
+        if (ld < 4) {
+            return n.substring(0, n.length - 9) + 'B';
+        }
+        return number.toString();
     },
     
     /**
