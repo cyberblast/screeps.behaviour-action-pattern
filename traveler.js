@@ -356,19 +356,21 @@ module.exports = function(globalOpts = {}){
         Creep.prototype.travelTo = function(destination, options = {}) {
             destination = destination.pos || destination;
             options = this.getStrategyHandler([], 'moveOptions', options);
+            if (_.isUndefined(options.ignoreCreeps)) options.ignoreCreeps = true;
             if (_.isUndefined(options.reportThreshold)) options.reportThreshold = TRAVELER_THRESHOLD;
             if (_.isUndefined(options.useFindRoute)) options.useFindRoute = global.ROUTE_PRECALCULATION;
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
             if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
             if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => room.structureMatrix;
             if (options.cacheRoutes && options.ignoreCreeps) {
-                console.log(this.name, 'attempting to use cached route');
                 const path = this.room.getPath(this.pos, destination, options);
                 if (path) {
-                    const next = path[this.pos.x + ',' + this.pos.y];
+                    const next = path[Room.getPosId(this.pos)];
                     if (next) {
-                        console.log(this.name, this.pos, 'cached', next);
-                        return this.move(next); // take next step
+                        if (next === 'B') return; // wait for border to cycle
+                        else return this.move(next); // take next step
+                    } else {
+                        console.log(this.name, 'no next step to take, using traveler.', next, 'from', this.pos, 'to', destination);
                     }
                 } else { // TODO:find closest place to get on the path
                     console.log(this.name, 'could not generate or use cached route, falling back to traveler.');

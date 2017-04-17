@@ -1142,41 +1142,29 @@ mod.extend = function(){
         }
     };
     Room.prototype.getPath = function(startPos, destination, options) {
-        // unique identifier for each position within the starting room
-        const getPosId = (pos) => {
-            return `${pos.x},${pos.y})`;
-        };
-        // unique destination identifier for room positions
-        const getDestId = (pos) => {
-            return `${pos.roomName},${pos.x},${pos.y}`;
-        };
-        const startID = getPosId(startPos);
+        const startId = Room.getPosId(startPos);
         const destPos = destination.pos || destination;
-        const destID = destination.id || getDestId(destination);
+        const destId = destination.id || Room.getDestId(destination);
         Util.setDefault(Room.pathCache, this.name, {});
-        const path = Util.get(Room.pathCache, [this.name, destID], {});
-        if (_.isUndefined(path[startID])) {
+        const directions = Util.get(Room.pathCache, [this.name, destId], {});
+        if (_.isUndefined(directions[startId])) {
             const ret = traveler.findTravelPath(startPos, destPos, options);
             if (!ret || ret.incomplete) {
                 return logError('Room.getPath',  `incomplete path from ${startPos} to ${destPos} ${ret.path}`);
-            } else {
-                const directions = Traveler.serializePath(startPos, ret.path);
-                if (directions && directions.length === ret.path.length - 1) {
-                    path[startID] = directions[0];
-                    for (let i = 1; i < directions.length; i++) {
-                        const id = getPosId(ret.path[i-1]);
-                        // use existing path
-                        if (_.isUndefined(path[id])) path[id] = directions[i];
-                        else break; // we've hit an existing path
-                    }
-                } else {
-                    return logError('Room.getPath', `no directions from ${startPos} to ${destPos} at range ${options.range} lengths ${ret.path.length} ${directions.length}`);
+            } else { // generate a new path until we hit an existing one
+                let lastPos = startPos;
+                for (const pos of ret.path) {
+                    const lastPosId = Room.getPosId(lastPos);
+                    if (!_.isUndefined(directions[lastPosId])) break; // hit an existing path
+                    const onBorder = pos.roomName !== lastPos.roomName;
+                    directions[lastPosId] = onBorder ? 'B' : lastPos.getDirectionTo(pos); // no need to move on a border
+                    lastPos = pos;
                 }
+                _.set(Room.pathCache, [this.name, destId], directions);
+                mod.pathCacheDirty = true;
             }
-            _.set(Room.pathCache, [this.name, destID], path);
-            mod.pathCacheDirty = true;
         }
-        return path;
+        return directions;
     };
 
     Room.prototype.getBestConstructionSiteFor = function(pos, filter = null) {
@@ -3212,3 +3200,7 @@ mod.roomLayout = function(flag) {
     
     flag.remove();
 };
+// unique identifier for each position within the starting room
+mod.getPosId = (pos) => `${pos.x},${pos.y})`;
+// unique destination identifier for room positions
+mod.getDestId = (pos) => `${pos.roomName},${pos.x},${pos.y}`;
