@@ -380,12 +380,7 @@ module.exports = function(globalOpts = {}){
             if(global.traveler && global.travelerTick !== Game.time){
                 global.traveler = new Traveler();
             }
-            const before = Game.cpu.getUsed();
-            const ret = traveler.travelTo(this, destination, options);
-            const after = Game.cpu.getUsed();
-            const diff = _.round(after - before, 2);
-            if (diff > 5) logSystem('Traveler', `${this.name} used ${(diff)} CPU! from ${this.pos}, to ${destination} range ${options.range}`);
-            return ret;
+            return traveler.travelTo(this, destination, options);
         };
     }
 
