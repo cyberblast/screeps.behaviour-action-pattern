@@ -1132,8 +1132,8 @@ mod.extend = function(){
             routeCallback: Room.routeCallback(this.name, destination, options)
         });
     };
-    Room.prototype.invalidatePaths = function(destination) {
-        Room.invalidatePaths(this.name, destination);
+    Room.prototype.invalidateCachedPaths = function(destination) {
+        Room.invalidateCachedPaths(this.name, destination);
     };
     Room.prototype.showCachedPath = function(destination) {
         Room.showCachedPath(this.name, destination);
@@ -3238,12 +3238,12 @@ mod.roomLayout = function(flag) {
 };
 mod.showCachedPath = function(roomName, destination) {
     const room = Game.rooms[roomName];
-    const destId = Room.getDestID(destination);
+    const destId = Room.getDestId(destination);
     const path = Util.get(Room.pathCache, [roomName, destId], {});
     const vis = room ? room.visual : new RoomVisual(roomName);
     for (var y = 0; y < 50; y++) {
         for (var x = 0; x < 50; x++) {
-            const dir = path[getPosId({x, y})];
+            const dir = path[Room.getPosId({x, y})];
             if (dir) {
                 if (dir === 'B') {
                     vis.text('B', x, y);
@@ -3255,18 +3255,23 @@ mod.showCachedPath = function(roomName, destination) {
         }
     }
 }
-mod.invalidatePaths = function(roomName, destination) {
+mod.invalidateCachedPaths = function(roomName, destination) {
+    let msg = '';
     if (roomName) {
         if (destination) {
-            const destId = Room.getDestID(destination);
+            msg = `Invalidating cached paths in ${roomName} to ${destination}.`;
+            const destId = Room.getDestId(destination);
             _.set(Room, ['pathCache', this.name, destId], {});
         } else {
+            msg = `Invalidating all cached paths in ${roomName}.`;
             _.set(Room, ['pathCache', this.name], {});
         }
     } else {
+        msg = `Invalidating all cached paths.`;
         Room.pathCache = {};
     }
     Room.pathCacheDirty = true;
+    return msg;
 }
 // unique identifier for each position within the starting room
 mod.getPosId = (pos) => `${pos.x},${pos.y})`;
