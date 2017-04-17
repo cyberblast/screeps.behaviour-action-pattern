@@ -65,7 +65,7 @@ const Visuals = class {
         const theta_radians = Math.atan2(delta_y, delta_x);
         const base_angle = 0.610865;
         const new_angle = theta_radians + base_angle;
-        const length = Util.getDistance(from, to) * .25;
+        const length = Math.log1p(Util.getDistance(from, to)) * 0.5;
         style = style instanceof Creep
             ? this.creepPathStyle(style)
             : (style || {});
