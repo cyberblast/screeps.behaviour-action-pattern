@@ -10,19 +10,15 @@ mod.extend = function(){
     };
     // to maintain legacy code for now
     Creep.prototype.findGroupMemberByType = function(creepType, flagName) {
-        return Creep.prototype.findGroupMemberBy('creepType', creepType, flagName);
+        return Creep.prototype.findGroupMemberBy(c => c.creepType === creepType, flagName);
     };
-    Creep.prototype.findGroupMemberBy = function(property, targetValue, flagName) {
+    Creep.prototype.findGroupMemberBy = function(findFunc, flagName) {
         if (_.isUndefined(flagName)) flagName = this.data.flagName;
-        if (!_.isUndefined(targetValue) && flagName) {
-            for(const creepName in Memory.population) {
-                const data = Memory.population[creepName];
-                if (_.get(data, property) === targetValue && data.flagName === flagName) {
-                    return creepName;
-                }
-            }
+        if (!_.isUndefined(findFunc) && flagName) {
+            const ret = _(Memory.population).filter({flagName}).find(findFunc);
+            return ret ? ret.creepName : null;
         } else {
-            logError(`Invalid arguments for Creep.findGroupMemberBy ${property} ${targetValue} ${flagName}`);
+            Util.logError(`${this.name} - Invalid arguments for Creep.findGroupMemberBy ${flagName} ${findFunc}`);
         }
         return null;
     };
