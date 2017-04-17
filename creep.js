@@ -3,18 +3,26 @@ const strategy = load("strategy");
 let mod = {};
 module.exports = mod;
 mod.extend = function(){
+    Creep.prototype.assignAction = function(action, target) {
+        if (typeof action === 'string') action = Creep.action[action];
+        if (!action || !(action instanceof Creep.Action)) return;
+        return action.assign(this, target);
+    };
+    // to maintain legacy code for now
     Creep.prototype.findGroupMemberByType = function(creepType, flagName) {
-        let creep;
-        if(creepType && flagName) {
-            for(let i in Memory.population) {
-                creep = Memory.population[i];
-
-                if(creep.creepType === creepType && creep.flagName === flagName) {
-                    return i;
+        return Creep.prototype.findGroupMemberBy('creepType', creepType, flagName);
+    };
+    Creep.prototype.findGroupMemberBy = function(property, targetValue, flagName) {
+        if (_.isUndefined(flagName)) flagName = this.data.flagName;
+        if (!_.isUndefined(targetValue) && flagName) {
+            for(const creepName in Memory.population) {
+                const data = Memory.population[creepName];
+                if (_.get(data, property) === targetValue && data.flagName === flagName) {
+                    return creepName;
                 }
             }
         } else {
-            logError("Invalid arguments for Creep.findGroupMemberByType");
+            logError(`Invalid arguments for Creep.findGroupMemberBy ${property} ${targetValue} ${flagName}`);
         }
         return null;
     };
@@ -91,7 +99,7 @@ mod.extend = function(){
                     });
                     Population.countCreep(this.room, entry);
                 } else {
-                    console.log( dye(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ));
+                    console.log( dye(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ), Util.stack());
                     // trying to import creep
                     let counts = _.countBy(this.body, 'type');
                     if( counts[WORK] && counts[CARRY])
@@ -193,6 +201,7 @@ mod.extend = function(){
         // check if on road/structure
         let here = _.chain(this.room.structures.piles).filter('pos', this.pos)
             .concat(this.room.lookForAt(LOOK_STRUCTURES, this.pos))
+            .concat(this.room.lookForAt(LOOK_CONSTRUCTION_SITES, this.pos, {filter: s => s.my}))
             .value();
         if( here && here.length > 0 ) {
             let path;
@@ -203,6 +212,8 @@ mod.extend = function(){
                     return { pos: s.pos, range: 2 };
                 })).concat(this.pos.findInRange(FIND_EXIT, 2).map(function (e) {
                     return { pos: e, range: 1 };
+                })).concat(this.room.myConstructionSites.map(function(o) {
+                    return { pos: o.pos, range: 1};
                 }));
 
                 let ret = PathFinder.search(
@@ -373,7 +384,7 @@ mod.execute = function(){
         try {
             creep.run();
         } catch (e) {
-            console.log('<span style="color:FireBrick">Creep ' + creep.name + (e.stack || e.toString()) + '</span>');
+            console.log('<span style="color:FireBrick">Creep ' + creep.name + (e.stack || e.toString()) + '</span>', Util.stack());
         }
     };
     _.forEach(Game.creeps, run);

@@ -4,6 +4,7 @@ const action = class extends Creep.Action {
         super(...args);
         
         this.renewTarget = false;
+        this.maxPerTarget = 1;
     }
     
     isValidAction(creep) {
@@ -24,7 +25,7 @@ const action = class extends Creep.Action {
     }
     
     isAddableTarget(target, creep) {
-        return (
+        return super.isAddableTarget(target, creep) && (
             (target instanceof OwnedStructure && target.my) ||
             (
                 (!creep.room.controller ||

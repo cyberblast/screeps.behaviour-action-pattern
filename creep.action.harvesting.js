@@ -10,7 +10,7 @@ const action = class extends Creep.Action {
         return creep.sum < creep.carryCapacity && creep.room.sourceEnergyAvailable > 0;
     }
     
-    isValidTarget(target) {
+    isValidTarget(target, creep) {
         return super.isValidTarget(target) && target.energy && target.energy > 0 &&
             (!target.targetOf ||
                 (target.targetOf.length <= target.accessibleFields &&
@@ -38,7 +38,7 @@ const action = class extends Creep.Action {
         let sourceGuests = 999;
         const roomSources = _.sortBy(creep.room.sources, s => creep.pos.getRangeTo(s));
         for (const source of roomSources) {
-            if (this.isValidTarget(source) && this.isAddableTarget(source, creep)) {
+            if (this.isValidTarget(source, creep) && this.isAddableTarget(source, creep)) {
                 if (!source.targetOf) {
                     sourceGuests = 0;
                     target = source;

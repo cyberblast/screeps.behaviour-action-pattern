@@ -28,7 +28,3 @@ action.work = function(creep, range){
     if( range && range < 2 ) creep.controllerSign();
     return creep.upgradeController(creep.room.controller);
 };
-action.onAssignment = function(creep, target) {
-    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9962), SAY_PUBLIC);
-    if( SAY_ASSIGNMENT ) creep.say(ACTION_SAY.UPGRADING, SAY_PUBLIC);
-};

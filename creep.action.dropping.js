@@ -16,8 +16,7 @@ const action = class extends Creep.Action {
                 creep.pos.findClosestByRange(creep.room.structures.spawns) ||
                 creep.pos.findClosestByRange(creep.room.find(FIND_FLAGS, FlagDir.flagFilter(FLAG_COLOR.claim.spawn))) ||
                 creep.pos.findClosestByRange(_.filter(creep.room.constructionSites, {structureType: STRUCTURE_SPAWN})) ||
-                creep.room.controller ||
-                undefined;
+                creep.room.controller;
     }
     
     work(creep) {

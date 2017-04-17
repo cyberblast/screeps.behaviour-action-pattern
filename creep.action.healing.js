@@ -6,14 +6,17 @@ const action = class extends Creep.Action {
         this.targetRange = 3;
     }
     
-    isValidTarget(target) {
-        return super.isValidTarget(target) && target.hits && target.hits < target.hits && target.my;
+    isValidTarget(target, creep) {
+        return super.isValidTarget(target) && target.hits && target.hits < target.hits && target.my && target.pos.roomName === creep.data.healRoom;
     }
     
     newTarget(creep) {
         if (creep.room.casualties.length > 0) {
-            return creep.room.casualties[0];
+            const target = _.find(creep.room.casualties, t => t.name !== creep.name);
+            if (target) creep.data.healRoom = target.pos.roomName;
+            return target;
         }
+        delete creep.data.healRoom;
     }
     
     work(creep) {

@@ -84,6 +84,11 @@ const action = class extends Creep.Action {
         if (this.isValidAction(creep)) {
             if (creep.action === this && this.isValidTarget(creep.target, creep) ||
             this.isAddableAction(creep) && this.assign(creep)) {
+                
+                if (creep.leaveBorder()) {
+                    return true;
+                }
+                
                 this.work(creep);
                 return true;
             }

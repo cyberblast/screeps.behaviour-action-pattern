@@ -202,23 +202,31 @@ mod.flush = function(){
 };
 mod.analyze = function(){
     let register = flag => {
-        flag.creeps = {};
-        if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
-        this.list.push({
-            name: flag.name,
-            color: flag.color,
-            secondaryColor: flag.secondaryColor,
-            roomName: flag.pos.roomName,
-            x: flag.pos.x,
-            y: flag.pos.y,
-            cloaking: flag.cloaking
-        });
+        try {
+            flag.creeps = {};
+            if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
+            this.list.push({
+                name: flag.name,
+                color: flag.color,
+                secondaryColor: flag.secondaryColor,
+                roomName: flag.pos.roomName,
+                x: flag.pos.x,
+                y: flag.pos.y,
+                cloaking: flag.cloaking
+            });
+        } catch(e) {
+            Util.logError(e.stack || e.message);
+        }
     };
     _.forEach(Game.flags, register);
     
     let findStaleFlags = (entry, flagName) => {
-        if(!Game.flags[flagName]) {
-            this.stale.push(flagName);
+        try {
+            if(!Game.flags[flagName]) {
+                this.stale.push(flagName);
+            }
+        } catch(e) {
+            Util.logError(e.stack || e.message);
         }
     };
     _.forEach(Memory.flags, findStaleFlags);
@@ -226,13 +234,16 @@ mod.analyze = function(){
     return !!specialFlag;
 };
 mod.execute = function() {
-
     let triggerFound = entry => {
-        if( !entry.cloaking || entry.cloaking == 0) {
-            const p = Util.startProfiling('Flag.execute', {enabled:PROFILING.FLAGS});
-            const flag = Game.flags[entry.name];
-            Flag.found.trigger(flag);
-            p.checkCPU(entry.name, PROFILING.EXECUTE_LIMIT, mod.flagType(flag));
+        try {
+            if( !entry.cloaking || entry.cloaking == 0) {
+                const p = Util.startProfiling('Flag.execute', {enabled:PROFILING.FLAGS});
+                const flag = Game.flags[entry.name];
+                Flag.found.trigger(flag);
+                p.checkCPU(entry.name, PROFILING.EXECUTE_LIMIT, mod.flagType(flag));
+            }
+        } catch(e) {
+            Util.logError(e.stack || e.message);
         }
     };
     this.list.forEach(triggerFound);

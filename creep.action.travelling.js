@@ -2,7 +2,7 @@ const action = class extends Creep.Action {
     
     step(creep) {
         if (CHATTY) creep.say(this.name, SAY_PUBLIC);
-        let targetRange = creep.data.travelRange || this.targetRange;
+        let targetRange = _.get(creep, ['data', 'travelRange'], this.targetRange);
         let target = creep.target;
         if (FlagDir.isSpecialFlag(creep.target)) {
             if (creep.data.travelRoom) {
@@ -12,7 +12,7 @@ const action = class extends Creep.Action {
                     creep.leaveBorder(); // TODO: unregister / return false? and immediately acquire new action & target
                     target = null;
                 } else {
-                    targetRange = creep.data.travelRange || TRAVELLING_BORDER_RANGE || 22;
+                    targetRange = _.get(creep, ['data', 'travelRange'], TRAVELLING_BORDER_RANGE || 22);
                     target = new RoomPosition(25, 25, creep.data.travelRoom);
                 }
             } else {
@@ -22,7 +22,15 @@ const action = class extends Creep.Action {
         }
         if (target) {
             const range = creep.pos.getRangeTo(target);
-            if (range <= targetRange) return this.unregister(creep);
+            if (range <= targetRange) {
+                return this.unregister(creep);
+            } else if (targetRange === 0 && creep.pos.isNearTo(target)) {
+                if (target.pos.lookFor(LOOK_CREEPS).length > 0) {
+                    // avoid trying to pathfind to a blocked location
+                    if (DEBUG) Util.logSystem(creep.name, 'travelling.step: destination blocked, stopping.');
+                    return this.unregister(creep);
+                }
+            }
             creep.travelTo(target, {range: targetRange, ignoreCreeps: creep.data.ignoreCreeps || true});
         } else {
             this.unregister(creep);

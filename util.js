@@ -1,6 +1,26 @@
 // All methods require a JSDoc comment describing it.
 // http://usejsdoc.org/
 module.exports = {
+    
+    /**
+     * Gets currently visible rooms.
+     * Dependant on userscript: {@link https://github.com/Esryok/screeps-browser-ext/blob/master/visible-room-tracker.user.js Visible Room Tracker}
+     * @param {Number} [age]
+     * @returns {Array}
+     */
+    getVisibleRooms(age) {
+        const since = Game.time - (age || 5);
+        const visibleRooms = [];
+        //return _(Memory.rooms).filter(r => r.lastViewed && r.lastViewed > since).keys().value();
+        for (const roomName in Memory.rooms) {
+            const room = Memory.rooms[roomName];
+            if (room.lastViewed && room.lastViewed > since) {
+                visibleRooms.push(roomName);
+            }
+        }
+        
+        return visibleRooms;
+    },
     /**
      * formats an integer into a readable value
      * @param {Number} number
@@ -12,7 +32,7 @@ module.exports = {
         } else if (number >= 1000) {
             return (number / 1000).toFixed(1) + 'K';
         }
-        return number.toString();
+        return _.isUndefined(number) ? number : number.toString();
     },
     
     /**
@@ -40,9 +60,10 @@ module.exports = {
      */
     get(object, path, defaultValue, setDefault = true) {
         const r = _.get(object, path);
-        if (!r && !_.isUndefined(defaultValue) && setDefault) {
+        if (_.isUndefined(r) && !_.isUndefined(defaultValue) && setDefault) {
             defaultValue = Util.fieldOrFunction(defaultValue);
-            return _.set(object, path, defaultValue);
+            _.set(object, path, defaultValue);
+            return _.get(object, path);
         }
         return r;
     },
@@ -147,7 +168,7 @@ module.exports = {
         if (entityWhere) {
             Util.trace('error', entityWhere, msg);
         } else {
-            console.log(msg);
+            console.log(msg, Util.stack());
         }
     },
     
@@ -165,7 +186,7 @@ module.exports = {
             }
             Game.notify(message, 120);
         }
-        console.log(Util.dye(CRAYON.error, message));
+        console.log(Util.dye(CRAYON.error, message), Util.stack());
     },
     
     /**
@@ -175,9 +196,20 @@ module.exports = {
      */
     logSystem(roomName, ...message) {
         const text = Util.dye(CRAYON.system, roomName);
-        console.log(Util.dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt;`), ...message);
+        console.log(Util.dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt;`), ...message, Util.stack());
     },
-    
+
+    /**
+     * Build a stacktrace if DEBUG_STACKS or the first argument is true.
+     */
+    stack(force = false, placeholder = ' ') {
+        if (DEBUG_STACKS || force) {
+            return new Error(`\nSTACK; param:${DEBUG_STACKS}, force:${force}`).stack;
+        }
+
+        return placeholder;
+    },
+
     /**
      * Trace an error or debug statement
      * @param {string} category - The error category
@@ -220,7 +252,7 @@ module.exports = {
             }
         }
         
-        console.log(Game.time, Util.dye(CRAYON.error, category), ...msg, Util.dye(CRAYON.birth, JSON.stringify(entityWhere)));
+        console.log(Game.time, Util.dye(CRAYON.error, category), ...msg, Util.dye(CRAYON.birth, JSON.stringify(entityWhere)), Util.stack());
     },
     
     /**
@@ -310,6 +342,16 @@ module.exports = {
     },
     
     /**
+     * Get the distance between two points.
+     * @param {RoomPosition|Object} point1 - The first point
+     * @param {RoomPosition|Object} point2 - The second point
+     * @returns {Number}
+     */
+    getDistance(point1, point2) {
+        return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
+    },
+    
+    /**
      * Gets the distances between two rooms, respecting natural walls
      * @param {string} fromRoom - Starting room
      * @param {string} toRoom - Ending room
@@ -362,6 +404,33 @@ module.exports = {
     },
     
     /**
+     * Iterates over all your structures and adds them to a layout array, and returns the JSON.
+     * @param {RoomPosition|Object} pos - A room position of the top left corner of the layout
+     * @param {Function} [filter] - Optional filter.
+     * @returns {string} A JSON string of the room layout.
+     */
+    getRoomLayout(pos, filter) {
+        const layout = [];
+        const room = Game.rooms[pos.roomName];
+        if (!room) return;
+        const startX = pos.x;
+        const startY = pos.y;
+        _(room.find(FIND_STRUCTURES))
+            .reject(s => s instanceof StructureController)
+            .filter(s => s.pos.x >= startX && s.pos.y >= startY)
+            .filter(s => {
+                if (filter) return filter(s);
+                return true;
+            })
+            .value() // for some reason _.set is broken in _.forEach
+            .forEach(s => _.set(layout, [s.pos.x - startX, s.pos.y - startY], s.structureType));
+        // RegEx Magic
+        const replacementMap = {['null']:'',['"extension"']:'STRUCTURE_EXTENSION',['"road"']:'STRUCTURE_ROAD',['"tower"']:'STRUCTURE_TOWER',['"spawn"']:'STRUCTURE_SPAWN',['"link"']:'STRUCTURE_LINK',['"storage"']:'STRUCTURE_STORAGE',['"terminal"']:'STRUCTURE_TERMINAL',['"nuker"']:'STRUCTURE_NUKER',['"powerSpawn"']:'STRUCTURE_POWER_SPAWN',['"observer"']:'STRUCTURE_OBSERVER',['"rampart"']:'STRUCTURE_RAMPART',['"lab"']:'STRUCTURE_LAB'};
+        const re = new RegExp(Object.keys(replacementMap).join('|'), 'g');
+        return JSON.stringify(layout).replace(re, match => replacementMap[match]);
+    },
+    
+    /**
      * Generate a GUID. Note: This is not guaranteed to be 100% unique.
      * @returns {string}
      */
@@ -370,6 +439,23 @@ module.exports = {
             const r = Math.random() * 16 | 0;
             const v = c === 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
+        });
+    },
+    
+    /**
+     * Checks if a specific creep type is in queue, either globally or for a room
+     * @param {Object|String} opts - Behaviour if string, else an object with either behaviour, setup, or name. Optionally a room name.
+     * @returns {boolean} - True if the creep is in queue somewhere, otherwise false.
+     */
+    inQueue(opts) {
+        if (!opts) return false;
+        // string check
+        if (opts.link) opts = {behaviour: opts};
+        if (!opts.name && !opts.behaviour && !opts.setup) return false;
+        return _(Game.rooms).filter('my').map('memory').map(m => m.spawnQueueHigh.concat(m.spawnQueueMedium, m.spawnQueueLow)).flatten().some(q => {
+            if (opts.room) if (q.destiny && q.destiny.room !== opts.room) return false;
+            if (opts.behaviour) return (q.behaviour && q.behaviour === opts.behaviour) || q.name.includes(opts.behaviour);
+            if (opts.setup) return q.setup === opts.setup;
         });
     },
     
@@ -496,7 +582,7 @@ module.exports = {
                     Util.logSystem('Average Usage', `<table style="font-size:80%;"><tr><th>Type${Array(longestType.length + 2).join(' ')}</th><th>(avg/creep/tick)</th><th>(active)</th><th>(weighted avg)</th><th>(executions)</th></tr>`.concat(string));
                 }
                 Util.logSystem(name, ' loop:' + _.round(totalUsed, 2), 'other:' + _.round(onLoad, 2), 'avg:' + _.round(avgCPU, 2), 'ticks:' + global.profiler.totalTicks, 'bucket:' + Game.cpu.bucket);
-                if (PROFILE) console.log('\n');
+                if (PROFILE && !PROFILING.BASIC_ONLY) console.log('\n');
                 Memory.profiler = global.profiler;
             };
         }

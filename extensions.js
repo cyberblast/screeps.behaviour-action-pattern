@@ -262,9 +262,11 @@ mod.extend = function(){
     Object.defineProperty(StructureTerminal.prototype, 'charge', { // fraction indicating charge % relative to constants
         configurable: true,
         get: function() {
+            const needs = this.getNeeds(RESOURCE_ENERGY);
+            const terminalTarget = needs ? this.store[RESOURCE_ENERGY] + needs : TERMINAL_ENERGY;
             return Util.chargeScale(this.store.energy,
-                TERMINAL_ENERGY,
-                TERMINAL_ENERGY * 2);
+                terminalTarget,
+                terminalTarget * 2);
         },
     });
     StructureTerminal.prototype.getNeeds = function(resourceType) {

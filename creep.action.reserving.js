@@ -47,9 +47,9 @@ const action = class extends Creep.Action {
     work(creep) {
         creep.controllerSign();
         
-        const work = creep.target.owner && !creep.target.my ? creep.attackController : creep.reserveController;
+        const workMethod = creep.target.owner && !creep.target.my ? creep.attackController : creep.reserveController;
         
-        return work.call(creep, creep.target);
+        return workMethod.call(creep, creep.target);
     }
     
 

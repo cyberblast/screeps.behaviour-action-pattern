@@ -5,7 +5,7 @@ setup.default = {
     fixedBody: {
         [CARRY]: 1,
         [MOVE]: 1,
-        [WORK]: 3,
+        [WORK]: 4,
     },
     multiBody: [WORK, MOVE],
     minAbsEnergyAvailable: 500,

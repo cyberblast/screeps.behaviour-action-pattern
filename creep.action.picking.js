@@ -5,6 +5,8 @@ const action = class extends Creep.Action {
         
         this.maxPerAction = 4;
         this.maxPerTarget = 2;
+        
+        this.defaultStrategy.energyOnly = true;
     }
     
     isValidAction(creep) {
@@ -27,23 +29,15 @@ const action = class extends Creep.Action {
     }
     
     newTarget(creep) {
-        let target;
+        const droppedResources = this.getStrategy('energyOnly', creep) ? _.filter(creep.room.droppedResources, {resourceType: RESOURCE_ENERGY}) : creep.room.droppedResources;
+        let filter;
         if (creep.room.my && creep.room.situation.invasion) {
             // pickup near sources only
-            target = creep.pos.findClosestByPath(creep.room.droppedResources, {
-                filter: o => this.isAddableTarget(o, creep) && o.pos.findInRange(creep.room.sources, 1).length > 0
-            });
+            filter = o => this.isAddableTarget(o, creep) && o.pos.findInRange(creep.room.sources, 1).length > 0;
         } else {
-            target = creep.pos.findClosestPath(creep.room.droppedResources, {
-                filter: o => o.resourceType === this.isAddableTarget(o, creep)
-            });
-            if (creep.room.storage && creep.room.storage.my && !target) {
-                target = creep.pos.findClosestByRange(creep.room.droppedResources, {
-                    filter: o => this.isAddableTarget(o, creep)
-                });
-            }
+            filter = o => this.isAddableTarget(o, creep);
         }
-        return target;
+        return creep.pos.findClosestByPath(droppedResources, {filter});
     }
     
     work(creep) {
@@ -76,6 +70,7 @@ const action = class extends Creep.Action {
             delete creep.data.actionName;
             delete creep.data.targetId;
         }
+        return result;
     }
     
 };

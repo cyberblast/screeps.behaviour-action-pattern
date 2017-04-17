@@ -9,7 +9,7 @@ const action = class extends Creep.Action {
     }
     
     isValidAction(creep) {
-        return creep.sum < creep.carryCapacity;
+        return creep.carryCapacity === 0 || creep.sum < creep.carryCapacity;
     }
     
     newTarget(creep) {

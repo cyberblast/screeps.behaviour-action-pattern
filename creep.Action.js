@@ -36,7 +36,7 @@ const CreepAction = class extends Action {
             }
             range = creep.pos.getRangeTo(creep.target); // target may have changed (e.g. hauler feed+move/tick)
         }
-        if (creep.target) {
+        if (creep.target && creep.hasActiveBodyparts(MOVE)) {
             if (range > this.targetRange) {
                 creep.travelTo(creep.target, {range: this.targetRange});
             } else if (range > this.reachedRange) {
@@ -60,8 +60,19 @@ const CreepAction = class extends Action {
         return [this.defaultStrategy];
     }
     
+    getStrategy(strategyName, creep, args) {
+        if (_.isUndefined(args)) {
+            return creep.getStrategyHandler([this.name], strategyName);
+        } else {
+            return creep.getStrategyHandler([this.name], strategyName, args);
+        }
+    }
+    
     onAssignment(creep, target) {
-        if (SAY_ASSIGNMENT) creep.say(this.statement, SAY_PUBLIC);
+        if (SAY_ASSIGNMENT && this.statement) creep.say(this.statement, SAY_PUBLIC);
+        if (target instanceof RoomObject || target instanceof RoomPosition && VISUALS.ACTION_ASSIGNMENT) {
+            Visuals.drawArrow(creep, target);
+        }
     };
     
 };
