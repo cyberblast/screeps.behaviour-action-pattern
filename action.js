@@ -4,7 +4,6 @@ const Action = class {
         this.maxPerTarget = Infinity;
         this.maxPerAction = Infinity;
         this.targetRange = 1;
-        this.reachedRange = 1;
         this.renewTarget = true;
     }
     

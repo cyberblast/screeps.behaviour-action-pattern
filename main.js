@@ -222,6 +222,15 @@ global.install = () => {
             worker: load("creep.setup.worker")
         }
     });
+    Tower.Action = load('tower.Action');
+    _.assign(Tower, {
+        action: {
+            attack: load('tower.action.attack'),
+            heal: load('tower.action.heal'),
+            repair: load('tower.action.repair'),
+            urgentRepair: load('tower.action.urgentRepair'),
+        },
+    });
     global.inject(Creep, load("creep"));
     global.inject(Room, load("room"));
     global.inject(Spawn, load("spawn"));

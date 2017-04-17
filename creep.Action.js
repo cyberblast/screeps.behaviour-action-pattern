@@ -2,7 +2,8 @@ const CreepAction = class extends Action {
     
     constructor(...args) {
         super(...args);
-        
+    
+        this.reachedRange = 1;
         this.statement = ACTION_SAY[this.name.toUpperCase()];
         
         this.defaultStrategy = {
