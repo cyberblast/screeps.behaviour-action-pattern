@@ -1132,49 +1132,43 @@ mod.extend = function(){
             routeCallback: Room.routeCallback(this.name, destination, options)
         });
     };
+    Room.prototype.invalidatePaths = function(destination) {
+        Room.invalidatePaths(this.name, destination);
+    };
     Room.prototype.showCachedPath = function(destination) {
-        // unique identifier for each position within the starting room
-        const getPosId = (pos) => {
-            return `${pos.x},${pos.y})`;
-        };
-        // unique destination identifier for room positions
-        const getDestId = (pos) => {
-            return `${pos.roomName},${pos.x},${pos.y}`;
-        };
-        const destId = destination.id || getDestID(destination);
-        const path = Util.get(Room.pathCache, [this.name, destId], {});
-        const vis = new RoomVisual(this.name);
-        for (var y = 0; y < 50; y++) {
-            for (var x = 0; x < 50; x++) {
-                const dir = path[getPosId({x, y})];
-                vis.text(dir, x, y);
-            }
-        }
+        Room.showCachedPath(this.name, destination);
     };
     Room.prototype.getPath = function(startPos, destination, options) {
         const startId = Room.getPosId(startPos);
         const destPos = destination.pos || destination;
-        const destId = destination.id || Room.getDestId(destination);
-        Util.setDefault(Room.pathCache, this.name, {});
-        const directions = Util.get(Room.pathCache, [this.name, destId], {});
+        const destId = Room.getDestId(destination);
+        Util.setDefault(Room, ['pathCache', this.name], {});
+        let directions = Util.get(Room, ['pathCache', this.name, destId], {});
         if (_.isUndefined(directions[startId])) {
             const ret = traveler.findTravelPath(startPos, destPos, options);
             if (!ret || ret.incomplete) {
-                return logError('Room.getPath',  `incomplete path from ${startPos} to ${destPos} ${ret.path}`);
+                return logError('Room.getPath', `incomplete path from ${startPos} to ${destPos} ${ret.path}`);
             } else { // generate a new path until we hit an existing one
                 let lastPos = startPos;
                 for (const pos of ret.path) {
                     const lastPosId = Room.getPosId(lastPos);
-                    if (!_.isUndefined(directions[lastPosId])) break; // hit an existing path
-                    const onBorder = pos.roomName !== lastPos.roomName;
-                    directions[lastPosId] = onBorder ? 'B' : lastPos.getDirectionTo(pos); // no need to move on a border
+                    if (!_.isUndefined(directions[lastPosId])){
+                        _.set(Room, ['pathCache', lastPos.roomName, destId], directions);
+                        break; // hit an existing path
+                    } else if (lastPos.roomName !== pos.roomName) {
+                        // new room
+                        directions[lastPosId] = 'B'; // last position was a border
+                        _.set(Room, ['pathCache', lastPos.roomName, destId], directions);
+                        directions = _.get(Room, ['pathCache', pos.roomName, destId], {});
+                    } else {
+                        directions[lastPosId] = lastPos.getDirectionTo(pos);
+                    }
                     lastPos = pos;
                 }
-                _.set(Room.pathCache, [this.name, destId], directions);
                 Room.pathCacheDirty = true;
             }
         }
-        return directions;
+        return _.get(Room, ['pathCache', this.name, destId]);
     };
 
     Room.prototype.getBestConstructionSiteFor = function(pos, filter = null) {
@@ -3242,7 +3236,39 @@ mod.roomLayout = function(flag) {
     
     flag.remove();
 };
+mod.showCachedPath = function(roomName, destination) {
+    const room = Game.rooms[roomName];
+    const destId = Room.getDestID(destination);
+    const path = Util.get(Room.pathCache, [roomName, destId], {});
+    const vis = room ? room.visual : new RoomVisual(roomName);
+    for (var y = 0; y < 50; y++) {
+        for (var x = 0; x < 50; x++) {
+            const dir = path[getPosId({x, y})];
+            if (dir) {
+                if (dir === 'B') {
+                    vis.text('B', x, y);
+                } else {
+                    const from = new RoomPosition(x, y, roomName);
+                    Visuals.drawArrow(from, Traveler.positionAtDirection(from, dir));
+                }
+            }
+        }
+    }
+}
+mod.invalidatePaths = function(roomName, destination) {
+    if (roomName) {
+        if (destination) {
+            const destId = Room.getDestID(destination);
+            _.set(Room, ['pathCache', this.name, destId], {});
+        } else {
+            _.set(Room, ['pathCache', this.name], {});
+        }
+    } else {
+        Room.pathCache = {};
+    }
+    Room.pathCacheDirty = true;
+}
 // unique identifier for each position within the starting room
 mod.getPosId = (pos) => `${pos.x},${pos.y})`;
 // unique destination identifier for room positions
-mod.getDestId = (pos) => `${pos.roomName},${pos.x},${pos.y}`;
+mod.getDestId = (pos) => pos.id ? pos.id : `${pos.roomName},${pos.x},${pos.y}`;
