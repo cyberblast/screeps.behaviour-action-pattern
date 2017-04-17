@@ -40,6 +40,8 @@ mod.processSegment = (id, process) => {
             delete global.cacheValid[id];
             delete Memory.cacheValid[id];
         }
+    } else {
+        process(); // notify the listener that the cache is valid
     }
 };
 mod.processSegments = () => {
