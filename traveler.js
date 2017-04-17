@@ -353,7 +353,7 @@ module.exports = function(globalOpts = {}){
             global.travelerTick = Game.time;
         }
 
-        Creep.prototype.travelTo = function (destination, options = {}) {
+        Creep.prototype.travelTo = function(destination, options = {}) {
             destination = destination.pos || destination;
             options = this.getStrategyHandler([], 'moveOptions', options);
             if (_.isUndefined(options.reportThreshold)) options.reportThreshold = TRAVELER_THRESHOLD;
@@ -362,24 +362,28 @@ module.exports = function(globalOpts = {}){
             if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
             if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => room.structureMatrix;
             if (options.cacheRoutes && options.ignoreCreeps) {
+                console.log(this.name, 'attempting to use cached route');
                 const path = this.room.getPath(this.pos, destination, options);
                 if (path) {
                     const next = path[this.pos.x + ',' + this.pos.y];
                     if (next) {
-                        //console.log(this.name, this.pos, 'cached', next);
+                        console.log(this.name, this.pos, 'cached', next);
                         return this.move(next); // take next step
                     }
                 } else { // TODO:find closest place to get on the path
                     console.log(this.name, 'could not generate or use cached route, falling back to traveler.');
-                    options.cacheRoutes = false;
-                    return this.travelTo(destination, options);
                 }
-            } else {
-                if(global.traveler && global.travelerTick !== Game.time){
-                    global.traveler = new Traveler();
-                }
-                return traveler.travelTo(this, destination, options);                
             }
+
+            if(global.traveler && global.travelerTick !== Game.time){
+                global.traveler = new Traveler();
+            }
+            const before = Game.cpu.getUsed();
+            const ret = traveler.travelTo(this, destination, options);
+            const after = Game.cpu.getUsed();
+            const diff = _.round(after - before, 2);
+            if (diff > 5) logSystem('Traveler', `${this.name} used ${(diff)} CPU! from ${this.pos}, to ${destination} range ${options.range}`);
+            return ret;
         };
     }
 

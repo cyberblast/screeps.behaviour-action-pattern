@@ -1153,27 +1153,27 @@ mod.extend = function(){
         const startID = getPosId(startPos);
         const destPos = destination.pos || destination;
         const destID = destination.id || getDestId(destination);
-        Util.setDefault(mod.pathCache, this.name, {});
-        const path = Util.get(mod.pathCache, [this.name, destID], {});
+        Util.setDefault(Room.pathCache, this.name, {});
+        const path = Util.get(Room.pathCache, [this.name, destID], {});
         if (_.isUndefined(path[startID])) {
             const ret = traveler.findTravelPath(startPos, destPos, options);
             if (!ret || ret.incomplete) {
                 return logError('Room.getPath',  `incomplete path from ${startPos} to ${destPos} ${ret.path}`);
             } else {
                 const directions = Traveler.serializePath(startPos, ret.path);
-                if (directions && directions.length === ret.path.length) {
+                if (directions && directions.length === ret.path.length - 1) {
                     path[startID] = directions[0];
-                    for (let i = 0; i < ret.path.length; i++) {
-                        const id = getPosId(ret.path[i]);
+                    for (let i = 1; i < directions.length; i++) {
+                        const id = getPosId(ret.path[i-1]);
                         // use existing path
-                        if (_.isUndefined(path[id])) path[id] = directions[i+1];
+                        if (_.isUndefined(path[id])) path[id] = directions[i];
                         else break; // we've hit an existing path
                     }
                 } else {
-                    return logError('Room.getPath', `no directions from ${startPos} following ${ret.path} lengths ${ret.path.length} ${directions.length}`);
+                    return logError('Room.getPath', `no directions from ${startPos} to ${destPos} at range ${options.range} lengths ${ret.path.length} ${directions.length}`);
                 }
             }
-            _.set(mod.pathCache, [this.name, destID], path);
+            _.set(Room.pathCache, [this.name, destID], path);
             mod.pathCacheDirty = true;
         }
         return path;
