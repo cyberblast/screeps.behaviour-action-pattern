@@ -1,30 +1,42 @@
-let action = new Creep.Action('upgrading');
-module.exports = action;
-action.targetRange = 3;
-action.reachedRange = 3;
-action.isAddableAction = function(creep){
-    // no storage
-    return !creep.room.storage 
-    // storage has surplus
-    || creep.room.storage.charge > 1
-    // storage is leftover from invasion and has usable energy
-    || (!creep.room.storage.my && creep.room.storage.store.energy > 0);
+const action = class extends Creep.Action {
+    
+    constructor(...args) {
+        super(...args);
+        
+        this.targetRange = 3;
+        this.reachedRange = 3;
+    }
+    
+    isAddableAction(creep) {
+        // no storage
+        return !creep.room.storage ||
+            // storage has surplus
+            creep.room.storage.charge > 1 ||
+            // storage is leftover from invasion and has usable energy
+            (!creep.room.storage.my && creep.room.storage.store.energy > 0);
+    }
+    
+    isAddableTarget(target, creep) {
+        // limit to upgraders only at RCL8
+        return !(target.level === 8 && (!creep.data || creep.data.creepType !== 'upgrader'));
+    }
+    
+    isValidAction(creep) {
+        return creep.carry.energy > 0;
+    }
+    
+    isValidTarget(target) {
+        return super.isValidTarget(target) && target instanceof StructureController && target.my;
+    }
+    
+    newTarget(creep) {
+        return creep.room.controller;
+    }
+    
+    work(creep, range) {
+        if (range && range < 2) creep.controllerSign();
+        return creep.upgradeController(creep.target);
+    }
+    
 };
-action.isAddableTarget = function(target, creep){ 
-    // Limit to upgraders only at RCL8
-    if( target.level === 8 && (!creep.data || creep.data.creepType != 'upgrader') ) return false;
-    return true;
-};
-action.isValidAction = function(creep){
-    return creep.carry.energy > 0;
-};
-action.isValidTarget = function(target){
-    return (target != null ) && target.structureType == 'controller' && target.my;
-};
-action.newTarget = function(creep){
-    return ( creep.room.controller && creep.room.controller.my) ? creep.room.controller : null;
-};
-action.work = function(creep, range){
-    if( range && range < 2 ) creep.controllerSign();
-    return creep.upgradeController(creep.room.controller);
-};
+module.exports = new action('upgrading');
