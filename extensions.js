@@ -34,6 +34,19 @@ mod.extend = function(){
             Memory.sources[this.id] = value;
         }
     });
+    Object.defineProperty(StructureTower.prototype, 'memory', {
+        configurable: true,
+        get() {
+            Util.set(Memory, 'towers', {});
+            if (!_.isObject(Memory.towers)) return;
+            return Memory.towers[this.id] = Memory.towers[this.id] || {towerId: this.id};
+        },
+        set(val) {
+            Util.set(Memory, 'towers', {});
+            if (!_.isObject(Memory.towers)) throw new Error('Could not set memory extension for towers');
+            Memory.towers[this.id] = val;
+        },
+    });
     Object.defineProperty(RoomPosition.prototype, 'adjacent', {
         configurable: true,
         get: function() {
