@@ -223,6 +223,11 @@ global.install = () => {
     });
     global.inject(Creep, load("creep"));
     global.inject(Room, load("room"));
+    _.assign(Room, {
+        _ext: {
+            labs: load("room.labs"),
+        },
+    });
     global.inject(Spawn, load("spawn"));
 
     // Extend server objects
