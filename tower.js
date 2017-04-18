@@ -4,53 +4,33 @@ mod.loop = function(room) {
     _.forEach(room.structures.towers, this.run);
 };
 mod.run = function(tower) {
-    if(tower) {
-        const p = Util.startProfiling(tower.room.name + ':tower:' + tower.id, {enabled:PROFILING.ROOMS});
-        // TODO: convert to action pattern
-        if( tower.room.casualties.length > 0) {
-            // Heal
-            var target = tower.room.casualties[0];
-            if(target.hitsMax - target.hits >= 400 || !tower.room.situation.invasion) {
-                tower.heal(target);
-                if( target.towers === undefined )
-                    target.towers = [];
-                target.towers.push(tower.id);
-                return;
-            }
-        }
-        p.checkCPU('casualties', 0.5);
-        if( tower.room.structures.urgentRepairable.length > 0 ) {
-            // urgent Repair
-            var target = tower.room.structures.urgentRepairable[0];
-            tower.repair(target);
-            if( target.towers === undefined )
-                target.towers = [];
-            target.towers.push(tower.id);
-            return;
-        }
-        p.checkCPU('urgentRepairable', 0.5);
-
-        var closestHostile = tower.pos.findClosestByRange(tower.room.hostiles);
-        if(closestHostile) {
-            // Attack
-            tower.attack(closestHostile);
-        }
-        p.checkCPU('closestHostile', 0.5);
-        /*
-        else if( (tower.room.structures.repairable.length > 0) && (tower.energy > (tower.energyCapacity * 0.8)) ) {
-            // Repair
-            var isAddable = target => (target.towers === undefined || target.towers.length == 0);
-            var target = _.find(tower.room.structures.repairable, isAddable);
-            if( !_.isUndefined(target) ){
-                tower.repair(target);
-                if( target.towers === undefined )
-                    target.towers = [];
-                target.towers.push(tower.id);
-            }
-        }
-        */
+    // Assign next Action
+    if (!tower.action || tower.action.name === 'idle') {
+        this.nextAction(tower);
+    }
+    
+    // Do some work
+    if (tower.action && tower.target) {
+        tower.action.step(tower);
+    } else {
+        Util.logError(`Tower without action/activity!\nTower: ${tower.id}\ndata: ${JSON.stringify(tower.data)}`);
     }
 };
+mod.priorities = [
+    Tower.action.heal,
+    Tower.action.urgentRepair,
+    Tower.action.attack,
+    Tower.action.idle,
+];
+mod.nextAction = function(tower) {
+    for (const action of this.priorities) {
+        if (action.isValidAction(tower) && action.isAddableAction(tower) && action.assign(tower)) {
+            return true;
+        }
+    }
+    return false;
+};
+
 mod.registerAction = function(tower, target, action, entry) {
     if (tower === target) throw new Error('attempt to register self-target');
     if (!entry) entry = tower.memory;
@@ -103,6 +83,7 @@ mod.registerAction = function(tower, target, action, entry) {
 mod.flush = function() {
     this.typeCount = {};
     this.actionCount = {};
+    Util.set(Memory, 'towers', {});
 };
 mod.analyze = function() {
     const register = entry => {
@@ -156,5 +137,5 @@ mod.execute = function() {
 
 };
 mod.cleanup = function() {
-    // TODO: unregister towers upon destruction
+    // TODO: unregister tower's upon destruction
 };

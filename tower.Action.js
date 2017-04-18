@@ -5,9 +5,12 @@ const TowerAction = class extends Action {
         
         this.targetRange = 40;
     }
+    
+    isAddableAction(tower) {
+        return super.isAddableAction(tower) || !tower.room.towers || !tower.room.towers.actionCount[this.name] || !tower.room.towers.actionCount[this.id] < this.maxPerAction;
+    }
 
     step(tower) {
-        // TODO: Move base tower logic here
         const workResult = this.work(tower);
         if (workResult !== OK) {
             delete tower.action;

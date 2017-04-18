@@ -227,6 +227,7 @@ global.install = () => {
         action: {
             attack: load('tower.action.attack'),
             heal: load('tower.action.heal'),
+            idle: load('tower.action.idle'),
             repair: load('tower.action.repair'),
             urgentRepair: load('tower.action.urgentRepair'),
         },
