@@ -223,7 +223,7 @@ const Visuals = class {
             x = bufferWidth * 2 + sectionWidth;
             rect();
             const GCL_PERCENTAGE = Game.gcl.progress / Game.gcl.progressTotal;
-            vis.rect(x, BAR_Y, GCL_PERCENTAGE, 1, {
+            vis.rect(x, BAR_Y, GCL_PERCENTAGE * sectionWidth, 1, {
                 fill: getColourByPercentage(GCL_PERCENTAGE, true),
                 opacity: BAR_STYLE.opacity,
             });
