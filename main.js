@@ -243,7 +243,7 @@ global.install = () => {
     OCSMemory.activateSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, true);
 
     global.modulesValid = Memory.modules.valid;
-    if (DEBUG) logSystem('Global.install', 'Code reloaded.');
+    if (global.DEBUG) logSystem('Global.install', 'Code reloaded.');
 };
 global.install();
 load('traveler')({exportTraveler: false, installTraveler: true, installPrototype: true, defaultStuckValue: TRAVELER_STUCK_TICKS, reportThreshold: TRAVELER_THRESHOLD});
@@ -351,7 +351,7 @@ module.exports.loop = function () {
 
         Game.cacheTime = Game.time;
     
-        if( DEBUG && TRACE ) trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
+        if( global.DEBUG && global.TRACE ) trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
         totalUsage.totalCPU();
     }
     catch (e) {

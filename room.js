@@ -7,10 +7,10 @@ mod.register = function() {
     Room.costMatrixInvalid.on(room => Room.rebuildCostMatrix(room.name || room));
     Flag.found.on(flag => Room.roomLayout(flag));
 };
-mod.pathfinderCache = {};
-mod.pathfinderCacheDirty = false;
-mod.pathfinderCacheLoaded = false;
-mod.COSTMATRIX_CACHE_VERSION = 3; // change this to invalidate previously cached costmatrices
+Room.pathfinderCache = {};
+Room.pathfinderCacheDirty = false;
+Room.pathfinderCacheLoaded = false;
+Room.COSTMATRIX_CACHE_VERSION = 3; // change this to invalidate previously cached costmatrices
 mod.extend = function(){
     // run extend in each of our submodules
     for (const key of Object.keys(Room._ext)) {
@@ -832,31 +832,31 @@ mod.extend = function(){
             get: function () {
                 if (_.isUndefined(this._structureMatrix)) {
                     const cacheValid = (roomName) => {
-                        if (_.isUndefined(mod.pathfinderCache)) {
-                            mod.pathfinderCache = {};
-                            mod.pathfinderCache[roomName] = {};
+                        if (_.isUndefined(Room.pathfinderCache)) {
+                            Room.pathfinderCache = {};
+                            Room.pathfinderCache[roomName] = {};
                             return false;
-                        } else if (_.isUndefined(mod.pathfinderCache[roomName])) {
-                            mod.pathfinderCache[roomName] = {};
+                        } else if (_.isUndefined(Room.pathfinderCache[roomName])) {
+                            Room.pathfinderCache[roomName] = {};
                             return false;
                         }
-                        const mem = mod.pathfinderCache[roomName];
+                        const mem = Room.pathfinderCache[roomName];
                         const ttl = Game.time - mem.updated;
-                        if (mem.version === mod.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && ttl < COST_MATRIX_VALIDITY) {
-                            if (DEBUG && TRACE) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
+                        if (mem.version === Room.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && ttl < COST_MATRIX_VALIDITY) {
+                            if (global.DEBUG && global.TRACE) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
                             return true;
                         }
                         return false;
                     };
 
                     if (cacheValid(this.name)) {
-                        if (_.isUndefined(mod.pathfinderCache[this.name].costMatrix)) {
-                            const costMatrix = PathFinder.CostMatrix.deserialize(mod.pathfinderCache[this.name].serializedMatrix);
-                            mod.pathfinderCache[this.name].costMatrix = costMatrix;
+                        if (_.isUndefined(Room.pathfinderCache[this.name].costMatrix)) {
+                            const costMatrix = PathFinder.CostMatrix.deserialize(Room.pathfinderCache[this.name].serializedMatrix);
+                            Room.pathfinderCache[this.name].costMatrix = costMatrix;
                         } 
-                        this._structureMatrix = mod.pathfinderCache[this.name].costMatrix;
+                        this._structureMatrix = Room.pathfinderCache[this.name].costMatrix;
                     } else {
-                        if (DEBUG) logSystem(this.name, 'Calculating cost matrix');
+                        if (global.DEBUG) logSystem(this.name, 'Calculating cost matrix');
                         var costMatrix = new PathFinder.CostMatrix();
                         let setCosts = structure => {
                             const site = structure instanceof ConstructionSite;
@@ -878,14 +878,14 @@ mod.extend = function(){
                         this.structures.all.forEach(setCosts);
                         this.constructionSites.forEach(setCosts);
                         this.immobileCreeps.forEach(c => costMatrix.set(c.pos.x, c.pos.y, 0xFF));
-                        const prevTime = mod.pathfinderCache[this.name].updated;
-                        mod.pathfinderCache[this.name] = {
+                        const prevTime = Room.pathfinderCache[this.name].updated;
+                        Room.pathfinderCache[this.name] = {
                             costMatrix: costMatrix,
                             updated: Game.time,
-                            version: mod.COSTMATRIX_CACHE_VERSION
+                            version: Room.COSTMATRIX_CACHE_VERSION
                         };
-                        mod.pathfinderCacheDirty = true;
-                        if( DEBUG && TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
+                        Room.pathfinderCacheDirty = true;
+                        if( global.DEBUG && global.TRACE ) trace('PathFinder', {roomName:this.name, prevTime, structures:this.structures.all.length, PathFinder:'CostMatrix'}, 'updated costmatrix');
                         this._structureMatrix = costMatrix;
                     }
                 }
@@ -1141,7 +1141,7 @@ mod.extend = function(){
 
         // build roads on all most frequent used fields
         let setSite = pos => {
-            if( DEBUG ) logSystem(this.name, `Constructing new road at ${pos.x}'${pos.y} (${pos.n} traces)`);
+            if( global.DEBUG ) logSystem(this.name, `Constructing new road at ${pos.x}'${pos.y} (${pos.n} traces)`);
             this.createConstructionSite(pos.x, pos.y, STRUCTURE_ROAD);
         };
         _.forEach(data, setSite);
@@ -1598,12 +1598,12 @@ mod.extend = function(){
                     let remoteOffers = room.memory.resources.offers;
                     let existingRemoteOffer = remoteOffers.find((o)=>{ return o.room==this.name && o.id==order.id && o.type==order.type; });
                     if (existingOffer) {
-                        if (DEBUG && TRACE) trace("Room", { roomName: this.name, remoteRoom: room.name, actionName: 'updateRoomOrders', subAction: 'update', orderId: order.id, resourceType: order.type, amount: available })
+                        if (global.DEBUG && global.TRACE) trace("Room", { roomName: this.name, remoteRoom: room.name, actionName: 'updateRoomOrders', subAction: 'update', orderId: order.id, resourceType: order.type, amount: available })
                         amountRemaining -= (available - existingOffer.amount);
                         existingOffer.amount = available;
                     } else {
-                        if (DEBUG && TRACE) trace("Room", { roomName: this.name, remoteRoom: room.name, actionName: 'updateRoomOrders', subAction: 'new', orderId: order.id, resourceType: order.type, amount: available })
-                        if (DEBUG) logSystem(this.name, `Room offer from ${room.name} with id ${order.id} placed for ${available} ${order.type}.`);
+                        if (global.DEBUG && global.TRACE) trace("Room", { roomName: this.name, remoteRoom: room.name, actionName: 'updateRoomOrders', subAction: 'new', orderId: order.id, resourceType: order.type, amount: available })
+                        if (global.DEBUG) logSystem(this.name, `Room offer from ${room.name} with id ${order.id} placed for ${available} ${order.type}.`);
                         amountRemaining -= available;
                         order.offers.push({
                             room: room.name,
@@ -1649,7 +1649,7 @@ mod.extend = function(){
             let amount = Math.max(offer.amount,100);
             if (amount > (store + onOrder)) {
                 let amt = amount - (store + onOrder);
-                if (DEBUG && TRACE) trace("Room", { actionName: 'fillARoomOrder', subAction: 'terminalOrder', roomName: this.name, targetRoomName: targetRoom.name, resourceType: offer.type, amount: amt });
+                if (global.DEBUG && global.TRACE) trace("Room", { actionName: 'fillARoomOrder', subAction: 'terminalOrder', roomName: this.name, targetRoomName: targetRoom.name, resourceType: offer.type, amount: amt });
                 this.placeOrder(this.terminal.id, offer.type, amt);
             }
             if (!targetRoom.terminal) continue;
@@ -1666,8 +1666,8 @@ mod.extend = function(){
 
             let ret = this.terminal.send(offer.type,amount,targetRoom.name,order.id);
             if (ret == OK) {
-                if (DEBUG && TRACE) trace("Room", { actionName: 'fillARoomOrder', roomName: this.name, targetRoomName: targetRoom.name, resourceType: offer.type, amount: amount });
-                if (DEBUG) logSystem(this.name, `Room order filled to ${targetRoom.name} for ${amount} ${offer.type}.`);
+                if (global.DEBUG && global.TRACE) trace("Room", { actionName: 'fillARoomOrder', roomName: this.name, targetRoomName: targetRoom.name, resourceType: offer.type, amount: amount });
+                if (global.DEBUG) logSystem(this.name, `Room order filled to ${targetRoom.name} for ${amount} ${offer.type}.`);
                 offer.amount -= amount;
                 if (offer.amount > 0) {
                     order.offers[targetOfferIdx].amount = offer.amount;
@@ -1727,7 +1727,7 @@ mod.extend = function(){
             if( orders.length > 0 ){
                 let order = _.max(orders, 'ratio');
                 let result = Game.market.deal(order.id, order.transactionAmount, that.name);
-                if( DEBUG || SELL_NOTIFICATION ) logSystem(that.name, `Selling ${order.transactionAmount} ${mineral} for ${order.credits} (${order.price} ¢/${mineral}, ${order.transactionCost} e): ${translateErrorCode(result)}`);
+                if( global.DEBUG || SELL_NOTIFICATION ) logSystem(that.name, `Selling ${order.transactionAmount} ${mineral} for ${order.credits} (${order.price} ¢/${mineral}, ${order.transactionCost} e): ${translateErrorCode(result)}`);
                 if( SELL_NOTIFICATION ) Game.notify( `<h2>Room ${that.name} executed an order!</h2><br/>Result: ${translateErrorCode(result)}<br/>Details:<br/>${JSON.stringify(order).replace(',',',<br/>')}` );
                 transacting = result == OK;
             }
@@ -1748,7 +1748,7 @@ mod.extend = function(){
             if( targetRoom instanceof Room && Game.market.calcTransactionCost(50000, this.name, targetRoom.name) < (this.terminal.store.energy-50000)) {
                 targetRoom._isReceivingEnergy = true;
                 let response = this.terminal.send('energy', 50000, targetRoom.name, 'have fun');
-                if( DEBUG ) logSystem(that.name, `Transferring 50k energy to ${targetRoom.name}: ${translateErrorCode(response)}`);
+                if( global.DEBUG ) logSystem(that.name, `Transferring 50k energy to ${targetRoom.name}: ${translateErrorCode(response)}`);
                 transacting = response == OK;
             }
         }
@@ -1810,6 +1810,7 @@ mod.extend = function(){
 
         this.memory.hostileIds = this.hostileIds;
     };
+
     Room.prototype.processPower = function() {
         // run lab reactions WOO!
         let powerSpawns = this.find(FIND_MY_STRUCTURES, { filter: (s) => { return s.structureType == STRUCTURE_POWER_SPAWN; } } );
@@ -1817,7 +1818,7 @@ mod.extend = function(){
             // see if the reaction is possible
             let powerSpawn = powerSpawns[i];
             if (powerSpawn.energy >= POWER_SPAWN_ENERGY_RATIO && powerSpawn.power >= 1) {
-                if (DEBUG && TRACE) trace('Room', { roomName: this.name, actionName: 'processPower' });
+                if (global.DEBUG && global.TRACE) trace('Room', { roomName: this.name, actionName: 'processPower' });
                 powerSpawn.processPower();
             }
         }
@@ -1899,12 +1900,12 @@ mod.extend = function(){
                 let existingOrder = containerData.orders.find( (r) => r.type == resourceType );
                 if ( existingOrder ) {
                     // delete structure order
-                    if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'cancelOrder', orderId: orderId, resourceType: resourceType })
+                    if (global.DEBUG && global.TRACE) trace("Room", { roomName: this.name, actionName: 'cancelOrder', orderId: orderId, resourceType: resourceType })
                     containerData.orders.splice( containerData.orders.indexOf(existingOrder), 1 );
                 }
             } else {
                 // delete all of structure's orders
-                if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'cancelOrder', orderId: orderId, resourceType: 'all' })
+                if (global.DEBUG && global.TRACE) trace("Room", { roomName: this.name, actionName: 'cancelOrder', orderId: orderId, resourceType: 'all' })
                 containerData.orders = [];
             }
         }
@@ -1984,12 +1985,12 @@ mod.extend = function(){
             let existingOrder = orders.find((o)=>{ return o.id==orderId && o.type==resourceType; });
             if (existingOrder) {
                 // delete existing order
-                if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'cancelRoomOrder', orderId: orderId, resourceType: resourceType })
+                if (global.DEBUG && global.TRACE) trace("Room", { roomName: this.name, actionName: 'cancelRoomOrder', orderId: orderId, resourceType: resourceType })
                 orders.splice( orders.indexOf(existingOrder), 1 );
             }
         } else if ( orderId ) {
             // delete all orders matching orderId
-            if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'cancelRoomOrder', orderId: orderId, resourceType: 'all' })
+            if (global.DEBUG && global.TRACE) trace("Room", { roomName: this.name, actionName: 'cancelRoomOrder', orderId: orderId, resourceType: 'all' })
             for (let i=0;i<orders.length;i++) {
                 let order = orders[i];
                 if ( order.id === orderId ) {
@@ -2021,12 +2022,12 @@ mod.extend = function(){
         let existingOrder = orders.find((o)=>{ return o.id==orderId && o.type==resourceType; });
         if (existingOrder) {
             // update existing order
-            if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'update', orderId: orderId, resourceType: resourceType, amount: amount })
+            if (global.DEBUG && global.TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'update', orderId: orderId, resourceType: resourceType, amount: amount })
             existingOrder.amount = amount;
         } else {
             // create new order
-            if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'new', orderId: orderId, resourceType: resourceType, amount: amount })
-            if (DEBUG) logSystem(this.name, `New room order with id ${orderId} placed for ${amount} ${resourceType}.`);
+            if (global.DEBUG && global.TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'new', orderId: orderId, resourceType: resourceType, amount: amount })
+            if (global.DEBUG) logSystem(this.name, `New room order with id ${orderId} placed for ${amount} ${resourceType}.`);
             orders.push({
                 id: orderId,
                 type: resourceType,
@@ -2322,7 +2323,7 @@ mod.execute = function() {
     let triggerNewInvaders = creep => {
         // create notification
         let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-        if( DEBUG || NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.room.my) || NOTIFICATE_HOSTILES ) logSystem(creep.pos.roomName, `Hostile intruder (${bodyCount}) from "${creep.owner.username}".`);
+        if( global.DEBUG || NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.room.my) || NOTIFICATE_HOSTILES ) logSystem(creep.pos.roomName, `Hostile intruder (${bodyCount}) from "${creep.owner.username}".`);
         if( NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.owner.username !== 'Invader' && creep.room.my) || (NOTIFICATE_HOSTILES && creep.owner.username !== 'Invader') ){
             Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${creep.pos.roomName} at ${toDateTimeString(toLocalDate(new Date()))}`);
         }
@@ -2371,12 +2372,12 @@ mod.cleanup = function() {
         OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, Memory.pathfinder);
         delete Memory.pathfinder;
     }
-    if (mod.pathfinderCacheDirty && mod.pathfinderCacheLoaded) {
+    if (Room.pathfinderCacheDirty && Room.pathfinderCacheLoaded) {
         // store our updated cache in the memory segment
         let encodedCache = {};
-        for (const key in mod.pathfinderCache) {
-            const entry = mod.pathfinderCache[key];
-            if (entry.version === mod.COSTMATRIX_CACHE_VERSION) {
+        for (const key in Room.pathfinderCache) {
+            const entry = Room.pathfinderCache[key];
+            if (entry.version === Room.COSTMATRIX_CACHE_VERSION) {
                 encodedCache[key] = {
                     serializedMatrix: entry.serializedMatrix || entry.costMatrix.serialize(),
                     updated: entry.updated,
@@ -2385,7 +2386,7 @@ mod.cleanup = function() {
             }
         }
         OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, encodedCache);
-        mod.pathfinderCacheDirty = false;
+        Room.pathfinderCacheDirty = false;
     }
 };
 mod.bestSpawnRoomFor = function(targetRoomName) {
@@ -2549,20 +2550,20 @@ mod.roomDistance = function(roomName1, roomName2, diagonal, continuous){
     return xDif + yDif; // count diagonal as 2
 };
 mod.rebuildCostMatrix = function(roomName) {
-    if (DEBUG) logSystem(roomName, 'Removing invalid costmatrix to force a rebuild.')
-    mod.pathfinderCache[roomName] = {};
-    mod.pathfinderCacheDirty = true;
+    if (global.DEBUG) logSystem(roomName, 'Removing invalid costmatrix to force a rebuild.')
+    Room.pathfinderCache[roomName] = {};
+    Room.pathfinderCacheDirty = true;
 };
 mod.loadCostMatrixCache = function(cache) {
     let count = 0;
     for (const key in cache) {
-        if (!mod.pathfinderCache[key] || mod.pathfinderCache[key].updated < cache[key].updated) {
+        if (!Room.pathfinderCache[key] || Room.pathfinderCache[key].updated < cache[key].updated) {
             count++;
-            mod.pathfinderCache[key] = cache[key];
+            Room.pathfinderCache[key] = cache[key];
         }
     }
-    if (DEBUG && count > 0) logSystem('RawMemory', 'loading pathfinder cache.. updated ' + count + ' stale entries.');
-    mod.pathfinderCacheLoaded = true;
+    if (global.DEBUG && count > 0) logSystem('RawMemory', 'loading pathfinder cache.. updated ' + count + ' stale entries.');
+    Room.pathfinderCacheLoaded = true;
 };
 mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
     const room = Game.rooms[roomName];

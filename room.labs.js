@@ -60,6 +60,7 @@ mod.extend = function() {
             labs.forEach(add);
         } else delete this.memory.labs;
     };
+
     Room.prototype.processLabs = function() {
         // only process labs every 10 turns and avoid room tick
         if (Game.time % LAB_COOLDOWN !== 5) return;
@@ -84,7 +85,7 @@ mod.extend = function() {
 
             if (master.runReaction(slave_a, slave_b) == OK) {
                 data.reactionAmount -= LAB_REACTION_AMOUNT;
-                if( DEBUG && TRACE ) trace("Room", { roomName: this.name, actionName: "processLabs", labId: master.id, resourceType: compound, amountRemaining: data.reactionAmount } );
+                if( global.DEBUG && global.TRACE ) trace("Room", { roomName: this.name, actionName: "processLabs", labId: master.id, resourceType: compound, amountRemaining: data.reactionAmount } );
                 if (data.reactionAmount <= 0) {
                     this.cancelReactionOrder(master.id);
                 }
@@ -205,7 +206,7 @@ mod.extend = function() {
                 // FU - SION - HA !
                 if ( reactor.runReaction( seed_a, seed_b ) === OK ) {
                     order.amount -= LAB_REACTION_AMOUNT;
-                    if( DEBUG && TRACE ) trace("Room", { roomName: this.name, actionName: "processLabs", reactorType: REACTOR_TYPE_FLOWER, labId: reactor.id, resourceType: order.type, amountRemaining: order.amount } );
+                    if( global.DEBUG && global.TRACE ) trace("Room", { roomName: this.name, actionName: "processLabs", reactorType: REACTOR_TYPE_FLOWER, labId: reactor.id, resourceType: order.type, amountRemaining: order.amount } );
                 }
             }
         }
@@ -446,12 +447,12 @@ mod.extend = function() {
             let existingOrder = data.reactions.orders.find((o)=>{ return o.id==orderId && o.type==resourceType; });
             if ( existingOrder ) {
                 // update existing order
-                if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeReactionOrder', subAction: 'update', orderId: orderId, resourceType: resourceType, amount: amount })
+                if (global.DEBUG && global.TRACE) trace("Room", { roomName: this.name, actionName: 'placeReactionOrder', subAction: 'update', orderId: orderId, resourceType: resourceType, amount: amount })
                 existingOrder.mode = mode;
                 existingOrder.amount = amount;
             } else {
                 // create new order
-                if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeReactionOrder', subAction: 'new', orderId: orderId, resourceType: resourceType, amount: amount })
+                if (global.DEBUG && global.TRACE) trace("Room", { roomName: this.name, actionName: 'placeReactionOrder', subAction: 'new', orderId: orderId, resourceType: resourceType, amount: amount })
                 data.reactions.orders.push({
                     id: orderId,
                     type: resourceType,
@@ -496,7 +497,7 @@ mod.extend = function() {
                     break;
             }
         } else {
-            if (DEBUG && TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'no_reactor' })
+            if (global.DEBUG && global.TRACE) trace("Room", { roomName: this.name, actionName: 'placeRoomOrder', subAction: 'no_reactor' })
             return ERR_INVALID_TARGET;
         }
 

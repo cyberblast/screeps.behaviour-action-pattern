@@ -29,7 +29,7 @@ mod.unregisterCreep = function(creepName){
     delete Memory.creeps[creepName];
 };
 mod.registerAction = function(creep, action, target, entry) {
-    if( DEBUG && TRACE ) trace('Population', {creepName:this.name, registerAction:action.name, target:target.name || target.id, Population:'registerAction'});
+    if( global.DEBUG && global.TRACE ) trace('Population', {creepName:this.name, registerAction:action.name, target:target.name || target.id, Population:'registerAction'});
 
     if( creep === target ) throw new Error('attempt to register self target');
     if( entry === undefined ) entry = this.getCreep(creep.name);

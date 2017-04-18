@@ -48,7 +48,7 @@ let Action = function(actionName){
     };
     // order for the creep to execute each tick, when assigned to that action
     this.step = function(creep){
-        if(CHATTY) creep.say(this.name, SAY_PUBLIC);
+        if(global.CHATTY) creep.say(this.name, global.SAY_PUBLIC);
         let range = creep.pos.getRangeTo(creep.target);
         if( range <= this.targetRange ) {
             var workResult = this.work(creep);
@@ -98,7 +98,7 @@ let Action = function(actionName){
     this.assign = function(creep, target){
         if( target === undefined ) target = this.newTarget(creep);
         if( target && this.isAddableTarget(target, creep)) {
-            if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, assign:this.name, target:!target || target.name || target.id, Action:'assign'});
+            if( global.DEBUG && global.TRACE ) trace('Action', {creepName:creep.name, assign:this.name, target:!target || target.name || target.id, Action:'assign'});
             if( !creep.action || creep.action.name != this.name || !creep.target || creep.target.id !== target.id || creep.target.name != target.name ) {
                 Population.registerAction(creep, this, target);
                 this.onAssignment(creep, target);
@@ -109,7 +109,7 @@ let Action = function(actionName){
     };
     // assignment postprocessing
     this.onAssignment = function(creep, target) {
-        if (SAY_ASSIGNMENT && ACTION_SAY[this.name.toUpperCase()]) creep.say(ACTION_SAY[this.name.toUpperCase()], SAY_PUBLIC);
+        if (global.SAY_ASSIGNMENT && ACTION_SAY[this.name.toUpperCase()]) creep.say(ACTION_SAY[this.name.toUpperCase()], global.SAY_PUBLIC);
         if (target instanceof RoomObject || target instanceof RoomPosition && VISUALS.ACTION_ASSIGNMENT) {
             Visuals.drawArrow(creep, target);
         }

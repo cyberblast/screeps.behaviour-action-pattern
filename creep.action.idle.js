@@ -8,7 +8,7 @@ action.newTarget = function(creep){
     return FlagDir.specialFlag();
 };
 action.step = function(creep){
-    if(CHATTY) creep.say(this.name, SAY_PUBLIC);
+    if(global.CHATTY) creep.say(this.name, global.SAY_PUBLIC);
     creep.idleMove();
     delete creep.data.actionName;
     delete creep.data.targetId;
