@@ -2550,7 +2550,7 @@ mod.loadCostMatrixCache = function(cache) {
                 Room.costMatrixCache[key] = cache[key];
             }
         }
-        if (DEBUG && count > 0) logSystem('RawMemory', 'loading costMatrix cache.. updated ' + count + ' stale entries.');
+        if (global.DEBUG && count > 0) logSystem('RawMemory', 'loading costMatrix cache.. updated ' + count + ' stale entries.');
     }
     Room.costMatrixCacheLoaded = true;
 };
@@ -2562,7 +2562,7 @@ mod.loadPathCache = function(cache) {
             count++;
             Room.pathCache[key] = cache[key];
         }
-        if (DEBUG && count > 0) logSystem('RawMemory', 'loading cached paths.. updated ' + count + ' entries.');
+        if (global.DEBUG && count > 0) logSystem('RawMemory', 'loading cached paths.. updated ' + count + ' entries.');
     }
     Room.pathCacheLoaded = true;
 }
