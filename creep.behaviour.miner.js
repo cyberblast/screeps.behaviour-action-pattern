@@ -30,7 +30,7 @@ mod.determineTarget = creep => {
     if( source ) {
         creep.data.determinatedTarget = source.id;
     }
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9935), SAY_PUBLIC);
+    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9935), global.SAY_PUBLIC);
 };
 mod.run = function(creep, params = {}) {
     if (_.isUndefined(params.approach)) params.approach = mod.approach;
@@ -124,16 +124,16 @@ mod.run = function(creep, params = {}) {
                 if( creep.carry.energy <= carryThreshold ) {
                     const dropped = creep.pos.findInRange(FIND_DROPPED_ENERGY, 1);
                     if (dropped.length) {
-                        if(CHATTY) creep.say('picking', SAY_PUBLIC);
+                        if(global.CHATTY) creep.say('picking', global.SAY_PUBLIC);
                         creep.pickup(dropped[0]);
                     } else if (source.container && source.container.sum > 0) {
-                        if(CHATTY) creep.say('withdraw cont', SAY_PUBLIC);
+                        if(global.CHATTY) creep.say('withdraw cont', global.SAY_PUBLIC);
                         creep.withdraw(source.container, RESOURCE_ENERGY);
                     } else if (!params.remote && source.link && source.link.energy > 0) {
-                        if(CHATTY) creep.say('withdraw link', SAY_PUBLIC);
+                        if(global.CHATTY) creep.say('withdraw link', global.SAY_PUBLIC);
                         creep.withdraw(source.link, RESOURCE_ENERGY);
                     } else if (creep.carry.energy === 0) {
-                        if(CHATTY) creep.say('waiting', SAY_PUBLIC);
+                        if(global.CHATTY) creep.say('waiting', global.SAY_PUBLIC);
                         return; // idle
                     }
                     if (creep.carry.energy === 0) return; // we need at least some energy to do both in the same tick.
@@ -150,7 +150,7 @@ mod.run = function(creep, params = {}) {
                         } else repairTarget = null;
                     }
                     if (repairTarget) {
-                        if(CHATTY) creep.say('repairing', SAY_PUBLIC);
+                        if(global.CHATTY) creep.say('repairing', global.SAY_PUBLIC);
                         return creep.repair(repairTarget);
                     } else {
                         delete creep.data.repairTarget;
@@ -169,24 +169,24 @@ mod.run = function(creep, params = {}) {
                         } else buildTarget = null;
                     }
                     if (buildTarget) {
-                        if(CHATTY) creep.say('building', SAY_PUBLIC);
+                        if(global.CHATTY) creep.say('building', global.SAY_PUBLIC);
                         return creep.build(buildTarget);
                     } else {
                         delete creep.data.buildTarget;
                         creep.data.buildChecked = Game.time;
                     }
                 }
-                if(CHATTY) creep.say('waiting', SAY_PUBLIC);
+                if(global.CHATTY) creep.say('waiting', global.SAY_PUBLIC);
                 return; // idle
             } else if( !params.remote && source.link && source.link.energy < source.link.energyCapacity ) {
-                if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
+                if(global.CHATTY) creep.say('harvesting', global.SAY_PUBLIC);
                 if( range === 0 ){
                     if(creep.carry.energy > ( creep.carryCapacity - ( creep.data.body&&creep.data.body.work ? (creep.data.body.work*2) : (creep.carryCapacity/2) )))
                         creep.transfer(source.link, RESOURCE_ENERGY);
                     return creep.harvest(source);
                 }
             } else if( source.container && source.container.sum < source.container.storeCapacity ) {
-                if(CHATTY) creep.say('harvesting', SAY_PUBLIC);
+                if(global.CHATTY) creep.say('harvesting', global.SAY_PUBLIC);
                 if( range === 0 ){
                     if( creep.sum > ( creep.carryCapacity - perHarvest(creep) )){
                         let transfer = r => { if(creep.carry[r] > 0 ) creep.transfer(source.container, r); };
@@ -195,10 +195,10 @@ mod.run = function(creep, params = {}) {
                     return creep.harvest(source);
                 }
             } else {
-                if(CHATTY) creep.say('dropmining', SAY_PUBLIC);
+                if(global.CHATTY) creep.say('dropmining', global.SAY_PUBLIC);
                 if( range === 0 ){
                     if( creep.sum > ( creep.carryCapacity - perHarvest(creep) )) {
-                        if( OOPS ) creep.say(String.fromCharCode(8681), SAY_PUBLIC);
+                        if( OOPS ) creep.say(String.fromCharCode(8681), global.SAY_PUBLIC);
                         let drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
                         _.forEach(Object.keys(creep.carry), drop);
                     }

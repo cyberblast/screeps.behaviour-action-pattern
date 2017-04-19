@@ -5,7 +5,7 @@ action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
 action.newTarget = function(creep){ return null; };
 action.step = function(creep){
-    if(CHATTY) creep.say(this.name, SAY_PUBLIC);
+    if(global.CHATTY) creep.say(this.name, global.SAY_PUBLIC);
     let targetRange = _.get(creep, ['data', 'travelRange'], this.targetRange);
     let target = creep.target;
     if (FlagDir.isSpecialFlag(creep.target)) {

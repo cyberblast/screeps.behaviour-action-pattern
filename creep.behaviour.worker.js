@@ -17,7 +17,7 @@ mod.run = function(creep) {
 };
 mod.nextAction = function(creep){
     if( creep.data.creepType == "worker" && creep.pos.roomName != creep.data.homeRoom && Game.rooms[creep.data.homeRoom] && Game.rooms[creep.data.homeRoom].controller ) {
-        if( DEBUG && TRACE ) trace('Behaviour', {actionName:'travelling', behaviourName:this.name, creepName:creep.name, assigned: true, Behaviour:'nextAction', Action:'assign'});
+        if( global.DEBUG && global.TRACE ) trace('Behaviour', {actionName:'travelling', behaviourName:this.name, creepName:creep.name, assigned: true, Behaviour:'nextAction', Action:'assign'});
         Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
         return true;
     }
@@ -94,16 +94,16 @@ mod.nextAction = function(creep){
     for(var iAction = 0; iAction < priority.length; iAction++) {
         var action = priority[iAction];
         const valid = action.isValidAction(creep);
-        if( DEBUG && TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, valid, Action:'isValidAction'});
+        if( global.DEBUG && global.TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, valid, Action:'isValidAction'});
         if( !valid ) continue;
 
         const addable = action.isAddableAction(creep);
-        if( DEBUG && TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, addable, Action:'isAddableAction'});
+        if( global.DEBUG && global.TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, addable, Action:'isAddableAction'});
         if( !addable ) continue;
 
         const assigned = action.assign(creep);
         if( assigned ) {
-            if( DEBUG && TRACE ) trace(assigned ? 'Behaviour' : 'Action', {actionName:action.name, behaviourName:this.name, reepName:creep.name, assigned, Behaviour:'nextAction', Action:'assign'});
+            if( global.DEBUG && global.TRACE ) trace(assigned ? 'Behaviour' : 'Action', {actionName:action.name, behaviourName:this.name, reepName:creep.name, assigned, Behaviour:'nextAction', Action:'assign'});
             return true;
         }
     }

@@ -40,6 +40,66 @@ const storageObject = (vis, store, x, startY) => {
 const Visuals = class {
     
     // VISUAL UTIL METHODS
+    drawBar(vis, val, x, y, width, height, inner, fillStyle={}) {
+        if (!inner) inner = val;
+        const TEXT_Y = y + 0.75;
+        vis.rect(x, y, width, height, this.barStyle);
+        vis.rect(x, y, width * val, height, fillStyle);
+        vis.text(inner, x + width / 2, TEXT_Y);
+    }
+    
+    drawPie(vis, val, max, title, colour, center, inner) {
+       if (!inner) inner = val;
+        
+        let p = 1;
+        if (max !== 0) p = val / max;
+        const r = 1; // radius
+        center = {x: center.x, y: center.y * r * 4.5};
+        vis.circle(center, {
+            radius: r + 0.1,
+            fill: BLACK,
+            stroke: 'rgba(255, 255, 255, 0.8)',
+        });
+        const poly = [center];
+        const tau = 2 * Math.PI;
+        const surf = tau * (p + 0.1);
+        const offs = -Math.PI / 2;
+        const step = tau / 32;
+        for (let i = 0; i <= surf; i += step) {
+            poly.push({
+                x: center.x + Math.cos(i + offs),
+                y: center.y - Math.cos(i),
+            });
+        }
+        poly.push(center);
+        vis.poly(poly, {
+            fill: colour,
+            opacity: 1,
+            stroke: colour,
+            strokeWidth: 0.05,
+        });
+        vis.text(Number.isFinite(inner) ? Util.formatNumber(inner) : inner, center.x, center.y + 0.33, {
+            color: WHITE,
+            font: '1 monospace',
+            align: 'center',
+            stroke: 'rgba(0, 0, 0, 0.8)',
+            strokeWidth: 0.08,
+        });
+        let yoff = 0.7;
+        if (0.35 < p && p < 0.65) yoff += 0.3;
+        vis.text(title, center.x, center.y + r + yoff, {
+            color: WHITE,
+            font: '0.6 monospace',
+            align: 'center',
+        });
+        const lastpol = poly[poly.length - 2];
+        vis.text('' + Math.floor(p * 100) + '%', lastpol.x + (lastpol.x - center.x) * 0.7, lastpol.y + (lastpol.y - center.y) * 0.4 + 0.1, {
+            color: WHITE,
+            font: '0.4 monospace',
+            align: 'center',
+        });
+    }
+    
     drawLine(from, to, style) {
         if (from instanceof RoomObject) from = from.pos;
         if (to instanceof RoomObject) to = to.pos;
@@ -209,50 +269,67 @@ const Visuals = class {
     drawGlobal() {
         const vis = this.vis;
         const bufferWidth = 1;
-        const sectionWidth = 49 / 5;
-        const BAR_STYLE = this.barStyle;
+        if (!VISUALS.INFO_PIE_CHART) {
+            const sectionWidth = 49 / 5;
+            const BAR_STYLE = this.barStyle;
+    
+            let x = bufferWidth;
+            const y = 2;
+            const BAR_Y = y - 0.75;
+            if (VISUALS.ROOM) {
+                // GCL
+                x = bufferWidth * 2 + sectionWidth;
+                const GCL_PERCENTAGE = Game.gcl.progress / Game.gcl.progressTotal;
+                this.drawBar(vis, GCL_PERCENTAGE, x, BAR_Y, sectionWidth, 1, `GCL: ${Game.gcl.level} (${(GCL_PERCENTAGE * 100).toFixed(2)}%)`, {
+                    fill: getColourByPercentage(GCL_PERCENTAGE, true),
+                    opacity: BAR_STYLE.opacity,
+                });
         
-        let x = bufferWidth;
-        const y = 2;
-        const BAR_Y = y - 0.75;
+                // CPU
+                x += sectionWidth + bufferWidth;
+                const CPU_PERCENTAGE = Game.cpu.getUsed() / Game.cpu.limit;
+                const FUNCTIONAL_CPU_PERCENTAGE = Math.min(1, CPU_PERCENTAGE);
+                this.drawBar(vis, FUNCTIONAL_CPU_PERCENTAGE, x, BAR_Y, sectionWidth, 1, `CPU: ${(CPU_PERCENTAGE * 100).toFixed(2)}%`, {
+                    fill: getColourByPercentage(FUNCTIONAL_CPU_PERCENTAGE),
+                    opacity: BAR_STYLE.opacity,
+                });
         
-        const BAR_ARGS = [BAR_Y, sectionWidth, 1, BAR_STYLE];
-        const rect = () => vis.rect(x, ...BAR_ARGS);
-        if (VISUALS.ROOM) {
+                // BUCKET
+                x += sectionWidth + bufferWidth;
+                const BUCKET_PERCENTAGE = Math.min(1, Game.cpu.bucket / 10000);
+                this.drawBar(vis, BUCKET_PERCENTAGE, x, BAR_Y, sectionWidth, 1, `Bucket: ${Game.cpu.bucket}`, {
+                    fill: getColourByPercentage(BUCKET_PERCENTAGE, true),
+                    opacity: BAR_STYLE.opacity,
+                });
+        
+                // TICK
+                x += sectionWidth + bufferWidth;
+                vis.text(`Tick: ${Game.time}`, x, y, {align: 'left'});
+            }
+        } else {
+            let x = bufferWidth + 1;
+            let y = 0.5;
             // GCL
-            x = bufferWidth * 2 + sectionWidth;
-            rect();
-            const GCL_PERCENTAGE = Game.gcl.progress / Game.gcl.progressTotal;
-            vis.rect(x, BAR_Y, GCL_PERCENTAGE, 1, {
-                fill: getColourByPercentage(GCL_PERCENTAGE, true),
-                opacity: BAR_STYLE.opacity,
-            });
-            vis.text(`GCL: ${Game.gcl.level} (${(GCL_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
+            this.drawPie(vis, Math.round(Game.gcl.progress), Game.gcl.progressTotal, `GCL ${Game.gcl.level}`, getColourByPercentage(Game.gcl.progress / Game.gcl.progressTotal, true), {x, y: y++});
             
             // CPU
-            x += sectionWidth + bufferWidth;
-            rect();
             const CPU_PERCENTAGE = Game.cpu.getUsed() / Game.cpu.limit;
             const FUNCTIONAL_CPU_PERCENTAGE = Math.min(1, CPU_PERCENTAGE);
-            vis.rect(x, BAR_Y, FUNCTIONAL_CPU_PERCENTAGE * sectionWidth, 1, {
-                fill: getColourByPercentage(FUNCTIONAL_CPU_PERCENTAGE),
-                opacity: BAR_STYLE.opacity,
-            });
-            vis.text(`CPU: ${(CPU_PERCENTAGE * 100).toFixed(2)}%`, x + sectionWidth / 2, y);
+            this.drawPie(vis, Math.round(Game.cpu.getUsed()), Game.cpu.limit, 'CPU', getColourByPercentage(FUNCTIONAL_CPU_PERCENTAGE), {x, y: y++});
             
             // BUCKET
-            x += sectionWidth + bufferWidth;
-            rect();
-            const BUCKET_PERCENTAGE = Math.min(1, Game.cpu.bucket / 10000);
-            vis.rect(x, BAR_Y, BUCKET_PERCENTAGE * sectionWidth, 1, {
-                fill: getColourByPercentage(BUCKET_PERCENTAGE, true),
-                opacity: BAR_STYLE.opacity,
-            });
-            vis.text(`Bucket: ${Game.cpu.bucket}`, x + sectionWidth / 2, y);
+            this.drawPie(vis, Game.cpu.bucket, 10000, 'Bucket', getColourByPercentage(Math.min(1, Game.cpu.bucket / 10000), true), {x, y: y++});
             
             // TICK
-            x += sectionWidth + bufferWidth;
-            vis.text(`Tick: ${Game.time}`, x, y, {align: 'left'});
+            y += 11;
+            vis.text('Tick', x, y++, {
+                color: WHITE,
+                align: 'center',
+            });
+            vis.text(Game.time, x, y++, {
+                color: WHITE,
+                align: 'center',
+            });
         }
         if (VISUALS.CPU) {
             this.drawSparkline(undefined, 1.5, 46.5, 20, 2, _.map(Memory.visualStats.cpu, (v, i) => Memory.visualStats.cpu[i]), this.sparklineStyle);
@@ -286,51 +363,85 @@ const Visuals = class {
         vis.text(`Room: ${vis.roomName}`, 24.5, ++y);
         // Displays bars: RCL, Room Energy
         const bufferWidth = 1;
-        const sectionWidth = 49 / 5;
-        const BAR_STYLE = this.barStyle;
-        
-        // RCL
-        x = bufferWidth;
-        vis.rect(x, ++y - 0.75, sectionWidth, 1, BAR_STYLE);
-        let text;
-        let RCL_PERCENTAGE;
-        if (room.controller.level === 8) {
-            RCL_PERCENTAGE = 1;
-            text = 'RCL: 8';
-        } else if (room.controller.reservation) {
-            RCL_PERCENTAGE = 0;
-            text = `Reserved: ${room.controller.reservation.ticksToEnd}`;
-        } else if (room.controller.owner) {
-            RCL_PERCENTAGE = Math.min(1, room.controller.progress / room.controller.progressTotal);
-            text = `RCL: ${room.controller.level} (${(RCL_PERCENTAGE * 100).toFixed(2)}%)`;
-        } else {
-            RCL_PERCENTAGE = 0;
-            text = `Unowned`;
-        }
-        vis.rect(x, y - 0.75, RCL_PERCENTAGE * sectionWidth, 1, {
-            fill: getColourByPercentage(RCL_PERCENTAGE, true),
-            opacity: BAR_STYLE.opacity,
-        });
-        vis.text(text, x + sectionWidth / 2, y);
-        
-        if (VISUALS.ROOM_GLOBAL) {
-            // New line
-            y += 1.5;
-            
+        if (!VISUALS.INFO_PIE_CHART) {
+            const sectionWidth = 49 / 5;
+            const BAR_STYLE = this.barStyle;
+    
+            // RCL
             x = bufferWidth;
-        } else {
-            x += sectionWidth + bufferWidth;
-        }
-        
-        // Display Energy Available
-        if (!room.controller.reservation || !room.controller.owner) {
-            vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
-            const ENERGY_PERCENTAGE = room.energyAvailable / room.energyCapacityAvailable || 0;
-            vis.rect(x, y - 0.75, Math.min(1, ENERGY_PERCENTAGE) * sectionWidth, 1, {
-                fill: getColourByPercentage(ENERGY_PERCENTAGE, true),
+            y++;
+            let text;
+            let RCL_PERCENTAGE;
+            if (room.controller.level === 8) {
+                RCL_PERCENTAGE = 1;
+                text = 'RCL: 8';
+            } else if (room.controller.reservation) {
+                RCL_PERCENTAGE = 0;
+                text = `Reserved: ${room.controller.reservation.ticksToEnd}`;
+            } else if (room.controller.owner) {
+                RCL_PERCENTAGE = Math.min(1, room.controller.progress / room.controller.progressTotal);
+                text = `RCL: ${room.controller.level} (${(RCL_PERCENTAGE * 100).toFixed(2)}%)`;
+            } else {
+                RCL_PERCENTAGE = 0;
+                text = `Unowned`;
+            }
+            this.drawBar(vis, RCL_PERCENTAGE, x, y - 0.75, sectionWidth, 1, text, {
+                fill: getColourByPercentage(RCL_PERCENTAGE, true),
                 opacity: BAR_STYLE.opacity,
             });
-            vis.text(`Energy: ${room.energyAvailable}/${room.energyCapacityAvailable} (${(ENERGY_PERCENTAGE * 100).toFixed(2)}%)`, x + sectionWidth / 2, y);
+    
+            if (VISUALS.ROOM_GLOBAL) {
+                // New line
+                y += 1.5;
+        
+                x = bufferWidth;
+            } else {
+                x += sectionWidth + bufferWidth;
+            }
+    
+            // Display Energy Available
+            if (!room.controller.reservation && !room.controller.owner) {
+                const ENERGY_PERCENTAGE = room.energyAvailable / room.energyCapacityAvailable || 0;
+                this.drawBar(vis, ENERGY_PERCENTAGE, x, y - 0.75, sectionWidth, 1, `Energy: ${room.energyAvailable}/${room.energyCapacityAvailable} (${(ENERGY_PERCENTAGE * 100).toFixed(2)}%)`, {
+                    fill: getColourByPercentage(ENERGY_PERCENTAGE, true),
+                    opacity: BAR_STYLE.opacity,
+                });
+            }
+        } else {
+            let x = bufferWidth + 1;
+            let y = 0.5;
+            if (VISUALS.ROOM_GLOBAL) {
+                x += 4;
+            }
+            
+            // RCL
+            let val;
+            let max;
+            let title = 'RCL';
+            let inner;
+            if (room.controller.level === 8) {
+                val = 1;
+                max = 1;
+                inner = ' ';
+            } else if (room.controller.reservation) {
+                val = room.controller.reservation.ticksToEnd;
+                max = 5000;
+            } else if (room.controller.owner) {
+                val = Math.min(room.controller.progress, room.controller.progressTotal);
+                max = room.controller.progressTotal;
+                title += ` ${room.controller.level}`;
+            } else {
+                val = 0;
+                max = 1;
+                inner = 'N/A';
+            }
+            this.drawPie(vis, val, max, title, getColourByPercentage(val / max, true), {x, y: y++}, inner);
+            
+            // Energy Available
+            if (!room.controller.reservation && !room.controller.owner) {
+                const PERCENTAGE = room.energyAvailable / room.energyCapacityAvailable || 0;
+                this.drawPie(vis, room.energyAvailable, room.energyCapacityAvailable, 'Energy', getColourByPercentage(PERCENTAGE, true), {x, y: y++});
+            }
         }
     }
     
@@ -422,7 +533,7 @@ const Visuals = class {
     drawRoomOrders(room) {
         const vis = new RoomVisual(room.name);
         const x = 43;
-        let y = 4.5;
+        let y = VISUALS.INFO_PIE_CHART ? 0.5 : 4.5;
         if (!room.memory.resources || !room.memory.resources.orders || !_.size(room.memory.resources.orders)) {
             return;
         }
@@ -442,7 +553,7 @@ const Visuals = class {
     drawRoomOffers(room) {
         const vis = new RoomVisual(room.name);
         const x = 43;
-        let y = 4.5;
+        let y = VISUALS.INFO_PIE_CHART ? 0.5 : 4.5;
         if (!room.memory.resources || !room.memory.resources.offers || !_.size(room.memory.resources.offers)) {
             return;
         }
@@ -465,7 +576,7 @@ const Visuals = class {
         if (!storage || !_.size(storage.store)) return;
         const vis = new RoomVisual(storage.room.name);
         const x = 43;
-        let y = 4.5;
+        let y = VISUALS.INFO_PIE_CHART ? 0.5 : 4.5;
         vis.text('Storage Contents', x, ++y, {align: 'left'});
         storageObject(vis, storage.store, x, y);
     }
@@ -474,7 +585,7 @@ const Visuals = class {
         if (!terminal || !_.size(terminal.store)) return;
         const vis = new RoomVisual(terminal.room.name);
         const x = 43;
-        let y = 4.5;
+        let y = VISUALS.INFO_PIE_CHART ? 0.5 : 4.5;
         if (VISUALS.STORAGE && terminal.room.storage) {
             y += 2 + _.size(terminal.room.storage.store) * 0.6;
         }
