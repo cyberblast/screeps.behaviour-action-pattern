@@ -50,7 +50,7 @@ mod.nextAction = function(creep){
         ]);
         if ( creep.sum > creep.carry.energy ||
             ( !creep.room.situation.invasion &&
-                SPAWN_DEFENSE_ON_ATTACK && creep.room.conserveForDefense && creep.room.relativeEnergyAvailable > 0.8)) {
+                global.SPAWN_DEFENSE_ON_ATTACK && creep.room.conserveForDefense && creep.room.relativeEnergyAvailable > 0.8)) {
             priority.unshift(Creep.action.storing);
         }
         if (creep.room.structures.urgentRepairable.length > 0 ) {

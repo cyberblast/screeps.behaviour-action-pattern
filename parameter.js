@@ -40,6 +40,7 @@ let mod = {
         VISIBLE_ONLY: false, // depends on userscript: https://github.com/Esryok/screeps-browser-ext/blob/master/visible-room-tracker.user.js
         ROOM: true, // displays basic info relative to the room
         ROOM_GLOBAL: true, // displays basic info relative to your account - requires ROOM: true
+        INFO_PIE_CHART: false, // replaces the info bars with pie charts
         CPU: true, // display a graph containing CPU used, CPU limit, and bucket
         ROOM_ORDERS: true, // display orders the room creates
         ROOM_OFFERS: true, // display what a room will offer another
@@ -147,22 +148,23 @@ let mod = {
     // function parameters: room. expected result: array
     CONSTRUCTION_PRIORITY: [STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_LINK,STRUCTURE_TERMINAL,STRUCTURE_STORAGE,STRUCTURE_TOWER,STRUCTURE_POWER_SPAWN,STRUCTURE_NUKER,STRUCTURE_OBSERVER,STRUCTURE_ROAD,STRUCTURE_CONTAINER,STRUCTURE_EXTRACTOR,STRUCTURE_LAB,STRUCTURE_WALL,STRUCTURE_RAMPART],
     CONTROLLER_SIGN: true,
+    // function parameters: room. expected result: string
     CONTROLLER_SIGN_MESSAGE: `Territory of ${_ME}, an Open Collaboration Society user! (https://github.com/ScreepsOCS)`,
     CONTROLLER_SIGN_UPDATE: false, // Update sign message if user changes CONTROLLER_SIGN_MESSAGE
     MINERS_AUTO_BUILD: false, // miners and remoteMiners will build their own containers if they are missing.
     MINER_WORK_THRESHOLD: 50, // how long to wait before a miner checks for repairs/construction sites nearby again
     REMOTE_HAULER: {
-        ALLOW_OVER_CAPACITY: false, // Hauler capacity rounds up by MIN_WEIGHT, or this number value.
-        CHECK_INTERVAL: 5, // how many ticks before we check to see if new haulers need spawninig?
+        ALLOW_OVER_CAPACITY: 2450, // Hauler capacity rounds up by MIN_WEIGHT, or this number value.
         DRIVE_BY_BUILD_ALL: false, // If REMOTE_HAULER.DRIVE_BY_BUILDING is enabled then this option will allow remote haulers will drive-by-build any of your structures.
         DRIVE_BY_BUILD_RANGE: 1, // A creep's max build distance is 3 but cpu can be saved by dropping the search distance to 1.
-        DRIVE_BY_BUILDING: false, // Allows remote haulers to build roads and containers. Consider setting REMOTE_WORKER_MULTIPLIER to 0.
+        DRIVE_BY_BUILDING: true, // Allows remote haulers to build roads and containers. Consider setting REMOTE_WORKER_MULTIPLIER to 0.
         DRIVE_BY_REPAIR_RANGE: 0, // range that remote haulers should search when trying to repair and move
         MIN_LOAD: 0.75, // Haulers will return home as long as their ratio of carrying/capacity is above this amount.
         MIN_WEIGHT: 800, // Small haulers are a CPU drain.
-        MULTIPLIER: 1, // Max number of haulers spawned per source in a remote mining room.
-        REHOME: false, // May haulers choose closer storage for delivery?
+        MULTIPLIER: 4, // Max number of haulers spawned per source in a remote mining room.
+        REHOME: true, // May haulers choose closer storage for delivery?
     },
+    TASK_CREEP_CHECK_INTERVAL: 250, // Maximum number of ticks before a task checks to see if it needs to spawn new creeps
     REMOTE_RESERVE_HAUL_CAPACITY: 0.1, // Percent of allocated haul capacity before sending reservers.
     PIONEER_UNOWNED: false, // True: pioneers may attempt to work in unowned rooms.
     DRIVE_BY_REPAIR_RANGE: 2, // range that creeps should search when trying to repair and move
