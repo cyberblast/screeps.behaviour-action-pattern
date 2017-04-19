@@ -1,5 +1,11 @@
 const mod = {};
 module.exports = mod;
+mod.analyzeRoom = function(room) {
+    if (Room.needMemoryResync(room)) {
+        room.saveLabs();
+    }
+    if (room.structures.labs.all.length > 0) room.processLabs();
+};
 mod.extend = function() {
     // Labs constructor
     Room.Labs = function(room){
@@ -34,9 +40,9 @@ mod.extend = function() {
             }
         });
     };
-    // Lab related Room variables
+    // Lab related Room variables go here
 
-    // Room prototype extensions
+    // Room prototype extensions go here
     Room.prototype.saveLabs = function(){
         let labs = this.find(FIND_MY_STRUCTURES, {
             filter: (structure) => ( structure.structureType == STRUCTURE_LAB )
@@ -539,5 +545,5 @@ mod.extend = function() {
 
         return OK;
     };
-    // New Room methods
+    // New Room methods go here
 };

@@ -1178,13 +1178,6 @@ mod.extend = function(){
             this.memory.spawns = _.map(spawns, id);
         } else delete this.memory.spawns;
     };
-    Room.prototype.saveObserver = function() {
-        this.memory.observer = {};
-        [this.memory.observer.id] = this.find(FIND_MY_STRUCTURES, {
-            filter: s => s instanceof StructureObserver
-        }).map(s => s.id);
-        if (_.isUndefined(this.memory.observer.id)) delete this.memory.observer;
-    };
     Room.prototype.saveNukers = function() {
         let nukers = this.find(FIND_MY_STRUCTURES, {
             filter: (structure) => ( structure.structureType == STRUCTURE_NUKER )
@@ -2113,46 +2106,6 @@ mod.extend = function(){
             }
         }
     };
-    Room.prototype.controlObserver = function() {
-        const OBSERVER = this.structures.observer;
-        if (!OBSERVER) return;
-        if (!this.memory.observer.rooms) this.initObserverRooms();
-        let nextRoom;
-        if (observerRequests.length > 0) { // support for requesting rooms
-            for (const request of observerRequests) {
-                if (Game.map.getRoomLinearDistance(this.name, request.roomName) <= 10 && !Memory.observerSchedule.includes(request.roomName)) {
-                    const room = request.room || Game.rooms[request.roomName];
-                    if (room && room.creeps && room.creeps.length && room.creeps.length > 0) continue; // highly likely to have vision next tick as well
-                    Memory.observerSchedule.push(request.roomName);
-                    nextRoom = request.roomName;
-                    break;
-                }
-            }
-        }
-        let i = 0;
-        const ROOMS = this.memory.observer.rooms;
-        if (!nextRoom) {
-            let lastLookedIndex = Number.isInteger(this.memory.observer.lastLookedIndex) ? this.memory.observer.lastLookedIndex : ROOMS.length;
-            do { // look ma! my first ever do-while loop!
-                if (lastLookedIndex >= ROOMS.length) {
-                    nextRoom = ROOMS[0];
-                } else {
-                    nextRoom = ROOMS[lastLookedIndex + 1];
-                }
-                lastLookedIndex = ROOMS.indexOf(nextRoom);
-                if (++i >= ROOMS.length) { // safety check - prevents an infinite loop
-                    break;
-                }
-            } while (Memory.observerSchedule.includes(nextRoom) || nextRoom in Game.rooms);
-            this.memory.observer.lastLookedIndex = lastLookedIndex;
-            Memory.observerSchedule.push(nextRoom);
-        }
-        const r = OBSERVER.observeRoom(nextRoom); // now we get to observe a room
-        if (r === ERR_INVALID_ARGS && i < ROOMS.length) { // room has not yet been created / off the map (backup)
-            Memory.observerSchedule.splice(Memory.observerSchedule.indexOf(nextRoom), 1); // remove invalid room from list
-            this.controlObserver(); // should look at the next room (latest call will override previous calls on the same tick)
-        }
-    };
     // toAvoid - a list of creeps to avoid sorted by owner
     Room.prototype.getAvoidMatrix = function(toAvoid) {
         const avoidMatrix = this.structureMatrix.clone();
@@ -2171,41 +2124,15 @@ mod.extend = function(){
         }
         return avoidMatrix;
     };
-    Room.prototype.initObserverRooms = function() {
-        const OBSERVER_RANGE = OBSERVER_OBSERVE_RANGE > 10 ? 10 : OBSERVER_OBSERVE_RANGE; // can't be > 10
-        const [x, y] = Room.calcGlobalCoordinates(this.name, (x,y) => [x,y]); // hacky get x,y
-        const [HORIZONTAL, VERTICAL] = Room.calcCardinalDirection(this.name);
-        this.memory.observer.rooms = [];
-
-        for (let a = x - OBSERVER_RANGE; a < x + OBSERVER_RANGE; a++) {
-            for (let b = y - OBSERVER_RANGE; b < y + OBSERVER_RANGE; b++) {
-                let hor = HORIZONTAL;
-                let vert = VERTICAL;
-                let n = a;
-                if (a < 0) { // swap horizontal letter
-                    hor = hor === 'W' ? 'E' : 'W';
-                    n = Math.abs(a) - 1;
-                }
-                hor += n;
-                n = b;
-                if (b < 0) {
-                    vert = vert === 'N' ? 'S' : 'N';
-                    n = Math.abs(b) - 1;
-                }
-                vert += n;
-                const room = hor + vert;
-                if (OBSERVER_OBSERVE_HIGHWAYS_ONLY && !Room.isHighwayRoom(room)) continue; // we only want highway rooms
-                if (room in Game.rooms && Game.rooms[room].my) continue; // don't bother adding the room to the array if it's owned by us
-                if (!Game.map.isRoomAvailable(room)) continue; // not an available room
-                this.memory.observer.rooms.push(room);
-            }
-        }
-    };
     Room.prototype.invalidateCostMatrix = function() {
         Room.costMatrixInvalid.trigger(this.name);
     };
 };
 mod.flush = function(){
+    // run flush in each of our submodules
+    for (const key of Object.keys(Room._ext)) {
+        if (Room._ext[key].flush) Room._ext[key].flush();
+    }
     let clean = room => {
         delete room._sourceEnergyAvailable;
         delete room._droppedResources;
@@ -2248,12 +2175,11 @@ mod.flush = function(){
         room.newInvader = [];
         room.goneInvader = [];
     };
-    Memory.observerSchedule = [];
     _.forEach(Game.rooms, clean);
 
     // Temporary migration can be removed once traveler is merged into /dev
     if (!_.isUndefined(Memory.rooms.hostileRooms)) {
-        for (roomName in Memory.rooms.hostileRooms) {
+        for (const roomName in Memory.rooms.hostileRooms) {
             if (_.isUndefined(Memory.rooms[roomName])) Memory.rooms[roomName] = {};
             Memory.rooms[roomName].hostile = Memory.rooms.hostileRooms[roomName];
         }
@@ -2274,25 +2200,33 @@ mod.totalStructuresChanged = function() {
     else delete Memory.rooms.myTotalStructures;
     return oldStructures && oldStructures !== numStructures;
 };
+mod.needMemoryResync = function(room) {
+    return !room.memory.initialized || Game.time % global.MEMORY_RESYNC_INTERVAL === 0 || room.name == 'sim';
+};
 mod.analyze = function() {
     const p = Util.startProfiling('Room.analyze', {enabled:PROFILING.ROOMS});
+    // run analyze in each of our submodules
+    for (const key of Object.keys(Room._ext)) {
+        if (Room._ext[key].analyze) Room._ext[key].analyze();
+    }
     const totalSitesChanged = Room.totalSitesChanged();
     const totalStructuresChanged = Room.totalStructuresChanged();
     const getEnvironment = room => {
         try {
-            if (!room.memory.initialized || Game.time % MEMORY_RESYNC_INTERVAL == 0 || room.name == 'sim' ) {
+            // run analyzeRoom in each of our submodules
+            for (const key of Object.keys(Room._ext)) {
+                if (Room._ext[key].analyzeRoom) Room._ext[key].analyzeRoom(room);
+            }
+            if (Room.needMemoryResync(room)) {
                 room.memory.initialized = Game.time;
                 room.saveMinerals();
                 room.saveTowers();
                 room.saveSpawns();
-                room.saveObserver();
                 room.saveNukers();
                 room.savePowerSpawns();
                 room.saveExtensions();
                 room.saveContainers();
                 room.saveLinks();
-                room.saveLabs();
-                if (room.structures.observer) room.initObserverRooms(); // to re-evaluate rooms, in case parameters are changed
                 room.processConstructionFlags();
             }
             if (Game.time % PROCESS_ORDERS_INTERVAL === 0 || room.name === 'sim') {
@@ -2303,7 +2237,6 @@ mod.analyze = function() {
             room.roadConstruction();
             if (room.structures.links.all.length > 0) room.linkDispatcher();
             if (room.hostiles.length > 0) room.processInvaders();
-            if (room.structures.labs.all.length > 0) room.processLabs();
             if (room.structures.powerSpawn) room.processPower();
             if (totalSitesChanged) room.countMySites();
             if (totalStructuresChanged) room.countMyStructures();
@@ -2320,6 +2253,10 @@ mod.analyze = function() {
 };
 mod.execute = function() {
     const p = Util.startProfiling('Room.execute', {enabled:PROFILING.ROOMS});
+    // run execute in each of our submodules
+    for (const key of Object.keys(Room._ext)) {
+        if (Room._ext[key].execute) Room._ext[key].execute();
+    }
     let triggerNewInvaders = creep => {
         // create notification
         let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
@@ -2329,11 +2266,15 @@ mod.execute = function() {
         }
         // trigger subscribers
         Room.newInvader.trigger(creep);
-    }
+    };
     let triggerKnownInvaders = id =>  Room.knownInvader.trigger(id);
     let triggerGoneInvaders = id =>  Room.goneInvader.trigger(id);
     let run = (memory, roomName) => {
         try {
+            // run executeRoom in each of our submodules
+            for (const key of Object.keys(Room._ext)) {
+                if (Room._ext[key].executeRoom) Room._ext[key].executeRoom(roomName);
+            }
             const p2 = Util.startProfiling(roomName, {enabled:PROFILING.ROOMS});
             let room = Game.rooms[roomName];
             if( room ){ // has sight
@@ -2359,14 +2300,13 @@ mod.execute = function() {
     _.forEach(Memory.rooms, (memory, roomName) => {
         run(memory, roomName);
         p.checkCPU(roomName + '.run', 1);
-        let room = Game.rooms[roomName];
-        if (room) {
-            if (room.structures.observer) room.controlObserver();
-            p.checkCPU(roomName + '.controlObserver', 0.5);
-        }
     });
 };
 mod.cleanup = function() {
+    // run cleanup in each of our submodules
+    for (const key of Object.keys(Room._ext)) {
+        if (Room._ext[key].cleanup) Room._ext[key].cleanup();
+    }
     // flush changes to the pathfinderCache but wait until load
     if (!_.isUndefined(Memory.pathfinder)) {
         OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, Memory.pathfinder);
