@@ -275,7 +275,7 @@ const Visuals = class {
             const BAR_STYLE = this.barStyle;
     
             let x = bufferWidth;
-            const y = 2;
+            let y = 2;
             const BAR_Y = y - 0.75;
             if (VISUALS.ROOM) {
                 // GCL
@@ -294,7 +294,7 @@ const Visuals = class {
                     fill: getColourByPercentage(FUNCTIONAL_CPU_PERCENTAGE),
                     opacity: BAR_STYLE.opacity,
                 });
-        
+      
                 // BUCKET
                 x += sectionWidth + bufferWidth;
                 const BUCKET_PERCENTAGE = Math.min(1, Game.cpu.bucket / 10000);
@@ -306,6 +306,20 @@ const Visuals = class {
                 // TICK
                 x += sectionWidth + bufferWidth;
                 vis.text(`Tick: ${Game.time}`, x, y, {align: 'left'});
+
+               //  Second Row
+                x = bufferWidth * 2 + sectionWidth;
+                y += 1.5;
+                
+                //  SPAWN CAPACITY UTILIZATION (SCU)
+                const spawnCount = _.size(Game.spawns);
+                let count = _(Game.spawns).filter('spawning').size();
+                count += _(Game.rooms).map(r => r.spawnQueueHigh.concat(r.spawnQueueMedium, r.spawnQueueLow)).flatten().size();
+                const SCU_PERCENTAGE = count / spawnCount;
+                this.drawBar(vis, Math.min(1, SCU_PERCENTAGE), x, y - 0.75, sectionWidth, 1, `SCU: ${(SCU_PERCENTAGE * 100).toFixed(2)}%`, {
+                    fill: getColourByPercentage(Math.min(1, SCU_PERCENTAGE)),
+                    opacity: BAR_STYLE.opacity,
+                });
             }
         } else {
             let x = bufferWidth + 1;
@@ -321,8 +335,15 @@ const Visuals = class {
             // BUCKET
             this.drawPie(vis, Game.cpu.bucket, 10000, 'Bucket', getColourByPercentage(Math.min(1, Game.cpu.bucket / 10000), true), {x, y: y++});
             
+            //  SPAWN CAPACITY UTILIZATION (SCU)
+            const spawnCount = _.size(Game.spawns);
+            let count = _(Game.spawns).filter('spawning').size();
+            count += _(Game.rooms).map(r => r.spawnQueueHigh.concat(r.spawnQueueMedium, r.spawnQueueLow)).flatten().size();
+            const SCU_PERCENTAGE = count / spawnCount;
+            this.drawPie(vis, SCU_PERCENTAGE, 1, 'SCU', getColourByPercentage(SCU_PERCENTAGE), {x, y: y++});
+
             // TICK
-            y += 11;
+            y += 15;
             vis.text('Tick', x, y++, {
                 color: WHITE,
                 align: 'center',
