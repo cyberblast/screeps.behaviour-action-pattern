@@ -164,12 +164,13 @@ const Visuals = class {
     
     run() {
         const p = Util.startProfiling('Visuals', {enabled: PROFILING.VISUALS});
-        const VISUAL_ROOMS = VISUALS.VISIBLE_ONLY ? Util.getVisibleRooms() : Object.keys(Game.rooms);
+        const visibleChecked = VISUALS.VISIBLE_ONLY;
+        const VISUAL_ROOMS = visibleChecked ? Util.getVisibleRooms() : Object.keys(Game.rooms);
         _.forEach(VISUAL_ROOMS, roomName => {
             const room = Game.rooms[roomName];
             if (!room) return;
             if (!ROOM_VISUALS_ALL && !room.my) return;
-            if (!room.controller) return;
+            if (!visibleChecked && !room.controller) return;
             const p2 = Util.startProfiling('Visuals: ' + room.name, {enabled: PROFILING.VISUALS});
             
             Util.set(Memory, 'heatmap', false);
