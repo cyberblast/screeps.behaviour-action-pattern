@@ -11,6 +11,7 @@ mod.register = function() {
 Room.pathCache = {};
 Room.pathCacheLoaded = false;
 Room.pathCacheDirty = false;
+Room.PATH_CACHE_VERSION = 1;
 // cached costmatrices for rooms
 Room.costMatrixCache = {};
 Room.costMatrixCacheDirty = false;
@@ -1109,28 +1110,37 @@ mod.extend = function(){
     Room.prototype.showCachedPath = function(destination) {
         Room.showCachedPath(this.name, destination);
     };
-    Room.prototype.getPath = function(startPos, destination, options) {
+    Room.prototype.getPath = function(startPos, destPos, options) {
         const startId = Room.getPosId(startPos);
-        const destPos = destination.pos || destination;
-        const destId = Room.getDestId(destination);
+        const destId = Room.getDestId(destPos);
         Util.setDefault(Room, ['pathCache', this.name], {});
         let directions = Util.get(Room, ['pathCache', this.name, destId], {});
-        if (_.isUndefined(directions[startId])) {
+        if (_.isUndefined(directions[startPos])) {
+            const reversed = _.get(Room, ['pathCache', destPos.roomName, startId], {});
+            if (!_.isUndefined(reversed[destId])) {
+                // return the reversed path
+                return {path: reversed[destId], reverse: true};
+            }
+            // generate a new path
             const ret = traveler.findTravelPath(startPos, destPos, options);
             if (!ret || ret.incomplete) {
                 return logError('Room.getPath', `incomplete path from ${startPos} to ${destPos} ${ret.path}`);
             } else { // generate a new path until we hit an existing one
+                const saveCache = (roomName, destId, directions) => {
+                    _.set(Room, ['pathCache', roomName, destId], directions);
+                    Room.pathCache[roomName].updated = Game.time;
+                };
                 let lastPos = startPos;
                 for (const pos of ret.path) {
                     const lastPosId = Room.getPosId(lastPos);
                     if (!_.isUndefined(directions[lastPosId])){
-                        _.set(Room, ['pathCache', lastPos.roomName, destId], directions);
+                        saveCache(lastPos.roomName, destId, directions);
                         break; // hit an existing path
                     } else if (lastPos.roomName !== pos.roomName) {
                         // new room
                         directions[lastPosId] = 'B'; // last position was a border
-                        _.set(Room, ['pathCache', lastPos.roomName, destId], directions);
-                        directions = _.get(Room, ['pathCache', pos.roomName, destId], {});
+                        saveCache(lastPos.roomName, destId, directions);
+                        directions = Util.get(Room, ['pathCache', pos.roomName, destId], {});
                     } else {
                         directions[lastPosId] = lastPos.getDirectionTo(pos);
                     }
@@ -1139,7 +1149,7 @@ mod.extend = function(){
                 Room.pathCacheDirty = true;
             }
         }
-        return _.get(Room, ['pathCache', this.name, destId]);
+        return {path: _.get(Room, ['pathCache', this.name, destId]), reverse: false};
     };
 
     Room.prototype.getBestConstructionSiteFor = function(pos, filter = null) {
@@ -2556,11 +2566,24 @@ mod.loadCostMatrixCache = function(cache) {
 };
 mod.loadPathCache = function(cache) {
     if (cache) {
+        const data = cache.data;
         let count = 0;
-        Util.setDefault(mod, 'pathCache', {});
-        for (const key in cache) {
-            count++;
-            Room.pathCache[key] = cache[key];
+        if (cache.version !== Room.PATH_CACHE_VERSION) {
+            // version change, invalidate previous cache
+            data = {};
+            Room.pathCacheDirty = true;
+        }
+        for (const key in Room.pathCache) {
+            if (data[key]) {
+                if (Room.pathCache[key].updated < data[key].u) {
+                    // update entry if the cached version is newer
+                    count++;
+                    Room.pathCache[key] = data[key];
+                }
+            } else {
+                // remove entries no longer cached
+                delete Room.pathCache[key];
+            }
         }
         if (global.DEBUG && count > 0) logSystem('RawMemory', 'loading cached paths.. updated ' + count + ' entries.');
     }
@@ -2681,10 +2704,15 @@ mod.invalidateCachedPaths = function(roomName, destination) {
         if (destination) {
             msg = `Invalidating cached paths in ${roomName} to ${destination}.`;
             const destId = Room.getDestId(destination);
-            _.set(Room, ['pathCache', this.name, destId], {});
+            if (!_.isUndefined(Room.pathCache[this.name][destId])) {
+                delete Room.pathCache[this.name][destId];
+                Room.pathCache[this.name].updated = Game.time;
+            }
         } else {
             msg = `Invalidating all cached paths in ${roomName}.`;
-            _.set(Room, ['pathCache', this.name], {});
+            if (!_.isUndefined(Room.pathCache[this.name])) {
+                delete Room.pathCache[this.name];
+            }
         }
     } else {
         msg = `Invalidating all cached paths.`;
@@ -2694,6 +2722,6 @@ mod.invalidateCachedPaths = function(roomName, destination) {
     return msg;
 }
 // unique identifier for each position within the starting room
-mod.getPosId = (pos) => `${pos.x},${pos.y})`;
+mod.getPosId = (pos) => String.charCodeAt((pos.x * 50) + y);  // codes 0 - 2499 represent positions
 // unique destination identifier for room positions
-mod.getDestId = (pos) => pos.id ? pos.id : `${pos.roomName},${pos.x},${pos.y}`;
+mod.getDestId = (pos) => `${pos.roomName},${Room.getPosId(pos)}`;

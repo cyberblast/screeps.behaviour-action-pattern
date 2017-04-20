@@ -29,6 +29,16 @@ module.exports = function(globalOpts = {}){
     });
     class Traveler {
         constructor() {
+            this.reverseDirection = {
+                TOP:BOTTOM,
+                TOP_RIGHT:BOTTOM_LEFT,
+                RIGHT:LEFT,
+                BOTTOM_RIGHT:TOP_LEFT,
+                BOTTOM:TOP,
+                BOTTOM_LEFT:TOP_RIGHT,
+                LEFT:RIGHT,
+                TOP_LEFT:BOTTOM_RIGHT
+            };
             this.getHostileRoom = (roomName) => _.get(Memory, ['rooms', roomName, 'hostile']);
             this.registerHostileRoom = (room) => room.registerIsHostile();
         }
@@ -378,9 +388,17 @@ module.exports = function(globalOpts = {}){
             if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
             if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => Room.isSKRoom(room.name) && options.avoidSK ? room.avoidSKMatrix : room.structureMatrix;
             if (options.cacheRoutes && options.ignoreCreeps) {
-                const path = this.room.getPath(this.pos, destination, options);
-                if (path) {
-                    const next = path[Room.getPosId(this.pos)];
+                const ret = this.room.getPath(this.pos, destination, options);
+                if (ret && ret.path) {
+                    const path = ret.path;
+                    let next;
+                    if (ret.reverse) {
+                        const dir = Traveler.reverseDirection[Path[Room.getPosId(this.pos)]];
+                        const prev = Room.getPosId(Traveler.positionAtDirection(this.pos, dir));
+                        next = path[Room.getPosId(prev)];
+                    } else {
+                        next = path[Room.getPosId(this.pos)];
+                    }
                     if (next) {
                         if (next === 'B') return; // wait for border to cycle
                         else return this.move(next); // take next step
