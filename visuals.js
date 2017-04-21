@@ -323,7 +323,7 @@ const Visuals = class {
         }
         
         // Display Energy Available
-        if (!room.controller.reservation || !room.controller.owner) {
+        if (!room.controller.reservation && room.controller.owner) {
             vis.rect(x, y - 0.75, sectionWidth, 1, BAR_STYLE);
             const ENERGY_PERCENTAGE = room.energyAvailable / room.energyCapacityAvailable || 0;
             vis.rect(x, y - 0.75, Math.min(1, ENERGY_PERCENTAGE) * sectionWidth, 1, {
