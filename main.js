@@ -93,7 +93,7 @@ global.infect = (mod, namespace, modName) => {
 };
 // loads (require) a module. use this function anywhere you want to load a module.
 // respects custom and viral overrides
-global.load = (modName, object) => {
+global.load = (modName, object, name) => {
     // read stored module path
     let path = getPath(modName);
     // try to load module
@@ -106,11 +106,16 @@ global.load = (modName, object) => {
     }
     if (mod) {
         // load viral overrides
-        object = mod;
-        object = infect(mod, 'internalViral', modName);
-        object = infect(mod, 'viral', modName);
+        if (object && name) {
+            object[name] = mod;
+            object[name] = infect(mod, 'internalViral', modName);
+            object[name] = infect(mod, 'viral', modName);
+        } else {
+            mod = infect(mod, 'internalViral', modName);
+            mod = infect(mod, 'viral', modName);
+        }
     }
-    return object;
+    return name ? object[name] : mod;
 };
 // load code
 global.install = () => {
@@ -160,34 +165,34 @@ global.install = () => {
     _.assign(Creep, { action: {} }); // actions is not yet defined for the below
     _.assign(Creep, {
         action: {
-            attackController: load("creep.action.attackController", Creep.action.attackController),
-            avoiding: load("creep.action.avoiding", Creep.action.avoiding),
-            building: load("creep.action.building", Creep.action.building),
-            bulldozing: load('creep.action.bulldozing', Creep.action.bulldozing),
-            charging: load("creep.action.charging", Creep.action.charging),
-            claiming: load("creep.action.claiming", Creep.action.claiming),
-            defending: load("creep.action.defending", Creep.action.defending),
-            dismantling: load("creep.action.dismantling", Creep.action.dismantling),
-            dropping: load("creep.action.dropping", Creep.action.dropping),
-            feeding: load("creep.action.feeding", Creep.action.feeding),
-            fortifying: load("creep.action.fortifying", Creep.action.fortifying),
-            fueling: load("creep.action.fueling", Creep.action.fueling),
-            guarding: load("creep.action.guarding", Creep.action.guarding),
-            harvesting: load("creep.action.harvesting", Creep.action.harvesting),
-            healing: load("creep.action.healing", Creep.action.healing),
-            idle: load("creep.action.idle", Creep.action.idle),
-            invading: load("creep.action.invading", Creep.action.invading),
-            picking: load("creep.action.picking", Creep.action.picking),
-            reallocating:load("creep.action.reallocating", Creep.action.reallocating),
-            recycling:load("creep.action.recycling", Creep.action.recycling),
-            repairing: load("creep.action.repairing", Creep.action.repairing),
-            reserving: load("creep.action.reserving", Creep.action.reserving),
-            robbing:load("creep.action.robbing", Creep.action.robbing),
-            storing: load("creep.action.storing", Creep.action.storing),
-            travelling: load("creep.action.travelling", Creep.action.travelling),
-            uncharging: load("creep.action.uncharging", Creep.action.uncharging),
-            upgrading: load("creep.action.upgrading", Creep.action.upgrading),
-            withdrawing: load("creep.action.withdrawing", Creep.action.withdrawing),
+            attackController: load("creep.action.attackController", Creep.action, 'attackController'),
+            avoiding: load("creep.action.avoiding", Creep.action, 'avoiding'),
+            building: load("creep.action.building", Creep.action, 'building'),
+            bulldozing: load('creep.action.bulldozing', Creep.action, 'bulldozing'),
+            charging: load("creep.action.charging", Creep.action, 'charging'),
+            claiming: load("creep.action.claiming", Creep.action, 'claiming'),
+            defending: load("creep.action.defending", Creep.action, 'defending'),
+            dismantling: load("creep.action.dismantling", Creep.action, 'dismantling'),
+            dropping: load("creep.action.dropping", Creep.action, 'dropping'),
+            feeding: load("creep.action.feeding", Creep.action, 'feeding'),
+            fortifying: load("creep.action.fortifying", Creep.action, 'fortifying'),
+            fueling: load("creep.action.fueling", Creep.action, 'fueling'),
+            guarding: load("creep.action.guarding", Creep.action, 'guarding'),
+            harvesting: load("creep.action.harvesting", Creep.action, 'harvesting'),
+            healing: load("creep.action.healing", Creep.action, 'healing'),
+            idle: load("creep.action.idle", Creep.action, 'idle'),
+            invading: load("creep.action.invading", Creep.action, 'invading'),
+            picking: load("creep.action.picking", Creep.action, 'picking'),
+            reallocating: load("creep.action.reallocating", Creep.action, 'reallocating'),
+            recycling:load("creep.action.recycling", Creep.action, 'recycling'),
+            repairing: load("creep.action.repairing", Creep.action, 'repairing'),
+            reserving: load("creep.action.reserving", Creep.action, 'reserving'),
+            robbing:load("creep.action.robbing", Creep.action, 'robbing'),
+            storing: load("creep.action.storing", Creep.action, 'storing'),
+            travelling: load("creep.action.travelling", Creep.action, 'travelling'),
+            uncharging: load("creep.action.uncharging", Creep.action, 'uncharging'),
+            upgrading: load("creep.action.upgrading", Creep.action, 'upgrading'),
+            withdrawing: load("creep.action.withdrawing", Creep.action, 'withdrawing'),
         },
         behaviour: {
             claimer: load("creep.behaviour.claimer"),
