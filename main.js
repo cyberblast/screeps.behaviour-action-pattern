@@ -71,7 +71,7 @@ global.inject = (base, alien, namespace) => {
             base[key] = alien[key].bind(base);
         } else if (alien[key] !== null && typeof base[key] === 'object' && !Array.isArray(base[key]) &&
             typeof alien[key] === 'object' && !Array.isArray(alien[key])) {
-            global.inject(base[key], alien[key], namespace);
+            _.merge(base[key], alien[key]);
         } else {
             base[key] = alien[key]
         }
