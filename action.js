@@ -9,39 +9,39 @@ const Action = class {
     
     getTargetID(target) {
         return target.id || target.name;
-    };
+    }
     
     getTargetByID(id) {
         return Game.getObjectById(id) || Game.creeps[id];
-    };
+    }
     
     isValidAction(object) {
         return true;
-    };
+    }
     
     isValidTarget(target, object) {
         return !!target;
-    };
+    }
     
     isAddableAction(object) {
         return this.maxPerAction === Infinity;
-    };
+    }
     
     isAddableTarget(targt, object) {
         return this.maxPerTarget === Infinity || !target.targetOf || _.filter(target.targetOf, {actionName: this.name}).length < this.maxPerTarget;
-    };
+    }
     
     newTarget(object) {
         return undefined;
-    };
+    }
     
     step(object) {
         return undefined;
-    };
+    }
     
     work(object) {
         return ERR_INVALID_ARGS;
-    };
+    }
     
     validateActionTarget(object, target) {
         if (this.isValidAction(object)) {
@@ -54,7 +54,7 @@ const Action = class {
             }
         }
         return undefined;
-    };
+    }
     
     assign(object, target) {
         if (!target) target = this.newTarget(object);
@@ -65,11 +65,11 @@ const Action = class {
             return true;
         }
         return false;
-    };
+    }
     
     registerAction(object, target) {
         return ERR_INVALID_ARGS;
-    };
+    }
 };
 module.exports = Action;
 
