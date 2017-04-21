@@ -34,6 +34,7 @@ mod.nextAction = function(tower) {
 mod.registerAction = function(tower, target, action, entry) {
     if (tower === target) throw new Error('attempt to register self-target');
     if (!entry) entry = tower.memory;
+    Util.set(entry, 'id', tower.id);
     
     const room = tower.room;
     if (!room.towers) {
@@ -62,18 +63,18 @@ mod.registerAction = function(tower, target, action, entry) {
         const oldTarget = entry.targetId ? Game.getObjectById(entry.targetId) || Game.spawns[entry.targetId] || Game.flags[entry.targetId] : null;
         if (oldTarget) {
             oldTargetId = oldTarget.id || oldTarget.name;
-            if (oldTarget.targetOf) {
-                const byName = elem => elem.creepName === tower.id;
-                const index = oldTarget.targetOf.findIndex(byName);
-                if (index > -1) oldTarget.targetOf.splice(index, 1);
+            if (oldTarget.towers) {
+                const byName = elem => elem.id === tower.id;
+                const index = oldTarget.towers.findIndex(byName);
+                if (index > -1) oldTarget.towers.splice(index, 1);
             }
         }
     }
     // register target
     entry.targetId = targetId;
     if (target && !FlagDir.isSpecialFlag(target)) {
-        if (!target.targetOf) target.targetOf = [];
-        target.targetOf.push(entry);
+        if (!target.towers) target.towers = [];
+        target.towers.push(entry);
     }
     
     tower.action = action;
