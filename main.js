@@ -225,8 +225,16 @@ global.install = () => {
     global.inject(Room, load("room"));
     _.assign(Room, {
         _ext: {
+            construction: load("room.construction"),
+            containers: load("room.container"),
+            extensions: load("room.extension"),
             labs: load("room.lab"),
+            links: load("room.link"),
+            nuker: load("room.nuker"),
             observers: load("room.observer"),
+            orders: load("room.orders"),
+            powerSpawn: load("room.powerSpawn"),
+            spawns: load("room.spawn"),
         },
     });
     global.inject(Spawn, load("spawn"));
