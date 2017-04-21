@@ -1,20 +1,17 @@
-const action = class extends Creep.Action {
+const action = class extends Creep.Action.Controller {
     
     isValidTarget(target) {
         return !target.room || !target.owner;
     }
     
+    isAddableTarget(target) {
+        return Creep.Action.isAddableTarget.call(this, target);
+    }
+    
     newTarget(creep) {
-        let flag;
-        // TODO: remove || creep.data.destiny.flagName (temporary backward compatibility)
-        if (creep.data.destiny) flag = Game.flags[creep.data.destiny.targetName || creep.data.destiny.flagName];
-        if (!flag) flag = FlagDir.find(FLAG_COLOR.claim, creep.pos, false, FlagDir.claimMod, creep.name);
+        const s = super.newTarget(creep);
         
-        if (!flag) return;
-        
-        Population.registerCreepFlag(creep, flag);
-        
-        if (!creep.flag.room || creep.flag.pos.roomName !== creep.pos.roomName) return creep.flag;
+        if (s instanceof Flag) return s;
         
         if (creep.flag.room.controller.my) { // TODO: AND is claim flag
             // already claimed, change flag
@@ -31,28 +28,8 @@ const action = class extends Creep.Action {
         }
     }
     
-    step(creep) {
-        this.chatty(creep);
-        if (creep.target.color) {
-            if (creep.flag.pos.roomName === creep.pos.roomName) { // change target from flag to controller
-                delete creep.data.targetId;
-            }
-            creep.travelTo(creep.target.pos);
-            return;
-        }
-        
-        const range = creep.pos.getRangeTo(creep.target);
-        if (range <= this.targetRange) {
-            const workResult = this.work(creep);
-            if (workResult !== OK) {
-                creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
-            }
-        }
-        creep.travelTo(creep.target.pos);
-    }
-    
     work(creep) {
-        creep.controllerSign();
+        this.sign(creep);
         
         return creep.claimController(creep.target);
     }
