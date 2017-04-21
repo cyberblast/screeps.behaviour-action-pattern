@@ -1115,7 +1115,7 @@ mod.extend = function(){
         const destId = Room.getDestId(destPos);
         Util.setDefault(Room, ['pathCache', this.name], {});
         let directions = Util.get(Room, ['pathCache', this.name, destId], {});
-        if (_.isUndefined(directions[startPos])) {
+        if (_.isUndefined(directions[startId])) {
             const reversed = _.get(Room, ['pathCache', destPos.roomName, startId], {});
             if (!_.isUndefined(reversed[destId])) {
                 // return the reversed path
@@ -2591,7 +2591,7 @@ mod.loadPathCache = function(cache) {
         if (global.DEBUG && count > 0) logSystem('RawMemory', 'loading cached paths.. updated ' + count + ' entries.');
     }
     Room.pathCacheLoaded = true;
-}
+};
 mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
     const room = Game.rooms[roomName];
     const look = checkWalkable ? room.lookAtArea(minY,minX,maxY,maxX) : null;
@@ -2685,7 +2685,7 @@ mod.roomLayout = function(flag) {
 mod.showCachedPath = function(roomName, destination) {
     const room = Game.rooms[roomName];
     const destId = Room.getDestId(destination);
-    const path = Util.get(Room.pathCache, [roomName, destId], {});
+    const path = Util.get(Room, ['pathCache', roomName, destId], {});
     const vis = room ? room.visual : new RoomVisual(roomName);
     for (var y = 0; y < 50; y++) {
         for (var x = 0; x < 50; x++) {
@@ -2700,7 +2700,7 @@ mod.showCachedPath = function(roomName, destination) {
             }
         }
     }
-}
+};
 mod.invalidateCachedPaths = function(roomName, destination) {
     let msg = '';
     if (roomName) {
@@ -2723,7 +2723,7 @@ mod.invalidateCachedPaths = function(roomName, destination) {
     }
     Room.pathCacheDirty = true;
     return msg;
-}
+};
 // unique identifier for each position within the starting room
 mod.getPosId = (pos) => String.fromCodePoint((pos.x * 50) + pos.y);  // codes 0 - 2499 represent positions
 // unique destination identifier for room positions
