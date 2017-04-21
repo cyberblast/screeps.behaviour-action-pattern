@@ -9,6 +9,10 @@ const TowerAction = class extends Action {
     isAddableAction(tower) {
         return super.isAddableAction(tower) || !tower.room.towers || !tower.room.towers.actionCount[this.name] || !tower.room.towers.actionCount[this.id] < this.maxPerAction;
     }
+    
+    isAddableTarget(targt, object) {
+        return this.maxPerTarget === Infinity || !target.towers || _.filter(target.towers, {actionName: this.name}).length < this.maxPerTarget;
+    }
 
     step(tower) {
         const workResult = this.work(tower);
