@@ -2,13 +2,23 @@ let action = new Creep.Action('healing');
 module.exports = action;
 action.targetRange = 3;
 action.isAddableAction = function(){ return true; };
-action.isAddableTarget = function(){ return true; };
+action.isAddableTarget = function(target, creep) {
+    const filter = creep.getStrategyHandler([action.name], 'targetFilter', creep);
+
+    return filter && filter(target);
+};
 action.isValidTarget = function(target, creep){
-    return ( target != null &&
+    if ( target != null &&
         target.hits != null &&
         target.hits < target.hitsMax &&
-        target.my &&
-        target.pos.roomName === creep.data.healRoom);
+        target.pos.roomName === creep.data.healRoom ) {
+
+        const filter = creep.getStrategyHandler([action.name], 'targetFilter', creep);
+
+        return filter && filter(target);
+    }
+
+    return false;
 };
 action.newTarget = function(creep){
     if(creep.room.casualties.length > 0){
@@ -31,5 +41,10 @@ action.work = function(creep){
             return creep.rangedHeal(creep.target);
         }
         return OK;
+    }
+};
+action.defaultStrategy.targetFilter = function(creep) {
+    return function(target) {
+        return target.my;
     }
 };
