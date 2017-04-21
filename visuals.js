@@ -22,6 +22,7 @@ const getResourceColour = (resourceType) => {
         [RESOURCE_KEANIUM]: '#9370FF',
         [RESOURCE_LEMERGIUM]: '#89F4A5',
         [RESOURCE_OXYGEN]: '#CCCCCC',
+        [RESOURCE_UTRIUM]: '#88D6F7',
         [RESOURCE_ZYNTHIUM]: '#F2D28B',
     };
 
