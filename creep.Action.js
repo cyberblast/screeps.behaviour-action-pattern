@@ -125,9 +125,9 @@ let Action = function(actionName){
     this.selectStrategies = function() {
         return [this.defaultStrategy];
     };
-    this.getStrategy = function(strategyName, creep, args) {
+    this.getStrategy = function(strategyName, creep, ...args) {
         if (_.isUndefined(args)) return creep.getStrategyHandler([this.name], strategyName);
-        else return creep.getStrategyHandler([this.name], strategyName, args);
+        else return creep.getStrategyHandler([this.name], strategyName, ...args);
     };
 };
 module.exports = Action;
