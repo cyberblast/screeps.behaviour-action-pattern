@@ -10,19 +10,15 @@ mod.extend = function(){
     };
     // to maintain legacy code for now
     Creep.prototype.findGroupMemberByType = function(creepType, flagName) {
-        return Creep.prototype.findGroupMemberBy('creepType', creepType, flagName);
+        return Creep.prototype.findGroupMemberBy(c => c.creepType === creepType, flagName);
     };
-    Creep.prototype.findGroupMemberBy = function(property, targetValue, flagName) {
+    Creep.prototype.findGroupMemberBy = function(findFunc, flagName) {
         if (_.isUndefined(flagName)) flagName = this.data.flagName;
-        if (!_.isUndefined(targetValue) && flagName) {
-            for(const creepName in Memory.population) {
-                const data = Memory.population[creepName];
-                if (_.get(data, property) === targetValue && data.flagName === flagName) {
-                    return creepName;
-                }
-            }
+        if (!_.isUndefined(findFunc) && flagName) {
+            const ret = _(Memory.population).filter({flagName}).find(findFunc);
+            return ret ? ret.creepName : null;
         } else {
-            logError(`Invalid arguments for Creep.findGroupMemberBy ${property} ${targetValue} ${flagName}`);
+            Util.logError(`${this.name} - Invalid arguments for Creep.findGroupMemberBy ${flagName} ${findFunc}`);
         }
         return null;
     };
@@ -70,13 +66,13 @@ mod.extend = function(){
                 this.repairNearby();
                 p.checkCPU('repairNearby', PROFILING.MIN_THRESHOLD);
             }
-            if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Behaviour: behaviour && behaviour.name, Creep:'run'});
+            if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Behaviour: behaviour && behaviour.name, Creep:'run'});
             if( behaviour ) {
                 behaviour.run(this);
                 p.checkCPU('behaviour.run', PROFILING.MIN_THRESHOLD);
             }
             else if(!this.data){
-                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Creep:'run'}, 'memory init');
+                if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Creep:'run'}, 'memory init');
                 let type = this.memory.setup;
                 let weight = this.memory.cost;
                 let home = this.memory.home;
@@ -161,7 +157,7 @@ mod.extend = function(){
         if( HONK ) this.say('\u{1F500}\u{FE0E}', SAY_PUBLIC);
     };
     Creep.prototype.fleeMove = function() {
-        if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Action:'fleeMove', Creep:'run'});
+        if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Action:'fleeMove', Creep:'run'});
         let drop = r => { if(this.carry[r] > 0 ) this.drop(r); };
         _.forEach(Object.keys(this.carry), drop);
         if( this.fatigue > 0 ) return;
@@ -249,10 +245,10 @@ mod.extend = function(){
             const repairRange = this.data && this.data.creepType === 'remoteHauler' ? REMOTE_HAULER.DRIVE_BY_REPAIR_RANGE : DRIVE_BY_REPAIR_RANGE;
             let nearby = this.pos.findInRange(this.room.structures.repairable, repairRange);
             if( nearby && nearby.length ){
-                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
+                if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
                 this.repair(nearby[0]);
             } else {
-                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'none');
+                if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'none');
                 // enable remote haulers to build their own roads and containers
                 if( REMOTE_HAULER.DRIVE_BY_BUILDING && this.data && this.data.creepType === 'remoteHauler' ) {
                     // only search in a range of 1 to save cpu
@@ -262,23 +258,24 @@ mod.extend = function(){
                             site.structureType === STRUCTURE_ROAD);
                     }});
                     if( nearby && nearby.length ){
-                        if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, nearby[0].pos);
+                        if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, nearby[0].pos);
                         if( this.build(nearby[0]) === OK && this.carry.energy <= this.getActiveBodyparts(WORK) * BUILD_POWER ) {
                             Creep.action.idle.assign(this);
                         }
                     } else {
-                        if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, 'none');
+                        if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, 'none');
                     }
                 }
             }
         } else {
-            if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Action:'repairing', Creep:'repairNearby'}, 'no WORK');
+            if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Action:'repairing', Creep:'repairNearby'}, 'no WORK');
         }
     };
     
     Creep.prototype.controllerSign = function() {
-        if(CONTROLLER_SIGN && (!this.room.controller.sign || this.room.controller.sign.username != this.owner.username || (CONTROLLER_SIGN_UPDATE && this.room.controller.sign.text != CONTROLLER_SIGN_MESSAGE))) {
-            this.signController(this.room.controller, CONTROLLER_SIGN_MESSAGE);
+        const signMessage = Util.fieldOrFunction(CONTROLLER_SIGN_MESSAGE, this.room);
+        if(CONTROLLER_SIGN && (!this.room.controller.sign || this.room.controller.sign.username !== this.owner.username || (CONTROLLER_SIGN_UPDATE && this.room.controller.sign.text !== signMessage))) {
+            this.signController(this.room.controller, signMessage);
         }
     };
 
@@ -349,7 +346,7 @@ mod.extend = function(){
         Creep.error.trigger(errorData);
 
         if (Creep.resolvingError) {
-            if (DEBUG) logErrorCode(this, errorData.errorCode);
+            if (global.DEBUG) logErrorCode(this, errorData.errorCode);
             delete this.data.actionName;
             delete this.data.targetId;
             Creep.resolvingError = null;
@@ -379,7 +376,7 @@ mod.extend = function(){
     Creep.prototype.customStrategy = function(actionName, behaviourName, taskName) {};
 };
 mod.execute = function(){
-    if ( DEBUG && Memory.CPU_CRITICAL ) logSystem('system',`${Game.time}: CPU Bucket level is critical (${Game.cpu.bucket}). Skipping non critical creep roles.`);
+    if ( global.DEBUG && Memory.CPU_CRITICAL ) logSystem('system',`${Game.time}: CPU Bucket level is critical (${Game.cpu.bucket}). Skipping non critical creep roles.`);
     let run = creep => {
         try {
             creep.run();

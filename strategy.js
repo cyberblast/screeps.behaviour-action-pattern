@@ -11,7 +11,7 @@ mod.decorateAgent = function(prototype, ...definitions) {
         const returnValOrMethod = currentStrategy[method];
         const strategyKey = currentStrategy.key;
         const strategyName = currentStrategy.name;
-        if (DEBUG && TRACE) trace('Strategy', {agent:this.name, strategyKey, strategyName, method});
+        if (global.DEBUG && global.TRACE) trace('Strategy', {agent:this.name, strategyKey, strategyName, method});
         if (returnValOrMethod === undefined) {
             logError('strategy handler returned undefined', {agent: this.name || this.id, strategyKey, strategyName, method, stack: new Error().stack});
             return;
