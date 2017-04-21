@@ -11,7 +11,7 @@ mod.register = function() {
 Room.pathCache = {};
 Room.pathCacheLoaded = false;
 Room.pathCacheDirty = false;
-Room.PATH_CACHE_VERSION = 1;
+Room.PATH_CACHE_VERSION = 2;
 // cached costmatrices for rooms
 Room.costMatrixCache = {};
 Room.costMatrixCacheDirty = false;
@@ -1122,6 +1122,12 @@ mod.extend = function(){
                 return {path: reversed[destId], reverse: true};
             }
             // generate a new path
+            options.getStructureMatrix = (room) => {
+                const matrix = room.structureMatrix.clone();
+                // block all positions creeps might sit and work
+                _.forEach(room.sources, s => _.forEach(s.validSpots, pos => matrix.set(pos.x, pos.y, 0xFF)));
+                return matrix;
+            };
             const ret = traveler.findTravelPath(startPos, destPos, options);
             if (!ret || ret.incomplete) {
                 return logError('Room.getPath', `incomplete path from ${startPos} to ${destPos} ${ret.path}`);
@@ -2684,7 +2690,7 @@ mod.roomLayout = function(flag) {
 };
 mod.showCachedPath = function(roomName, destination) {
     const room = Game.rooms[roomName];
-    const destId = Room.getDestId(destination);
+    const destId = Room.getDestId(destination.pos || destination);
     const path = Util.get(Room, ['pathCache', roomName, destId], {});
     const vis = room ? room.visual : new RoomVisual(roomName);
     for (var y = 0; y < 50; y++) {
@@ -2706,7 +2712,7 @@ mod.invalidateCachedPaths = function(roomName, destination) {
     if (roomName) {
         if (destination) {
             msg = `Invalidating cached paths in ${roomName} to ${destination}.`;
-            const destId = Room.getDestId(destination);
+            const destId = Room.getDestId(destination.pos || destination);
             if (!_.isUndefined(Room.pathCache[this.name][destId])) {
                 delete Room.pathCache[this.name][destId];
                 Room.pathCache[this.name].updated = Game.time;

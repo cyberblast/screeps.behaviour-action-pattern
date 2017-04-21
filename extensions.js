@@ -34,6 +34,20 @@ mod.extend = function(){
             Memory.sources[this.id] = value;
         }
     });
+    Object.defineProperty(Source.prototype, 'validSpots', {
+        configurable: true,
+        get: function() {
+            Util.get(this, '_validSpots', () => {
+                return this.pos.radius().filter(p => p.isWalkable);
+            });
+        }
+    });
+    Object.defineProperty(RoomPosition.prototype, 'isWalkable', {
+        configurable: true,
+        get: function() {
+            return this.room && this.room.isWalkable(this.x, this.y);
+        }
+    });
     Object.defineProperty(RoomPosition.prototype, 'adjacent', {
         configurable: true,
         get: function() {
