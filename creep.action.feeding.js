@@ -15,12 +15,9 @@ action.newTarget = function(creep){
     if (creep.room.energyAvailable === creep.room.energyCapacityAvailable) {
         return null;
     }
-    var that = this;
-    return creep.pos.findClosestByRange(creep.room.structures.all, {
+    return creep.pos.findClosestByRange(creep.room.structures.feedable, {
         filter: (structure) => {
-            return ((structure.structureType == STRUCTURE_EXTENSION ||
-                structure.structureType == STRUCTURE_SPAWN )
-                && that.isValidTarget(structure) && that.isAddableTarget(structure, creep));
+            return action.isValidTarget(structure) && action.isAddableTarget(structure, creep);
         }
     });
 };

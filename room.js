@@ -89,6 +89,15 @@ mod.extend = function(){
                     return this._urgentRepairableSites;
                 }
             },
+            'feedable': {
+                configurable: true,
+                get: function() {
+                    if (_.isUndefined(this._feedable)) {
+                        this._feedable = this.extensions.concat(this.spawns);
+                    }
+                    return this._feedable;
+                }
+            },
             'fortifyable': {
                 configurable: true,
                 get: function() {
@@ -814,6 +823,9 @@ mod.extend = function(){
         // only trigger when a structure has been destroyed, we already avoid unpathable construction sites, and treat road sites like roads
         if (!_.isUndefined(this.memory.myTotalStructures) && numStructures < this.memory.myTotalStructures) {
             Room.costMatrixInvalid.trigger(this);
+            // these are vital for feeding
+            this.saveExtensions();
+            this.saveSpawns();
         }
         if (numStructures > 0) this.memory.myTotalStructures = numStructures;
         else delete this.memory.myTotalStructures;
