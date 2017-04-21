@@ -2566,23 +2566,26 @@ mod.loadCostMatrixCache = function(cache) {
 };
 mod.loadPathCache = function(cache) {
     if (cache) {
-        const data = cache.data;
+        let data = cache;
         let count = 0;
-        if (cache.version !== Room.PATH_CACHE_VERSION) {
+        if (data.version !== Room.PATH_CACHE_VERSION) {
             // version change, invalidate previous cache
             data = {};
+            Room.pathCache = {version: Room.PATH_CACHE_VERSION};
             Room.pathCacheDirty = true;
         }
         for (const key in Room.pathCache) {
-            if (data[key]) {
-                if (Room.pathCache[key].updated < data[key].u) {
-                    // update entry if the cached version is newer
-                    count++;
-                    Room.pathCache[key] = data[key];
+            if (key !== 'version') {
+                if (data[key]) {
+                    if (Room.pathCache[key].updated < data[key].u) {
+                        // update entry if the cached version is newer
+                        count++;
+                        Room.pathCache[key] = data[key];
+                    }
+                } else {
+                    // remove entries no longer cached
+                    delete Room.pathCache[key];
                 }
-            } else {
-                // remove entries no longer cached
-                delete Room.pathCache[key];
             }
         }
         if (global.DEBUG && count > 0) logSystem('RawMemory', 'loading cached paths.. updated ' + count + ' entries.');
@@ -2722,6 +2725,6 @@ mod.invalidateCachedPaths = function(roomName, destination) {
     return msg;
 }
 // unique identifier for each position within the starting room
-mod.getPosId = (pos) => String.charCodeAt((pos.x * 50) + y);  // codes 0 - 2499 represent positions
+mod.getPosId = (pos) => String.fromCodePoint((pos.x * 50) + pos.y);  // codes 0 - 2499 represent positions
 // unique destination identifier for room positions
 mod.getDestId = (pos) => `${pos.roomName},${Room.getPosId(pos)}`;
