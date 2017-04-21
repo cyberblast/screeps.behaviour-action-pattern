@@ -47,15 +47,3 @@ const ControllerAction = class extends Creep.Action {
     
 };
 module.exports = ControllerAction;
-
-/**
- isAddableTarget(target) {
-        return target && (target instanceof Flag || (target instanceof StructureController && (target.reservation || target.owner)));
-    }
-    */
-
-/**
- isAddableTarget(target, creep) {
-        return !!target && (target instanceof Flag || (target instanceof StructureController && !target.owner));
-    }
- */
