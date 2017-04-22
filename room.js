@@ -2572,29 +2572,14 @@ mod.loadCostMatrixCache = function(cache) {
 };
 mod.loadPathCache = function(cache) {
     if (cache) {
-        let data = cache;
-        let count = 0;
-        if (data.version !== Room.PATH_CACHE_VERSION) {
+        if (cache.version !== Room.PATH_CACHE_VERSION) {
             // version change, invalidate previous cache
-            data = {};
             Room.pathCache = {version: Room.PATH_CACHE_VERSION};
             Room.pathCacheDirty = true;
+        } else {
+            Room.pathCache = cache;
         }
-        for (const key in Room.pathCache) {
-            if (key !== 'version') {
-                if (data[key]) {
-                    if (Room.pathCache[key].updated < data[key].u) {
-                        // update entry if the cached version is newer
-                        count++;
-                        Room.pathCache[key] = data[key];
-                    }
-                } else {
-                    // remove entries no longer cached
-                    delete Room.pathCache[key];
-                }
-            }
-        }
-        if (global.DEBUG && count > 0) logSystem('RawMemory', 'loading cached paths.. updated ' + count + ' entries.');
+        if (global.DEBUG) logSystem('RawMemory', 'loading cached paths.');
     }
     Room.pathCacheLoaded = true;
 };
@@ -2713,14 +2698,14 @@ mod.invalidateCachedPaths = function(roomName, destination) {
         if (destination) {
             msg = `Invalidating cached paths in ${roomName} to ${destination}.`;
             const destId = Room.getDestId(destination.pos || destination);
-            if (!_.isUndefined(Room.pathCache[this.name][destId])) {
-                delete Room.pathCache[this.name][destId];
-                Room.pathCache[this.name].updated = Game.time;
+            if (!_.isUndefined(Room.pathCache[roomName][destId])) {
+                delete Room.pathCache[roomName][destId];
+                Room.pathCache[roomName].updated = Game.time;
             }
         } else {
             msg = `Invalidating all cached paths in ${roomName}.`;
-            if (!_.isUndefined(Room.pathCache[this.name])) {
-                delete Room.pathCache[this.name];
+            if (!_.isUndefined(Room.pathCache[roomName])) {
+                delete Room.pathCache[roomName];
             }
         }
     } else {
