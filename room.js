@@ -896,7 +896,7 @@ mod.extend = function(){
             };
         };
         let extractorPos = this.structures.all.filter(
-            structure => structure.structureType == STRUCTURE_EXTRACTOR
+            structure => structure.structureType === STRUCTURE_EXTRACTOR && structure.isActive()
         ).map(toPos);
         let hasExtractor = m => _.some(extractorPos, {
             x: m.pos.x,
