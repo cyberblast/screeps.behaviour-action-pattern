@@ -1039,6 +1039,101 @@ mod.extend = function(){
     Room.prototype.invalidateCostMatrix = function() {
         Room.costMatrixInvalid.trigger(this.name);
     };
+    
+    Room.prototype.highwayHasWalls = function() {
+        if (!Room.isHighwayRoom(this.name)) return false;
+        return !!_.find(this.getPositionAt(25, 25).lookFor(LOOK_STRUCTURES), s => s instanceof StructureWall);
+    };
+    Room.prototype.isTargetAccessible = function(object, target) {
+        if (!object || !target) return;
+        // Checks. Accept RoomObject, RoomPosition, and mock position
+        if (object instanceof RoomObject) object = object.pos;
+        if (target instanceof RoomObject) target = target.pos;
+        for (const prop of ['x', 'y', 'roomName']) {
+            if (!Reflect.has(object, prop) || !Reflect.has(target, prop)) return;
+        }
+        
+        if (!Room.isHighwayRoom(this.name)) return;
+        if (!this.highwayHasWalls()) return true;
+        
+        const [x, y] = Room.calcCoordinates(this.name, (x, y) => [x, y]);
+        
+        const getVerHalf = o => Math.floor(o.x / 25) === 0 ? LEFT : RIGHT;
+        
+        const getHorHalf = o => Math.floor(o.y / 25) === 0 ? TOP : BOTTOM;
+        
+        const getQuadrant = o => {
+            const verHalf = getVerHalf(o);
+            const horHalf = getHorHalf(o);
+            if (verHalf === LEFT) {
+                return horHalf === TOP ? TOP_LEFT : BOTTOM_LEFT;
+            } else {
+                return horHalf === TOP ? TOP_RIGHT : BOTTOM_RIGHT;
+            }
+        };
+        
+        if (x % 10 === 0) {
+            if (y % 10 === 0) { // corner room
+                
+                const top = !!_.find(this.getPositionAt(25, 24).lookFor(LOOK_STRUCTURES), s => s instanceof StructureWall);
+                const left = !!_.find(this.getPositionAt(24, 25).lookFor(LOOK_STRUCTURES, s => s instanceof StructureWall));
+                const bottom = !!_.find(this.getPositionAt(25, 26).lookFor(LOOK_STRUCTURES, s => s instanceof StructureWall));
+                const right = !!_.find(this.getPositionAt(26, 25).lookFor(LOOK_STRUCTURES, s => s instanceof StructureWall));
+                
+                // both in same quadrant
+                if (getQuadrant(object) === getQuadrant(target)) return true;
+                
+                if (top && left && bottom && right) {
+                    // https://i.imgur.com/8lmqtbi.png
+                    return getQuadrant(object) === getQuadrant(target);
+                }
+                
+                if (top) {
+                    if (bottom) {
+                        // cross section
+                        if (left) {
+                            return Util.areEqual(RIGHT, getVerHalf(object), getVerHalf(target));
+                        } else {
+                            return Util.areEqual(LEFT, getVerHalf(object), getVerHalf(target));
+                        }
+                    }
+                    if (left && right) {
+                        // cross section
+                        if (getHorHalf(object) !== getHorHalf(target)) return false;
+                        return Util.areEqual(BOTTOM, getHorHalf(object), getHorHalf(target));
+                    }
+                    if (Util.areEqual(BOTTOM, getHorHalf(object), getHorHalf(target))) return true;
+                    if (left) {
+                        if (Util.areEqual(RIGHT, getVerHalf(object), getVerHalf(target))) return true;
+                        if (getQuadrant(object) === TOP_LEFT && getQuadrant(target) !== TOP_LEFT) return false;
+                    } else {
+                        if (Util.areEqual(LEFT, getVerHalf(object), getVerHalf(target))) return true;
+                        if (getQuadrant(object) === TOP_RIGHT && getQuadrant(target) !== TOP_RIGHT) return false;
+                    }
+                } else {
+                    if (left && right) {
+                        // cross section
+                        if (getHorHalf(object) !== getHorHalf(target)) return false;
+                        return Util.areEqual(TOP, getHorHalf(object), getHorHalf(target));
+                    }
+                    if (Util.areEqual(TOP, getHorHalf(object), getHorHalf(target))) return true;
+                    if (left) {
+                        if (Util.areEqual(RIGHT, getVerHalf(object), getVerHalf(target))) return true;
+                        if (getQuadrant(object) === BOTTOM_LEFT && getQuadrant(target) !== BOTTOM_LEFT) return false;
+                    } else {
+                        if (Util.areEqual(LEFT, getVerHalf(object), getVerHalf(target))) return true;
+                        if (getQuadrant(object) === BOTTOM_RIGHT && getQuadrant(target) !== BOTTOM_RIGHT) return false;
+                    }
+                }
+                return true;
+            }
+            if (getVerHalf(object) === getVerHalf(target)) return true;
+        }
+        if (y % 10 === 0) {
+            if (getHorHalf(object) === getHorHalf(target)) return true;
+        }
+        return true;
+    };
 };
 mod.flush = function(){
     // run flush in each of our submodules

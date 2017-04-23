@@ -79,6 +79,16 @@ module.exports = {
     },
     
     /**
+     * Checks if all the arguments passed are equal.
+     * @param {...*} args
+     * @returns {Boolean}
+     */
+    areEqual(...args) {
+        if (args.length <= 1) return true;
+        return args.every((v, i, a) => _.isEqual(v, a[0]));
+    },
+    
+    /**
      * Sets a property on an object, optionally if the property doesn't already exist
      * @param {Object} object - The object
      * @param {string} path - The path to the property within the object
