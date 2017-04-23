@@ -860,30 +860,9 @@ mod.extend = function(){
             configurable: true,
             get: function () {
                 if (_.isUndefined(this._structureMatrix)) {
-                    const cacheValid = (roomName) => {
-                        if (_.isUndefined(mod.pathfinderCache)) {
-                            mod.pathfinderCache = {};
-                            mod.pathfinderCache[roomName] = {};
-                            return false;
-                        } else if (_.isUndefined(mod.pathfinderCache[roomName])) {
-                            mod.pathfinderCache[roomName] = {};
-                            return false;
-                        }
-                        const mem = mod.pathfinderCache[roomName];
-                        const ttl = Game.time - mem.updated;
-                        if (mem.version === mod.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && ttl < COST_MATRIX_VALIDITY) {
-                            if (DEBUG && TRACE) trace('PathFinder', {roomName:this.name, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
-                            return true;
-                        }
-                        return false;
-                    };
-
-                    if (cacheValid(this.name)) {
-                        if (_.isUndefined(mod.pathfinderCache[this.name].costMatrix)) {
-                            const costMatrix = PathFinder.CostMatrix.deserialize(mod.pathfinderCache[this.name].serializedMatrix);
-                            mod.pathfinderCache[this.name].costMatrix = costMatrix;
-                        } 
-                        this._structureMatrix = mod.pathfinderCache[this.name].costMatrix;
+                    const cached = Room.getCachedStructureMatrix(this.name);
+                    if (cached && cached.valid) {
+                        this._structureMatrix = cached.costMatrix;
                     } else {
                         if (DEBUG) logSystem(this.name, 'Calculating cost matrix');
                         var costMatrix = new PathFinder.CostMatrix();
@@ -907,7 +886,7 @@ mod.extend = function(){
                         this.structures.all.forEach(setCosts);
                         this.constructionSites.forEach(setCosts);
                         this.immobileCreeps.forEach(c => costMatrix.set(c.pos.x, c.pos.y, 0xFF));
-                        const prevTime = mod.pathfinderCache[this.name].updated;
+                        const prevTime = _.get(mod.pathfinderCache, [this.name, 'updated']);
                         mod.pathfinderCache[this.name] = {
                             costMatrix: costMatrix,
                             updated: Game.time,
@@ -1463,7 +1442,7 @@ mod.extend = function(){
                 sitesSize++;
             }
         };
-        
+
         // Extensions
         let shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][LEVEL] - (this.structures.extensions.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_EXTENSION).length);
         if (shortAmount > 0) {
@@ -1471,7 +1450,7 @@ mod.extend = function(){
                 CONSTRUCT(flag, STRUCTURE_EXTENSION);
             });
         }
-        
+
         // Spawns
         shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][LEVEL] - (this.structures.spawns.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_SPAWN).length);
         if (shortAmount > 0) {
@@ -1479,7 +1458,7 @@ mod.extend = function(){
                 CONSTRUCT(flag, STRUCTURE_SPAWN);
             });
         }
-        
+
         // Towers
         shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_TOWER][LEVEL] - (this.structures.towers.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_TOWER).length);
         if (shortAmount > 0) {
@@ -1487,7 +1466,7 @@ mod.extend = function(){
                 CONSTRUCT(flag, STRUCTURE_TOWER);
             });
         }
-        
+
         // Links
         shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_LINK][LEVEL] - (this.structures.links.all.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_LINK).length);
         if (shortAmount > 0) {
@@ -1495,7 +1474,7 @@ mod.extend = function(){
                 CONSTRUCT(flag, STRUCTURE_LINK);
             });
         }
-        
+
         // Labs
         shortAmount = CONTROLLER_STRUCTURES[STRUCTURE_LAB][LEVEL] - (this.structures.labs.all.length + _.filter(this.constructionSites, s => s.structureType === STRUCTURE_LAB).length);
         if (shortAmount > 0) {
@@ -1503,42 +1482,42 @@ mod.extend = function(){
                 CONSTRUCT(flag, STRUCTURE_LAB);
             });
         }
-        
+
         // Storage
         if (!this.storage && CONTROLLER_STRUCTURES[STRUCTURE_STORAGE][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.storage, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_STORAGE);
             });
         }
-        
+
         // Terminal
         if (!this.terminal && CONTROLLER_STRUCTURES[STRUCTURE_TERMINAL][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.terminal, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_TERMINAL);
             });
         }
-        
+
         // Observer
         if (!this.structures.observer && CONTROLLER_STRUCTURES[STRUCTURE_OBSERVER][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.observer, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_OBSERVER);
             });
         }
-        
+
         // Nuker
         if (!this.structures.nuker && CONTROLLER_STRUCTURES[STRUCTURE_NUKER][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.nuker, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_NUKER);
             });
         }
-        
+
         // Power Spawn
         if (!this.structures.powerSpawn && CONTROLLER_STRUCTURES[STRUCTURE_POWER_SPAWN][LEVEL] > 0) {
             FlagDir.filter(FLAG_COLOR.construct.powerSpawn, ...ARGS).splice(0, 1).forEach(flag => {
                 CONSTRUCT(flag, STRUCTURE_POWER_SPAWN);
             });
         }
-        
+
         // Extractor
         if (CONTROLLER_STRUCTURES[STRUCTURE_EXTRACTOR][LEVEL] > 0) {
             const [mineral] = this.find(FIND_MINERALS);
@@ -2920,7 +2899,7 @@ mod.findSpawnRoom = function(params){
     if( !params || !params.targetRoom ) return null;
     // filter validRooms
     let isValidRoom = room => (
-        room.my && 
+        room.my &&
         (params.maxRange === undefined || Util.routeRange(room.name, params.targetRoom) <= params.maxRange) &&
         (params.minEnergyCapacity === undefined || params.minEnergyCapacity <= room.energyCapacityAvailable) &&
         (params.minEnergyAvailable === undefined || params.minEnergyAvailable <= room.energyAvailable) &&
@@ -3085,6 +3064,51 @@ mod.loadCostMatrixCache = function(cache) {
     if (DEBUG && count > 0) logSystem('RawMemory', 'loading pathfinder cache.. updated ' + count + ' stale entries.');
     mod.pathfinderCacheLoaded = true;
 };
+mod.getCachedStructureMatrix = function(roomName) {
+    const cacheValid = (roomName) => {
+        if (_.isUndefined(Room.pathfinderCache)) {
+            Room.pathfinderCache = {};
+            Room.pathfinderCache[roomName] = {};
+            return false;
+        } else if (_.isUndefined(Room.pathfinderCache[roomName])) {
+            Room.pathfinderCache[roomName] = {};
+            return false;
+        }
+        const mem = Room.pathfinderCache[roomName];
+        const ttl = Game.time - mem.updated;
+        if (mem.version === Room.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && ttl < COST_MATRIX_VALIDITY) {
+            if (global.DEBUG && global.TRACE) trace('PathFinder', {roomName:roomName, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
+            return true;
+        }
+        return false;
+    };
+
+    const cache = Room.pathfinderCache[roomName];
+    if (cache) {
+        if (cache.costMatrix) {
+            return {costMatrix: cache.costMatrix, valid: cacheValid(roomName)};
+        } else {
+            const costMatrix = PathFinder.CostMatrix.deserialize(cache.serializedMatrix);
+            cache.costMatrix = costMatrix;
+            return {costMatrix, valid: cacheValid(roomName)};
+        }
+    }
+};
+mod.getStructureMatrix = function(roomName, options) {
+    const room = Game.rooms[roomName];
+    let matrix;
+    if (Room.isSKRoom(roomName) && options.avoidSK) {
+        matrix = _.get(room, 'avoidSKMatrix');
+    } else {
+        matrix = _.get(room, 'structureMatrix');
+    }
+
+    if (!matrix) {
+        matrix = _.get(Room.getCachedStructureMatrix(roomName), 'costMatrix');
+    }
+
+    return matrix;
+};
 mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
     const room = Game.rooms[roomName];
     const look = checkWalkable ? room.lookAtArea(minY,minX,maxY,maxX) : null;
@@ -3132,18 +3156,18 @@ mod.roomLayout = function(flag) {
         [STRUCTURE_POWER_SPAWN]: FLAG_COLOR.construct.powerSpawn,
         [STRUCTURE_OBSERVER]: FLAG_COLOR.construct.observer,
     };
-    
+
     const [centerX, centerY] = [flag.pos.x, flag.pos.y];
-    
+
     const placed = [];
     const sites = [];
-    
+
     const failed = () => {
         flag.pos.newFlag(FLAG_COLOR.command.invalidPosition, 'NO_ROOM');
         flag.remove();
         return false;
     };
-    
+
     for (let x = 0; x < layout.length; x++) {
         for (let y = 0; y < layout[x].length; y++) {
             const xPos = Math.floor(centerX + (x - layout.length / 2) + 1);
@@ -3164,7 +3188,7 @@ mod.roomLayout = function(flag) {
             }
         }
     }
-    
+
     placed.forEach(f => {
         f.pos.newFlag(f.flagColour);
     });
@@ -3172,6 +3196,6 @@ mod.roomLayout = function(flag) {
         if (_.size(Game.constructionSites) >= 100) return false;
         p.createConstructionSite(STRUCTURE_ROAD);
     });
-    
+
     flag.remove();
 };
