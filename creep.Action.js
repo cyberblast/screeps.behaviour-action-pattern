@@ -70,7 +70,7 @@ let Action = function(actionName){
                 const targetPos = Traveler.positionAtDirection(creep.pos, direction);
                 if (creep.room.isWalkable(targetPos.x, targetPos.y)) { // low cost last steps if possible
                     creep.move(direction);
-                } else {
+                } else if (!creep.pos.isNearTo(creep.target)) { // travel there if we're not already adjacent
                     creep.travelTo(creep.target, {range: this.reachedRange});
                 }
             }
