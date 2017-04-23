@@ -2,7 +2,7 @@ const mod = {};
 module.exports = mod;
 mod.analyzeRoom = function(room, needMemoryResync) {
     if (needMemoryResync) {
-        room.saveNukers();
+        room.saveNuker();
     }
 };
 mod.extend = function() {
