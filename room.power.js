@@ -7,6 +7,26 @@ mod.analyzeRoom = function(room, needMemoryResync) {
     if (room.structures.powerSpawn) room.processPower();
 };
 mod.extend = function() {
+    Object.defineProperties(Room.prototype, {
+        'powerBank': {
+            configurable: true,
+            get: function() {
+                if (_.isUndefined(this.memory.powerBank)) {
+                    [this._powerBank] = this.find(FIND_STRUCTURES, {
+                        filter: s => s instanceof StructurePowerBank
+                    });
+                    if (this._powerBank) {
+                        this.memory.powerBank = this._powerBank.id;
+                    }
+                }
+                if (_.isUndefined(this._powerBank)) {
+                    this._powerBank = Game.getObjectById(this.memory.powerBank);
+                }
+                return this._powerBank;
+            },
+        },
+    });
+
     Room.PowerSpawn = function(room){
         this.room = room;
         Object.defineProperties(this, {
@@ -62,4 +82,9 @@ mod.extend = function() {
             }
         }
     };
+};
+mod.flushRoom = function(room) {
+    if (!room._powerBank) {
+        delete room.memory.powerBank;
+    }
 };

@@ -227,14 +227,17 @@ global.install = () => {
         _ext: {
             construction: load("room.construction"),
             containers: load("room.container"),
+            defense: load("room.defense"),
             extensions: load("room.extension"),
             labs: load("room.lab"),
             links: load("room.link"),
             nuker: load("room.nuker"),
             observers: load("room.observer"),
             orders: load("room.orders"),
-            powerSpawn: load("room.powerSpawn"),
+            power: load("room.power"),
+            resources: load("room.resources"),
             spawns: load("room.spawn"),
+            towers: load("room.tower"),
         },
     });
     global.inject(Spawn, load("spawn"));

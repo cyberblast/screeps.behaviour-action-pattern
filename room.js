@@ -269,82 +269,6 @@ mod.extend = function(){
                 return this._structures;
             }
         },
-        'sources': {
-            configurable: true,
-            get: function() {
-                if( _.isUndefined(this.memory.sources) || this.name == 'sim') {
-                    this._sources = this.find(FIND_SOURCES);
-                    if( this._sources.length > 0 ){
-                        this.memory.sources = this._sources.map(s => s.id);
-                    } else this.memory.sources = [];
-                }
-                if( _.isUndefined(this._sources) ){
-                    this._sources = [];
-                    var addSource = id => { addById(this._sources, id); };
-                    this.memory.sources.forEach(addSource);
-                }
-                return this._sources;
-            }
-        },
-        'powerBank': {
-            configurable: true,
-            get: function() {
-                if (_.isUndefined(this.memory.powerBank)) {
-                    [this._powerBank] = this.find(FIND_STRUCTURES, {
-                        filter: s => s instanceof StructurePowerBank
-                    });
-                    if (this._powerBank) {
-                        this.memory.powerBank = this._powerBank.id;
-                    }
-                }
-                if (_.isUndefined(this._powerBank)) {
-                    this._powerBank = Game.getObjectById(this.memory.powerBank);
-                }
-                return this._powerBank;
-            },
-        },
-        'droppedResources': {
-            configurable: true,
-            get: function() {
-                if( _.isUndefined(this._droppedResources) ){
-                    this._droppedResources = this.find(FIND_DROPPED_RESOURCES);
-                }
-                return this._droppedResources;
-            }
-        },
-        'sourceAccessibleFields': {
-            configurable: true,
-            get: function() {
-                if( _.isUndefined(this.memory.sourceAccessibleFields)) {
-                    let sourceAccessibleFields = 0;
-                    let sources = this.sources;
-                    var countAccess = source => sourceAccessibleFields += source.accessibleFields;
-                    _.forEach(sources, countAccess);
-                    this.memory.sourceAccessibleFields = sourceAccessibleFields;
-                }
-                return this.memory.sourceAccessibleFields;
-            }
-        },
-        'sourceEnergyAvailable': {
-            configurable: true,
-            get: function() {
-                if( _.isUndefined(this._sourceEnergyAvailable) ){
-                    this._sourceEnergyAvailable = 0;
-                    var countEnergy = source => (this._sourceEnergyAvailable += source.energy);
-                    _.forEach(this.sources, countEnergy);
-                }
-                return this._sourceEnergyAvailable;
-            }
-        },
-        'ticksToNextRegeneration': {
-            configurable: true,
-            get: function() {
-                if( _.isUndefined(this._ticksToNextRegeneration) ){
-                    this._ticksToNextRegeneration = _(this.sources).map('ticksToRegeneration').min() || 0;
-                }
-                return this._ticksToNextRegeneration;
-            }
-        },
         'relativeEnergyAvailable': {
             configurable: true,
             get: function() {
@@ -352,6 +276,18 @@ mod.extend = function(){
                     this._relativeEnergyAvailable = this.energyCapacityAvailable > 0 ? this.energyAvailable / this.energyCapacityAvailable : 0;
                 }
                 return this._relativeEnergyAvailable;
+            }
+        },
+        'relativeRemainingEnergyAvailable': {
+            configurable: true,
+            get: function() {
+                return this.energyCapacityAvailable > 0 ? this.remainingEnergyAvailable / this.energyCapacityAvailable : 0;
+            }
+        },
+        'remainingEnergyAvailable': {
+            configurable: true,
+            get: function() {
+                return this.energyAvailable - this.reservedSpawnEnergy;
             }
         },
         'reservedSpawnEnergy': {
@@ -363,30 +299,7 @@ mod.extend = function(){
                 return this._reservedSpawnEnergy;
             },
             set: function(value) {
-                this._reservedSpawnEnergy = value;;
-            }
-        },
-        'remainingEnergyAvailable': {
-            configurable: true,
-            get: function() {
-                return this.energyAvailable - this.reservedSpawnEnergy;
-            }
-        },
-        'relativeRemainingEnergyAvailable': {
-            configurable: true,
-            get: function() {
-                return this.energyCapacityAvailable > 0 ? this.remainingEnergyAvailable / this.energyCapacityAvailable : 0;
-            }
-        },
-        'towerFreeCapacity': {
-            configurable: true,
-            get: function() {
-                if( _.isUndefined(this._towerFreeCapacity) ) {
-                    this._towerFreeCapacity = 0;
-                    var addFreeCapacity = tower => this._towerFreeCapacity += (tower.energyCapacity - tower.energy);
-                    _.forEach(this.structures.towers, addFreeCapacity);
-                }
-                return this._towerFreeCapacity;
+                this._reservedSpawnEnergy = value;
             }
         },
         'creeps': {
@@ -417,44 +330,6 @@ mod.extend = function(){
                     });
                 }
                 return this._immobileCreeps;
-            }
-        },
-        'hostiles': {
-            configurable: true,
-            get: function() {
-                if( _.isUndefined(this._hostiles) ){
-                    this._hostiles = this.find(FIND_HOSTILE_CREEPS, { filter : Task.reputation.hostileOwner });
-                }
-                return this._hostiles;
-            }
-        },
-        'hostileIds': {
-            configurable: true,
-            get: function() {
-                if( _.isUndefined(this._hostileIds) ){
-                    this._hostileIds = _.map(this.hostiles, 'id');
-                }
-                return this._hostileIds;
-            }
-        },
-        'combatCreeps': {
-            configurable: true,
-            get: function() {
-                if( _.isUndefined(this._combatCreeps) ){
-                    this._combatCreeps = this.creeps.filter( c => ['melee','ranger','healer', 'warrior'].includes(c.data.creepType) );
-                }
-                return this._combatCreeps;
-            }
-        },
-        'casualties': {
-            configurable: true,
-            get: function() {
-                if( _.isUndefined(this._casualties) ){
-                    var isInjured = creep => creep.hits < creep.hitsMax &&
-                        (creep.towers === undefined || creep.towers.length == 0);
-                    this._casualties = _.sortBy(_.filter(this.creeps, isInjured), 'hits');
-                }
-                return this._casualties;
             }
         },
         'situation': {
@@ -551,68 +426,6 @@ mod.extend = function(){
                     flagEntries.forEach(calcWeight);
                 };
                 return this._claimerMaxWeight;
-            }
-        },
-        'conserveForDefense': {
-            configurable: true,
-            get: function () {
-                return (this.my && this.storage && this.storage.charge < 0);
-            }
-        },
-        'hostileThreatLevel': {
-            configurable: true,
-            get: function () {
-                if (_.isUndefined(this._hostileThreatLevel) ) {
-                    // TODO: add towers when in foreign room
-                    this._hostileThreatLevel = 0;
-                    let evaluateBody = creep => {
-                        this._hostileThreatLevel += creep.threat;
-                    };
-                    this.hostiles.forEach(evaluateBody);
-                }
-                return this._hostileThreatLevel;
-            }
-        },
-        'defenseLevel': {
-            configurable: true,
-            get: function () {
-                if (_.isUndefined(this._defenseLevel) ) {
-                    this._defenseLevel = {
-                        towers: 0,
-                        creeps: 0,
-                        sum: 0
-                    }
-                    let evaluate = creep => {
-                        this._defenseLevel.creeps += creep.threat;
-                    };
-                    this.combatCreeps.forEach(evaluate);
-                    this._defenseLevel.towers = this.structures.towers.length;
-                    this._defenseLevel.sum = this._defenseLevel.creeps + (this._defenseLevel.towers * Creep.partThreat.tower);
-                }
-                return this._defenseLevel;
-            }
-        },
-        'minerals': {
-            configurable:true,
-            get: function () {
-                if( _.isUndefined(this._minerals) ){
-                    this._minerals = [];
-                    let add = id => { addById(this._minerals, id); };
-                    _.forEach(this.memory.minerals, add);
-                }
-                return this._minerals;
-            }
-        },
-        'mineralType': {
-            configurable:true,
-            get: function () {
-                if( _.isUndefined(this.memory.mineralType)) {
-                    let minerals = this.find(FIND_MINERALS);
-                    if( minerals && minerals.length > 0 )
-                        this.memory.mineralType = minerals[0].mineralType;
-                    else this.memory.mineralType = '';
-                }
-                return this.memory.mineralType;
             }
         },
         'structureMatrix': {
@@ -780,12 +593,6 @@ mod.extend = function(){
                 return this._collapsed;
             }
         },
-        'hostile': {
-            configurable: true,
-            get: function() {
-                return this.memory.hostile;
-            }
-        },
     });
 
     Room.prototype.countMySites = function() {
@@ -808,17 +615,6 @@ mod.extend = function(){
         }
         if (numStructures > 0) this.memory.myTotalStructures = numStructures;
         else delete this.memory.myTotalStructures;
-    };
-    Room.prototype.registerIsHostile = function() {
-        if (this.controller) {
-            if (_.isUndefined(this.hostile) || typeof this.hostile === 'number') { // not overridden by user
-                if (this.controller.owner && !this.controller.my && !this.ally) {
-                    this.memory.hostile = this.controller.level;
-                } else {
-                    delete this.memory.hostile;
-                }
-            }
-        }
     };
     Room.prototype.getBorder = function(roomName) {
         return _.findKey(Game.map.describeExits(this.name), function(name) {
@@ -856,91 +652,6 @@ mod.extend = function(){
         if( !this.roadConstructionTrace[key] )
             this.roadConstructionTrace[key] = 1;
         else this.roadConstructionTrace[key]++;
-    };
-    Room.prototype.saveTowers = function(){
-        let towers = this.find(FIND_MY_STRUCTURES, {
-            filter: {structureType: STRUCTURE_TOWER}
-        });
-        if( towers.length > 0 ){
-            var id = obj => obj.id;
-            this.memory.towers = _.map(towers, id);
-        } else delete this.memory.towers;
-    };
-
-    Room.prototype.saveMinerals = function() {
-        let toPos = o => {
-            return {
-                x: o.pos.x,
-                y: o.pos.y
-            };
-        };
-        let extractorPos = this.structures.all.filter(
-            structure => structure.structureType === STRUCTURE_EXTRACTOR && structure.isActive()
-        ).map(toPos);
-        let hasExtractor = m => _.some(extractorPos, {
-            x: m.pos.x,
-            y: m.pos.y
-        });
-        const validMineral = this.find(FIND_MINERALS).filter(hasExtractor);
-        if( validMineral.length > 0 ){
-            let id = o => o.id;
-            this.memory.minerals = _.map(validMineral, id);
-        } else delete this.memory.minerals;
-    };
-
-    Room.prototype.processInvaders = function(){
-        let that = this;
-        if( this.memory.hostileIds === undefined )
-            this.memory.hostileIds = [];
-        if (!SEND_STATISTIC_REPORTS) delete this.memory.statistics;
-        else if (this.memory.statistics === undefined) {
-            this.memory.statistics = {};
-        }
-
-        let registerHostile = creep => {
-            if (Room.isCenterNineRoom(this.name)) return;
-            // if invader id unregistered
-            if( !that.memory.hostileIds.includes(creep.id) ){
-                // handle new invader
-                // register
-                that.memory.hostileIds.push(creep.id);
-                // save to trigger subscribers later
-                that.newInvader.push(creep);
-                // create statistics
-                if( SEND_STATISTIC_REPORTS ) {
-                    let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-                    if(that.memory.statistics.invaders === undefined)
-                        that.memory.statistics.invaders = [];
-                    that.memory.statistics.invaders.push({
-                        owner: creep.owner.username,
-                        id: creep.id,
-                        body: bodyCount,
-                        enter: Game.time,
-                        time: Date.now()
-                    });
-                }
-            }
-        };
-        _.forEach(this.hostiles, registerHostile);
-
-        let registerHostileLeave = id => {
-            const creep = Game.getObjectById(id);
-            const stillHostile = !creep || Task.reputation.hostileOwner(creep);
-            // for each known invader
-            if( !that.hostileIds.includes(id) && !stillHostile ) { // not found anymore or no longer hostile
-                // save to trigger subscribers later
-                that.goneInvader.push(id);
-                // update statistics
-                if( SEND_STATISTIC_REPORTS && that.memory.statistics && that.memory.statistics.invaders !== undefined && that.memory.statistics.invaders.length > 0 ){
-                    let select = invader => invader.id == id && invader.leave === undefined;
-                    let entry = _.find(that.memory.statistics.invaders, select);
-                    if( entry != undefined ) entry.leave = Game.time;
-                }
-            }
-        };
-        _.forEach(this.memory.hostileIds, registerHostileLeave);
-
-        this.memory.hostileIds = this.hostileIds;
     };
 
     Room.prototype.isWalkable = function(x, y, look) {
@@ -1141,57 +852,11 @@ mod.flush = function(){
         if (Room._ext[key].flush) Room._ext[key].flush();
     }
     let clean = room => {
-        delete room._sourceEnergyAvailable;
-        delete room._droppedResources;
-        delete room._ticksToNextRegeneration;
-        delete room._relativeEnergyAvailable;
-        delete room._towerFreeCapacity;
-        delete room._hostiles;
-        delete room._hostileIds;
-        delete room._situation;
-        delete room._casualties;
-        delete room._currentCostMatrix;
-        delete room._isReceivingEnergy;
-        delete room._reservedSpawnEnergy;
-        delete room._creeps;
-        delete room._immobileCreeps;
-        delete room._allCreeps;
-        delete room._privateerMaxWeight;
-        delete room._claimerMaxWeight;
-        delete room._combatCreeps;
-        delete room._defenseLevel;
-        delete room._hostileThreatLevel;
-        delete room._collapsed;
-        delete room._feedable;
-        if( global.isNewServer ) {
-            delete room._my;
-            delete room._constructionSites;
-            delete room._myConstructionSites;
-            delete room._maxPerJob;
-            delete room._minerals;
-            delete room._structures;
-        } else {
-            delete room.structures._repairable;
-            delete room.structures._urgentRepairableSites;
-            delete room.structures._fortifyableSites;
-            delete room.structures._fuelables;
+        for (const key of Object.keys(Room._ext)) {
+            if (Room._ext[key].flushRoom) Room._ext[key].flushRoom(room);
         }
-        if (!room._powerBank) {
-            delete room.memory.powerBank;
-        }
-        room.newInvader = [];
-        room.goneInvader = [];
     };
     _.forEach(Game.rooms, clean);
-
-    // Temporary migration can be removed once traveler is merged into /dev
-    if (!_.isUndefined(Memory.rooms.hostileRooms)) {
-        for (const roomName in Memory.rooms.hostileRooms) {
-            if (_.isUndefined(Memory.rooms[roomName])) Memory.rooms[roomName] = {};
-            Memory.rooms[roomName].hostile = Memory.rooms.hostileRooms[roomName];
-        }
-        delete Memory.rooms.hostileRooms;
-    }
 };
 mod.totalSitesChanged = function() {
     const numSites = _.size(Game.constructionSites);
@@ -1208,7 +873,11 @@ mod.totalStructuresChanged = function() {
     return oldStructures && oldStructures !== numStructures;
 };
 mod.needMemoryResync = function(room) {
-    return !room.memory.initialized || Game.time % global.MEMORY_RESYNC_INTERVAL === 0 || room.name == 'sim';
+    if (_.isUndefined(room.memory.initialized)) {
+        room.memory.initialized = Game.time;
+        return true;
+    }
+    return Game.time % global.MEMORY_RESYNC_INTERVAL === 0 || room.name == 'sim';
 };
 mod.analyze = function() {
     const p = Util.startProfiling('Room.analyze', {enabled:PROFILING.ROOMS});
@@ -1225,12 +894,6 @@ mod.analyze = function() {
             for (const key of Object.keys(Room._ext)) {
                 if (Room._ext[key].analyzeRoom) Room._ext[key].analyzeRoom(room, needMemoryResync);
             }
-            if (needMemoryResync) {
-                room.memory.initialized = Game.time;
-                room.saveMinerals();
-                room.saveTowers();
-            }
-            if (room.hostiles.length > 0) room.processInvaders();
             if (totalSitesChanged) room.countMySites();
             if (totalStructuresChanged) room.countMyStructures();
         }
@@ -1250,41 +913,19 @@ mod.execute = function() {
     for (const key of Object.keys(Room._ext)) {
         if (Room._ext[key].execute) Room._ext[key].execute();
     }
-    let triggerNewInvaders = creep => {
-        // create notification
-        let bodyCount = JSON.stringify( _.countBy(creep.body, 'type') );
-        if( global.DEBUG || NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.room.my) || NOTIFICATE_HOSTILES ) logSystem(creep.pos.roomName, `Hostile intruder (${bodyCount}) from "${creep.owner.username}".`);
-        if( NOTIFICATE_INVADER || (NOTIFICATE_INTRUDER && creep.owner.username !== 'Invader' && creep.room.my) || (NOTIFICATE_HOSTILES && creep.owner.username !== 'Invader') ){
-            Game.notify(`Hostile intruder ${creep.id} (${bodyCount}) from "${creep.owner.username}" in room ${creep.pos.roomName} at ${toDateTimeString(toLocalDate(new Date()))}`);
-        }
-        // trigger subscribers
-        Room.newInvader.trigger(creep);
-    };
-    let triggerKnownInvaders = id =>  Room.knownInvader.trigger(id);
-    let triggerGoneInvaders = id =>  Room.goneInvader.trigger(id);
     let run = (memory, roomName) => {
         try {
             // run executeRoom in each of our submodules
             for (const key of Object.keys(Room._ext)) {
-                if (Room._ext[key].executeRoom) Room._ext[key].executeRoom(roomName);
+                if (Room._ext[key].executeRoom) Room._ext[key].executeRoom(memory, roomName);
             }
-            const p2 = Util.startProfiling(roomName, {enabled:PROFILING.ROOMS});
-            let room = Game.rooms[roomName];
-            if( room ){ // has sight
-                room.goneInvader.forEach(triggerGoneInvaders);
-                p2.checkCPU('Creep.execute.run:goneInvader', 0.5);
-                room.hostileIds.forEach(triggerKnownInvaders);
-                p2.checkCPU('Creep.execute.run:knownInvaders', 0.5);
-                room.newInvader.forEach(triggerNewInvaders);
-                p2.checkCPU('Creep.execute.run:newInvaders', 0.5);
-                if (room.structures.towers.length > 0) Tower.loop(room);
-                p2.checkCPU('Creep.execute.run:tower.loop', 0.5);
-                if( room.collapsed ) Room.collapsed.trigger(room);
-                p2.checkCPU('Creep.execute.run:collapsed', 0.5);
-            }
-            else { // no sight
-                if( memory.hostileIds ) _.forEach(memory.hostileIds, triggerKnownInvaders);
-                p2.checkCPU('Creep.execute.run:knownInvadersNoSight', 0.5);
+            const room = Game.rooms[roomName];
+            if (room) { // has sight
+                if (room.collapsed) {
+                    const p2 = Util.startProfiling(roomName + 'execute', {enabled:PROFILING.ROOMS});
+                    Room.collapsed.trigger(room);
+                    p2.checkCPU('collapsed', 0.5);
+                }
             }
         } catch (e) {
             Util.logError(e.stack || e.message);
