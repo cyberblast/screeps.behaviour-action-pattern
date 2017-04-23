@@ -845,6 +845,65 @@ mod.extend = function(){
         }
         return true;
     };
+    Room.prototype.targetAccessible = function(target) {
+        if (!target) return;
+        if (target instanceof RoomObject) target = target.pos;
+        for (const prop of ['x', 'y', 'roomName']) {
+            if (!Reflect.has(target, prop)) return;
+        }
+        
+        if (!Room.isHighwayRoom(this.name)) return;
+        if (!this.highwayHasWalls()) return true;
+        
+        const closestRoom = _(Game.rooms).filter('my').min(r => Game.map.getRoomLinearDistance(r.name, this.name));
+        if (closestRoom === Infinity) return;
+        
+        const [x1, y1] = Room.calcGlobalCoordinates(this.name, (x, y) => [x, y]);
+        const [x2, y2] = Room.calcGlobalCoordinates(closestRoom, (x, y) => [x, y]);
+        let dir = '';
+        if (y1 - y2 < 0) {
+            dir += 'south';
+        } else if (y1 - y2 > 0) {
+            dir += 'north';
+        }
+        if (x1 - x2 < 0) {
+            dir += 'east';
+        } else if (x1 - x2 > 0) {
+            dir += 'west';
+        }
+        if (x1 % 10 === 0) {
+            if (y1 % 10 === 0) {
+                // corner room
+                if (dir.includes('south') && dir.includes('east')) {
+                    return this.isTargetAccessible(this.getPositionAt(49, 49), target);
+                }
+                if (dir.includes('south') && dir.includes('west')) {
+                    return this.isTargetAccessible(this.getPositionAt(0, 49), target);
+                }
+                if (dir.includes('north') && dir.includes('east')) {
+                    return this.isTargetAccessible(this.getPositionAt(49, 0), target);
+                }
+                if (dir.includes('north') && dir.includes('west')) {
+                    return this.isTargetAccessible(this.getPositionAt(0, 0), target);
+                }
+            }
+            if (dir.includes('east')) {
+                return this.isTargetAccessible(this.getPositionAt(49, 25), target);
+            }
+            if (dir.includes('west')) {
+                return this.isTargetAccessible(this.getPositionAt(0, 25), target);
+            }
+        }
+        if (y1 % 10 === 0) {
+            if (dir.includes('south')) {
+                return this.isTargetAccessible(this.getPositionAt(25, 49), target);
+            }
+            if (dir.includes('north')) {
+                return this.isTargetAccessible(this.getPositionAt(25, 0), target);
+            }
+        }
+        return true;
+    };
 };
 mod.flush = function(){
     // run flush in each of our submodules
