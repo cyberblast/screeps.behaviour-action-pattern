@@ -218,12 +218,14 @@ mod.extend = function() {
         }
     };
 
-    Room.prototype.cancelReactionOrder = function(labId) {
+    Room.prototype.cancelReactionOrder = function(labId, dataFilter) {
         let labData = this.memory.resources.lab.find( (l) => l.id == labId );
+        if ( dataFilter && !_.matches(dataFilter)(labId)) return;
+
         if ( labData ) {
             // clear slave reaction orders
-            if (labData.slave_a) this.cancelReactionOrder(labData.slave_a);
-            if (labData.slave_b) this.cancelReactionOrder(labData.slave_b);
+            if (labData.slave_a) this.cancelReactionOrder(labData.slave_a, {master: labId});
+            if (labData.slave_b) this.cancelReactionOrder(labData.slave_b, {master: labId});
 
             // clear reaction orders
             let basicStates = [ LAB_MASTER, LAB_SLAVE_1, LAB_SLAVE_2, LAB_SLAVE_3 ];
