@@ -64,7 +64,7 @@ let Setup = function(typeName){
     };
     this.isValidSetup = function(room){
         if( room.controller.level < this.minControllerLevel ) {
-            if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, rcl: room.controller.level, Setup:'isValidSetup'}, 'low RCL');
+            if (global.DEBUG && global.TRACE) trace('Setup', {setupType:this.type, room:room.name, rcl: room.controller.level, Setup:'isValidSetup'}, 'low RCL');
             return false;
         }
 
@@ -74,14 +74,14 @@ let Setup = function(typeName){
         const energy = room.relativeRemainingEnergyAvailable;
         if( absEnergy < minAbsEnergyAvailable ||
             energy < minEnergyAvailable ) {
-            if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, absEnergy, energy, Setup:'isValidSetup'}, 'not enough energy');
+            if (global.DEBUG && global.TRACE) trace('Setup', {setupType:this.type, room:room.name, absEnergy, energy, Setup:'isValidSetup'}, 'not enough energy');
             return false;
         }
 
         let maxCount = this.SelfOrCall(this._maxCount, room);
         let maxWeight = this.SelfOrCall(this._maxWeight, room);
         if( maxCount === 0 || maxWeight === 0 ) {
-            if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, maxCount, maxWeight, Setup:'isValidSetup'}, 'too many creeps');
+            if (global.DEBUG && global.TRACE) trace('Setup', {setupType:this.type, room:room.name, maxCount, maxWeight, Setup:'isValidSetup'}, 'too many creeps');
             return false;
         }
         if( maxCount == null )
@@ -108,7 +108,7 @@ let Setup = function(typeName){
             existingWeight = population.typeWeight[this.type] || 0;
         }
         const returnVal = existingCount < maxCount && existingWeight < maxWeight;
-        if (DEBUG && TRACE) trace('Setup', {setupType:this.type, room:room.name, returnVal, Setup:'isValidSetup'}, 'count:', existingCount, '<', maxCount, 'weight:', existingWeight, '<', maxWeight);
+        if (global.DEBUG && global.TRACE) trace('Setup', {setupType:this.type, room:room.name, returnVal, Setup:'isValidSetup'}, 'count:', existingCount, '<', maxCount, 'weight:', existingWeight, '<', maxWeight);
         return returnVal;
     };
     this.existingWeight = function(room){

@@ -15,13 +15,13 @@ mod.run = function(creep) {
 };
 mod.nextAction = function(creep){
     if( creep.pos.roomName !== creep.data.homeRoom ) {
-        if( DEBUG && TRACE ) trace('Behaviour', {actionName:'travelling', behaviourName:this.name, creepName:creep.name, assigned: true, Behaviour:'nextAction', Action:'assign'});
+        if( global.DEBUG && global.TRACE ) trace('Behaviour', {actionName:'travelling', behaviourName:this.name, creepName:creep.name, assigned: true, Behaviour:'nextAction', Action:'assign'});
         Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
         return true;
     }
 
     if( !creep.room.collapsed ) {
-        if( DEBUG && TRACE ) trace('Behaviour', {actionName:'recycling', behaviourName:this.name, creepName:creep.name, assigned: true, Behaviour:'nextAction', Action:'assign'});
+        if( global.DEBUG && global.TRACE ) trace('Behaviour', {actionName:'recycling', behaviourName:this.name, creepName:creep.name, assigned: true, Behaviour:'nextAction', Action:'assign'});
         return Creep.action.recycling.assign(creep);
     }
     const invasion = creep.room.situation.invasion && creep.room.controller && creep.room.controller.level > 2;
@@ -65,15 +65,15 @@ mod.nextAction = function(creep){
     for(var iAction = 0; iAction < priority.length; iAction++) {
         var action = priority[iAction];
         const valid = action.isValidAction(creep);
-        if( DEBUG && TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, valid, Action:'isValidAction'});
+        if( global.DEBUG && global.TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, valid, Action:'isValidAction'});
         if( !valid ) continue;
 
         const addable = action.isAddableAction(creep);
-        if( DEBUG && TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, addable, Action:'isAddableAction'});
+        if( global.DEBUG && global.TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, addable, Action:'isAddableAction'});
         if( !addable ) continue;
 
         const assigned = action.assignDebounce ? action.assignDebounce(creep, outflowPriority) : action.assign(creep);
-        if( DEBUG && TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, target: creep.target, assigned, Action:'assign'});
+        if( global.DEBUG && global.TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, target: creep.target, assigned, Action:'assign'});
         if (assigned) {
             if (action.name !== 'idle') {
                 creep.data.lastAction = action.name;

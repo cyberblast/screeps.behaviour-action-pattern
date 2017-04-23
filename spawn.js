@@ -32,7 +32,7 @@ mod.extend = function(){
         return busy;
     };
     Spawn.prototype.createCreepBySetup = function(setup){
-        if( DEBUG && TRACE ) trace('Spawn',{setupType:this.type, rcl:this.room.controller.level, energy:this.room.energyAvailable, maxEnergy:this.room.energyCapacityAvailable, Spawn:'createCreepBySetup'}, 'creating creep');
+        if( global.DEBUG && global.TRACE ) trace('Spawn',{setupType:this.type, rcl:this.room.controller.level, energy:this.room.energyAvailable, maxEnergy:this.room.energyCapacityAvailable, Spawn:'createCreepBySetup'}, 'creating creep');
         var params = setup.buildParams(this);
         if( this.create(params.parts, params.name, params.setup) )
             return params;
@@ -49,7 +49,7 @@ mod.extend = function(){
             else params = queue.splice(index, 1)[0];
         }
         if (!params) {
-            if (queue.length && DEBUG) global.logSystem(this.pos.roomName, 'No non-CRITICAL creeps to spawn, delaying spawn until CPU is not CRITICAL, or new entries are added.');
+            if (queue.length && global.DEBUG) global.logSystem(this.pos.roomName, 'No non-CRITICAL creeps to spawn, delaying spawn until CPU is not CRITICAL, or new entries are added.');
             spawnDelay[level] = queue.length;
             return null;
         }
@@ -107,7 +107,7 @@ mod.extend = function(){
             if(CENSUS_ANNOUNCEMENTS) global.logSystem(this.pos.roomName, dye(CRAYON.birth, 'Good morning ' + newName + '!') );
             return true;
         }
-        if( DEBUG || CENSUS_ANNOUNCEMENTS ) global.logSystem(this.pos.roomName, dye(CRAYON.error, 'Offspring failed: ' + translateErrorCode(newName) + '<br/> - body: ' + JSON.stringify(_.countBy(body)) + '<br/> - name: ' + name + '<br/> - behaviour: ' + behaviour + '<br/> - destiny: ' + destiny) );
+        if( global.DEBUG || CENSUS_ANNOUNCEMENTS ) global.logSystem(this.pos.roomName, dye(CRAYON.error, 'Offspring failed: ' + translateErrorCode(newName) + '<br/> - body: ' + JSON.stringify(_.countBy(body)) + '<br/> - name: ' + name + '<br/> - behaviour: ' + behaviour + '<br/> - destiny: ' + destiny) );
         return false;
     };
 };
@@ -115,7 +115,7 @@ mod.register = function(){
     Creep.spawningCompleted.on( creep => mod.handleSpawningCompleted(creep) );
 };
 mod.handleSpawningCompleted = function(creep){
-    if( DEBUG && TRACE ) trace('Spawn', {behaviour:creep.data.creepType, creepName:creep.name, Spawn:'Creep.spawningCompleted'});
+    if( global.DEBUG && global.TRACE ) trace('Spawn', {behaviour:creep.data.creepType, creepName:creep.name, Spawn:'Creep.spawningCompleted'});
     if(CENSUS_ANNOUNCEMENTS) global.logSystem(creep.pos.roomName, dye(CRAYON.birth, 'Off to work ' + creep.name + '!') );
 };
 mod.execute = function(){

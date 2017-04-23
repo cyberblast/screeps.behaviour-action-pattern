@@ -71,7 +71,7 @@ global.inject = (base, alien, namespace) => {
             base[key] = alien[key].bind(base);
         } else if (alien[key] !== null && typeof base[key] === 'object' && !Array.isArray(base[key]) &&
             typeof alien[key] === 'object' && !Array.isArray(alien[key])) {
-            global.inject(base[key], alien[key], namespace);
+            _.merge(base[key], alien[key]);
         } else {
             base[key] = alien[key]
         }
@@ -223,6 +223,20 @@ global.install = () => {
     });
     global.inject(Creep, load("creep"));
     global.inject(Room, load("room"));
+    _.assign(Room, {
+        _ext: {
+            construction: load("room.construction"),
+            containers: load("room.container"),
+            extensions: load("room.extension"),
+            labs: load("room.lab"),
+            links: load("room.link"),
+            nuker: load("room.nuker"),
+            observers: load("room.observer"),
+            orders: load("room.orders"),
+            powerSpawn: load("room.powerSpawn"),
+            spawns: load("room.spawn"),
+        },
+    });
     global.inject(Spawn, load("spawn"));
 
     // Extend server objects
@@ -238,7 +252,7 @@ global.install = () => {
     OCSMemory.activateSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, true);
 
     global.modulesValid = Memory.modules.valid;
-    if (DEBUG) logSystem('Global.install', 'Code reloaded.');
+    if (global.DEBUG) logSystem('Global.install', 'Code reloaded.');
 };
 global.install();
 load('traveler')({exportTraveler: false, installTraveler: true, installPrototype: true, defaultStuckValue: TRAVELER_STUCK_TICKS, reportThreshold: TRAVELER_THRESHOLD});
@@ -265,10 +279,14 @@ module.exports.loop = function () {
         if (Memory.cloaked === undefined) {
             Memory.cloaked = {};
         }
-        // ensure up to date parameters
-        _.assign(global, load("parameter"));
         
-        // process loaded memory segments
+        Util.set(Memory, 'parameters', {});
+        _.assign(global, {parameters: Memory.parameters}); // allow for shorthand access in console
+        // ensure up to date parameters, override in memory
+        _.assign(global, load("parameter"));
+        _.merge(global, parameters);        
+        
+      // process loaded memory segments
         OCSMemory.processSegments();
         p.checkCPU('processSegments', PROFILING.ANALYZE_LIMIT);
     
@@ -297,6 +315,7 @@ module.exports.loop = function () {
         p.checkCPU('Population.analyze', PROFILING.ANALYZE_LIMIT);
         // custom analyze
         if( global.mainInjection.analyze ) global.mainInjection.analyze();
+
 
         // Register event hooks
         Creep.register();
@@ -346,7 +365,7 @@ module.exports.loop = function () {
 
         Game.cacheTime = Game.time;
     
-        if( DEBUG && TRACE ) trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
+        if( global.DEBUG && global.TRACE ) trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
         totalUsage.totalCPU();
     }
     catch (e) {

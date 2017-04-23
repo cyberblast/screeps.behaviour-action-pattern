@@ -5,7 +5,7 @@ action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 && creep.room.energyAvailable < creep.room.energyCapacityAvailable );
 };
 action.isValidTarget = function(target){
-    return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
+    return ( (target) && (target.energy) && target.isActive() && (target.energy < target.energyCapacity) );
 };
 action.isAddableTarget = function(target){
     return ( target.my &&
@@ -15,12 +15,9 @@ action.newTarget = function(creep){
     if (creep.room.energyAvailable === creep.room.energyCapacityAvailable) {
         return null;
     }
-    var that = this;
-    return creep.pos.findClosestByRange(creep.room.structures.all, {
+    return creep.pos.findClosestByRange(creep.room.structures.feedable, {
         filter: (structure) => {
-            return ((structure.structureType == STRUCTURE_EXTENSION ||
-                structure.structureType == STRUCTURE_SPAWN )
-                && that.isValidTarget(structure) && that.isAddableTarget(structure, creep));
+            return action.isValidTarget(structure) && action.isAddableTarget(structure, creep);
         }
     });
 };

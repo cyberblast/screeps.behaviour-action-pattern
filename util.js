@@ -27,12 +27,22 @@ module.exports = {
      * @returns {string}
      */
     formatNumber(number) {
-        if (number >= 1000000) {
-            return (number / 1000000).toFixed(2) + 'M';
-        } else if (number >= 1000) {
-            return (number / 1000).toFixed(1) + 'K';
+        let ld = Math.log10(number) / 3;
+        if (!number) return number;
+        let n = number.toString();
+        if (ld < 1) {
+            return n;
         }
-        return _.isUndefined(number) ? number : number.toString();
+        if (ld < 2) {
+            return n.substring(0, n.length - 3) + 'k';
+        }
+        if (ld < 3) {
+            return n.substring(0, n.length - 6) + 'M';
+        }
+        if (ld < 4) {
+            return n.substring(0, n.length - 9) + 'B';
+        }
+        return number.toString();
     },
     
     /**
@@ -66,6 +76,16 @@ module.exports = {
             return _.get(object, path);
         }
         return r;
+    },
+    
+    /**
+     * Checks if all the arguments passed are equal.
+     * @param {...*} args
+     * @returns {Boolean}
+     */
+    areEqual(...args) {
+        if (args.length <= 1) return true;
+        return args.every((v, i, a) => _.isEqual(v, a[0]));
     },
     
     /**
@@ -401,6 +421,33 @@ module.exports = {
         if (structures) structures.forEach(destroy);
         delete Memory.pavementArt[roomName];
         return true;
+    },
+    
+    /**
+     * Iterates over all your structures and adds them to a layout array, and returns the JSON.
+     * @param {RoomPosition|Object} pos - A room position of the top left corner of the layout
+     * @param {Function} [filter] - Optional filter.
+     * @returns {string} A JSON string of the room layout.
+     */
+    getRoomLayout(pos, filter) {
+        const layout = [];
+        const room = Game.rooms[pos.roomName];
+        if (!room) return;
+        const startX = pos.x;
+        const startY = pos.y;
+        _(room.find(FIND_STRUCTURES))
+            .reject(s => s instanceof StructureController)
+            .filter(s => s.pos.x >= startX && s.pos.y >= startY)
+            .filter(s => {
+                if (filter) return filter(s);
+                return true;
+            })
+            .value() // for some reason _.set is broken in _.forEach
+            .forEach(s => _.set(layout, [s.pos.x - startX, s.pos.y - startY], s.structureType));
+        // RegEx Magic
+        const replacementMap = {['null']:'',['"extension"']:'STRUCTURE_EXTENSION',['"road"']:'STRUCTURE_ROAD',['"tower"']:'STRUCTURE_TOWER',['"spawn"']:'STRUCTURE_SPAWN',['"link"']:'STRUCTURE_LINK',['"storage"']:'STRUCTURE_STORAGE',['"terminal"']:'STRUCTURE_TERMINAL',['"nuker"']:'STRUCTURE_NUKER',['"powerSpawn"']:'STRUCTURE_POWER_SPAWN',['"observer"']:'STRUCTURE_OBSERVER',['"rampart"']:'STRUCTURE_RAMPART',['"lab"']:'STRUCTURE_LAB'};
+        const re = new RegExp(Object.keys(replacementMap).join('|'), 'g');
+        return JSON.stringify(layout).replace(re, match => replacementMap[match]);
     },
     
     /**
