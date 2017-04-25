@@ -15,20 +15,29 @@ const mod = {
     myName: () => ME,
     isNPC: username => NPC[username] === true,
     npcOwner: creep => creep.owner && mod.isNPC(creep.owner.username),
-    isAlly: username => mod.score(username) >= CONST.ALLY,
-    notAlly: username => !mod.isAlly(username),
-    allyOwner: creep => creep.owner && mod.isAlly(creep.owner.username),
-    isHostile: username => mod.score(username) < CONST.NEUTRAL,
-    notHostile: username => !mod.isHostile(username),
-    hostileOwner: creep => creep.owner && mod.isHostile(creep.owner.username),
+    isAlly: (username, roomName) => mod.score(username, roomName) >= CONST.ALLY,
+    notAlly: (username, roomName) => !mod.isAlly(username, roomName),
+    allyOwner: creep => creep.owner && mod.isAlly(creep.owner.username, creep.pos.roomName),
+    isHostile: (username, roomName) => mod.score(username, roomName) < CONST.NEUTRAL,
+    hostileOwner: creep => creep.owner && mod.isHostile(creep.owner.username, creep.pos.roomName),
+    notHostile: (username, roomName) => !mod.isHostile(username, roomName),
+    notHostileOwner: creep => creep.owner && mod.notHostile(creep.owner.username, creep.pos.roomName),
     whitelist: () => mod.cache('whitelist'),
-    score: username => {
+    score: function(username, roomName) {
         const reps = mod.cache('score');
         if( username === undefined ) {
             return reps;
         }
         const name = username && username.toLowerCase();
-        if( reps[name] ) {
+        const room = roomName && roomName.toUpperCase();
+        if (room) {
+            const rooms = mod.cache('rooms');
+            const localRep = _.get(rooms, [room, name]);
+            if (_.isFinite(localRep)) {
+                return localRep;
+            }
+        }
+        if (reps[name]) {
             return reps[name];
         } else {
             return reps[name] = 0;
@@ -39,6 +48,12 @@ const mod = {
         mod.score()[name] = score;
         mod.playerMemory(name).score = score;
     },
+    setLocalScore: function(username, roomName, score) {
+        const name = username && username.toLowerCase();
+        const room = roomName && roomName.toUpperCase();
+        _.set(mod.cache('rooms'), [room, name], score);
+        mod.roomMemory(username, roomName).score = score;
+    },
 
     flush: () => {
         mod._loadWhitelist();
@@ -47,6 +62,7 @@ const mod = {
     cache: table => Task.cache(mod.name, table),
     killScoreCache: () => {
         Task.clearCache(mod.name, 'score');
+        Task.clearCache(mod.name, 'rooms');
         return mod.score();
     },
     killWhitelistCache: () => {
@@ -63,6 +79,12 @@ const mod = {
         } else {
             return playerMemory[name] = {};
         }
+    },
+    roomMemory: function(username, roomName) {
+        const roomMemory = mod.memory('rooms');
+        const name = username && username.toLowerCase();
+        const room = roomName && roomName.toUpperCase();
+        return Util.get(roomMemory, [room, name], {});
     },
 
     _loadScore: () => {
