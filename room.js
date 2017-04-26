@@ -624,14 +624,15 @@ mod.extend = function(){
             options.getStructureMatrix = room => {
                 const matrix = _getStructureMatrix(room);
                 const roomName = room.name || room;
-                room = Game.rooms[roomName];
-                if (room) {
-                    // block all positions creeps might sit and work
-                    _.forEach(room.sources, s => _.forEach(s.validSpots, pos => {
-                        console.log(this.name, `getPath - invalidating source ${s.id} adjacent position ${pos}`);
-                        matrix.set(pos.x, pos.y, 0xFF);
-                    }));
-                }
+                // FIXME: This should instead poll sources to find out where the miner will be working, rather than all possible.
+                // room = Game.rooms[roomName];
+                // if (room) {
+                //     // block all positions creeps might sit and work
+                //     _.forEach(room.sources, s => _.forEach(s.validSpots, pos => {
+                //         console.log(this.name, `getPath - invalidating source ${s.id} adjacent position ${pos}`);
+                //         matrix.set(pos.x, pos.y, 0xFF);
+                //     }));
+                // }
                 return matrix;
             };
             const ret = traveler.findTravelPath(startPos, destPos, options);
