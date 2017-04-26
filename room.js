@@ -623,7 +623,10 @@ mod.extend = function(){
             options.getStructureMatrix = (room) => {
                 const matrix = room.structureMatrix.clone();
                 // block all positions creeps might sit and work
-                _.forEach(room.sources, s => _.forEach(s.validSpots, pos => matrix.set(pos.x, pos.y, 0xFF)));
+                _.forEach(room.sources, s => _.forEach(s.accessibleFields, pos => {
+                    console.log(this.name, `getPath - invalidating source ${s.id} adjacent position ${pos}`);
+                    matrix.set(pos.x, pos.y, 0xFF);
+                }));
                 return matrix;
             };
             const ret = traveler.findTravelPath(startPos, destPos, options);

@@ -53,7 +53,6 @@ mod.strategies = {
     defaultStrategy: {
         name: `default-${mod.name}`,
         moveOptions: function(options) {
-            options.cacheRoutes = true;
             return options;
         },
     },

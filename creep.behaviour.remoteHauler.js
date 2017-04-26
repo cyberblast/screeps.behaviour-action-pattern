@@ -116,7 +116,10 @@ mod.strategies = {
     defaultStrategy: {
         name: `default-${mod.name}`,
         moveOptions: function(options) {
-            options.cacheRoutes = true;
+            // enable this to cache ALL routes for this creep
+            // options.cacheRoutes = true;
+            // use this callback to only cache specific destinations
+            // options.cacheThisRoute = (dest) => true;
             return options;
         },
     },
