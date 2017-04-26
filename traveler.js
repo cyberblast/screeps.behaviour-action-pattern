@@ -377,7 +377,7 @@ module.exports = function(globalOpts = {}){
             options = this.getStrategyHandler([], 'moveOptions', options);
             options.avoidSK = !options.allowSK;
             // cache all routes for this creep by default
-            if (options.cacheRoute && _.isUndefined(options.cacheThisRoute)) options.cacheThisRoute = (dest) => true;
+            if (options.cacheRoutes && _.isUndefined(options.cacheThisRoute)) options.cacheThisRoute = (dest) => true;
             if (_.isUndefined(options.ignoreCreeps)) options.ignoreCreeps = true;
             if (_.isUndefined(options.debug)) options.debug = global.DEBUG;
             if (_.isUndefined(options.allowSK)) options.allowSK = true;
@@ -386,7 +386,7 @@ module.exports = function(globalOpts = {}){
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
             if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
             if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => Room.getStructureMatrix(room.name || room, options);
-            if (options.cacheRoute && options.cacheThisRoute(destination) && options.ignoreCreeps) {
+            if (options.cacheRoutes && options.cacheThisRoute(destination) && options.ignoreCreeps) {
                 const ret = this.room.getPath(this.pos, destination, options);
                 if (ret && ret.path) {
                     const path = ret.path;
