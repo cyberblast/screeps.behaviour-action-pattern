@@ -38,7 +38,7 @@ mod.extend = function(){
         configurable: true,
         get: function() {
             Util.get(this, '_validSpots', () => {
-                return this.pos.radius().filter(p => p.isWalkable);
+                return this.pos.adjacent.filter(p => p.isWalkable);
             });
         }
     });
