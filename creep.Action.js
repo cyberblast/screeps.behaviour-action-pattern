@@ -70,7 +70,7 @@ let Action = function(actionName){
                 const targetPos = Traveler.positionAtDirection(creep.pos, direction);
                 if (creep.room.isWalkable(targetPos.x, targetPos.y)) { // low cost last steps if possible
                     creep.move(direction);
-                } else {
+                } else if (!creep.pos.isNearTo(creep.target)) { // travel there if we're not already adjacent
                     creep.travelTo(creep.target, {range: this.reachedRange});
                 }
             }
@@ -125,9 +125,9 @@ let Action = function(actionName){
     this.selectStrategies = function() {
         return [this.defaultStrategy];
     };
-    this.getStrategy = function(strategyName, creep, args) {
+    this.getStrategy = function(strategyName, creep, ...args) {
         if (_.isUndefined(args)) return creep.getStrategyHandler([this.name], strategyName);
-        else return creep.getStrategyHandler([this.name], strategyName, args);
+        else return creep.getStrategyHandler([this.name], strategyName, ...args);
     };
 };
 module.exports = Action;

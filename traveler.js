@@ -127,20 +127,17 @@ module.exports = function(globalOpts = {}){
                 }
 
                 let room = Game.rooms[roomName];
-                if (!room) {
-                    return;
-                }
                 let matrix;
-                if (options.ignoreStructures) {
+                if (!room) {
+                    matrix = this.getStructureMatrix(roomName, options);
+                } else if (options.ignoreStructures) {
                     matrix = new PathFinder.CostMatrix();
                     if (!options.ignoreCreeps) {
                         Traveler.addCreepsToMatrix(room, matrix);
                     }
-                }
-                else if (options.ignoreCreeps || roomName !== origin.pos.roomName) {
+                } else if (options.ignoreCreeps || roomName !== origin.pos.roomName) {
                     matrix = this.getStructureMatrix(room, options);
-                }
-                else {
+                } else {
                     matrix = this.getCreepMatrix(room, options);
                 }
                 for (let obstacle of options.obstacles) {
@@ -386,7 +383,7 @@ module.exports = function(globalOpts = {}){
             if (_.isUndefined(options.useFindRoute)) options.useFindRoute = _.get(global, 'ROUTE_PRECALCULATION', true);
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
             if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
-            if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => Room.isSKRoom(room.name) && options.avoidSK ? room.avoidSKMatrix : room.structureMatrix;
+            if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => Room.getStructureMatrix(room.name || room, options);
             if (options.cacheRoutes && options.ignoreCreeps) {
                 const ret = this.room.getPath(this.pos, destination, options);
                 if (ret && ret.path) {

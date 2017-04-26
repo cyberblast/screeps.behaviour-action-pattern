@@ -41,6 +41,8 @@ action.isValidAction = isValidAction;
 function isValidTarget(target, creep) {
     // target is lab
     return target instanceof StructureLab &&
+        // target must be active
+        target.isActive() &&
         // target has the minimum energy and mineral
         target.energy >= LAB_BOOST_ENERGY && target.mineralAmount >= LAB_BOOST_MINERAL;
 }

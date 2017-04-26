@@ -79,13 +79,13 @@ module.exports = {
     },
     
     /**
-     * Sets a property on an object if and only if the property doesn't already exist
-     * @param {Object} object - The object
-     * @param {string} path - The path to the property within the object
-     * @param {*} value - The value to set
+     * Checks if all the arguments passed are equal.
+     * @param {...*} args
+     * @returns {Boolean}
      */
-    setDefault(object, path, value) {
-        this.set(object, path, value, true);
+    areEqual(...args) {
+        if (args.length <= 1) return true;
+        return args.every((v, i, a) => _.isEqual(v, a[0]));
     },
     
     /**
