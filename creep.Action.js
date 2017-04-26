@@ -115,22 +115,22 @@ let Action = function(actionName){
         }
     };
     // empty default strategy
-    this.defaultStrategy = {
-        name: `default-${actionName}`,
-        moveOptions: function(options) {
-            return options || {};
-        }
-    };
+    this.defaultStrategy = Action.getDefaultStrategy(this.name);
     // strategy accessor
     this.selectStrategies = function() {
-        return [Action.getDefaultStrategy(this)];
+        return [this.defaultStrategy];
     };
     this.getStrategy = function(strategyName, creep, ...args) {
         if (_.isUndefined(args)) return creep.getStrategyHandler([this.name], strategyName);
         else return creep.getStrategyHandler([this.name], strategyName, ...args);
     };
 };
-Action.getDefaultStrategy = function(action) {
-    return action.defaultStrategy;
+Action.getDefaultStrategy = function(name) {
+    return {
+        name: `default-${name}`,
+        moveOptions: function (options) {
+            return options || {};
+        },
+    };
 };
 module.exports = Action;
