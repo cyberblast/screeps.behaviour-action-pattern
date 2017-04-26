@@ -123,11 +123,14 @@ let Action = function(actionName){
     };
     // strategy accessor
     this.selectStrategies = function() {
-        return [this.defaultStrategy];
+        return [Action.getDefaultStrategy(this)];
     };
     this.getStrategy = function(strategyName, creep, ...args) {
         if (_.isUndefined(args)) return creep.getStrategyHandler([this.name], strategyName);
         else return creep.getStrategyHandler([this.name], strategyName, ...args);
     };
+};
+Action.getDefaultStrategy = function(action) {
+    return action.defaultStrategy;
 };
 module.exports = Action;

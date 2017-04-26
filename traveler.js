@@ -401,10 +401,10 @@ module.exports = function(globalOpts = {}){
                     if (next) {
                         if (next === 'B') return; // wait for border to cycle
                         else return this.move(next); // take next step
-                    } else {
+                    } else if (options.debug) {
                         console.log(this.name, 'no next step to take, using traveler.', next, 'from', this.pos, 'to', destination);
                     }
-                } else { // TODO:find closest place to get on the path
+                } else if (options.debug) { // TODO:find closest place to get on the path
                     console.log(this.name, 'could not generate or use cached route, falling back to traveler.');
                 }
             }

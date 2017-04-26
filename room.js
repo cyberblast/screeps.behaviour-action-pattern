@@ -1077,7 +1077,7 @@ mod.cleanup = function() {
     }
     if (Room.costMatrixCacheDirty && Room.costMatrixCacheLoaded) {
         // store our updated cache in the memory segment
-        let encodedCache = {};
+        let encodedCache = {version: Room.COSTMATRIX_CACHE_VERSION};
         for (const key in Room.costMatrixCache) {
             const entry = Room.costMatrixCache[key];
             if (entry.version === Room.COSTMATRIX_CACHE_VERSION) {
@@ -1232,7 +1232,7 @@ mod.rebuildCostMatrix = function(roomName) {
     Room.costMatrixCacheDirty = true;
 };
 mod.loadCostMatrixCache = function(cache) {
-    if (cache) {
+    if (cache && Object.keys(cache).length > 0) {
         let count = 0;
         for (const key in cache) {
             if (!Room.costMatrixCache[key] || Room.costMatrixCache[key].updated < cache[key].updated) {
@@ -1245,15 +1245,24 @@ mod.loadCostMatrixCache = function(cache) {
     Room.costMatrixCacheLoaded = true;
 };
 mod.loadPathCache = function(cache) {
-    if (cache) {
+    if (cache && Object.keys(cache).length > 0) {
         if (cache.version !== Room.PATH_CACHE_VERSION) {
+            if (global.DEBUG) Util.logSystem('RawMemory', 'version change, invalidating previous cache', cache.version, Room.PATH_CACHE_VERSION);
             // version change, invalidate previous cache
             Room.pathCache = {version: Room.PATH_CACHE_VERSION};
             Room.pathCacheDirty = true;
         } else {
-            Room.pathCache = cache;
+            let count = 0;
+            for (const key in cache) {
+                if (!Room.pathCache[key] || Room.pathCache[key].updated < cache[key].updated) {
+                    count++;
+                    Room.pathCache[key] = cache[key];
+                } else if (cache[key].stale) {
+                    delete Room.pathCache[key];
+                }
+            }
+            if (global.DEBUG && count > 0) Util.logSystem('RawMemory', 'loading cached paths.. updated ' + count + ' stale entries.');
         }
-        if (global.DEBUG) logSystem('RawMemory', 'loading cached paths.');
     }
     Room.pathCacheLoaded = true;
 };
@@ -1363,12 +1372,14 @@ mod.invalidateCachedPaths = function(roomName, destination) {
         } else {
             msg = `Invalidating all cached paths in ${roomName}.`;
             if (!_.isUndefined(Room.pathCache[roomName])) {
-                delete Room.pathCache[roomName];
+                Room.pathCache[roomName] = {stale: true};
             }
         }
     } else {
         msg = `Invalidating all cached paths.`;
-        Room.pathCache = {};
+        for (const roomName in Room.pathCache) {
+            ROom.pathCache[roomName] = {stale: true};
+        }
     }
     Room.pathCacheDirty = true;
     return msg;
