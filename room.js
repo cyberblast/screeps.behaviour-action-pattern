@@ -1368,7 +1368,7 @@ mod.invalidateCachedPaths = function(roomName, destination) {
     return msg;
 };
 // unique identifier for each position within the starting room
-// codes 3400 - 5900 represent positions, and are all single character, unique representations
-mod.getPosId = (pos) => String.fromCodePoint(3400 + (pos.x * 50) + pos.y);
+// codes 13320 - 15819 represent positions, and are all single character, unique representations
+mod.getPosId = (pos) => String.fromCodePoint(13320 + (pos.x * 50) + pos.y);
 // unique destination identifier for room positions
 mod.getDestId = (pos) => `${pos.roomName},${Room.getPosId(pos)}`;
