@@ -14,12 +14,12 @@ mod.register = function() {
 Room.pathCache = {};
 Room.pathCacheLoaded = false;
 Room.pathCacheDirty = false;
-Room.PATH_CACHE_VERSION = 2;
+Room.PATH_CACHE_VERSION = 3;
 // cached costmatrices for rooms
 Room.costMatrixCache = {};
 Room.costMatrixCacheDirty = false;
 Room.costMatrixCacheLoaded = false;
-Room.COSTMATRIX_CACHE_VERSION = 5; // change this to invalidate previously cached costmatrices
+Room.COSTMATRIX_CACHE_VERSION = 4; // change this to invalidate previously cached costmatrices
 mod.extend = function(){
     // run extend in each of our submodules
     for (const key of Object.keys(Room._ext)) {
