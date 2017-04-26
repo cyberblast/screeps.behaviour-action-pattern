@@ -19,7 +19,7 @@ Room.PATH_CACHE_VERSION = 2;
 Room.costMatrixCache = {};
 Room.costMatrixCacheDirty = false;
 Room.costMatrixCacheLoaded = false;
-Room.COSTMATRIX_CACHE_VERSION = 3; // change this to invalidate previously cached costmatrices
+Room.COSTMATRIX_CACHE_VERSION = 5; // change this to invalidate previously cached costmatrices
 mod.extend = function(){
     // run extend in each of our submodules
     for (const key of Object.keys(Room._ext)) {
@@ -1368,6 +1368,7 @@ mod.invalidateCachedPaths = function(roomName, destination) {
     return msg;
 };
 // unique identifier for each position within the starting room
-mod.getPosId = (pos) => String.fromCodePoint((pos.x * 50) + pos.y);  // codes 0 - 2499 represent positions
+// codes 3400 - 5900 represent positions, and are all single character, unique representations
+mod.getPosId = (pos) => String.fromCodePoint(3400 + (pos.x * 50) + pos.y);
 // unique destination identifier for room positions
 mod.getDestId = (pos) => `${pos.roomName},${Room.getPosId(pos)}`;
