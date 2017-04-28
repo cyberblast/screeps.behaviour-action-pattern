@@ -135,6 +135,10 @@ const Visuals = class {
         vis.line(to.x, to.y, to.x + length * Math.cos(theta_radians - base_angle), to.y + length * Math.sin(theta_radians - base_angle), style);
     }
     
+    drawStructure(vis, pos, structureType) {
+        return Visuals.Structures.drawStructure(vis, pos, structureType);
+    }
+    
     constructor() {
         this.barStyle = {fill: '#2B2B2B', opacity: 0.8, stroke: BLACK};
         this.sparklineStyle = [

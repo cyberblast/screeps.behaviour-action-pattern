@@ -142,6 +142,9 @@ global.install = () => {
         Grafana: GRAFANA ? load('grafana') : undefined,
         Visuals: load('visuals'),
     });
+    _.assign(global.Visuals, {
+        Structures: load('visuals.structures'),
+    });
     _.assign(global.Util, {
         DiamondIterator: load('util.diamond.iterator'),
         SpiralIterator: load('util.spiral.iterator'),
