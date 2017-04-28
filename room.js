@@ -911,7 +911,7 @@ mod.extend = function(){
         const accessString = String.fromCodePoint(0x1f44b) + String.fromCodePoint(0x1f3fe) + String.fromCodePoint(0x1F6AA) + String.fromCodePoint(0x1f510);
         
         // Close Ramparts
-        _(this.structures.all)                              // Iterate over all room structures
+        _(this.structures.my)                               // Iterate over all room structures
             .filter(s => s instanceof StructureRampart)     // Filter out structures not a rampart
             .filter(rampart => rampart.isPublic)            // Filter out any rampart already closed
             .forEach(rampart => rampart.setPublic(false));  // Close any public rampart
