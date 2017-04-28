@@ -1,16 +1,46 @@
 // All methods require a JSDoc comment describing it.
 // http://usejsdoc.org/
 module.exports = {
+    
+    /**
+     * Gets currently visible rooms.
+     * Dependant on userscript: {@link https://github.com/Esryok/screeps-browser-ext/blob/master/visible-room-tracker.user.js Visible Room Tracker}
+     * @param {Number} [age]
+     * @returns {Array}
+     */
+    getVisibleRooms(age) {
+        const since = Game.time - (age || 5);
+        const visibleRooms = [];
+        //return _(Memory.rooms).filter(r => r.lastViewed && r.lastViewed > since).keys().value();
+        for (const roomName in Memory.rooms) {
+            const room = Memory.rooms[roomName];
+            if (room.lastViewed && room.lastViewed > since) {
+                visibleRooms.push(roomName);
+            }
+        }
+        
+        return visibleRooms;
+    },
     /**
      * formats an integer into a readable value
      * @param {Number} number
      * @returns {string}
      */
     formatNumber(number) {
-        if (number >= 1000000) {
-            return (number / 1000000).toFixed(2) + 'M';
-        } else if (number >= 1000) {
-            return (number / 1000).toFixed(1) + 'K';
+        let ld = Math.log10(number) / 3;
+        if (!number) return number;
+        let n = number.toString();
+        if (ld < 1) {
+            return n;
+        }
+        if (ld < 2) {
+            return n.substring(0, n.length - 3) + 'k';
+        }
+        if (ld < 3) {
+            return n.substring(0, n.length - 6) + 'M';
+        }
+        if (ld < 4) {
+            return n.substring(0, n.length - 9) + 'B';
         }
         return number.toString();
     },
@@ -40,12 +70,22 @@ module.exports = {
      */
     get(object, path, defaultValue, setDefault = true) {
         const r = _.get(object, path);
-        if (!r && !_.isUndefined(defaultValue) && setDefault) {
+        if (_.isUndefined(r) && !_.isUndefined(defaultValue) && setDefault) {
             defaultValue = Util.fieldOrFunction(defaultValue);
             _.set(object, path, defaultValue);
-            return defaultValue;
+            return _.get(object, path);
         }
         return r;
+    },
+    
+    /**
+     * Checks if all the arguments passed are equal.
+     * @param {...*} args
+     * @returns {Boolean}
+     */
+    areEqual(...args) {
+        if (args.length <= 1) return true;
+        return args.every((v, i, a) => _.isEqual(v, a[0]));
     },
     
     /**
@@ -148,7 +188,7 @@ module.exports = {
         if (entityWhere) {
             Util.trace('error', entityWhere, msg);
         } else {
-            console.log(msg);
+            console.log(msg, Util.stack());
         }
     },
     
@@ -166,7 +206,7 @@ module.exports = {
             }
             Game.notify(message, 120);
         }
-        console.log(Util.dye(CRAYON.error, message));
+        console.log(Util.dye(CRAYON.error, message), Util.stack());
     },
     
     /**
@@ -176,9 +216,20 @@ module.exports = {
      */
     logSystem(roomName, ...message) {
         const text = Util.dye(CRAYON.system, roomName);
-        console.log(Util.dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt;`), ...message);
+        console.log(Util.dye(CRAYON.system, `<a href="/a/#!/room/${roomName}">${text}</a> &gt;`), ...message, Util.stack());
     },
-    
+
+    /**
+     * Build a stacktrace if DEBUG_STACKS or the first argument is true.
+     */
+    stack(force = false, placeholder = ' ') {
+        if (DEBUG_STACKS || force) {
+            return new Error(`\nSTACK; param:${DEBUG_STACKS}, force:${force}`).stack;
+        }
+
+        return placeholder;
+    },
+
     /**
      * Trace an error or debug statement
      * @param {string} category - The error category
@@ -221,7 +272,7 @@ module.exports = {
             }
         }
         
-        console.log(Game.time, Util.dye(CRAYON.error, category), ...msg, Util.dye(CRAYON.birth, JSON.stringify(entityWhere)));
+        console.log(Game.time, Util.dye(CRAYON.error, category), ...msg, Util.dye(CRAYON.birth, JSON.stringify(entityWhere)), Util.stack());
     },
     
     /**
@@ -311,6 +362,16 @@ module.exports = {
     },
     
     /**
+     * Get the distance between two points.
+     * @param {RoomPosition|Object} point1 - The first point
+     * @param {RoomPosition|Object} point2 - The second point
+     * @returns {Number}
+     */
+    getDistance(point1, point2) {
+        return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
+    },
+    
+    /**
      * Gets the distances between two rooms, respecting natural walls
      * @param {string} fromRoom - Starting room
      * @param {string} toRoom - Ending room
@@ -323,7 +384,7 @@ module.exports = {
             const room = fromRoom instanceof Room ? fromRoom : Game.rooms[fromRoom];
             if (!room) return Room.roomDistance(fromRoom, toRoom, false);
             
-            const route = room.findroute(toRoom, false, false);
+            const route = room.findRoute(toRoom, false, false);
             if (!route) return Room.roomDistance(fromRoom, toRoom, false);
             
             return route === ERR_NO_PATH ? Infinity : route.length;
@@ -363,6 +424,33 @@ module.exports = {
     },
     
     /**
+     * Iterates over all your structures and adds them to a layout array, and returns the JSON.
+     * @param {RoomPosition|Object} pos - A room position of the top left corner of the layout
+     * @param {Function} [filter] - Optional filter.
+     * @returns {string} A JSON string of the room layout.
+     */
+    getRoomLayout(pos, filter) {
+        const layout = [];
+        const room = Game.rooms[pos.roomName];
+        if (!room) return;
+        const startX = pos.x;
+        const startY = pos.y;
+        _(room.find(FIND_STRUCTURES))
+            .reject(s => s instanceof StructureController)
+            .filter(s => s.pos.x >= startX && s.pos.y >= startY)
+            .filter(s => {
+                if (filter) return filter(s);
+                return true;
+            })
+            .value() // for some reason _.set is broken in _.forEach
+            .forEach(s => _.set(layout, [s.pos.x - startX, s.pos.y - startY], s.structureType));
+        // RegEx Magic
+        const replacementMap = {['null']:'',['"extension"']:'STRUCTURE_EXTENSION',['"road"']:'STRUCTURE_ROAD',['"tower"']:'STRUCTURE_TOWER',['"spawn"']:'STRUCTURE_SPAWN',['"link"']:'STRUCTURE_LINK',['"storage"']:'STRUCTURE_STORAGE',['"terminal"']:'STRUCTURE_TERMINAL',['"nuker"']:'STRUCTURE_NUKER',['"powerSpawn"']:'STRUCTURE_POWER_SPAWN',['"observer"']:'STRUCTURE_OBSERVER',['"rampart"']:'STRUCTURE_RAMPART',['"lab"']:'STRUCTURE_LAB'};
+        const re = new RegExp(Object.keys(replacementMap).join('|'), 'g');
+        return JSON.stringify(layout).replace(re, match => replacementMap[match]);
+    },
+    
+    /**
      * Generate a GUID. Note: This is not guaranteed to be 100% unique.
      * @returns {string}
      */
@@ -375,23 +463,41 @@ module.exports = {
     },
     
     /**
+     * Checks if a specific creep type is in queue, either globally or for a room
+     * @param {Object|String} opts - Behaviour if string, else an object with either behaviour, setup, or name. Optionally a room name.
+     * @returns {boolean} - True if the creep is in queue somewhere, otherwise false.
+     */
+    inQueue(opts) {
+        if (!opts) return false;
+        // string check
+        if (opts.link) opts = {behaviour: opts};
+        if (!opts.name && !opts.behaviour && !opts.setup) return false;
+        return _(Game.rooms).filter('my').map('memory').map(m => m.spawnQueueHigh.concat(m.spawnQueueMedium, m.spawnQueueLow)).flatten().some(q => {
+            if (opts.room) if (q.destiny && q.destiny.room !== opts.room) return false;
+            if (opts.behaviour) return (q.behaviour && q.behaviour === opts.behaviour) || q.name.includes(opts.behaviour);
+            if (opts.setup) return q.setup === opts.setup;
+        });
+    },
+    
+    /**
      * List the current memory usage of a given path in memory in kb
      * @param {string} key - The location in memory to check eg 'rooms.E1S1.statistics'
      * @returns {string}
      */
-    memoryUsage(key) {
-        const mem = key ? Memory[key] : Memory;
-        let string = '<table><tr><th>Key</th><th>Size (kb)</th></tr>';
+    memoryUsage(mem) {
+        let string = '';
         let total = 0;
+        let biggestKey = '';
         for (const key in mem) {
+            if (key.length > biggestKey.length) biggestKey = key;
             const sum = JSON.stringify(mem[key]).length / 1024;
             total += sum;
             string += `<tr><td>${key}</td><td>${_.round(sum, 2)}</td></tr>`;
         }
         string += `<tr><td>Total</td><td>${_.round(total, 2)}</td></tr></table>`;
-        return string;
+        const padding = Array(biggestKey.length + 2).join(' ');
+        return `<table><tr><th>Key${padding}</th><th>Size (kb)</th></tr>`.concat(string);
     },
-    
     /**
      * Reset all profiling data
      */
@@ -422,10 +528,19 @@ module.exports = {
      * @param {Number} [startCPU] - Optional starting CPU usage to use as starting point
      * @returns {checkCPU, totalCPU} - functions to be called to check usage and output totals
      */
-    startProfiling(name, startCPU) {
-        let checkCPU;
-        let totalCPU;
-        if (PROFILE || DEBUG) {
+    startProfiling(name, options = {}) {
+        const enabled = _.get(options, 'enabled', true);
+        let checkCPU = function(localName, limit, type) {
+        };
+        let totalCPU = function() {
+            // if you would like to do a baseline comparison
+            // if (_.isUndefined(Memory.profiling)) Memory.profiling = {ticks:0, cpu: 0};
+            // let thisTick = Game.cpu.getUsed() - startCPU;
+            // Memory.profiling.ticks++;
+            // Memory.profiling.cpu += thisTick;
+            // logSystem('Total', _.round(thisTick, 2) + ' ' + _.round(Memory.profiling.cpu / Memory.profiling.ticks, 2));
+        };
+        if (PROFILE && enabled) {
             if (_.isUndefined(Memory.profiler)) {
                 Util.resetProfiler();
             } else if (!global.profiler ||
@@ -433,9 +548,9 @@ module.exports = {
                 global.profiler.totalTicks < Memory.profiler.totalTicks) {
                 Util.loadProfiler();
             }
-            const onLoad = startCPU || Game.cpu.getUsed();
+            const onLoad = options.startCPU || Game.cpu.getUsed();
             let start = onLoad;
-            if (PROFILE) {
+            if (PROFILE && !PROFILING.BASIC_ONLY) {
                 /**
                  * Compares usage since startProfiling or the last call to checkCPU and reports if over limit
                  * @param {string} localName - The local name to use when reporting
@@ -449,13 +564,9 @@ module.exports = {
                         Util.logSystem(name + ':' + localName, used);
                     }
                     if (type) {
-                        Util.set(global.profiler.types, type, {
-                            totalCPU: 0,
-                            count: 0,
-                            totalCount: 0,
-                        });
+                        if (_.isUndefined(global.profiler.types[type])) global.profiler.types[type] = {totalCPU: 0, count: 0, totalCount: 0};
                         global.profiler.types[type].totalCPU += used;
-                        glboal.profiler.types[type].count++;
+                        global.profiler.types[type].count++;
                     }
                     start = current;
                 };
@@ -468,27 +579,64 @@ module.exports = {
                 global.profiler.totalCPU += totalUsed;
                 global.profiler.totalTicks++;
                 const avgCPU = global.profiler.totalCPU / global.profiler.totalTicks;
-                if (PROFILE && PROFILING.AVERAGE_USAGE && _.size(global.profiler.types) > 0) {
-                    let heading = '';
-                    while (heading.length < 30) heading += ' ';
-                    Util.logSystem(heading, '(avg/creep/tick) (active) (weighted avg) (executions)');
-                    for (const type in global.profiler.types) {
-                        const data = global.profiler.types[type];
+                if (PROFILE && !PROFILING.BASIC_ONLY && PROFILING.AVERAGE_USAGE && _.size(global.profiler.types) > 0) {
+                    let string = '';
+                    let longestType = '';
+                    _(global.profiler.types).map((data, type) => {
                         data.totalCount += data.count;
                         const typeAvg = _.round(data.totalCPU / data.totalCount, 3);
-                        let heading = type + ': ';
-                        while (heading < 30) heading += ' ';
-                        Util.logSystem(heading, '\t' + typeAvg + '\t\t' +
-                            data.count + '\t\t' + _.round(typeAvg * data.count, 3) + '\t\t' + data.totalCount);
+                        const r = {
+                            type,
+                            typeAvg: typeAvg,
+                            active: data.count,
+                            weighted: _.round(typeAvg * data.count, 3),
+                            executions: data.totalCount
+                        };
                         data.count = 0;
-                    }
+                        return r;
+                    }).sortByOrder('weighted', 'desc').forEach(data => {
+                        if (data.type.length > longestType.length) longestType = data.type;
+                        string += `<tr><td>${data.type}</td><td>     ${data.typeAvg}</td><td>   ${data.active}</td><td>     ${data.weighted}</td><td>   ${data.executions}</td></tr>`;
+                    }).value();
+                    string += `</table>`;
+                    Util.logSystem('Average Usage', `<table style="font-size:80%;"><tr><th>Type${Array(longestType.length + 2).join(' ')}</th><th>(avg/creep/tick)</th><th>(active)</th><th>(weighted avg)</th><th>(executions)</th></tr>`.concat(string));
                 }
-                Util.logSystem(name, ' loop:' + _.round(totalUsed, 2), 'other:' + _.round(onLoad, 2), 'avg:' + _.round(avgCPU, 2), 'ticks:' +
-                    global.profiler.totalTicks, 'bucket:' + Game.cpu.bucket, 2);
-                if (PROFILE) console.log('\n');
+                Util.logSystem(name, ' loop:' + _.round(totalUsed, 2), 'other:' + _.round(onLoad, 2), 'avg:' + _.round(avgCPU, 2), 'ticks:' + global.profiler.totalTicks, 'bucket:' + Game.cpu.bucket);
+                if (PROFILE && !PROFILING.BASIC_ONLY) console.log('\n');
                 Memory.profiler = global.profiler;
             };
         }
         return {checkCPU, totalCPU};
-    }
+    },
+
+    _resources: _.memoize(function() {
+        return _.chain(global).pick(function(v,k) {
+            return k.startsWith('RESOURCE_');
+        }).value();
+    }),
+
+    /**
+     * cached map of all the game's resources
+     */
+    resources() {
+        return this._resources();
+    },
+
+    valueOrZero(x) {
+        return x || 0;
+    },
+
+    chargeScale(amount, min, max) {
+        // TODO per-room strategy
+        if (max === min) {
+            if (amount > max) {
+                return Infinity;
+            } else {
+                return -Infinity;
+            }
+        }
+        const chargeScale = 1 / (max - min); // TODO cache
+
+        return (amount - max) * chargeScale + 1;
+    },
 };

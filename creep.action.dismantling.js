@@ -4,7 +4,7 @@ action.maxPerAction = 3;
 action.maxPerTarget = 3;
 action.renewTarget = false;
 action.isValidAction = function(creep){
-    return creep.sum < creep.carryCapacity;
+    return creep.carryCapacity === 0 || creep.sum < creep.carryCapacity;
 };
 action.isValidTarget = function(target){
     return target != null;
@@ -34,6 +34,7 @@ action.newTarget = function(creep){
                         if( targets && targets.length > 0)
                             return targets[0];
                         else { // remove flag. try next flag
+                            Room.costMatrixInvalid.trigger(flag.room);
                             FlagDir.removeFromDir(flag.name);
                             flag.remove();
                         }
@@ -48,7 +49,4 @@ action.newTarget = function(creep){
 };
 action.work = function(creep){
     return creep.dismantle(creep.target);
-};
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9850), SAY_PUBLIC);
 };

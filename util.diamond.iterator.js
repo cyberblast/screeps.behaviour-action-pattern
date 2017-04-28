@@ -12,27 +12,34 @@ class DiamondIterator {
     // private _step;
 
     static loop(xy, radius) {
+        const center = xy;
+        const dist = radius;
+        if (!_.isFinite(radius)) throw new Error("not finite: " + JSON.stringify([xy, radius]));
         return {
             [Symbol.iterator]: function() {
-                return new DiamondIterator(xy, radius);
+                return new DiamondIterator(center, dist);
             }
-        }
+        };
+    }
+
+    static inside(pos, xy, radius) {
+        return Math.abs(xy.x - pos.x) + Math.abs(xy.y - pos.y) < radius;
     }
 
     constructor(xy, radius) {
+        if (!_.isFinite(radius)) throw new Error("not finite: " + JSON.stringify([xy, radius]));
+
         this._radius = radius;
         this.x = xy.x;
         this.y = xy.y;
         this._dir = TOP_RIGHT;
-        this._step = radius;
+        this._stepA = radius - 0.25;
+        this._stepB = 0.25;
     }
 
     next() {
-        if (this._dir > TOP_LEFT) {
-            return {
-                done: true
-            }
-        }
+        const a = this._stepA;
+        const b = this._stepB;
 
         const result = {
             done: false,
@@ -41,28 +48,35 @@ class DiamondIterator {
 
         switch(this._dir) {
             case TOP_RIGHT:
-                result.value.x = Math.round(this.x - this._step + 0.25);
-                result.value.y = Math.round(this.y + this._step - this._radius + 0.25);
+                result.value.x = Math.round(this.x - a); // (this._step - 0.25)); // A
+                result.value.y = Math.round(this.y + b); // (this._step - this._radius + 0.25)); // B
                 break;
             case BOTTOM_RIGHT:
-                result.value.x = Math.round(this.x + this._radius - this._step - 0.25);
-                result.value.y = Math.round(this.y - this._step + 0.25);
+                result.value.x = Math.round(this.x - b); // (this._step - this._radius + 0.25)); // B
+                result.value.y = Math.round(this.y - a); // (this._step - 0.25)); // A
                 break;
             case BOTTOM_LEFT:
-                result.value.x = Math.round(this.x + this._step - 0.25);
-                result.value.y = Math.round(this.y + this._radius - this._step - 0.25);
+                result.value.x = Math.round(this.x + a); // (this._step - 0.25)); // A
+                result.value.y = Math.round(this.y - b); // (this._step - this._radius + 0.25)); // B
                 break;
-            default: // TOP_LEFT
-                result.value.x = Math.round(this.x + this._step - this._radius + 0.25);
-                result.value.y = Math.round(this.y + this._step - 0.25);
+            case TOP_LEFT:
+                result.value.x = Math.round(this.x + a); // (this._step - this._radius + 0.25); // B
+                result.value.y = Math.round(this.y + b); // (this._step - 0.25)); // A
                 break;
+            default:
+                return {
+                    done: true,
+                    value: false,
+                }
         }
 
-        this._step = this._step - 0.5;
+        this._stepA = a - 0.5;
+        this._stepB = b + 0.5;
 
-        if (this._step < 1) {
+        if (this._stepA < 1) {
             this._dir = this._dir + 2;
-            this._step = this._radius;
+            this._stepA = this._radius - 0.25;
+            this._stepB = 0.25;
         }
 
         return result;

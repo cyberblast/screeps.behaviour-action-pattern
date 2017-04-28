@@ -33,7 +33,7 @@ action.newTarget = function(creep){
         return destroy;
     }
     // move to invasion room
-    var flag = FlagDir.find(FLAG_COLOR.invade, creep.pos);
+    var flag = FlagDir.find(FLAG_COLOR.invade, creep.pos, false);
     if( flag && (!flag.room || flag.pos.roomName != creep.pos.roomName)){
         Population.registerCreepFlag(creep, flag);
         return flag; // other room
@@ -98,7 +98,7 @@ action.newTarget = function(creep){
     return null;
 };
 action.step = function(creep){
-    if(CHATTY) creep.say(this.name);
+    if(global.CHATTY) creep.say(this.name);
     if( (creep.target instanceof Flag) && (creep.target.pos.roomName == creep.pos.roomName))
         this.assign(creep);
     this.run[creep.data.creepType](creep);
@@ -138,7 +138,7 @@ action.run = {
         // attack
         var targets = creep.pos.findInRange(creep.room.hostiles, 3);
         if(targets.length > 2) { // TODO: calc damage dealt
-            if(CHATTY) creep.say('MassAttack');
+            if(global.CHATTY) creep.say('MassAttack');
             creep.attackingRanged = creep.rangedMassAttack() == OK;
             return;
         }
@@ -150,9 +150,6 @@ action.run = {
             creep.attackingRanged = creep.rangedAttack(targets[0]) == OK;
         }
     }
-};
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9876), SAY_PUBLIC);
 };
 action.defaultStrategy.moveOptions = function(options) {
     // allow routing in and through hostile rooms

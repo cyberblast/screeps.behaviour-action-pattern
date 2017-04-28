@@ -2,6 +2,11 @@ let mod = {};
 module.exports = mod;
 mod.name = 'remoteMiner';
 mod.run = function(creep) {
+    const flag = creep.data.destiny && Game.flags[creep.data.destiny.targetName];
+    if (!flag && (!creep.action || creep.action.name !== 'recycling')) {
+        return Creep.action.recycling.assign(creep);
+    }
+
     if (Creep.action.avoiding.run(creep)) {
         return;
     }
@@ -31,7 +36,8 @@ mod.approach = function(creep){
     let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.data.destiny.room);
     let range = creep.pos.getRangeTo(targetPos);
     if( range > 0 ) {
-        creep.travelTo( targetPos, {range:0} );
+        const targetRange = targetPos.lookFor(LOOK_CREEPS).length ? 1 : 0;
+        creep.travelTo( targetPos, {range:targetRange} );
         if( range <= 2 && !creep.data.predictedRenewal ) {
             creep.data.predictedRenewal = _.min([500, 1500 - creep.ticksToLive + creep.data.spawningTime]);
         }

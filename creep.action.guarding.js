@@ -23,6 +23,3 @@ action.work = function(creep){
         return OK;
     else return ERR_INVALID_ARGS;
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9929), SAY_PUBLIC);
-};

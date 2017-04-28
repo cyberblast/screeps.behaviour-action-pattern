@@ -2,7 +2,7 @@ let action = new Creep.Action('storing');
 module.exports = action;
 action.isValidAction = function(creep){
     return (
-        creep.room.storage != null &&
+        creep.room.storage && creep.room.storage.isActive() &&
         creep.sum > 0 &&
         (
             creep.data.creepType != 'worker' ||
@@ -23,7 +23,7 @@ action.isValidAction = function(creep){
     );
 };
 action.isValidTarget = function(target){
-    return ((target != null) && (target.store != null) && target.sum < target.storeCapacity);
+    return ((target) && (target.store) && target.isActive() && target.sum < target.storeCapacity);
 };
 action.isAddableTarget = function(target, creep){
     return ( target.my &&
@@ -49,7 +49,7 @@ action.newTarget = function(creep){
         // &&
         //(creep.room.terminal.storeCapacity - creep.room.terminal.sum) >= creep.carry[roomMineralType]);
 
-    if( creep.room.terminal &&
+    if( creep.room.terminal && creep.room.terminal.isActive() &&
         ( sendMineralToTerminal(creep) || sendEnergyToTerminal(creep) ) &&
         this.isAddableTarget(creep.room.terminal, creep)) {
             return creep.room.terminal;
@@ -69,8 +69,4 @@ action.work = function(creep){
     delete creep.data.actionName;
     delete creep.data.targetId;
     return workResult;
-};
-action.onAssignment = function(creep, target) {
-    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
-    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);
 };

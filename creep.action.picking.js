@@ -20,28 +20,15 @@ action.isAddableTarget = function(target, creep){
     return (!target.targetOf || !pickers.length || ((pickers.length < max) && target.amount > _.sum( pickers.map( t => t.carryCapacityLeft))));
 };
 action.newTarget = function(creep){
-    let target;
+    const droppedResources = action.getStrategy('energyOnly', creep) ? _.filter(creep.room.droppedResources, {resourceType: RESOURCE_ENERGY}) : creep.room.droppedResources;
+    let filter;
     if( creep.room.my && creep.room.situation.invasion ) {
         // pickup near sources only
-        target = creep.pos.findClosestByPath(creep.room.droppedResources, {
-            filter: (o) => this.isAddableTarget(o, creep) && o.pos.findInRange(creep.room.sources, 1).length > 0
-        });
+        filter = (r) => this.isAddableTarget(r, creep) && r.pos.findInRange(creep.room.sources, 1).length > 0;
     } else {
-        if ( creep.room.storage && creep.room.storage.my ) {
-            target = creep.pos.findClosestByPath(creep.room.droppedResources, {
-                filter: (o) => ( o.resourceType != RESOURCE_ENERGY && this.isAddableTarget(o, creep))
-            });
-
-            if( !target ) target = creep.pos.findClosestByPath(creep.room.droppedResources, {
-                filter: (o) => this.isAddableTarget(o, creep)
-            });
-        } else {
-            target = creep.pos.findClosestByPath(creep.room.droppedResources, {
-                filter: (o) => ( o.resourceType == RESOURCE_ENERGY && this.isAddableTarget(o, creep))
-            });
-        }
+        filter = (r) => this.isAddableTarget(r, creep);
     }
-    return target;
+    return creep.pos.findClosestByPath(droppedResources, {filter: filter});
 };
 action.work = function(creep){
     var result = creep.pickup(creep.target);
@@ -75,6 +62,4 @@ action.work = function(creep){
     }
     return result;
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(8681), SAY_PUBLIC);
-};
+action.defaultStrategy.energyOnly = true;

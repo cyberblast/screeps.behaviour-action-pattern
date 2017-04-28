@@ -48,7 +48,7 @@ let Action = function(actionName){
     };
     // order for the creep to execute each tick, when assigned to that action
     this.step = function(creep){
-        if(CHATTY) creep.say(this.name, SAY_PUBLIC);
+        if(global.CHATTY) creep.say(this.name, global.SAY_PUBLIC);
         let range = creep.pos.getRangeTo(creep.target);
         if( range <= this.targetRange ) {
             var workResult = this.work(creep);
@@ -62,7 +62,7 @@ let Action = function(actionName){
             }
             range = creep.pos.getRangeTo(creep.target); // target may have changed (eg. hauler feed+move/tick)
         }
-        if( creep.target ) {
+        if( creep.target && creep.hasActiveBodyparts(MOVE) ) {
             if (range > this.targetRange) creep.travelTo(creep.target, {range: this.targetRange});
             // low CPU pathfinding for last few steps.
             else if (range > this.reachedRange) {
@@ -70,7 +70,7 @@ let Action = function(actionName){
                 const targetPos = Traveler.positionAtDirection(creep.pos, direction);
                 if (creep.room.isWalkable(targetPos.x, targetPos.y)) { // low cost last steps if possible
                     creep.move(direction);
-                } else {
+                } else if (!creep.pos.isNearTo(creep.target)) { // travel there if we're not already adjacent
                     creep.travelTo(creep.target, {range: this.reachedRange});
                 }
             }
@@ -98,7 +98,7 @@ let Action = function(actionName){
     this.assign = function(creep, target){
         if( target === undefined ) target = this.newTarget(creep);
         if( target && this.isAddableTarget(target, creep)) {
-            if( DEBUG && TRACE ) trace('Action', {creepName:creep.name, assign:this.name, target:!target || target.name || target.id, Action:'assign'});
+            if( global.DEBUG && global.TRACE ) trace('Action', {creepName:creep.name, assign:this.name, target:!target || target.name || target.id, Action:'assign'});
             if( !creep.action || creep.action.name != this.name || !creep.target || creep.target.id !== target.id || creep.target.name != target.name ) {
                 Population.registerAction(creep, this, target);
                 this.onAssignment(creep, target);
@@ -108,8 +108,12 @@ let Action = function(actionName){
         return false;
     };
     // assignment postprocessing
-    // needs implementation in derived action
-    this.onAssignment = (creep, target) => {};
+    this.onAssignment = function(creep, target) {
+        if (global.SAY_ASSIGNMENT && ACTION_SAY[this.name.toUpperCase()]) creep.say(ACTION_SAY[this.name.toUpperCase()], global.SAY_PUBLIC);
+        if (target instanceof RoomObject || target instanceof RoomPosition && VISUALS.ACTION_ASSIGNMENT) {
+            Visuals.drawArrow(creep, target);
+        }
+    };
     // empty default strategy
     this.defaultStrategy = {
         name: `default-${actionName}`,
@@ -120,6 +124,10 @@ let Action = function(actionName){
     // strategy accessor
     this.selectStrategies = function() {
         return [this.defaultStrategy];
+    };
+    this.getStrategy = function(strategyName, creep, ...args) {
+        if (_.isUndefined(args)) return creep.getStrategyHandler([this.name], strategyName);
+        else return creep.getStrategyHandler([this.name], strategyName, ...args);
     };
 };
 module.exports = Action;

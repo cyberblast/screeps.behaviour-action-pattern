@@ -15,16 +15,32 @@ mod.run = function(creep) {
 };
 mod.nextAction = function(creep){
     if( creep.pos.roomName !== creep.data.homeRoom ) {
-        if( DEBUG && TRACE ) trace('Behaviour', {actionName:'travelling', behaviourName:this.name, creepName:creep.name, assigned: true, Behaviour:'nextAction', Action:'assign'});
+        if( global.DEBUG && global.TRACE ) trace('Behaviour', {actionName:'travelling', behaviourName:this.name, creepName:creep.name, assigned: true, Behaviour:'nextAction', Action:'assign'});
         Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
         return true;
     }
 
     if( !creep.room.collapsed ) {
+        if( global.DEBUG && global.TRACE ) trace('Behaviour', {actionName:'recycling', behaviourName:this.name, creepName:creep.name, assigned: true, Behaviour:'nextAction', Action:'assign'});
         return Creep.action.recycling.assign(creep);
     }
-
-    let priority;
+    const invasion = creep.room.situation.invasion && creep.room.controller && creep.room.controller.level > 2;
+    const outflowPriority = invasion ? 
+        [
+            Creep.action.feeding,
+            Creep.action.fueling,
+            Creep.action.repairing
+        ] :
+        [
+            Creep.action.feeding,
+            Creep.action.fueling,
+            Creep.action.charging,
+            Creep.action.repairing,
+            Creep.action.building,
+            Creep.action.fortifying,
+            Creep.action.upgrading
+        ];
+    let priority = outflowPriority;
     if( creep.sum < (creep.carryCapacity*0.5) ) {
         priority = [
             Creep.action.picking,
@@ -33,46 +49,37 @@ mod.nextAction = function(creep){
             Creep.action.harvesting,
             Creep.action.dismantling,
             Creep.action.reallocating,
-            Creep.action.idle];
+            Creep.action.idle
+        ];
     }
     else {
-        if( creep.room.situation.invasion && creep.room.controller && creep.room.controller.level > 2 ){
-            priority = [
-                Creep.action.feeding,
-                Creep.action.fueling,
-                Creep.action.repairing,
-                Creep.action.idle];
-        } else {
-            priority = [
-                Creep.action.feeding,
-                Creep.action.fueling,
-                Creep.action.charging,
-                Creep.action.repairing,
-                Creep.action.building,
-                Creep.action.fortifying,
-                Creep.action.upgrading,
-                Creep.action.storing,
-                Creep.action.picking,
-                Creep.action.idle];
+        if(!invasion){
+            priority.push(Creep.action.storing);
+            priority.push(Creep.action.picking);
         }
         if( creep.room.controller && creep.room.controller.ticksToDowngrade < 500 ) { // urgent upgrading
             priority.unshift(Creep.action.upgrading);
         }
+        priority.push(Creep.action.idle);
     }
     for(var iAction = 0; iAction < priority.length; iAction++) {
         var action = priority[iAction];
         const valid = action.isValidAction(creep);
-        if( DEBUG && TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, valid, Action:'isValidAction'});
+        if( global.DEBUG && global.TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, valid, Action:'isValidAction'});
         if( !valid ) continue;
 
         const addable = action.isAddableAction(creep);
-        if( DEBUG && TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, addable, Action:'isAddableAction'});
+        if( global.DEBUG && global.TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, addable, Action:'isAddableAction'});
         if( !addable ) continue;
 
-        const assigned = action.assign(creep);
-        if( assigned ) {
-            if( DEBUG && TRACE ) trace(assigned ? 'Behaviour' : 'Action', {actionName:action.name, behaviourName:this.name, reepName:creep.name, assigned, Behaviour:'nextAction', Action:'assign'});
-            return true;
+        const assigned = action.assignDebounce ? action.assignDebounce(creep, outflowPriority) : action.assign(creep);
+        if( global.DEBUG && global.TRACE ) trace('Action', {actionName:action.name, behaviourName:this.name, creepName:creep.name, target: creep.target, assigned, Action:'assign'});
+        if (assigned) {
+            if (action.name !== 'idle') {
+                creep.data.lastAction = action.name;
+                creep.data.lastTarget = creep.target.id;
+            }
+            return;
         }
     }
     return false;
