@@ -11,7 +11,7 @@ const ControllerAction = class extends Creep.Action {
     newTarget(creep, filter) {
         let flag;
         if (creep.data.destiny) flag = Game.flags[creep.data.destiny.targetName];
-        if (!flag) flag = FlagDir.find(filter, creep.pos, false, FlagDir.reserveMod, creep.name);
+        if (!flag) flag = FlagDir.find(filter, creep.pos, false);
         
         if (!flag) return;
         

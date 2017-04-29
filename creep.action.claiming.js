@@ -9,7 +9,7 @@ const action = class extends Creep.Action.Controller {
     }
     
     newTarget(creep) {
-        const s = super.newTarget(creep);
+        const s = super.newTarget(creep, FLAG_COLOR.claim);
         
         if (s instanceof Flag) return s;
         
