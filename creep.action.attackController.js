@@ -1,14 +1,14 @@
 let action = new Creep.Action('attackController');
 module.exports = action;
 action.isValidAction = function(creep){ return true; }; 
-action.isValidTarget = function(target){ return target && (!target.reservation ); };
+action.isValidTarget = function(target, creep){ return target && (!target.reservation || !Task.reputation.allyOwner(target.reservation)) && creep.flag; };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(target){ return target &&
-    ( target instanceof Flag || ( target.structureType === 'controller' && target.owner ) ); 
+    ( target instanceof Flag || ( target.structureType === 'controller' && (target.reservation || target.owner)) ); 
 };
 action.newTarget = function(creep){
     let validColor = flagEntry => (
-        (flagEntry.color == FLAG_COLOR.invade.attackController.color && flagEntry.secondaryColor == FLAG_COLOR.invade.attackController.secondaryColor)
+        Flag.compare(flagEntry, FLAG_COLOR.invade.attackController)
     );
 
     var flag;
@@ -29,7 +29,7 @@ action.newTarget = function(creep){
 };
 
 action.step = function(creep){
-    if(CHATTY) creep.say(this.name, SAY_PUBLIC);
+    if(global.CHATTY) creep.say(this.name, global.SAY_PUBLIC);
     if( creep.target.color ){
         if( creep.flag.pos.roomName == creep.pos.roomName )
             creep.data.targetId = null;
@@ -43,24 +43,23 @@ action.step = function(creep){
         if( workResult != OK ) {
             creep.handleError({errorCode:workResult,action,target:creep.target,range,creep});
         }
+    } else {
+        creep.travelTo(creep.target);
     }
-    creep.travelTo(creep.target);
 };
 action.work = function(creep){
     var workResult;
 
     creep.controllerSign();
 
-    if( creep.target.owner && !creep.target.my ){
+    if( (creep.target.owner && !creep.target.my) ||
+        (creep.target.reservation && !Task.reputation.allyOwner(creep.target.reservation))){
         workResult = creep.attackController(creep.target);
     }
     else {
         workResult = creep.claimController(creep.target);
     }
     return workResult;
-};
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9971), SAY_PUBLIC);
 };
 action.defaultStrategy.moveOptions = function(options) {
     // // allow routing in and through hostile rooms

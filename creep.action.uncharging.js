@@ -1,9 +1,11 @@
-let action = new Creep.Action('uncharging'); // get from container
+let action = new Creep.Action('uncharging'); // get from container/link
 module.exports = action;
 action.renewTarget = false;
+action.maxPerTarget = 1;
 action.isAddableAction = function(creep){ return true; }
-action.isAddableTarget = function(target){ return true;}
-action.isValidAction = function(creep){ return creep.sum < creep.carryCapacity; }
+action.isValidAction = function(creep){
+    return creep.getStrategyHandler([action.name], 'isValidAction', creep);
+};
 action.isValidTarget = function(target, creep){
     if( !target ) return false;
     if( target.structureType == 'link' ){
@@ -81,7 +83,6 @@ action.work = function(creep){
     creep.target = null;
     return workResult;
 };
-action.onAssignment = function(creep, target) {
-    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9738), SAY_PUBLIC);
-    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E4}\u{FE0E}', SAY_PUBLIC);
+action.defaultStrategy.isValidAction = function(creep) {
+    return creep.sum < creep.carryCapacity || false;
 };

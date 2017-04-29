@@ -3,10 +3,13 @@ module.exports = action;
 action.isValidTarget = function(target){ return target !== null; };
 action.isAddableAction = function(){ return true; };
 action.isAddableTarget = function(){ return true; };
-action.newTarget = function(creep){ return null; };
+action.newTarget = function(creep){
+    // TODO trace it: console.log(creep.strategy([action.name]).key);
+    return creep.getStrategyHandler([action.name], 'newTarget', creep);
+};
 action.step = function(creep){
-    if(CHATTY) creep.say(this.name, SAY_PUBLIC);
-    let targetRange = creep.data.travelRange || this.targetRange;
+    if(global.CHATTY) creep.say(this.name, global.SAY_PUBLIC);
+    let targetRange = _.get(creep, ['data', 'travelRange'], this.targetRange);
     let target = creep.target;
     if (FlagDir.isSpecialFlag(creep.target)) {
         if (creep.data.travelRoom) {
@@ -15,7 +18,7 @@ action.step = function(creep){
                 creep.leaveBorder(); // TODO unregister / return false? and immediately acquire new action & target
                 target = null;
             } else {
-                targetRange = creep.data.travelRange || TRAVELLING_BORDER_RANGE || 22;
+                targetRange = _.get(creep, ['data', 'travelRange'],  TRAVELLING_BORDER_RANGE || 22);
                 target = new RoomPosition(25, 25, creep.data.travelRoom);
             }
         } else {
@@ -27,6 +30,12 @@ action.step = function(creep){
         const range = creep.pos.getRangeTo(target);
         if( range <= targetRange ) {
             return action.unregister(creep);
+        } else if (targetRange === 0 && creep.pos.isNearTo(target)) {
+            if (target.pos.lookFor(LOOK_CREEPS).length > 0) {
+                // avoid trying to pathfind to a blocked location
+                if (DEBUG) logSystem(creep.name, 'travelling.step: destination blocked, stopping.');
+                return action.unregister(creep);
+            }
         }
         creep.travelTo(target, {range:targetRange, ignoreCreeps:creep.data.ignoreCreeps || true});
     } else {
@@ -51,6 +60,9 @@ action.unregister = function(creep) {
     delete creep.data.travelRoom;
     delete creep.data.travelRange;
 };
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9784), SAY_PUBLIC);
+action.defaultStrategy.newTarget = function(creep) {
+    if( creep.data.travelPos || creep.data.travelRoom ) {
+        return FlagDir.specialFlag();
+    }
+    return null;
 };

@@ -29,7 +29,7 @@ mod.unregisterCreep = function(creepName){
     delete Memory.creeps[creepName];
 };
 mod.registerAction = function(creep, action, target, entry) {
-    if( DEBUG && TRACE ) trace('Population', {creepName:this.name, registerAction:action.name, target:target.name || target.id, Population:'registerAction'});
+    if( global.DEBUG && global.TRACE ) trace('Population', {creepName:this.name, registerAction:action.name, target:target.name || target.id, Population:'registerAction'});
 
     if( creep === target ) throw new Error('attempt to register self target');
     if( entry === undefined ) entry = this.getCreep(creep.name);
@@ -168,6 +168,7 @@ mod.flush = function() {
     }
 };
 mod.analyze = function(){
+    const p = Util.startProfiling('Population.analyze', {enabled:PROFILING.CREEPS});
     let register = entry => {
         let creep = Game.creeps[entry.creepName];
         if ( !creep ) {
@@ -189,7 +190,7 @@ mod.analyze = function(){
             }
             else if(creep.ticksToLive <= ( entry.predictedRenewal ? entry.predictedRenewal : entry.spawningTime) && !creep.data.nearDeath) { // will die in ticks equal to spawning time or custom
                 creep.data.nearDeath = true;
-                if(CENSUS_ANNOUNCEMENTS) console.log(dye(CRAYON.system, entry.creepName + ' &gt; ') + dye(CRAYON.death, 'Farewell!') );
+                if(CENSUS_ANNOUNCEMENTS) console.log(dye(CRAYON.system, entry.creepName + ' &gt; ') + dye(CRAYON.death, 'Farewell!'), Util.stack());
                 this.predictedRenewal.push(creep.name);
                 if( !this.spawnsToProbe.includes(entry.motherSpawn) && entry.motherSpawn != 'unknown' && Game.spawns[entry.motherSpawn] ) {
                     this.spawnsToProbe.push(entry.motherSpawn);
@@ -233,7 +234,10 @@ mod.analyze = function(){
             creep.data = entry;
         }
     };
-    _.forEach(Memory.population, register);
+    _.forEach(Memory.population, c => {
+        register(c);
+        p.checkCPU('Register: ' + c.creepName, PROFILING.ANALYZE_LIMIT / 2);
+    });
 
     let validateAssignment = entry => {
         let creep = Game.creeps[entry.creepName];
@@ -249,28 +253,44 @@ mod.analyze = function(){
                 this.registerAction( creep, creep.action, target, entry );
             }
         }
-    }
-    _.forEach(Memory.population, validateAssignment);
+    };
+    _.forEach(Memory.population, c => {
+        validateAssignment(c);
+        p.checkCPU('Validate: ' + c.creepName, PROFILING.ANALYZE_LIMIT / 2);
+    });
 };
 mod.execute = function(){
+    const p = Util.startProfiling('Population.execute', {enabled: PROFILING.CREEPS});
     let triggerCompleted = name => Creep.spawningCompleted.trigger(Game.creeps[name]);
     this.spawned.forEach(triggerCompleted);
+    p.checkCPU('triggerCompleted', PROFILING.EXECUTE_LIMIT / 4);
 
     // Creep.died.on(n => console.log(`Creep ${n} died!`));
+    Creep.died.on(c => {
+        const data = Memory.population[c];
+        if (data && data.determinatedSpot && data.roomName) {
+            Room.costMatrixInvalid.trigger(data.roomName);
+        }
+    });
     let triggerDied = name => Creep.died.trigger(name);
     this.died.forEach(triggerDied);
+    p.checkCPU('triggerDied', PROFILING.EXECUTE_LIMIT / 4);
 
     let triggerRenewal = name => Creep.predictedRenewal.trigger(Game.creeps[name]);
     this.predictedRenewal.forEach(triggerRenewal);
+    p.checkCPU('triggerRenewal', PROFILING.EXECUTE_LIMIT / 4);
 
     if( Game.time % SPAWN_INTERVAL != 0 ) {
         let probeSpawn = spawnName => Game.spawns[spawnName].execute();
         this.spawnsToProbe.forEach(probeSpawn);
+        p.checkCPU('probeSpawn', PROFILING.EXECUTE_LIMIT / 4);
     }
 };
 mod.cleanup = function(){
+    const p = Util.startProfiling('Population.cleanup', {enabled: PROFILING.CREEPS});
     let unregister = name => Population.unregisterCreep(name);
     this.died.forEach(unregister);
+    p.checkCPU('died', PROFILING.FLUSH_LIMIT);
     // TODO consider clearing target here
 };
 mod.sortEntries = function() {

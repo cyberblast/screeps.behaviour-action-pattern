@@ -36,7 +36,7 @@ action.newTarget = function(creep){
 };
 
 action.step = function(creep){
-    if(CHATTY) creep.say(this.name, SAY_PUBLIC);
+    if(global.CHATTY) creep.say(this.name, global.SAY_PUBLIC);
     if( creep.target.color ){
         if( creep.flag.pos.roomName == creep.pos.roomName ) // change target from flag to controller
             creep.data.targetId = null;
@@ -71,7 +71,4 @@ action.work = function(creep){
     }
     return workResult;
     */
-};
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9983), SAY_PUBLIC);
 };

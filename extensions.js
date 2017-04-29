@@ -13,6 +13,44 @@ mod.extend = function(){
             this._towers = value;
         }
     });
+    Object.defineProperty(Structure.prototype, 'active', {
+        configurable: true,
+        get() {
+            if (!this.room.owner) return false;
+            if (this.room.owner.username !== this.owner.username) return false;
+            return _.get(this.room.memory, ['structures', this.id, 'active'], true);
+        },
+    });
+    Object.defineProperty(StructureTower.prototype, 'active', {
+        configurable: true,
+        get() {
+            if (!this.room.owner) return false;
+            if (this.room.owner.username !== this.owner.username) return false;
+            if (this.room.RCL < 3) return false;
+            return _.get(this.room.memory, ['structures', this.id, 'active'], true);
+        },
+    });
+    Object.defineProperty(StructureLab.prototype, 'active', {
+        configurable: true,
+        get() {
+            if (!this.room.owner) return false;
+            if (this.room.owner.username !== this.owner.username) return false;
+            if (this.room.RCL < 6) return false;
+            return _.get(this.room.memory, ['structures', this.id, 'active'], true);
+        },
+    });
+    Object.defineProperty(StructureWall.prototype, 'active', {
+        configurable: true,
+        get() {
+            return this.room.RCL > 1;
+        },
+    });
+    Object.defineProperty(StructureRampart.prototype, 'active', {
+        configurable: true,
+        get() {
+            return this.room.RCL > 1;
+        },
+    });
     Object.defineProperty(Source.prototype, 'memory', {
         configurable: true,
         get: function() {
@@ -49,6 +87,23 @@ mod.extend = function(){
             }
             return this._adjacent;
         }
+    });
+    Object.defineProperty(RoomPosition.prototype, 'radius', {
+        configurable: true,
+        value: function(radius = 1) {
+            if (radius === 1) return this.adjacent;
+            if (radius < 1) return [this];
+            const positions = [];
+            for (let x = this.x - radius; x <= this.x + radius; x++) {
+                for (let y = this.y - radius; y <= this.y + radius; y++) {
+                    const pos = new RoomPosition(x, y, this.roomName);
+                    if (50 > x && x > 0 && 0 < y && y < 50 && !_.isEqual(this, pos)) {
+                        positions.push(pos);
+                    }
+                }
+            }
+            return positions;
+        },
     });
     Object.defineProperty(RoomObject.prototype, 'accessibleFields', {
         configurable: true,
@@ -208,18 +263,9 @@ mod.extend = function(){
         configurable: true,
         get: function() {
             // TODO per-room strategy
-            const max = MAX_STORAGE_ENERGY[this.room.controller.level];
-            const min = MIN_STORAGE_ENERGY[this.room.controller.level];
-            if (max === min) {
-                if (this.store.energy > max) {
-                    return Infinity;
-                } else {
-                    return -Infinity;
-                }
-            }
-            const chargeScale = 1 / (max - min); // TODO cache
-
-            return (this.store.energy - max) * chargeScale + 1;
+            return Util.chargeScale(this.store.energy,
+                MIN_STORAGE_ENERGY[this.room.controller.level],
+                MAX_STORAGE_ENERGY[this.room.controller.level]);
         },
     });
     StructureStorage.prototype.getNeeds = function(resourceType) {
@@ -250,6 +296,16 @@ mod.extend = function(){
             }
             return this._sum;
         }
+    });
+    Object.defineProperty(StructureTerminal.prototype, 'charge', { // fraction indicating charge % relative to constants
+        configurable: true,
+        get: function() {
+            const needs = this.getNeeds(RESOURCE_ENERGY);
+            const terminalTarget = needs ? this.store[RESOURCE_ENERGY] + needs : TERMINAL_ENERGY;
+            return Util.chargeScale(this.store.energy,
+                terminalTarget,
+                terminalTarget * 2);
+        },
     });
     StructureTerminal.prototype.getNeeds = function(resourceType) {
         var ret = 0;

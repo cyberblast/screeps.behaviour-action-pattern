@@ -3,18 +3,17 @@ module.exports = setup;
 setup.minControllerLevel = 2;
 setup.maxMulti = function(room){
     let multi = 0;
-    const charge = room.storage ? room.storage.charge : 0;
-    if( !room.storage || charge > 0)
+    const charge = room.storage && room.storage.isActive() ? room.storage.charge : 0;
+    if( !room.storage || (room.storage.isActive() && charge > 0))
         multi++;
-    if( !room.storage || charge > 0.5)
+    if( !room.storage || (room.storage.isActive() && charge > 0.5))
         multi++;
-    if( room.storage && charge >= 1 )
+    if( room.storage && room.storage.isActive() && charge >= 1 )
     {
         let surplus = room.storage.store.energy - MAX_STORAGE_ENERGY[room.controller.level];
         multi += Math.ceil( surplus / 20000 ); // one more multi for each 20k surplus (+1)
     }
-    let hardLimit = 50;
-    return Math.min(11, multi, hardLimit);
+    return Math.min(11, multi);
 };
 setup.maxCount = function(room){
     // Don't spawn upgrader if...
@@ -25,7 +24,9 @@ setup.maxCount = function(room){
             // No energy structures built near controller
             (room.structures.container.controller.length + room.structures.links.controller.length) === 0 ||
             // Upgrading blocked -> http://support.screeps.com/hc/en-us/articles/207711889-StructureController#upgradeBlocked
-            room.controller.upgradeBlocked
+            room.controller.upgradeBlocked ||
+            // don't spawn a new upgrader while there are construction sites (and no storage)
+            (room.myConstructionSites.length > 0 && !room.store)
         ) return 0;
     if( room.controller.level == 8 ) return 1;
     // if there is no energy for the upgrader return 0
@@ -35,9 +36,7 @@ setup.maxCount = function(room){
     let sumLink = link => upgraderEnergy += link.energy;
     room.structures.links.controller.forEach(sumLink);
     if( upgraderEnergy === 0 ) return 0;
-    if( room.storage ) return Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000));
-    // dont spawn a new upgrader while there are construction sites (and no storage)
-    if( room.myConstructionSites.length > 0 ) return 0;
+    if( room.storage && room.storage.isActive() ) return Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000));
     // if energy on the ground next to source > 700 return 3
     if( room.droppedResources ) {
         let dropped = 0;
@@ -53,23 +52,40 @@ setup.maxCount = function(room){
     return 2;
 };
 setup.default = {
-    fixedBody: [WORK, WORK, CARRY, MOVE],
-    multiBody: [WORK, WORK, WORK, MOVE],
+    fixedBody: {
+        [CARRY]: 1,
+        [MOVE]: 1,
+        [WORK]: 2,
+    },
+    multiBody: {
+        [MOVE]: 1,
+        [WORK]: 3,
+    },
     minAbsEnergyAvailable: 400,
     minEnergyAvailable: 0.5,
     maxMulti: room => setup.maxMulti(room),
     maxCount: room => setup.maxCount(room),
 };
 setup.low = {
-    fixedBody: [WORK, WORK, CARRY, MOVE],
-    multiBody: [WORK, WORK, MOVE],
+    fixedBody: {
+        [CARRY]: 1,
+        [MOVE]: 1,
+        [WORK]: 2,
+    },
+    multiBody: {
+        [MOVE]: 1,
+        [WORK]: 2,
+    },
     minAbsEnergyAvailable: 300,
     minEnergyAvailable: 1,
     maxMulti: room => setup.maxMulti(room),
     maxCount: room => setup.maxCount(room),
 };
 setup.level8 = {
-    fixedBody: [CARRY, MOVE, MOVE, MOVE],
+    fixedBody: {
+        [CARRY]: 1,
+        [MOVE]: 3,
+    },
     multiBody: [WORK],
     minAbsEnergyAvailable: 1700,
     minEnergyAvailable: 0.5,

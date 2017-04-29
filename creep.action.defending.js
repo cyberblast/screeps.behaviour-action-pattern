@@ -22,7 +22,7 @@ action.newTarget = function(creep){
     return closestHostile;
 };
 action.step = function(creep){
-    if(CHATTY) creep.say(this.name, SAY_PUBLIC);
+    if(global.CHATTY) creep.say(this.name, global.SAY_PUBLIC);
     if (creep.target.pos.roomName !== creep.room.name) return Creep.action.travelling.assignRoom(creep, creep.target.pos.roomName);
     this.run[creep.data.creepType](creep);
 };
@@ -54,7 +54,7 @@ action.run = {
         // attack ranged
         let targets = creep.pos.findInRange(creep.room.hostiles, 3);
         if(targets.length > 2) { // TODO: precalc damage dealt
-            if(CHATTY) creep.say('MassAttack');
+            if(global.CHATTY) creep.say('MassAttack');
             creep.attackingRanged = creep.rangedMassAttack() == OK;
             return;
         }
@@ -88,9 +88,6 @@ action.run = {
                 creep.attacking = creep.attack(targets[0]) == OK;
         } else creep.attacking = attacking == OK;
     }
-};
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9876), SAY_PUBLIC);
 };
 action.defaultStrategy.priorityTargetFilter = function(creep) {
     return function(hostile) {

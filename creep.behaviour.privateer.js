@@ -4,11 +4,12 @@ mod.name = 'privateer';
 mod.run = function(creep) {
     // Assign next Action
     let oldTargetId = creep.data.targetId;
-    if( creep.action === null  || creep.action.name == 'idle' ) {
-        if( creep.data.destiny && creep.data.destiny.task && Task[creep.data.destiny.task] && Task[creep.data.destiny.task].nextAction )
-        Task[creep.data.destiny.task].nextAction(creep);
-                    
-        else this.nextAction(creep);
+    if( creep.action === null  || creep.action.name == 'idle' || !creep.flag || creep.flag.pos.roomName == creep.pos.roomName ) {
+        if( creep.data.destiny && creep.data.destiny.task && Task[creep.data.destiny.task] && Task[creep.data.destiny.task].nextAction ) {
+            Task[creep.data.destiny.task].nextAction(creep);
+        } else {
+            this.nextAction(creep);
+        }
     }
     
     // Do some work
@@ -66,8 +67,7 @@ mod.nextAction = function(creep){
         // at target room
         if( creep.flag && creep.flag.pos.roomName == creep.pos.roomName ){
             // check invader/cloaking state
-            if( creep.room.situation.invasion &&
-                (creep.flag.color != FLAG_COLOR.invade.robbing.color || creep.flag.secondaryColor != FLAG_COLOR.invade.robbing.secondaryColor )) {
+            if( creep.room.situation.invasion && !creep.flag.compareTo(FLAG_COLOR.invade.robbing)) {
                 creep.flag.cloaking = 50; // TODO: set to Infinity & release when solved
                 this.exploitNextRoom(creep);
                 return;
@@ -134,8 +134,7 @@ mod.exploitNextRoom = function(creep){
     if( creep.sum < creep.carryCapacity*0.4 ) {
         // calc by distance to home room
         let validColor = flagEntry => (
-            (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor) ||
-            (flagEntry.color == FLAG_COLOR.invade.robbing.color && flagEntry.secondaryColor == FLAG_COLOR.invade.robbing.secondaryColor)
+            Flag.compare(flagEntry, FLAG_COLOR.invade.exploit) || Flag.compare(flagEntry, FLAG_COLOR.invade.robbing)
         );
         let flag = FlagDir.find(validColor, new RoomPosition(25, 25, creep.data.homeRoom), false, FlagDir.exploitMod, creep.name);
         // new flag found

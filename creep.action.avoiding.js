@@ -82,12 +82,12 @@ action.run = function(creep) {
         if (creep.action === action && action.isValidTarget(creep.target, creep) ||
             action.isAddableAction(creep) && action.assign(creep) ) {
 
+            if (creep.leaveBorder()) {
+                return true;
+            }
+
             action.work(creep);
             return true;
         }
     }
-};
-action.onAssignment = function(creep, target) {
-    delete creep.data.safeSpot;
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(10532), SAY_PUBLIC);
 };

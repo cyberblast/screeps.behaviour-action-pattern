@@ -5,6 +5,13 @@ action.reachedRange = 0;
 action.isValidAction = function(creep){
     return creep.sum > 0;
 };
+action.isValidTarget = function(target, creep){
+    if (!target) return false;
+    if (target instanceof Flag) {
+        return target.compareTo(FLAG_COLOR.claim.spawn) || target.compareTo(FLAG_COLOR.command.drop);
+    }
+    return true;
+};
 action.newTarget = function(creep) {
     // drop off at drop pile or the nearest spawn
     let drop = creep.pos.findClosestByRange(creep.room.structures.piles);
@@ -12,14 +19,21 @@ action.newTarget = function(creep) {
         drop = creep.pos.findClosestByRange(creep.room.structures.spawns);
     }
     if( !drop ) {
-        drop = creep.pos.findClosestByRange(creep.room.find(FIND_FLAGS, {filter: FLAG_COLOR.claim.spawn.filter}));
+        drop = creep.pos.findClosestByRange(creep.room.find(FIND_FLAGS, FlagDir.flagFilter(FLAG_COLOR.claim.spawn)));
+    }
+    if (!drop) {
+        drop = creep.pos.findClosestByRange(_.filter(creep.room.constructionSites, {structureType: STRUCTURE_SPAWN}));
+    }
+    if (!drop) {
+        drop = creep.room.controller;
     }
     return drop;
 };
 action.work = function(creep) {
     let ret = OK;
-    let isSpawnFlag = f => f && f.color === FLAG_COLOR.claim.spawn.color && f.secondaryColor === FLAG_COLOR.claim.spawn.secondaryColor;
-    if (!(creep.target instanceof StructureSpawn || isSpawnFlag(creep.target))) {
+    let isSpawnFlag = f => f && Flag.compare(f, FLAG_COLOR.claim.spawn);
+    if (!(creep.target instanceof StructureSpawn || creep.target instanceof ConstructionSite
+        || creep.target instanceof StructureController || isSpawnFlag(creep.target))) {
         let range = creep.pos.getRangeTo(creep.target);
         if( range > 0 && creep.data.lastPos && creep.data.path && !_.eq(creep.pos, creep.data.lastPos) ) {
             // If the destination is walkable, try to move there before dropping
@@ -38,7 +52,4 @@ action.work = function(creep) {
         ret = creep.drop(resourceType);
     }
     return ret;
-};
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(8681), SAY_PUBLIC);
 };

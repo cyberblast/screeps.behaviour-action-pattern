@@ -2,12 +2,18 @@ let mod = {};
 module.exports = mod;
 mod.name = 'remoteHauler';
 mod.run = function(creep) {
+    const flag = creep.data.destiny && Game.flags[creep.data.destiny.targetName];
+    if (!flag && (!creep.action || creep.action.name !== 'recycling')) {
+        //TODO: in the future look for a nearby room we can support
+        return Creep.action.recycling.assign(creep);
+    }
+
     // Assign next Action
     let oldTargetId = creep.data.targetId;
     if( creep.action == null || creep.action.name == 'idle' ) {
         this.nextAction(creep);
     }
-    
+
     // Do some work
     if( creep.action && creep.target ) {
         creep.action.step(creep);
@@ -38,8 +44,12 @@ mod.nextAction = function(creep){
             // no deposit :/ 
             // try spawn & extensions
             if( this.assign(creep, Creep.action.feeding) ) return;
-            this.assign(creep, Creep.action.dropping);
-            return;
+            if( this.assign(creep, Creep.action.dropping) ) return;
+            else {
+                const drop = r => { if(creep.carry[r] > 0 ) creep.drop(r); };
+                _.forEach(Object.keys(creep.carry), drop);
+                return this.assign(creep, Creep.action.idle);
+            }
         }
         // empty
         // travelling
@@ -50,7 +60,7 @@ mod.nextAction = function(creep){
     // at target room
     else if( creep.data.destiny.room == creep.pos.roomName ){
         // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
-        if( creep.sum / creep.carryCapacity > REMOTE_HAULER_MIN_LOAD) {
+        if( creep.sum / creep.carryCapacity > REMOTE_HAULER.MIN_LOAD) {
             this.goHome(creep);
             return;
         }
@@ -72,7 +82,7 @@ mod.nextAction = function(creep){
     else {
         let ret = false;
         // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
-        if( creep.sum / creep.carryCapacity > REMOTE_HAULER_MIN_LOAD )
+        if( creep.sum / creep.carryCapacity > REMOTE_HAULER.MIN_LOAD )
             ret = this.goHome(creep);
         else
             ret = this.gotoTargetRoom(creep);
@@ -96,4 +106,16 @@ mod.gotoTargetRoom = function(creep){
 };
 mod.goHome = function(creep){
     return Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`
+    },
+    picking: {
+        name: `picking-${mod.name}`,
+        energyOnly: false
+    }
 };

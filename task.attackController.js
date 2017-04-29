@@ -1,25 +1,15 @@
 // This task will react on Red/Cyan flags, sending a giant (RCL7 Req) claiming creep to the flags position.
 let mod = {};
 module.exports = mod;
+mod.name = 'attackController';
 // hook into events
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.attackController.handleFlagFound(flag) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.attackController.handleSpawningStarted(params) );
-    // a creep completed spawning
-    Creep.spawningCompleted.on( creep => Task.attackController.handleSpawningCompleted(creep) );
-    // a creep will die soon
-    Creep.predictedRenewal.on( creep => Task.attackController.handleCreepDied(creep.name) );
-    // a creep died
-    Creep.died.on( name => Task.attackController.handleCreepDied(name) );
-};
+mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a Green/Purple flag
-    if( flag.color == FLAG_COLOR.invade.attackController.color && flag.secondaryColor == FLAG_COLOR.invade.attackController.secondaryColor ){
+    if( flag.compareTo(FLAG_COLOR.invade.attackController) && Task.nextCreepCheck(flag, mod.name) ){
+        Util.set(flag.memory, 'task', mod.name);
         // check if a new creep has to be spawned
-        
         Task.attackController.checkForRequiredCreeps(flag);
     }
 };
@@ -29,6 +19,8 @@ mod.checkForRequiredCreeps = (flag) => {
     const room = Game.rooms[roomName];
     // get task memory
     let memory = Task.attackController.memory(flag);
+    // re-validate if too much time has passed
+    Task.validateAll(memory, flag, mod.name, {roomName, checkValid: true});
     // count creeps assigned to task
     let count = memory.queued.length + memory.spawning.length + memory.running.length;
     // if creep count below requirement spawn a new creep creep
@@ -41,7 +33,8 @@ mod.checkForRequiredCreeps = (flag) => {
             }, 
             { // spawn room selection params
                 targetRoom: flag.pos.roomName, 
-                minEnergyCapacity: 9750
+                minEnergyCapacity: 9750,
+                maxRange: 5
             },
             creepSetup => { // onQueued callback
                     memory.queued.push({
@@ -51,7 +44,6 @@ mod.checkForRequiredCreeps = (flag) => {
             }
         );
     }
-
 };
 // when a creep starts spawning
 mod.handleSpawningStarted = params => { // params: {spawn: spawn.name, name: creep.name, destiny: creep.destiny}
@@ -65,16 +57,9 @@ mod.handleSpawningStarted = params => { // params: {spawn: spawn.name, name: cre
         let memory = Task.attackController.memory(flag);
         // save spawning creep to task memory
         memory.spawning.push(params);
+
         // clean/validate task memory queued creeps
-        let queued = []
-        let validateQueued = o => {
-            let room = Game.rooms[o.room];
-            if(room.spawnQueueLow.some( c => c.name == o.name)){
-                queued.push(o);
-            }
-        };
-        memory.queued.forEach(validateQueued);
-        memory.queued = queued;
+        Task.validateQueued(memory, flag, mod.name);
     }
 };
 // when a creep completed spawning
@@ -93,17 +78,9 @@ mod.handleSpawningCompleted = creep => {
         let memory = Task.attackController.memory(flag);
         // save running creep to task memory
         memory.running.push(creep.name);
+
         // clean/validate task memory spawning creeps
-        let spawning = []
-        let validateSpawning = o => {
-            let spawn = Game.spawns[o.spawn];
-            if( spawn && ((spawn.spawning && spawn.spawning.name == o.name) || (spawn.newSpawn && spawn.newSpawn.name == o.name))) {
-                count++;
-                spawning.push(o);
-            }
-        };
-        memory.spawning.forEach(validateSpawning);
-        memory.spawning = spawning;
+        Task.validateSpawning(memory, flag, mod.name);
     }
 };
 // when a creep died (or will die soon)
@@ -116,20 +93,8 @@ mod.handleCreepDied = name => {
     // get flag which caused request of that creep
     let flag = Game.flags[mem.destiny.targetName];
     if (flag) {
-        // get task memory
-        let memory = Task.attackController.memory(flag);
-        // clean/validate task memory running creeps
-        let running = []
-        let validateRunning = o => {
-            let creep = Game.creeps[o];
-            // invalidate old creeps for predicted spawning
-            // TODO: better distance calculation
-            if( creep && creep.name != name && creep.data !== undefined && creep.data.spawningTime !== undefined && creep.ticksToLive > (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*50) ) ) {
-                running.push(o);
-            }
-        };
-        memory.running.forEach(validateRunning);
-        memory.running = running;
+        const memory = Task.attackController.memory(flag);
+        Task.validateRunning(memory, flag, mod.name, {roomName: flag.pos.roomName, deadCreep: name});
     }
 };
 // get task memory
@@ -141,7 +106,7 @@ mod.memory = (flag) => {
             queued: [], 
             spawning: [],
             running: []
-        }
+        };
     }
     return flag.memory.tasks.attackController;
 };
@@ -166,7 +131,10 @@ mod.nextAction = creep => {
 mod.creep = {
     attackController: {
         fixedBody: [],
-        multiBody: [CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE,CLAIM, MOVE],
+        multiBody: {
+            [CLAIM]: 5,
+            [MOVE]: 5,
+        },
         minMulti: 1,
         maxMulti: 4,
         name: "Atk-Contr", 

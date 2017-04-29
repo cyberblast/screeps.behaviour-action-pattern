@@ -1,19 +1,22 @@
 let action = new Creep.Action('charging'); // store into container
 module.exports = action;
 action.renewTarget = false;
+action.maxPerTarget = 1;
 action.isValidAction = function(creep){ return creep.carry.energy > 0; }
 action.isAddableAction = function(creep){ return true; }
 action.isValidTarget = function(target){
     if( !target ) return false;
-    if( target.structureType == 'link' ){
-        return target.energy < target.storeCapacity * 0.85;
-    } else if( target.structureType == 'container' ) {
+    if( target.structureType == STRUCTURE_LINK ){
+        return target.energy < target.energyCapacity * 0.85;
+    } else if( target.structureType == STRUCTURE_CONTAINER ) {
         return target.sum < ((target.source === true && target.controller == true) ? target.storeCapacity * MANAGED_CONTAINER_TRIGGER : target.storeCapacity);
     }
     return false;
 };
+const super_isAddableTarget = action.isAddableTarget;
 action.isAddableTarget = function(target, creep){
-    return (
+    return super_isAddableTarget.apply(this, [target, creep]) &&
+    (
         (target instanceof OwnedStructure && target.my) ||
         (
             (!creep.room.controller ||
@@ -24,10 +27,10 @@ action.isAddableTarget = function(target, creep){
             )
         )
     ) && (
-        (target.structureType == 'container' && (target.storeCapacity - target.sum) > Math.min(creep.carry.energy, 500)) ||
-        ( target.structureType == 'link' )
+        (target.structureType == STRUCTURE_CONTAINER && (target.storeCapacity - target.sum) > Math.min(creep.carry.energy, 500)) ||
+        ( target.structureType == STRUCTURE_LINK )
     ) && (
-        target.structureType != 'container' || !target.controller || creep.carry.energy == creep.sum // don't put minerals in upgrader container
+        target.structureType != STRUCTURE_CONTAINER || !target.controller || creep.carry.energy == creep.sum // don't put minerals in upgrader container
     );
 };
 action.newTarget = function(creep){
@@ -80,20 +83,16 @@ action.work = function(creep){
     return workResult;
     /* container charging with minerals not supported currently
     var workResult;
-    if( creep.target.structureType == 'container' ) {
+    if( creep.target.structureType == STRUCTURE_CONTAINER ) {
         for(var resourceType in creep.carry) {
             if( creep.carry[resourceType] > 0 ){
                 workResult = creep.transfer(creep.target, resourceType);
                 if( workResult != OK ) break;
             }
         }
-    } else if( creep.target.structureType == 'link' ) {
+    } else if( creep.target.structureType == STRUCTURE_LINK ) {
         workResult = creep.transfer(creep.target, RESOURCE_ENERGY);
     }
     return workResult;
     */
-};
-action.onAssignment = function(creep, target) {
-    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
-    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);
 };

@@ -34,7 +34,7 @@ mod.process = function(){
     let processRoom = room => {
         if( room.controller ) {
             if( SEND_STATISTIC_REPORTS && this.storedStatisticsTime > 0 ) { // send Report
-                if( room.controller.my ){
+                if( room.controller.my && room.memory.statistics ){
                     // controller
                     message = '<ul><li><b>Room ' + room.name + '</b><br/><u>Controller</u><ul>';
                     let isUpgraded = room.controller.progress < room.memory.statistics.controllerProgress;
@@ -91,7 +91,7 @@ mod.process = function(){
                 invaders: invaders
             };
         }
-    }
+    };
 
     _.forEach(Game.rooms, processRoom);
 

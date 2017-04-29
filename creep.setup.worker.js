@@ -1,6 +1,7 @@
 let setup = new Creep.Setup('worker');
 module.exports = setup;
 setup.maxWorker = room => {
+    let count = room.controller.level < 8 ? 1 : 0; // no need to always have a worker at RCL8
     // no hauler and no miner => 1
     // if there is a miner it should be no problem to spawn a hauler, and vice versa. 
     // if none of them are present spawn a worker first
@@ -11,15 +12,15 @@ setup.maxWorker = room => {
         return max - numPioneers;
     }
     if( !setup.hasMinerOrHauler(room))
-        return 1;
+        count = count + 1;
     // constructionsites present & no strorage or storage > min
-    if( room.myConstructionSites.length > 0 && (!room.storage
+    if( room.myConstructionSites.length > 0 && ((!room.storage || !room.storage.isActive())
         || room.storage.store && room.storage.charge > 0))
-        return 1;
+        count = count + 1;
     // storage full & base fortifyable
-    if( room.storage && room.storage.charge > 1 && room.structures.fortifyable.length > 0 )
-        return 1;
-    return 0;
+    if( room.storage && room.storage.isActive() && room.storage.charge > 1 && room.structures.fortifyable.length > 0 )
+        count = count + 1;
+    return count;
 };
 // validates if there is a miner or a hauler present
 setup.hasMinerOrHauler = room => ( room.population &&
@@ -39,8 +40,8 @@ setup.byPopulation = function(type, start, perBody, limit) {
 setup.RCL = {
     1: {
         fixedBody: [],
-        multiBody: [CARRY, WORK, MOVE],
-        minAbsEnergyAvailable: 200,
+        multiBody: [CARRY, WORK, MOVE,MOVE],
+        minAbsEnergyAvailable: 250,
         minEnergyAvailable: setup.byPopulation(setup.type, 0, 1, 1),
         maxMulti: 8,
         maxCount: room => setup.maxWorker(room),
@@ -48,8 +49,8 @@ setup.RCL = {
     },
     2: {
         fixedBody: [],
-        multiBody: [CARRY, WORK, MOVE],
-        minAbsEnergyAvailable: 200,
+        multiBody: [CARRY, WORK, MOVE,MOVE],
+        minAbsEnergyAvailable: 250,
         minEnergyAvailable: setup.byPopulation(setup.type, 0, 0.5, 1),
         maxMulti: 8,
         maxCount: room => setup.maxWorker(room),
@@ -105,7 +106,7 @@ setup.RCL = {
         multiBody: [CARRY, WORK, MOVE],
         minAbsEnergyAvailable: 800,
         minEnergyAvailable: room => setup.hasMinerOrHauler(room) ? 0.1 : 0,
-        maxMulti: room => (( !room.storage || room.storage.energy > MAX_STORAGE_ENERGY[8] ) ? 16 : 10),
+        maxMulti: room => (( (!room.storage || !room.storage.isActive()) || room.storage.energy > MAX_STORAGE_ENERGY[8] ) ? 16 : 10),
         maxCount: room => setup.maxWorker(room),
         maxWeight: 3200
     }

@@ -2,9 +2,15 @@
 let mod = {};
 module.exports = mod;
 mod.name = 'reserve';
+mod.spawnRoomMaxRange = 6;
+mod.VALID_RESERVATION = 1000;
+mod.URGENT_RESERVATION = 250;
 mod.creep = {
     reserver: {
-        fixedBody: [CLAIM, CLAIM, MOVE, MOVE],
+        fixedBody: {
+            [CLAIM]: 2,
+            [MOVE]: 2,
+        },
         multiBody: [CLAIM, MOVE],
         maxMulti: 7,
         name: "reserver", 
@@ -12,40 +18,52 @@ mod.creep = {
     },
 };
 // hook into events
-mod.register = () => {
-    // when a new flag has been found (occurs every tick, for each flag)
-    Flag.found.on( flag => Task.reserve.handleFlagFound(flag) );
-    // a creep starts spawning
-    Creep.spawningStarted.on( params => Task.reserve.handleSpawningStarted(params) );
-    // a creep completed spawning
-    Creep.spawningCompleted.on( creep => Task.reserve.handleSpawningCompleted(creep) );
-    // a creep will die soon
-    Creep.predictedRenewal.on( creep => Task.reserve.handleCreepDied(creep.name) );
-    // a creep died
-    Creep.died.on( name => Task.reserve.handleCreepDied(name) );
-};
+mod.register = () => {};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a reserve, exploit or remote mine flag
-    if( flag.color == FLAG_COLOR.claim.reserve.color && flag.secondaryColor == FLAG_COLOR.claim.reserve.secondaryColor ||
-        flag.color == FLAG_COLOR.invade.exploit.color && flag.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor ||
-        flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor){
-        // check if a new creep has to be spawned
-        Task.reserve.checkForRequiredCreeps(flag);
+    if ((flag.compareTo(FLAG_COLOR.claim.reserve) || flag.compareTo(FLAG_COLOR.invade.exploit) || flag.compareTo(FLAG_COLOR.claim.mining)) &&
+        (Room.isControllerRoom(flag.pos.roomName) || (flag.room && flag.room.controller))) {
+        const memory = Task.reserve.memory(flag);
+        if (flag.room) {
+            flag.memory.lastVisible = Game.time;
+            flag.memory.ticksToEnd = flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd;
+            const currCheck = _.get(flag.memory, ['nextCheck', mod.name], Infinity);
+            const nextCheck = Game.time + flag.memory.ticksToEnd - mod.VALID_RESERVATION;
+            if (nextCheck < currCheck && !memory.waitForCreeps) {
+                const count = memory.queued.length + memory.spawning.length + memory.running.length;
+                if (count === 0) { // and not currently spawning
+                    _.set(flag.memory, ['nextCheck', mod.name], nextCheck);
+                } else {
+                    memory.waitForCreeps = true;
+                }
+            }
+        }
+        if (Task.nextCreepCheck(flag, mod.name)) {
+            delete memory.waitForCreeps;
+            Util.set(flag.memory, 'task', mod.name);
+            // check if a new creep has to be spawned
+            Task.reserve.checkForRequiredCreeps(flag);
+        }
     }
 };
 // check if a new creep has to be spawned
-mod.checkForRequiredCreeps = (flag) => {
+mod.checkForRequiredCreeps = function(flag) {
     let spawnParams;
-    if( flag.color == FLAG_COLOR.claim.mining.color && flag.secondaryColor == FLAG_COLOR.claim.mining.secondaryColor ) {
+    if (flag.compareTo(FLAG_COLOR.claim.mining)) {
         spawnParams = Task.mining.strategies.reserve.spawnParams(flag);
+    } else if( flag.compareTo(FLAG_COLOR.invade.exploit) ) {
+        spawnParams = mod.strategies.defaultStrategy.spawnParams(flag);
+        spawnParams.queue = 'Low'; // privateer reserve is always low queue
     } else {
         spawnParams = mod.strategies.defaultStrategy.spawnParams(flag);
     }
 
     // get task memory
     let memory = Task.reserve.memory(flag);
-
+    // clean/validate task memory queued creeps
+    Task.validateAll(memory, flag, mod.name, {roomName: flag.pos.roomName, queues: ['Low', 'Medium'], checkValid: true});
+    
     // if low & creep in low queue => move to medium queue
     if( spawnParams.queue !== 'Low' && memory.queued.length == 1 ) {
         let spawnRoom = Game.rooms[memory.queued[0].room];
@@ -74,7 +92,8 @@ mod.checkForRequiredCreeps = (flag) => {
             }, 
             { // spawn room selection params
                 targetRoom: flag.pos.roomName, 
-                minEnergyCapacity: 1300
+                minEnergyCapacity: 1300,
+                maxRange: this.spawnRoomMaxRange,
             },
             creepSetup => { // callback onQueued
                 let memory = Task.reserve.memory(Game.flags[creepSetup.destiny.targetName]);
@@ -98,7 +117,7 @@ mod.handleSpawningStarted = params => { // params: {spawn: spawn.name, name: cre
         // get task memory
         let memory = Task.reserve.memory(flag);
         // clean/validate task memory queued creeps
-        if( memory.valid != Game.time ) Task.reserve.validateMemoryQueued(memory);
+        Task.validateQueued(memory, flag, mod.name, {queues: ['Low', 'Medium']});
         // save spawning creep to task memory
         memory.spawning.push(params);
     }
@@ -117,7 +136,7 @@ mod.handleSpawningCompleted = creep => {
         // get task memory
         let memory = Task.reserve.memory(flag);
         // clean/validate task memory spawning creeps
-        if( memory.valid != Game.time ) Task.reserve.validateMemorySpawning(memory);
+        Task.validateSpawning(memory, flag, mod.name);
         // save running creep to task memory
         memory.running.push(creep.name);
     }
@@ -125,7 +144,6 @@ mod.handleSpawningCompleted = creep => {
 // when a creep died (or will die soon)
 mod.handleCreepDied = name => {
     // get creep memory
-    // console.log('task.reserve.handleCreepDied(' + name + ")" );
     let mem = Memory.population[name];
     // ensure it is a creep which has been requested by this task (else return)
     if (!mem || !mem.destiny || !mem.destiny.task || mem.destiny.task != mod.name)
@@ -133,10 +151,8 @@ mod.handleCreepDied = name => {
     // get flag which caused request of that creep
     let flag = Game.flags[mem.destiny.targetName];
     if (flag) {
-        // get task memory
-        let memory = Task.reserve.memory(flag);
-        // clean/validate task memory running creeps
-        if( memory.valid != Game.time ) Task.reserve.validateMemoryRunning(memory);
+        const memory = Task.reserve.memory(flag);
+        Task.validateRunning(memory, flag, mod.name, {roomName: flag.pos.roomName, deadCreep: name});
     }
 };
 mod.nextAction = creep => {
@@ -164,102 +180,55 @@ mod.nextAction = creep => {
 };
 // get task memory
 mod.memory = (flag) => {
-    if( !flag.memory.tasks ) 
-        flag.memory.tasks = {};
-    if( !flag.memory.tasks.reserve ) {
-        flag.memory.tasks.reserve = {
-            valid: Game.time,
-            queued: [], 
-            spawning: [],
-            running: []
-        };
-    }
-    let memory = flag.memory.tasks.reserve;
-    if( !memory.valid || memory.valid < ( Game.time - MEMORY_RESYNC_INTERVAL ) )
-        Task.reserve.validateMemory(memory);
+    const memory = Util.get(flag.memory, ['tasks', 'reserve'], {
+        queued: [], 
+        spawning: [],
+        running: []
+    });
+    // temporary migration, remove if in dev
+    delete memory.valid;
     return memory;
-};
-mod.validateMemoryQueued = memory => {
-    // clean/validate task memory queued creeps
-    let queued = [];
-    let validateQueued = entry => {
-        let room = Game.rooms[entry.room];
-        if( (room.spawnQueueMedium.some( c => c.name == entry.name)) || (room.spawnQueueLow.some( c => c.name == entry.name)) ){
-            queued.push(entry);
-        }
-    };
-    memory.queued.forEach(validateQueued);
-    memory.queued = queued;
-};
-mod.validateMemorySpawning = memory => {
-    // clean/validate task memory spawning creeps
-    let spawning = [];
-    let validateSpawning = entry => {
-        let spawn = Game.spawns[entry.spawn];
-        if( spawn && ((spawn.spawning && spawn.spawning.name == entry.name) || (spawn.newSpawn && spawn.newSpawn.name == entry.name))) {
-            spawning.push(entry);
-        }
-    };
-    memory.spawning.forEach(validateSpawning);
-    memory.spawning = spawning;
-};
-mod.validateMemoryRunning = memory => {
-    // clean/validate task memory running creeps
-    let running = [];
-    let validateRunning = entry => {
-        // invalidate dead or old creeps for predicted spawning
-        let creep = Game.creeps[entry];
-        if( !creep || !creep.data ) return;
-        // TODO: better distance calculation
-        let prediction;
-        if( creep.data.predictedRenewal ) prediction = creep.data.predictedRenewal;
-        else if( creep.data.spawningTime ) prediction = (creep.data.spawningTime + (routeRange(creep.data.homeRoom, flag.pos.roomName)*50));
-        else prediction = (routeRange(creep.data.homeRoom, flag.pos.roomName) + 1) * 50;
-        if( creep.ticksToLive > prediction ) {
-            running.push(entry);
-        }
-    };
-    memory.running.forEach(validateRunning);
-    memory.running = running;
-};
-mod.validateMemory = memory => {
-    Task.reserve.validateMemoryQueued(memory);
-    Task.reserve.validateMemorySpawning(memory);
-    Task.reserve.validateMemoryRunning(memory);
-    memory.valid = Game.time;
 };
 mod.strategies = {
     defaultStrategy: {
         name: `default-${mod.name}`,
         spawnParams: function(flag) { //:{count:number, priority:string}
-            let count = 1;
-
-            const myName = _.find(Game.spawns).owner.username;
-            // Don't spawn if...
+            const params = {count: 0, queue: 'Low'}; // default to no spawn
             const hasFlag = !!flag;
-            const hasController = Room.isControllerRoom(flag.pos.roomName) || (flag.room && flag.room.controller);
-            const hasReservation = (flag.room && flag.room.controller && flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 1000 || flag.room.controller.reservation.username != myName) );
-            const isOwned = (flag.room && flag.room.controller && flag.room.controller.owner);
-            if( // Flag was removed
-                !hasFlag ||
-                // No controller in room
-                !hasController ||
-                // My reservation is already sufficiently high or reserved by another player
-                hasReservation ||
-                // Room is owned
-                isOwned ) {
-                if( DEBUG && TRACE ) trace('Task', {hasFlag, hasController, hasReservation, isOwned, checkForRequiredCreeps:'skipping room', [mod.name]:'checkForRequiredCreeps', Task:mod.name});
-                count = 0;
+            const hasController = hasFlag && (Room.isControllerRoom(flag.pos.roomName) || (flag.room && flag.room.controller));
+            if (!hasFlag || !hasController) {
+                if( DEBUG && TRACE ) trace('Task', {hasFlag, hasController, checkForRequiredCreeps:'skipping room, missing flag or controller',
+                    [mod.name]:'checkForRequiredCreeps', Task:mod.name});
+                return params;
             }
-
-            // check reservation level
-            let lowReservation = (count > 0 && flag.room &&
-                ((flag.room.controller && !flag.room.controller.reservation) ||
-                (flag.room.controller && flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd < 250)));
-
-            const queue = lowReservation ? 'Medium' : 'Low';
-
-            return {count, queue};
+            if (flag.room) {
+                flag.memory.lastVisible = Game.time;
+                flag.memory.ticksToEnd = flag.room.controller.reservation && flag.room.controller.reservation.ticksToEnd;
+                const validReservation = flag.room.controller.reservation && (flag.room.controller.reservation.ticksToEnd > 1000
+                    || flag.room.controller.reservation.username !== ME);
+                const isOwned = !!(flag.room.controller.owner);
+                if (isOwned || validReservation) {
+                    if( DEBUG && TRACE ) trace('Task', {validReservation, isOwned, checkForRequiredCreeps:'skipping room, reserved or owned',
+                        [mod.name]:'checkForRequiredCreeps', Task:mod.name});
+                    return params;
+                }
+                const urgent = !flag.room.controller.reservation || flag.room.controller.reservation.ticksToEnd < 250;
+                params.count = 1;
+                if (urgent) params.queue = 'Medium';
+                if( DEBUG && TRACE ) {
+                    const type = urgent ? 'urgent' : ' ';
+                    trace('Task', {validReservation, isOwned, urgent, checkForRequiredCreeps:`sending${type}reserver`,
+                        [mod.name]:'checkForRequiredCreeps', Task:mod.name});
+                }
+            } else if (_.isUndefined(flag.memory.lastVisible) ||
+                Game.time - flag.memory.lastVisible > ((flag.memory.ticksToEnd - 250) || 250)) {
+                params.count = 1;
+                params.queue = 'Medium';
+                if( DEBUG && TRACE ) trace('Task', {lastVisible: flag.memory.lastVisible,
+                    tickToEnd: flag.memory.ticksToEnd, checkForRequiredCreeps:'sending urgent reserver, no visibility',
+                    [mod.name]:'checkForRequiredCreeps', Task:mod.name});                
+            }
+            return params;
         },
     },
-}
+};
