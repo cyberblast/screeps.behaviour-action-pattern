@@ -1,18 +1,10 @@
-const action = class extends Creep.Action {
+const action = class extends Creep.Action.EnergyIn {
 
     constructor(...args) {
         super(...args);
         
         this.maxPerTarget = 1;
         this.renewTarget = false;
-    
-        this.defaultStrategy.isValidAction = function(creep) {
-            return creep.sum < creep.carryCapacity || false;
-        };
-    }
-    
-    isValidAction(creep) {
-        return creep.getStrategyHandler([this.name], 'isValidAction', creep);
     }
     
     isValidTarget(target, creep) {

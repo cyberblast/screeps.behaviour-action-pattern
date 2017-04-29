@@ -1,4 +1,4 @@
-const action = class extends Creep.Action {
+const action = class extends Creep.Action.EnergyIn {
     
     constructor(...args) {
         super(...args);
@@ -7,7 +7,7 @@ const action = class extends Creep.Action {
     }
     
     isValidAction(creep) {
-        return creep.sum < creep.carryCapacity && creep.room.sourceEnergyAvailable > 0;
+        return super.isValidAction(creep) && creep.room.sourceEnergyAvailable > 0;
     }
     
     isValidTarget(target, creep) {

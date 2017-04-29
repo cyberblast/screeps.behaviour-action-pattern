@@ -1,4 +1,4 @@
-const action = class extends Creep.Action {
+const action = class extends Creep.Action.EnergyIn {
     
     constructor(...args) {
         super(...args);
