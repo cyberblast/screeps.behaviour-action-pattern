@@ -4,10 +4,14 @@ module.exports = mod;
 mod.name = 'robbing';
 // hook into events
 mod.register = () => {};
+mod.checkFlag = (flag) => {
+    // robbing own rooms is handled by Task.delivery
+    return !(flag.room && flag.room.my) && flag.compareTo(FLAG_COLOR.invade.robbing) && Task.nextCreepCheck(flag, mod.name);
+};
 // for each flag
 mod.handleFlagFound = flag => {
     // if it is a robbing flag
-    if (flag.compareTo(FLAG_COLOR.invade.robbing) && Task.nextCreepCheck(flag, mod.name)) {
+    if (Task.robbing.checkFlag(flag)) {
         Util.set(flag.memory, 'task', mod.name);
         // check if a new creep has to be spawned
         Task.robbing.checkForRequiredCreeps(flag);
@@ -37,7 +41,7 @@ mod.checkForRequiredCreeps = (flag) => {
                 task: mod.name, // taskName
                 targetName: flag.name, // targetName
                 homeRoom: storageRoom.name
-            }, 
+            },
             { // spawn room selection params
                 targetRoom: roomName,
                 explicit: spawnRoom.name,

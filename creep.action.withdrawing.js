@@ -1,13 +1,7 @@
 let action = new Creep.Action('withdrawing');
 module.exports = action;
 action.isValidAction = function(creep){
-    return (
-        ((creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY]) ||
-        (creep.room.terminal && creep.room.terminal.store[RESOURCE_ENERGY])) &&
-        creep.data.creepType !== 'privateer' &&
-        creep.sum < creep.carryCapacity &&
-        (!creep.room.conserveForDefense || creep.room.relativeEnergyAvailable < 0.8)
-    );
+    return creep.getStrategyHandler([action.name], 'isValidAction', creep);
 };
 action.isValidTarget = function(target){
     if (target instanceof StructureTerminal && target.charge <= 0) return false;
@@ -59,4 +53,13 @@ action.assignDebounce = function(creep, outflowActions) {
         }
     }
     return false;
+};
+action.defaultStrategy.isValidAction = function(creep) {
+    return !!(
+        ((creep.room.storage && creep.room.storage.store[RESOURCE_ENERGY]) ||
+        (creep.room.terminal && creep.room.terminal.store[RESOURCE_ENERGY])) &&
+        creep.data.creepType !== 'privateer' &&
+        creep.sum < creep.carryCapacity &&
+        (!creep.room.conserveForDefense || creep.room.relativeEnergyAvailable < 0.8)
+    );
 };

@@ -125,6 +125,12 @@ let Action = function(actionName){
     this.selectStrategies = function() {
         return [this.defaultStrategy];
     };
+    // get member with this action's name
+    this.isMember = function(collection) {
+        return _.find(collection, function(a) {
+            return a.name === this.name;
+        }, this);
+    };
     this.getStrategy = function(strategyName, creep, ...args) {
         if (_.isUndefined(args)) return creep.getStrategyHandler([this.name], strategyName);
         else return creep.getStrategyHandler([this.name], strategyName, ...args);

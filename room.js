@@ -9,6 +9,9 @@ mod.register = function() {
         if (Room._ext[key].register) Room._ext[key].register();
     }
     Room.costMatrixInvalid.on(room => Room.rebuildCostMatrix(room.name || room));
+    Room.RCLChange.on(room => room.structures.all.filter(s => ![STRUCTURE_ROAD, STRUCTURE_WALL, STRUCTURE_RAMPART].includes(s.structureType)).forEach(s => {
+        if (!s.isActive()) _.set(room.memory, ['structures', s.id, 'active'], false);
+    }));
 };
 Room.pathfinderCache = {};
 Room.pathfinderCacheDirty = false;
@@ -593,7 +596,22 @@ mod.extend = function(){
                 return this._collapsed;
             }
         },
+        'RCL': {
+            configurable: true,
+            get() {
+                if (!this.controller) return;
+                return Util.get(this.memory, 'RCL', this.controller.level);
+            },
+        },
     });
+    
+    Room.prototype.checkRCL = function() {
+        if (!this.controller) return;
+        if (this.memory.RCL !== this.controller.level) {
+            Room.RCLChange.trigger(this);
+            this.memory.RCL = this.controller.level;
+        }
+    };
 
     Room.prototype.countMySites = function() {
         const numSites = _.size(this.myConstructionSites);
@@ -986,6 +1004,7 @@ mod.analyze = function() {
             }
             if (totalSitesChanged) room.countMySites();
             if (totalStructuresChanged) room.countMyStructures();
+            room.checkRCL();
             room.switchRamparts();
         }
         catch(err) {
