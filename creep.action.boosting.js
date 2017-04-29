@@ -39,8 +39,8 @@ const action = class extends Creep.Action {
     }
     
     isValidTarget(target, creep) {
-        // target is lab
-        return target instanceof StructureLab &&
+        // target is lab and is addable
+        return target instanceof StructureLab && this.isAddableTarget(target, creep) &&
             // target must be active
             target.active &&
             // target has the minimum energy and mineral
