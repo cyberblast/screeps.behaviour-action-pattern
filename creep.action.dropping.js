@@ -3,11 +3,20 @@ const action = class extends Creep.Action {
     constructor(...args) {
         super(...args);
         
+        this.targetRange = 1;
         this.reachedRange = 0;
     }
     
     isValidAction(creep) {
         return creep.sum > 0;
+    }
+    
+    isValidTarget(target, creep) {
+        if (!target) return false;
+        if (target instanceof Flag) {
+            return target.compareTo(FLAG_COLOR.claim.spawn) || target.compareTo(FLAG_COLOR.command.drop);
+        }
+        return true;
     }
     
     newTarget(creep) {

@@ -1,8 +1,7 @@
-
 const mod = {};
 module.exports = mod;
-mod.analyzeRoom = function(room) {
-    if (Room.needMemoryResync(room)) {
+mod.analyzeRoom = function(room, needMemoryResync) {
+    if (needMemoryResync) {
         room.saveObserver();
         // to re-evaluate rooms, in case parameters are changed
         if (room.structures.observer) room.initObserverRooms();

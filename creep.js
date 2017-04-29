@@ -33,6 +33,10 @@ mod.extend = function(){
         }
     };
     
+    Creep.prototype.getBodyparts = function(type) {
+        return _(this.body).filter({type}).value().length;
+    };
+    
     // Check if a creep has body parts of a certain type anf if it is still active. 
     // Accepts a single part type (like RANGED_ATTACK) or an array of part types. 
     // Returns true, if there is at least any one part with a matching type present and active.

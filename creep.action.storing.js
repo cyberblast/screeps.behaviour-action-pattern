@@ -2,7 +2,7 @@ const action = class extends Creep.Action {
     
     isValidAction(creep) {
         return (
-            !!creep.room.storage && creep.sum > 0 &&
+            !!creep.room.storage && creep.room.storage.active && creep.sum > 0 &&
             (
                 creep.data.creepType !== 'worker' ||
                 (
@@ -23,7 +23,7 @@ const action = class extends Creep.Action {
     }
     
     isValidTarget(target) {
-        return super.isValidTarget(target) && target.store && target.sum < target.storeCapacity;
+        return super.isValidTarget(target) && target.active && target.store && target.sum < target.storeCapacity;
     }
     
     isAddableTarget(target, creep) {

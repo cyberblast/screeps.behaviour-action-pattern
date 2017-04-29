@@ -9,11 +9,11 @@ const action = class extends Creep.Action {
     }
     
     isValidAction(creep) {
-        return creep.carry.energy > 0 && (!creep.room.storage || creep.room.storage.charge > 0.6);
+        return creep.carry.energy > 0 && ((!creep.room.storage || !creep.room.storage.active) || creep.room.storage.charge > 0.6);
     }
     
     isValidTarget(target) {
-        return super.isValidTarget(target) && target.hits && target.hits < target.hitsMax;
+        return super.isValidTarget(target) && target.active && target.hits && target.hits < target.hitsMax;
     }
     
     newTarget(creep) {

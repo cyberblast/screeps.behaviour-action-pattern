@@ -5,13 +5,28 @@ const CreepAction = class extends Action {
     
         this.reachedRange = 1;
         this.statement = ACTION_SAY[this.name.toUpperCase()];
-        
+    
+        // empty default strategy
         this.defaultStrategy = {
             name: `default-${this.name}`,
             moveOptions: function(opts) {
                 return opts || {};
             }
-        }
+        };
+        // strategy accessor
+        this.selectStrategies = function() {
+            return [this.defaultStrategy];
+        };
+        // get member with this action's name
+        this.isMember = function(collection) {
+            return _.find(collection, a => {
+                return a.name === this.name;
+            });
+        };
+        this.getStrategy = function(strategyName, creep, args) {
+            if (_.isUndefined(args)) return creep.getStrategyHandler([this.name], strategyName);
+            else return creep.getStrategyHandler([this.name], strategyName, args);
+        };
     }
     
     getTargetByID(id) {
@@ -45,7 +60,7 @@ const CreepAction = class extends Action {
                 const targetPos = Traveler.positionAtDirection(creep.pos, direction);
                 if (creep.room.isWalkable(targetPos.x, targetPos.y)) {
                     creep.move(direction);
-                } else {
+                } else if (!creep.pos.isNearTo(creep.target)) { // travel there if we're not already adjacent
                     creep.travelTo(creep.target, {range: this.reachedRange});
                 }
             }

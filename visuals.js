@@ -423,7 +423,7 @@ const Visuals = class {
             }
     
             // Display Energy Available
-            if (!room.controller.reservation && !room.controller.owner) {
+            if (!room.controller.reservation && room.controller.owner) {
                 const ENERGY_PERCENTAGE = room.energyAvailable / room.energyCapacityAvailable || 0;
                 this.drawBar(vis, ENERGY_PERCENTAGE, x, y - 0.75, sectionWidth, 1, `Energy: ${room.energyAvailable}/${room.energyCapacityAvailable} (${(ENERGY_PERCENTAGE * 100).toFixed(2)}%)`, {
                     fill: getColourByPercentage(ENERGY_PERCENTAGE, true),
@@ -461,7 +461,7 @@ const Visuals = class {
             this.drawPie(vis, val, max, title, getColourByPercentage(val / max, true), {x, y: y++}, inner);
             
             // Energy Available
-            if (!room.controller.reservation && !room.controller.owner) {
+            if (!room.controller.reservation && room.controller.owner) {
                 const PERCENTAGE = room.energyAvailable / room.energyCapacityAvailable || 0;
                 this.drawPie(vis, room.energyAvailable, room.energyCapacityAvailable, 'Energy', getColourByPercentage(PERCENTAGE, true), {x, y: y++});
             }

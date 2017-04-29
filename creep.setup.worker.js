@@ -14,11 +14,11 @@ setup.maxWorker = room => {
     if( !setup.hasMinerOrHauler(room))
         count = count + 1;
     // constructionsites present & no strorage or storage > min
-    if( room.myConstructionSites.length > 0 && (!room.storage
+    if( room.myConstructionSites.length > 0 && ((!room.storage || !room.storage.isActive())
         || room.storage.store && room.storage.charge > 0))
         count = count + 1;
     // storage full & base fortifyable
-    if( room.storage && room.storage.charge > 1 && room.structures.fortifyable.length > 0 )
+    if( room.storage && room.storage.isActive() && room.storage.charge > 1 && room.structures.fortifyable.length > 0 )
         count = count + 1;
     return count;
 };
@@ -106,7 +106,7 @@ setup.RCL = {
         multiBody: [CARRY, WORK, MOVE],
         minAbsEnergyAvailable: 800,
         minEnergyAvailable: room => setup.hasMinerOrHauler(room) ? 0.1 : 0,
-        maxMulti: room => (( !room.storage || room.storage.energy > MAX_STORAGE_ENERGY[8] ) ? 16 : 10),
+        maxMulti: room => (( (!room.storage || !room.storage.isActive()) || room.storage.energy > MAX_STORAGE_ENERGY[8] ) ? 16 : 10),
         maxCount: room => setup.maxWorker(room),
         maxWeight: 3200
     }

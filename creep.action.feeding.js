@@ -10,6 +10,10 @@ const action = class extends Creep.Action {
         return creep.carry.energy > 0 && creep.room.energyAvailable < creep.room.energyCapacityAvailable;
     }
     
+    isValidTarget(target) {
+        return super.isValidTarget(target) && !_.isUndefined(target.energy) && target.energy < target.energyCapacity;
+    }
+    
     isAddableTarget(target) {
         return target.my && super.isAddableTarget(target);
     }

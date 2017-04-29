@@ -12,7 +12,7 @@ const action = class extends Creep.Action {
     }
     
     isValidTarget(target) {
-        return super.isValidTarget(target) && target.energy && target.energy < target.energyCapacity;
+        return super.isValidTarget(target) && target.active && target.energy && target.energy < target.energyCapacity;
     }
     
     isAddableTarget(target) {
@@ -20,7 +20,7 @@ const action = class extends Creep.Action {
     }
     
     newTarget(creep) {
-        return creep.room.structures.fuelable.length && creep.pos.findClosestByRange(creep.room.structures.fuelable);
+        return creep.room.structures.fuelable.length ? creep.pos.findClosestByRange(creep.room.structures.fuelable) : null;
     }
     
     work(creep) {

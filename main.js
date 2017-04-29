@@ -71,7 +71,7 @@ global.inject = (base, alien, namespace) => {
             base[key] = alien[key].bind(base);
         } else if (alien[key] !== null && typeof base[key] === 'object' && !Array.isArray(base[key]) &&
             typeof alien[key] === 'object' && !Array.isArray(alien[key])) {
-            global.inject(base[key], alien[key], namespace);
+            _.merge(base[key], alien[key]);
         } else {
             base[key] = alien[key]
         }
@@ -157,6 +157,7 @@ global.install = () => {
         attackController: load("task.attackController"),
         robbing: load("task.robbing"),
         reputation: load("task.reputation"),
+        delivery: load("task.delivery"),
         labTech: load("task.labTech"),
     });
     Creep.Action = load("creep.Action");
@@ -239,8 +240,19 @@ global.install = () => {
     global.inject(Room, load("room"));
     _.assign(Room, {
         _ext: {
+            construction: load("room.construction"),
+            containers: load("room.container"),
+            defense: load("room.defense"),
+            extensions: load("room.extension"),
             labs: load("room.lab"),
+            links: load("room.link"),
+            nuker: load("room.nuker"),
             observers: load("room.observer"),
+            orders: load("room.orders"),
+            power: load("room.power"),
+            resources: load("room.resources"),
+            spawns: load("room.spawn"),
+            towers: load("room.tower"),
         },
     });
     global.inject(Spawn, load("spawn"));
@@ -285,10 +297,14 @@ module.exports.loop = function () {
         if (Memory.cloaked === undefined) {
             Memory.cloaked = {};
         }
-        // ensure up to date parameters
-        _.assign(global, load("parameter"));
         
-        // process loaded memory segments
+        Util.set(Memory, 'parameters', {});
+        _.assign(global, {parameters: Memory.parameters}); // allow for shorthand access in console
+        // ensure up to date parameters, override in memory
+        _.assign(global, load("parameter"));
+        _.merge(global, parameters);        
+        
+      // process loaded memory segments
         OCSMemory.processSegments();
         p.checkCPU('processSegments', PROFILING.ANALYZE_LIMIT);
     
@@ -317,6 +333,7 @@ module.exports.loop = function () {
         p.checkCPU('Population.analyze', PROFILING.ANALYZE_LIMIT);
         // custom analyze
         if( global.mainInjection.analyze ) global.mainInjection.analyze();
+
 
         // Register event hooks
         Creep.register();

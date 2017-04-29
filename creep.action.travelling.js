@@ -1,5 +1,21 @@
 const action = class extends Creep.Action {
     
+    constructor(...args) {
+        super(...args);
+    
+        this.defaultStrategy.newTarget = function(creep) {
+            if (creep.data.travelPos || creep.data.travelRoom) {
+                return FlagDir.specialFlag();
+            }
+            return null;
+        };
+    }
+    
+    newTarget(creep) {
+        // TODO: trace it: console.log(creep.strategy([this.name]).key);
+        return creep.getStrategyHandler([this.name], 'newTarget', creep);
+    }
+    
     step(creep) {
         this.chatty(creep);
         let targetRange = _.get(creep, ['data', 'travelRange'], this.targetRange);

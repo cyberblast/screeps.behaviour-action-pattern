@@ -4,10 +4,22 @@ const action = class extends Creep.Action {
         super(...args);
         
         this.targetRange = 3;
+        
+        this.defaultStrategy.targetFilter = function(creep) {
+            return function(target) {
+                return target.my;
+            };
+        };
+    }
+    
+    isAddableTarget(target, creep) {
+        const filter = creep.getStrategyHandler([this.name], 'targetFilter', creep);
+        
+        return filter && filter(target);
     }
     
     isValidTarget(target, creep) {
-        return super.isValidTarget(target) && target.hits && target.hits < target.hits && target.my && target.pos.roomName === creep.data.healRoom;
+        return super.isValidTarget(target) && target.hits && target.hits < target.hits && target.my && target.pos.roomName === creep.data.healRoom && this.isAddableTarget(target, creep);
     }
     
     newTarget(creep) {
