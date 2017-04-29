@@ -4,7 +4,7 @@ const action = class extends Creep.Action {
         super(...args);
         
         this.maxPerAction = 3;
-        this.maxperTarget = 3;
+        this.maxPerTarget = 3;
         this.renewTarget = false;
     }
     
