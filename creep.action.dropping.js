@@ -1,14 +1,11 @@
-const action = class extends Creep.Action {
+const action = class extends Creep.Action.EnergyOut {
     
     constructor(...args) {
         super(...args);
         
+        this.maxPerTarget = Infinity;
         this.targetRange = 1;
         this.reachedRange = 0;
-    }
-    
-    isValidAction(creep) {
-        return creep.sum > 0;
     }
     
     isValidTarget(target, creep) {
