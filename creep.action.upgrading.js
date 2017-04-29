@@ -1,8 +1,9 @@
-const action = class extends Creep.Action {
+const action = class extends Creep.Action.EnergyOut {
     
     constructor(...args) {
         super(...args);
         
+        this.maxPerTarget = Infinity;
         this.targetRange = 3;
         this.reachedRange = 3;
     }
@@ -19,10 +20,6 @@ const action = class extends Creep.Action {
     isAddableTarget(target, creep) {
         // limit to upgraders only at RCL8
         return !(target.level === 8 && (!creep.data || creep.data.creepType !== 'upgrader'));
-    }
-    
-    isValidAction(creep) {
-        return creep.carry.energy > 0;
     }
     
     isValidTarget(target) {

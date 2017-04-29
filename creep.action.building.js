@@ -1,14 +1,10 @@
-const action = class extends Creep.Action {
+const action = class extends Creep.Action.EnergyOut {
     
     constructor(...args) {
         super(...args);
         this.maxPerTarget = 3;
         this.targetRange = 3;
         this.maxPerAction = 3;
-    }
-    
-    isValidAction(creep) {
-        return creep.carry.energy > 0;
     }
     
     isMineOrAlly(target) {

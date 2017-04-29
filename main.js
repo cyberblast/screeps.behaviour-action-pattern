@@ -165,6 +165,7 @@ global.install = () => {
     _.assign(Creep, {
         Action: {
             Controller: load('creep.Action.Controller'),
+            EnergyOut: load('creep.Action.EnergyOut'),
         },
         action: {
             attackController: load("creep.action.attackController"),
