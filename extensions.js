@@ -51,6 +51,10 @@ mod.extend = function(){
             return this.room.RCL > 1;
         },
     });
+    Object.defineProperty(StructureContainer.prototype, 'active', {
+        configurable: true,
+        value: true,
+    });
     Object.defineProperty(Source.prototype, 'memory', {
         configurable: true,
         get: function() {
