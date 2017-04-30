@@ -603,6 +603,12 @@ mod.extend = function(){
                 return Util.get(this.memory, 'RCL', this.controller.level);
             },
         },
+        'skip': {
+            configurable: true,
+            get() {
+                return Util.get(this, '_skip', !!FlagDir.find(FLAG_COLOR.command.skipRoom, this));
+            },
+        },
     });
     
     Room.prototype.checkRCL = function() {
@@ -981,6 +987,7 @@ mod.analyze = function() {
         }
     };
     _.forEach(Game.rooms, r => {
+        if (r.skip) return;
         getEnvironment(r);
         p.checkCPU(r.name, PROFILING.ANALYZE_LIMIT / 5);
     });
