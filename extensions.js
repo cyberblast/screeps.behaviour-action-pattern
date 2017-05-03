@@ -55,6 +55,10 @@ mod.extend = function(){
         configurable: true,
         value: true,
     });
+    Object.defineProperty(StructureRoad.prototype, 'active', {
+        configurable: true,
+        value: true,
+    });
     Object.defineProperty(Source.prototype, 'memory', {
         configurable: true,
         get: function() {
