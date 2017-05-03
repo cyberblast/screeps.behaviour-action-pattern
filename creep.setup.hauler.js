@@ -21,7 +21,7 @@ setup.maxCount = function(room){
     if( miners > 0  || ( cont > 0 && workers > Creep.setup.worker._maxCount(room)) ) {
         count += Creep.setup.upgrader._maxCount(room);
         if( room.structures.links.all.length < 3 ||
-           (room.storage && room.storage.isActive() && room.storage.charge > 1 &&
+           (room.storage && room.storage.active && room.storage.charge > 1 &&
             room.structures.container.controller && _.sum(room.structures.container.controller, 'store.energy') == 0 )) count++;
         //add one when mineral miner active
         
@@ -36,7 +36,7 @@ setup.maxCount = function(room){
             }
         };
         room.droppedResources.forEach(countNearSource);
-        if( room.storage && room.storage.isActive() && dropped > 1000 ) count++;
+        if( room.storage && room.storage.active && dropped > 1000 ) count++;
         if( count === 0 ) count = 1;
     }
     return count;
