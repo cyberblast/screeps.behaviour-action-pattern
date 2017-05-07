@@ -10,7 +10,13 @@ mod.flagFilter = function(flagColour) {
     }
     return filter;
 };
-mod.findName = function(flagColor, pos, local=true, mod, modArgs){
+mod.findName = function(flagColor, pos, local=true, mod, modArgs) {
+    const p = Util.startProfiling('FlagDir');
+    const ret = FlagDir._findName(flagColor, pos, local=true, mod, modArgs);
+    p.checkCPU('findName', 5, 'FlagDir.findName');
+    return ret;
+};
+mod._findName = function(flagColor, pos, local=true, mod, modArgs) {
     let that = this;
     if( flagColor == null || this.list.length == 0)
         return null;
@@ -70,6 +76,12 @@ mod.removeFromDir = function(name){
         this.list = this.list.splice(index, 1);
 };
 mod.count = function(flagColor, pos, local=true){
+    const p = Util.startProfiling('FlagDir');
+    const ret = FlagDir._count(flagColor, pos, local);
+    p.checkCPU('count', 5, 'FlagDir.count');
+    return ret;
+};
+mod._count = function(flagColor, pos, local=true){
     let that = this;
     if( flagColor == null || this.list.length == 0)
         return 0;
@@ -81,6 +93,12 @@ mod.count = function(flagColor, pos, local=true){
     return _.countBy(this.list, filter).true || 0;
 };
 mod.filter = function(flagColor, pos, local=true){
+    const p = Util.startProfiling('FlagDir');
+    const ret = FlagDir._filter(flagColor, pos, local);
+    p.checkCPU('filter', 5, 'FlagDir.filter');
+    return ret;
+};
+mod._filter = function(flagColor, pos, local=true){
     if( flagColor == null || this.list.length == 0)
         return [];
     let filter;
@@ -102,6 +120,12 @@ mod.filter = function(flagColor, pos, local=true){
     return _.filter(this.list, filter);
 };
 mod.filterCustom = function(filter){
+    const p = Util.startProfiling('FlagDir');
+    const ret = FlagDir._filterCustom(filter);
+    p.checkCPU('filterCustom', 5, 'FlagDir.filterCustom');
+    return ret;
+};
+mod._filterCustom = function(filter){
     if( filter == null || this.list.length == 0)
         return [];
     return _.filter(this.list, filter);
