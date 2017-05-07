@@ -199,10 +199,10 @@ mod.extend = function(){
     Creep.prototype.idleMove = function( ) {
         if( this.fatigue > 0 ) return;
         // check if on road/structure
-        const needToMove = _.find(this.room.structures.piles, {'pos': this.pos}) ||
-                   this.room.lookForAt(LOOK_STRUCTURES, this.pos) ||
-                   this.room.lookForAt(LOOK_CONSTRUCTION_SITES, this.pos, {filter: s => s.my}) ||
-                   this.pos.findInRange(this.room.hostiles, 3);
+        const needToMove = _.find(this.room.structures.piles, {'pos': this.pos})
+            || this.room.lookForAt(LOOK_STRUCTURES, this.pos)
+            || this.room.lookForAt(LOOK_CONSTRUCTION_SITES, this.pos, {filter: s => s.my})
+            || this.pos.findInRange(this.room.hostiles, 3);
         if (needToMove) {
             let path;
             if( !this.data.idlePath || this.data.idlePath.length < 2 || this.data.idlePath[0].x != this.pos.x || this.data.idlePath[0].y != this.pos.y || this.data.idlePath[0].roomName != this.pos.roomName ) {
