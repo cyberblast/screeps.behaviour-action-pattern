@@ -630,14 +630,12 @@ mod.extend = function(){
 
     Room.prototype.countMyStructures = function() {
         const numStructures = _.size(this.structures.my);
-        // only trigger when a structure has been destroyed, we already avoid unpathable construction sites, and treat road sites like roads
-        if (!_.isUndefined(this.memory.myTotalStructures) && numStructures < this.memory.myTotalStructures) {
+        if (!_.isUndefined(this.memory.myTotalStructures) && numStructures !== this.memory.myTotalStructures) {
             Room.costMatrixInvalid.trigger(this);
             // these are vital for feeding
             this.saveExtensions();
             this.saveSpawns();
         }
-        if (numStructures > 0) this.memory.myTotalStructures = numStructures;
         else delete this.memory.myTotalStructures;
     };
     Room.prototype.getBorder = function(roomName) {
