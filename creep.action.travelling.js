@@ -38,7 +38,7 @@ action.step = function(creep){
             }
         }
         // TODO: Only check if moving towards the rampart
-        if (creep.room.owner !== ME && Task.reputation.isAlly(creep.room.owner) && _.find(creep.pos.adjacent, pos => {
+        if (!!creep.room.owner && creep.room.owner !== ME && Task.reputation.isAlly(creep.room.owner) && _.find(creep.pos.adjacent, pos => {
             return _.find(pos.lookFor(LOOK_STRUCTURES), s => {
                 return s instanceof StructureRampart && Task.reputation.allyOwner(s);
             });
