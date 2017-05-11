@@ -13,6 +13,52 @@ mod.extend = function(){
             this._towers = value;
         }
     });
+    Object.defineProperty(Structure.prototype, 'active', {
+        configurable: true,
+        get() {
+            if (!this.room.owner) return false;
+            if (this.room.owner !== this.owner.username) return false;
+            return _.get(this.room.memory, ['structures', this.id, 'active'], true);
+        },
+    });
+    Object.defineProperty(StructureTower.prototype, 'active', {
+        configurable: true,
+        get() {
+            if (!this.room.owner) return false;
+            if (this.room.owner !== this.owner.username) return false;
+            if (this.room.RCL < 3) return false;
+            return _.get(this.room.memory, ['structures', this.id, 'active'], true);
+        },
+    });
+    Object.defineProperty(StructureLab.prototype, 'active', {
+        configurable: true,
+        get() {
+            if (!this.room.owner) return false;
+            if (this.room.owner !== this.owner.username) return false;
+            if (this.room.RCL < 6) return false;
+            return _.get(this.room.memory, ['structures', this.id, 'active'], true);
+        },
+    });
+    Object.defineProperty(StructureWall.prototype, 'active', {
+        configurable: true,
+        get() {
+            return this.room.RCL > 1;
+        },
+    });
+    Object.defineProperty(StructureRampart.prototype, 'active', {
+        configurable: true,
+        get() {
+            return this.room.RCL > 1;
+        },
+    });
+    Object.defineProperty(StructureContainer.prototype, 'active', {
+        configurable: true,
+        value: true,
+    });
+    Object.defineProperty(StructureRoad.prototype, 'active', {
+        configurable: true,
+        value: true,
+    });
     Object.defineProperty(Source.prototype, 'memory', {
         configurable: true,
         get: function() {

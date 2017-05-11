@@ -4,10 +4,10 @@ action.maxPerTarget = 1;
 action.maxPerAction = 1;
 action.targetRange = 3;
 action.isValidAction = function(creep){
-    return (creep.carry.energy > 0 && ( (!creep.room.storage || !creep.room.storage.isActive()) || creep.room.storage.charge > 0.6 ));
+    return (creep.carry.energy > 0 && ( (!creep.room.storage || !creep.room.storage.active) || creep.room.storage.charge > 0.6 ));
 };
 action.isValidTarget = function(target){
-    return ( target && target.isActive() && target.hits && target.hits < target.hitsMax);
+    return ( target && target.active && target.hits && target.hits < target.hitsMax);
 };
 action.newTarget = function(creep){
     var that = this;

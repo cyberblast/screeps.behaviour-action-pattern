@@ -9,6 +9,9 @@ mod.register = function() {
         if (Room._ext[key].register) Room._ext[key].register();
     }
     Room.costMatrixInvalid.on(room => Room.rebuildCostMatrix(room.name || room));
+    Room.RCLChange.on(room => room.structures.all.filter(s => ![STRUCTURE_ROAD, STRUCTURE_WALL, STRUCTURE_RAMPART].includes(s.structureType)).forEach(s => {
+        if (!s.isActive()) _.set(room.memory, ['structures', s.id, 'active'], false);
+    }));
 };
 // cached paths for creeps
 Room.pathCache = {};
@@ -600,7 +603,28 @@ mod.extend = function(){
                 return this._collapsed;
             }
         },
+        'RCL': {
+            configurable: true,
+            get() {
+                if (!this.controller) return;
+                return Util.get(this.memory, 'RCL', this.controller.level);
+            },
+        },
+        'skip': {
+            configurable: true,
+            get() {
+                return Util.get(this, '_skip', !!FlagDir.find(FLAG_COLOR.command.skipRoom, this));
+            },
+        },
     });
+    
+    Room.prototype.checkRCL = function() {
+        if (!this.controller) return;
+        if (this.memory.RCL !== this.controller.level) {
+            Room.RCLChange.trigger(this);
+            this.memory.RCL = this.controller.level;
+        }
+    };
 
     Room.prototype.invalidateCachedPaths = function(destination) {
         Room.invalidateCachedPaths(this.name, destination);
@@ -676,14 +700,12 @@ mod.extend = function(){
 
     Room.prototype.countMyStructures = function() {
         const numStructures = _.size(this.structures.my);
-        // only trigger when a structure has been destroyed, we already avoid unpathable construction sites, and treat road sites like roads
-        if (!_.isUndefined(this.memory.myTotalStructures) && numStructures < this.memory.myTotalStructures) {
+        if (!_.isUndefined(this.memory.myTotalStructures) && numStructures !== this.memory.myTotalStructures) {
             Room.costMatrixInvalid.trigger(this);
             // these are vital for feeding
             this.saveExtensions();
             this.saveSpawns();
         }
-        if (numStructures > 0) this.memory.myTotalStructures = numStructures;
         else delete this.memory.myTotalStructures;
     };
     Room.prototype.getBorder = function(roomName) {
@@ -1025,6 +1047,7 @@ mod.analyze = function() {
             }
             if (totalSitesChanged) room.countMySites();
             if (totalStructuresChanged) room.countMyStructures();
+            room.checkRCL();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
@@ -1032,6 +1055,7 @@ mod.analyze = function() {
         }
     };
     _.forEach(Game.rooms, r => {
+        if (r.skip) return;
         getEnvironment(r);
         p.checkCPU(r.name, PROFILING.ANALYZE_LIMIT / 5);
     });

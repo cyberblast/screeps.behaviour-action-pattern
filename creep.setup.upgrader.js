@@ -3,12 +3,12 @@ module.exports = setup;
 setup.minControllerLevel = 2;
 setup.maxMulti = function(room){
     let multi = 0;
-    const charge = room.storage && room.storage.isActive() ? room.storage.charge : 0;
-    if( !room.storage || (room.storage.isActive() && charge > 0))
+    const charge = room.storage && room.storage.active ? room.storage.charge : 0;
+    if( !room.storage || (room.storage.active && charge > 0))
         multi++;
-    if( !room.storage || (room.storage.isActive() && charge > 0.5))
+    if( !room.storage || (room.storage.active && charge > 0.5))
         multi++;
-    if( room.storage && room.storage.isActive() && charge >= 1 )
+    if( room.storage && room.storage.active && charge >= 1 )
     {
         let surplus = room.storage.store.energy - MAX_STORAGE_ENERGY[room.controller.level];
         multi += Math.ceil( surplus / 20000 ); // one more multi for each 20k surplus (+1)
@@ -36,7 +36,7 @@ setup.maxCount = function(room){
     let sumLink = link => upgraderEnergy += link.energy;
     room.structures.links.controller.forEach(sumLink);
     if( upgraderEnergy === 0 ) return 0;
-    if( room.storage && room.storage.isActive() ) return Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000));
+    if( room.storage && room.storage.active ) return Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000));
     // if energy on the ground next to source > 700 return 3
     if( room.droppedResources ) {
         let dropped = 0;

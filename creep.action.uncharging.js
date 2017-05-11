@@ -3,7 +3,9 @@ module.exports = action;
 action.renewTarget = false;
 action.maxPerTarget = 1;
 action.isAddableAction = function(creep){ return true; }
-action.isValidAction = function(creep){ return creep.sum < creep.carryCapacity; }
+action.isValidAction = function(creep){
+    return creep.getStrategyHandler([action.name], 'isValidAction', creep);
+};
 action.isValidTarget = function(target, creep){
     if( !target ) return false;
     if( target.structureType == 'link' ){
@@ -80,4 +82,7 @@ action.work = function(creep){
     creep.action = null;
     creep.target = null;
     return workResult;
+};
+action.defaultStrategy.isValidAction = function(creep) {
+    return creep.sum < creep.carryCapacity || false;
 };

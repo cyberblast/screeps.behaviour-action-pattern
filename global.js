@@ -174,7 +174,11 @@ mod.FLAG_COLOR = {
         invalidPosition: {
             color: COLOR_WHITE,
             secondaryColor: COLOR_RED,
-        }
+        },
+        skipRoom: {
+            color: COLOR_WHITE,
+            secondaryColor: COLOR_GREEN,
+        },
     },
 };
 mod.DECAY_AMOUNT = {
