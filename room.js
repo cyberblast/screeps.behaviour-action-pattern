@@ -1716,6 +1716,7 @@ mod.extend = function(){
     };
     Room.prototype.terminalBroker = function () {
         if( !this.my || !this.terminal || !this.storage ) return;
+        if (this.terminal.cooldown && this.terminal.cooldown > 0) return;
         let that = this;
         let mineral = this.mineralType;
         let transacting = false;
