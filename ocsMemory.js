@@ -70,7 +70,7 @@ mod.saveSegment = (range, inputData) => {
                     keyNum++;
                     const stringified = JSON.stringify(inputData[key]);
                     temp = `"${key}":${stringified}`;
-                    full = (_.get(encodedData, 'length', 0) + _.get(temp, 'length', 0) + 2) / 1024 > 100;
+                    full = (_.get(encodedData, 'length', 0) + _.get(temp, 'length', 0) + 2) / 1024 >= 100;
                     if (full) break;
                     encodedData = encodedData ? encodedData + ',' + temp : '{' + temp;
                 }
