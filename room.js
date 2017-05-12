@@ -1402,7 +1402,7 @@ mod.invalidateCachedPaths = function(roomName, destination) {
     } else {
         msg = `Invalidating all cached paths.`;
         for (const roomName in Room.pathCache) {
-            ROom.pathCache[roomName] = {stale: true};
+            Room.pathCache[roomName] = {stale: true};
         }
     }
     Room.pathCacheDirty = true;
