@@ -377,7 +377,17 @@ module.exports = function(globalOpts = {}){
             options = this.getStrategyHandler([], 'moveOptions', options);
             options.avoidSK = !options.allowSK;
             // cache all routes for this creep by default
-            if (_.isUndefined(options.cacheThisRoute)) options.cacheThisRoute = (dest) => options.cacheRoutes;
+            const cacheThisRoute = (dest) => {
+                if (!options.cacheRoutes || !options.ignoreCreeps) return false;
+                // don't do expensive checks each tick once you've determined this destination is not to be cached
+                const destId = Room.getPosId(dest);
+                if (_.get(this.data, ['cachedRoute', 'dest']) === destId) {
+                    return this.data.cachedRoute.shouldCache;
+                }
+                const shouldCache = options.cacheThisRoute ? options.cacheThisRoute(dest) : options.cacheRoutes;
+                this.data.cachedRoute = {destId, shouldCache};
+                return shouldCache;
+            }
             if (_.isUndefined(options.ignoreCreeps)) options.ignoreCreeps = true;
             if (_.isUndefined(options.debug)) options.debug = global.DEBUG;
             if (_.isUndefined(options.allowSK)) options.allowSK = true;
@@ -386,7 +396,7 @@ module.exports = function(globalOpts = {}){
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
             if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
             if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => Room.getStructureMatrix(room.name || room, options);
-            if (options.cacheThisRoute(destination) && options.ignoreCreeps) {
+            if (cacheThisRoute(destination)) {
                 const ret = this.room.getPath(this.pos, destination, options);
                 if (ret && ret.path) {
                     const path = ret.path;
