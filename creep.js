@@ -70,6 +70,8 @@ mod.extend = function(){
             if (this.data && !_.contains(['remoteMiner', 'miner', 'upgrader'], this.data.creepType)) {
                 this.repairNearby();
                 p.checkCPU('repairNearby', PROFILING.MIN_THRESHOLD);
+                this.buildNearby();
+                p.checkCPU('buildNearby', PROFILING.MIN_THRESHOLD);
             }
             if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Behaviour: behaviour && behaviour.name, Creep:'run'});
             if( behaviour ) {
@@ -248,35 +250,31 @@ mod.extend = function(){
         // if it has energy and a work part, remoteMiners do repairs once the source is exhausted.
         if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
             const repairRange = this.data && this.data.creepType === 'remoteHauler' ? REMOTE_HAULER.DRIVE_BY_REPAIR_RANGE : DRIVE_BY_REPAIR_RANGE;
-            let nearby = this.pos.findInRange(this.room.structures.repairable, repairRange);
-            if( nearby && nearby.length ){
+            const nearby = _(this.pos.findInRange(FIND_STRUCTURES, repairRange)).filter(s => Room.shouldRepair(this.room, s));
+            if (nearby && nearby.length) {
                 if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
                 this.repair(nearby[0]);
-            } else {
-                if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'none');
-                // enable remote haulers to build their own roads and containers
-                if( REMOTE_HAULER.DRIVE_BY_BUILDING && this.data && this.data.creepType === 'remoteHauler' ) {
-                    // only search in a range of 1 to save cpu
-                    let nearby = this.pos.findInRange(this.room.myConstructionSites, REMOTE_HAULER.DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
-                        return site.my && REMOTE_HAULER.DRIVE_BY_BUILD_ALL ||
-                            (site.structureType === STRUCTURE_CONTAINER ||
-                            site.structureType === STRUCTURE_ROAD);
-                    }});
-                    if( nearby && nearby.length ){
-                        if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, nearby[0].pos);
-                        if( this.build(nearby[0]) === OK && this.carry.energy <= this.getActiveBodyparts(WORK) * BUILD_POWER ) {
-                            Creep.action.idle.assign(this);
-                        }
-                    } else {
-                        if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, 'none');
-                    }
-                }
             }
         } else {
-            if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Action:'repairing', Creep:'repairNearby'}, 'no WORK');
+            if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Action:'repairing', Creep:'repairNearby'}, 'not repairing');
         }
     };
-    
+    Creep.prototype.buildNearby = function() {
+        // enable remote haulers to build their own roads and containers
+        if (!global.REMOTE_HAULER.DRIVE_BY_BUILDING || !this.data || this.data.creepType !== 'remoteHauler') return;
+        // only search in a range of 1 to save cpu
+        let nearby = this.pos.findInRange(this.room.myConstructionSites, global.REMOTE_HAULER.DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
+            return site.my && global.REMOTE_HAULER.DRIVE_BY_BUILD_ALL ||
+                (site.structureType === STRUCTURE_CONTAINER ||
+                site.structureType === STRUCTURE_ROAD);
+        }});
+        if( nearby && nearby.length ){
+            if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, nearby[0].pos);
+            this.build(nearby[0]);
+        } else {
+            if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, 'not building');
+        }
+    };
     Creep.prototype.controllerSign = function() {
         const signMessage = Util.fieldOrFunction(CONTROLLER_SIGN_MESSAGE, this.room);
         if(CONTROLLER_SIGN && (!this.room.controller.sign || this.room.controller.sign.username !== this.owner.username || (CONTROLLER_SIGN_UPDATE && this.room.controller.sign.text !== signMessage))) {
