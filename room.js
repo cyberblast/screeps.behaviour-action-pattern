@@ -63,7 +63,7 @@ mod.extend = function(){
                         let that = this;
                         this._repairable = _.sortBy(
                             that.all.filter(
-                                structure => Room.shouldRepair(that.room, structure);
+                                structure => Room.shouldRepair(that.room, structure)
                             ),
                             'hits'
                         );
