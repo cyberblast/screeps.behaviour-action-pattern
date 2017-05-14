@@ -1,10 +1,11 @@
 const action = new Creep.Action('avoiding');
 module.exports = action;
 action.lairDangerTime = 24;
+action.lairDangerRange = 14;
 action.targetRange = 0;
 action.reachedRange = 0;
 action.isActiveLair = function(target) {
-    return !(target.ticksToSpawn > action.lairDangerTime); // non-lair => true
+    return !_.isUndefined(target.ticksToSpawn) && target.ticksToSpawn <= action.lairDangerTime;
 };
 action.isValidAction = function(creep){
     return creep.data.destiny && creep.data.destiny.room === creep.room.name &&
@@ -15,7 +16,8 @@ action.isAddableAction = function(creep) {
 };
 action.isValidTarget = function(target, creep){
     if (Task.reputation.npcOwner(target)) {
-        return action.isActiveLair(target);
+        // not a lair(creep most likely), or an active lair
+        return _.isUndefined(target.ticksToSpawn) || action.isActiveLair(target);
     } else if (Task.reputation.hostileOwner(target) && target.hasActiveBodyparts) {
         return target.hasActiveBodyparts([ATTACK,RANGED_ATTACK]);
     }
@@ -24,7 +26,7 @@ action.isValidTarget = function(target, creep){
 action.newTarget = function(creep) {
     if (Room.isSKRoom(creep.pos.roomName)) {
         const target = _.first(creep.room.find(FIND_STRUCTURES, {filter: function (t) {
-            return !_.isUndefined(t.ticksToSpawn) && action.isActiveLair(t) && creep.pos.getRangeTo(t.pos) < 15;
+            return action.isActiveLair(t) && creep.pos.getRangeTo(t.pos) <= action.lairDangerRange;
         }}));
 
         if (target) {
