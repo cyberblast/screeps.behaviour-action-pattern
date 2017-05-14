@@ -47,7 +47,12 @@ action.run = {
             }
             if( range < 3 ){
                 let direction = creep.target.pos.getDirectionTo(creep);
-                if( direction ) creep.move(direction);
+                if( direction ) {
+                    creep.move(direction);
+                    if (range === 1) {
+                        creep.attacking = creep.attack(creep.target) == OK;
+                    }
+                }
             }
         }
 
