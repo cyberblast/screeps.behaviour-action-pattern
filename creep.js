@@ -249,11 +249,11 @@ mod.extend = function(){
         if (this.room.controller && this.room.controller.owner && !(this.room.my || this.room.reserved || this.room.ally)) return;
         // if it has energy and a work part, remoteMiners do repairs once the source is exhausted.
         if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
-            const repairRange = this.data && this.data.creepType === 'remoteHauler' ? REMOTE_HAULER.DRIVE_BY_REPAIR_RANGE : DRIVE_BY_REPAIR_RANGE;
-            const nearby = _(this.pos.findInRange(FIND_STRUCTURES, repairRange)).filter(s => Room.shouldRepair(this.room, s));
-            if (nearby && nearby.length) {
-                if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
-                this.repair(nearby[0]);
+            const repairRange = this.data && this.data.creepType === 'remoteHauler' ? global.REMOTE_HAULER.DRIVE_BY_REPAIR_RANGE : global.DRIVE_BY_REPAIR_RANGE;
+            const repairTarget = _(this.pos.findInRange(FIND_STRUCTURES, repairRange)).filter(s => Room.shouldRepair(this.room, s)).first();
+            if (repairTarget) {
+                if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, repairTarget.pos);
+                this.repair(repairTarget);
             }
         } else {
             if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Action:'repairing', Creep:'repairNearby'}, 'not repairing');

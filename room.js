@@ -1260,9 +1260,9 @@ mod.shouldRepair = function(room, structure) {
         // is not at 100%
         structure.hits < structure.hitsMax &&
         // not owned room or hits below RCL repair limit
-        ( !room.my || structure.hits < MAX_REPAIR_LIMIT[room.controller.level] || structure.hits < (LIMIT_URGENT_REPAIRING + (2*DECAY_AMOUNT[structure.structureType] || 0))) &&
+        ( !room.my || structure.hits < global.MAX_REPAIR_LIMIT[room.controller.level] || structure.hits < (global.LIMIT_URGENT_REPAIRING + (2*global.DECAY_AMOUNT[structure.structureType] || 0))) &&
         // not decayable or below threshold
-        ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) &&
+        ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > global.GAP_REPAIR_DECAYABLE ) &&
         // not pavement art
         ( Memory.pavementArt[room.name] === undefined || Memory.pavementArt[room.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y+'x') < 0 ) &&
         // not flagged for removal
