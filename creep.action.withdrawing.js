@@ -10,10 +10,14 @@ action.isValidTarget = function(target){
 action.newTarget = function(creep) {
     const terminal = creep.room.terminal;
     const storage = creep.room.storage;
+    const targets = [];
     if (terminal && Creep.action.withdrawing.isValidTarget(terminal)) {
-        return terminal;
-    } else if (terminal || storage) {
-        return _.max([terminal, storage], 'charge');
+        targets.push(terminal);
+    } else if (storage && Creep.action.withdrawing.isValidTarget(storage)) {
+        targets.push(storage);
+    }
+    if (targets.length) {
+        return _.max(targets, 'charge');
     }
     return false;
 };
