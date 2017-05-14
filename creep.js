@@ -262,15 +262,13 @@ mod.extend = function(){
     Creep.prototype.buildNearby = function() {
         // enable remote haulers to build their own roads and containers
         if (!global.REMOTE_HAULER.DRIVE_BY_BUILDING || !this.data || this.data.creepType !== 'remoteHauler') return;
-        // only search in a range of 1 to save cpu
-        let nearby = this.pos.findInRange(this.room.myConstructionSites, global.REMOTE_HAULER.DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
-            return site.my && global.REMOTE_HAULER.DRIVE_BY_BUILD_ALL ||
-                (site.structureType === STRUCTURE_CONTAINER ||
-                site.structureType === STRUCTURE_ROAD);
-        }});
-        if( nearby && nearby.length ){
-            if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, nearby[0].pos);
-            this.build(nearby[0]);
+        const buildTarget = _(this.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, global.REMOTE_HAULER.DRIVE_BY_BUILD_RANGE))
+            .find(s => global.REMOTE_HAULER.DRIVE_BY_BUILD_ALL ||
+                          (s.structureType === STRUCTURE_CONTAINER ||
+                           s.structureType === STRUCTURE_ROAD));
+        if (buildTarget) {
+            if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, buildTarget.pos);
+            this.build(buildTarget);
         } else {
             if( global.DEBUG && global.TRACE ) trace('Creep', {creepName:this.name, Action:'building', Creep:'buildNearby'}, 'not building');
         }
