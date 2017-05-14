@@ -16,7 +16,7 @@ mod.register = function() {
 Room.pathfinderCache = {};
 Room.pathfinderCacheDirty = false;
 Room.pathfinderCacheLoaded = false;
-Room.COSTMATRIX_CACHE_VERSION = 3; // change this to invalidate previously cached costmatrices
+Room.COSTMATRIX_CACHE_VERSION = 4; // change this to invalidate previously cached costmatrices
 mod.extend = function(){
     // run extend in each of our submodules
     for (const key of Object.keys(Room._ext)) {
@@ -440,7 +440,7 @@ mod.extend = function(){
                         this._structureMatrix = cached.costMatrix;
                     } else {
                         if (global.DEBUG) logSystem(this.name, 'Calculating cost matrix');
-                        var costMatrix = new PathFinder.CostMatrix();
+                        const costMatrix = new CostMatrix();
                         let setCosts = structure => {
                             const site = structure instanceof ConstructionSite;
                             // don't walk on allied construction sites.
@@ -1040,6 +1040,8 @@ mod.cleanup = function() {
                     updated: entry.updated,
                     version: entry.version
                 };
+                // only set memory when we need to
+                if (entry.stale) encodedCache[key].stale = true;
             }
         }
         OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, encodedCache);
@@ -1177,8 +1179,8 @@ mod.roomDistance = function(roomName1, roomName2, diagonal, continuous){
     return xDif + yDif; // count diagonal as 2
 };
 mod.rebuildCostMatrix = function(roomName) {
-    if (global.DEBUG) logSystem(roomName, 'Removing invalid costmatrix to force a rebuild.')
-    Room.pathfinderCache[roomName] = {};
+    if (global.DEBUG) logSystem(roomName, 'Invalidating costmatrix to force a rebuild when we have vision.');
+    _.set(Room, ['pathfinderCache', roomName, 'stale'], true);
     Room.pathfinderCacheDirty = true;
 };
 mod.loadCostMatrixCache = function(cache) {
@@ -1204,7 +1206,7 @@ mod.getCachedStructureMatrix = function(roomName) {
         }
         const mem = Room.pathfinderCache[roomName];
         const ttl = Game.time - mem.updated;
-        if (mem.version === Room.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && ttl < COST_MATRIX_VALIDITY) {
+        if (mem.version === Room.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && !mem.stale && ttl < COST_MATRIX_VALIDITY) {
             if (global.DEBUG && global.TRACE) trace('PathFinder', {roomName:roomName, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
             return true;
         }
@@ -1215,10 +1217,12 @@ mod.getCachedStructureMatrix = function(roomName) {
     if (cache) {
         if (cache.costMatrix) {
             return {costMatrix: cache.costMatrix, valid: cacheValid(roomName)};
-        } else {
-            const costMatrix = PathFinder.CostMatrix.deserialize(cache.serializedMatrix);
+        } else if (cache.serializedMatrix) {
+            const costMatrix = CostMatrix.deserialize(cache.serializedMatrix);
             cache.costMatrix = costMatrix;
             return {costMatrix, valid: cacheValid(roomName)};
+        } else {
+            Util.logError('Room.getCachedStructureMatrix', `Cached costmatrix for ${roomName} is invalid ${cache}`);
         }
     }
 };
