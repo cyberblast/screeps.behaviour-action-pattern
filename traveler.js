@@ -154,7 +154,7 @@ module.exports = function(globalOpts = {}){
             ret.route = allowedRooms && allowedRooms.route;
             return ret;
         }
-        travelTo(creep, destination, options = {}) {
+        prepareTravel(creep, destination, options = {}) {
             // register hostile rooms entered
             let creepPos = creep.pos, destPos = (destination.pos || destination);
             this.registerHostileRoom(creep.room);
@@ -203,19 +203,18 @@ module.exports = function(globalOpts = {}){
                     travelData.stuck = 0;
                 }
             }
-            // handle case where creep is stuck
             if (travelData.stuck >= gOpts.defaultStuckValue && !options.ignoreStuck) {
+                options.stuck = true;
+            }
+            travelData.tick = Game.time;
+            return options;
+        }
+        travelTo(creep, destination, options = {}) {
+            // handle case where creep is stuck
+            if (options.stuck) {
                 options.ignoreCreeps = false;
                 delete travelData.path;
             }
-            // FIXME: Do an actual calculation to see if we have moved, this is unneccesary and expensive when the creep hasn't moved for
-            // a few ticks and the path gets rebuilt.
-            // // handle case where creep wasn't traveling last tick and may have moved, but destination is still the same
-            // if (Game.time - travelData.tick > Memory.skippedTicks + 2 && hasMoved) {
-            //     console.log(creep.name, 'maybe moved, rebuilding');
-            //     delete travelData.path;
-            // }
-            travelData.tick = Game.time;
             // delete path cache if destination is different
             if (!travelData.dest || travelData.dest.x !== destPos.x || travelData.dest.y !== destPos.y ||
                 travelData.dest.roomName !== destPos.roomName) {
@@ -353,6 +352,7 @@ module.exports = function(globalOpts = {}){
             }
         }
         static positionAtDirection(origin, direction) {
+            if (!(direction >= 1 && direction <= 8)) return;
             let offsetX = [0, 0, 1, 1, 1, 0, -1, -1, -1];
             let offsetY = [0, -1, -1, 0, 1, 1, 1, 0, -1];
             return new RoomPosition(origin.x + offsetX[direction], origin.y + offsetY[direction], origin.roomName);
@@ -396,17 +396,57 @@ module.exports = function(globalOpts = {}){
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
             if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
             if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => Room.getStructureMatrix(room.name || room, options);
+            options = traveler.prepareTravel(this, destination, options);
             if (cacheThisRoute(destination)) {
                 const ret = this.room.getPath(this.pos, destination, options);
                 if (ret && ret.path) {
                     const path = ret.path;
                     let next;
-                    if (ret.reverse) {
-                        const dir = Traveler.reverseDirection[Path[Room.getPosId(this.pos)]];
-                        const prev = Room.getPosId(Traveler.positionAtDirection(this.pos, dir));
-                        next = path[Room.getPosId(prev)];
+                    const travelData = creep.memory._travel;
+                    if (options.stuck || travelData.detour) {
+                        if (!travelData.detour) {
+                            // get the next 5 spots on the path
+                            const goals = [];
+                            let lastPos = this.pos;
+                            for (let i = 0; i < 5 && ret.path.length; i++) {
+                                let nextPos = Traveler.positionAtDirection(lastPos, ret.reverse ? ret.path.pop() : ret.path.shift());
+                                if (!nextPos) break; // in case we hit a border
+                                goals.push(nextPos);
+                                lastPos = nextPos;
+                            }
+                            // try to find a path that links to the next closest spot on the path while considering creeps
+                            const rval = PathFinder.search(
+                                this.pos, goals, {
+                                    maxOps: 350,
+                                    maxRooms: 1,
+                                    algorithm: 'dijkstra',
+                                    roomCallback: function(roomName) {
+                                        let room = Game.rooms[roomName];
+                                        if (!room) return;
+                                        return options.getCreepMatrix(room);
+                                    }
+                                }
+                            );
+                            if (rval && !rval.incomplete) {
+                                travelData.detour = Traveler.serializePath(this.pos, rval.path);
+                            } else if (options.debug) {
+                                console.log(this.name, 'could not find a detour around the obstacle, reverting to travelTo');
+                            }
+                        }
+                        if (travelData.detour) {
+                            next = parseInt(travelData.detour.shift(), 10);
+                            if (travelData.detour.length === 0) {
+                                delete travelData.detour;
+                            }
+                        }
                     } else {
-                        next = path[Room.getPosId(this.pos)];
+                        if (ret.reverse) {
+                            const dir = Traveler.reverseDirection[path[Room.getPosId(this.pos)]];
+                            const prev = Room.getPosId(Traveler.positionAtDirection(this.pos, dir));
+                            next = path[Room.getPosId(prev)];
+                        } else {
+                            next = path[Room.getPosId(this.pos)];
+                        }
                     }
                     if (next) {
                         if (next === 'B') return; // wait for border to cycle
