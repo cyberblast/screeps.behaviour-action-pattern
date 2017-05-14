@@ -207,9 +207,10 @@ module.exports = function(globalOpts = {}){
                 options.stuck = true;
             }
             travelData.tick = Game.time;
-            return options;
         }
         travelTo(creep, destination, options = {}) {
+            const travelData = creep.memory._travel;
+            const creepPos = creep.pos, destPos = (destination.pos || destination);
             // handle case where creep is stuck
             if (options.stuck) {
                 options.ignoreCreeps = false;
@@ -373,6 +374,9 @@ module.exports = function(globalOpts = {}){
         }
 
         Creep.prototype.travelTo = function(destination, options = {}) {
+            if(global.traveler && global.travelerTick !== Game.time){
+                global.traveler = new Traveler();
+            }
             destination = destination.pos || destination;
             options = this.getStrategyHandler([], 'moveOptions', options);
             options.avoidSK = !options.allowSK;
@@ -396,13 +400,14 @@ module.exports = function(globalOpts = {}){
             if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
             if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
             if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => Room.getStructureMatrix(room.name || room, options);
-            options = traveler.prepareTravel(this, destination, options);
+            const ret = traveler.prepareTravel(this, destination, options);
+            if (ret) return ret;
             if (cacheThisRoute(destination)) {
                 const ret = this.room.getPath(this.pos, destination, options);
                 if (ret && ret.path) {
                     const path = ret.path;
                     let next;
-                    const travelData = creep.memory._travel;
+                    const travelData = this.memory._travel;
                     if (options.stuck || travelData.detour) {
                         if (!travelData.detour) {
                             // get the next 5 spots on the path
@@ -457,10 +462,6 @@ module.exports = function(globalOpts = {}){
                 } else if (options.debug) { // TODO:find closest place to get on the path
                     console.log(this.name, 'could not generate or use cached route, falling back to traveler.');
                 }
-            }
-
-            if(global.traveler && global.travelerTick !== Game.time){
-                global.traveler = new Traveler();
             }
             return traveler.travelTo(this, destination, options);
         };
