@@ -16,6 +16,7 @@ setup.maxMulti = function(room){
     return Math.min(11, multi);
 };
 setup.maxCount = function(room){
+    const add = _.get(room, ['memory', 'addUpgrader'], 0);
     // Don't spawn upgrader if...
     if (    // Room under attack
             room.situation.invasion ||
@@ -26,7 +27,7 @@ setup.maxCount = function(room){
             // Upgrading blocked -> http://support.screeps.com/hc/en-us/articles/207711889-StructureController#upgradeBlocked
             room.controller.upgradeBlocked ||
             // don't spawn a new upgrader while there are construction sites (and no storage)
-            (room.myConstructionSites.length > 0 && !room.store)
+            (room.myConstructionSites.length > 0 && !room.storage)
         ) return 0;
     if( room.controller.level == 8 ) return 1;
     // if there is no energy for the upgrader return 0
@@ -36,7 +37,9 @@ setup.maxCount = function(room){
     let sumLink = link => upgraderEnergy += link.energy;
     room.structures.links.controller.forEach(sumLink);
     if( upgraderEnergy === 0 ) return 0;
-    if( room.storage && room.storage.active ) return Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000));
+    if( room.storage && room.storage.active ){
+        return add + Math.max(1, Math.floor((room.storage.store.energy-MAX_STORAGE_ENERGY[room.controller.level]) / 100000));
+    }
     // if energy on the ground next to source > 700 return 3
     if( room.droppedResources ) {
         let dropped = 0;
@@ -47,9 +50,9 @@ setup.maxCount = function(room){
             }
         };
         room.droppedResources.forEach(countNearSource);
-        if(dropped > 700) return 3;
+        if(dropped > 700) return add + 3;
     }
-    return 2;
+    return add + 2;
 };
 setup.default = {
     fixedBody: {
