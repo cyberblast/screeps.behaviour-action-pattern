@@ -455,7 +455,11 @@ module.exports = function(globalOpts = {}){
                     }
                     if (next) {
                         if (next === 'B') return; // wait for border to cycle
-                        else return this.move(next); // take next step
+                        else {
+                            travelData.prev = this.pos;
+                            delete travelData.path; // clean up other memory usage
+                            return this.move(next); // take next step
+                        }
                     } else if (options.debug) {
                         console.log(this.name, 'no next step to take, using traveler.', next, 'from', this.pos, 'to', destination);
                     }
