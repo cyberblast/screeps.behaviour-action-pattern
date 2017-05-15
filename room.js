@@ -1398,5 +1398,16 @@ mod.invalidateCachedPaths = function(roomName, destination) {
 // unique identifier for each position within the starting room
 // codes 13320 - 15819 represent positions, and are all single character, unique representations
 mod.getPosId = (pos) => String.fromCodePoint(13320 + (pos.x * 50) + pos.y);
+mod.getPos = (id, roomName) => {
+    if (!roomName) {
+        const ret = id.split(',');
+        roomName = ret[0];
+        id = ret[1];
+    }
+    const total = id.codePointAt(0) - 13320
+    const x = Math.floor(total / 50);
+    const y = total % 50;
+    return new RoomPosition(x, y, roomName);
+};
 // unique destination identifier for room positions
 mod.getDestId = (pos) => `${pos.roomName},${Room.getPosId(pos)}`;

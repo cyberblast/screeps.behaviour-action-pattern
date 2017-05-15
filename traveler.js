@@ -358,6 +358,25 @@ module.exports = function(globalOpts = {}){
             let offsetY = [0, -1, -1, 0, 1, 1, 1, 0, -1];
             return new RoomPosition(origin.x + offsetX[direction], origin.y + offsetY[direction], origin.roomName);
         }
+        // try to find a path that links to the next closest spot on the path while considering creeps
+        findDetour(startPos, goals, options) {
+            startPos = startPos.pos || startPos;
+            const rval = PathFinder.search(
+                startPos, goals, {
+                    maxOps: 350,
+                    maxRooms: 1,
+                    algorithm: 'dijkstra',
+                    roomCallback: roomName => {
+                        let room = Game.rooms[roomName];
+                        if (!room) return;
+                        return options.ignoreCreeps ? this.getStructureMatrix(room, options) : this.getCreepMatrix(room, options);
+                    }
+                }
+            );
+            if (rval && !rval.incomplete) {
+                return Traveler.serializePath(startPos, rval.path);
+            }
+        }
     }
 
     if(gOpts.installTraveler){
@@ -414,28 +433,19 @@ module.exports = function(globalOpts = {}){
                             const goals = [];
                             let lastPos = this.pos;
                             for (let i = 0; i < 5 && ret.path.length; i++) {
-                                let nextPos = Traveler.positionAtDirection(lastPos, ret.reverse ? ret.path.pop() : ret.path.shift());
+                                const posId = Room.getPosId(lastPos);
+                                const direction = ret.reverse ? Traveler.reverseDirection(path[posId]) : path[posId];
+                                let nextPos = Traveler.positionAtDirection(lastPos, direction);
                                 if (!nextPos) break; // in case we hit a border
                                 goals.push(nextPos);
                                 lastPos = nextPos;
                             }
-                            // try to find a path that links to the next closest spot on the path while considering creeps
-                            const rval = PathFinder.search(
-                                this.pos, goals, {
-                                    maxOps: 350,
-                                    maxRooms: 1,
-                                    algorithm: 'dijkstra',
-                                    roomCallback: function(roomName) {
-                                        let room = Game.rooms[roomName];
-                                        if (!room) return;
-                                        return options.getCreepMatrix(room);
-                                    }
-                                }
-                            );
-                            if (rval && !rval.incomplete) {
-                                travelData.detour = Traveler.serializePath(this.pos, rval.path);
-                            } else if (options.debug) {
-                                console.log(this.name, 'could not find a detour around the obstacle, reverting to travelTo');
+                            const ignoreCreeps = options.ignoreCreeps;
+                            options.ignoreCreeps = false; // creeps are the most common reason for a detour
+                            travelData.detour = traveler.findDetour(this, goals, options);
+                            if (!travelData.detour && options.debug) {
+                                console.log(this.name, this.pos, 'could not find a detour around the obstacle at, reverting to travelTo');
+                                options.ignoreCreeps = ignoreCreeps;
                             }
                         }
                         if (travelData.detour) {
@@ -467,7 +477,8 @@ module.exports = function(globalOpts = {}){
                     console.log(this.name, 'could not generate or use cached route, falling back to traveler.');
                 }
             }
-            return traveler.travelTo(this, destination, options);
+            const rVal = traveler.travelTo(this, destination, options);
+            return rVal;
         };
     }
 
