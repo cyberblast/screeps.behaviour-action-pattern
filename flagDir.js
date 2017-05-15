@@ -11,43 +11,46 @@ mod.flagFilter = function(flagColour) {
     return filter;
 };
 mod.findName = function(flagColor, pos, local=true, mod, modArgs){
-    let that = this;
-    if( flagColor == null || this.list.length == 0)
-        return null;
+    let list = this.list;
+    if (!flagColor || list.length === 0) return null;
     let filter;
     if (pos instanceof Room) pos = pos.getPositionAt(25, 25);
     if (typeof flagColor === 'function' ) {
         filter = function(flagEntry) {
-            if ( flagColor(flagEntry) && flagEntry.cloaking == 0 ) {
-                if ( !local ) return true;
-                if ( pos && pos.roomName && flagEntry.roomName == pos.roomName ) return true;
+            if (flagColor(flagEntry) && !flagEntry.cloaking) {
+                if (!local) return true;
+                if (pos && pos.roomName && flagEntry.roomName === pos.roomName) return true;
             }
             return false;
         }
-    }
-    else {
+    } else {
         filter = this.flagFilter(flagColor);
-        if( local && pos && pos.roomName )
-            _.assign(filter, {roomName: pos.roomName, cloaking: "0"});
-        else
-            _.assign(filter, {cloaking: "0"});
+        _.assign(filter, {cloaking: '0'});
+        if (local && pos && pos.roomName) {
+            const room = Game.rooms[pos.roomName];
+            if (room) {
+                list = room.flags;
+            } else {
+                _.assign(filter, {roomName: pos.roomName});
+            }
+        }
     }
-    let flags = _.filter(that.list, filter);
+    let flags = _.filter(list, filter);
 
-    if( flags.length == 0 )
-        return null;
-    if( flags.length == 1 )
-        return flags[0].name;
+    if (flags.length === 0) return null;
+    if (flags.length === 1) return flags[0].name;
 
     // some flags found - find nearest
-    if( pos && pos.roomName ){
+    if (pos && pos.roomName) {
         let range = flag => {
             let r = 0;
             let roomDist = routeRange(pos.roomName, flag.roomName);
-            if( roomDist == 0 )
-                r = _.max([Math.abs(flag.x-pos.x), Math.abs(flag.y-pos.y)]);
-            else r = roomDist * 50;
-            if( mod ){
+            if (roomDist === 0) {
+                r = _.max([Math.abs(flag.x - pos.x), Math.abs(flag.y - pos.y)]);
+            } else {
+                r = roomDist * 50;
+            }
+            if (mod) {
                 r = mod(r, flag, modArgs);
             }
             flag.valid = r < Infinity;
@@ -55,7 +58,9 @@ mod.findName = function(flagColor, pos, local=true, mod, modArgs){
         };
         let flag = _.min(flags, range); //_.sortBy(flags, range)[0];
         return flag.valid ? flag.name : null;
-    } else return flags[0].name;
+    } else {
+        return flags[0].name;
+    }
 };
 mod.find = function(flagColor, pos, local=true, mod, modArgs){
     if (pos instanceof Room) pos = pos.getPositionAt(25, 25);
@@ -69,40 +74,51 @@ mod.removeFromDir = function(name){
     if( index > -1 )
         this.list = this.list.splice(index, 1);
 };
-mod.count = function(flagColor, pos, local=true){
-    let that = this;
-    if( flagColor == null || this.list.length == 0)
-        return 0;
+mod.count = function(flagColor, pos, local=true) {
+    let list = this.list;
+    if (!flagColor || this.list.length === 0) return 0;
     
     if (pos instanceof Room) pos = pos.getPositionAt(25, 25);
     let filter = this.flagFilter(flagColor);
-    if( local && pos && pos.roomName )
-        _.assign(filter, {roomName: pos.roomName});
-    return _.countBy(this.list, filter).true || 0;
+    if (local && pos && pos.roomName) {
+        const room = Game.flags[pos.roomName];
+        if (room) {
+            list = room.flags;
+        } else {
+            _.assign(filter, {roomName: pos.roomName});
+        }
+    }
+    return _.countBy(list, filter).true || 0;
 };
 mod.filter = function(flagColor, pos, local=true){
-    if( flagColor == null || this.list.length == 0)
-        return [];
+    if (!flagColor || this.list.length === 0) return [];
+    let list = this.list;
     let filter;
     if (pos instanceof Room) pos = pos.getPositionAt(25, 25);
-    if( Array.isArray(flagColor) ) {
+    if (Array.isArray(flagColor)) {
         filter = entry => {
-            if( local && pos && pos.roomName && entry.roomName != pos.roomName )
+            if (local && pos && pos.roomName && entry.roomName !== pos.roomName)
                 return false;
-            for( let i = 0; i < flagColor.length; i++ ){
+            for (let i = 0; i < flagColor.length; i++) {
                 if (Flag.compare(flagColor[i], entry)) return true;
             }
             return false;
         };
     } else {
         filter = this.flagFilter(flagColor);
-        if( local && pos && pos.roomName )
-            _.assign(filter, {'roomName': pos.roomName});
+        if (local && pos && pos.roomName) {
+            const room = Game.rooms[pos.roomName];
+            if (room) {
+                list = room.flags;
+            } else {
+                _.assign(filter, {'roomName': pos.roomName});
+            }
+        }
     }
-    return _.filter(this.list, filter);
+    return _.filter(list, filter);
 };
-mod.filterCustom = function(filter){
-    if( filter == null || this.list.length == 0)
+mod.filterCustom = function(filter) {
+    if (!filter || this.list.length === 0)
         return [];
     return _.filter(this.list, filter);
 };

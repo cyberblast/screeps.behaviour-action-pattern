@@ -263,6 +263,12 @@ mod.extend = function(){
     };
 
     Object.defineProperties(Room.prototype, {
+        'flags': {
+            configurable: true,
+            get() {
+                return Util.get(this, '_flags', _.filter(FlagDir.list, {roomName: this.name}));
+            },
+        },
         'structures': {
             configurable: true,
             get: function() {
