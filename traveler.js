@@ -368,14 +368,16 @@ module.exports = function(globalOpts = {}){
                 global.traveler = new Traveler();
             }
             options = this.getStrategyHandler([], 'moveOptions', options);
-            options.avoidSK = !options.allowSK;
-            if (_.isUndefined(options.debug)) options.debug = global.DEBUG;
-            if (_.isUndefined(options.allowSK)) options.allowSK = true;
-            if (_.isUndefined(options.reportThreshold)) options.reportThreshold = TRAVELER_THRESHOLD;
-            if (_.isUndefined(options.useFindRoute)) options.useFindRoute = _.get(global, 'ROUTE_PRECALCULATION', true);
-            if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
-            if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
-            if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => Room.getStructureMatrix(room.name || room, options);
+            _.defaults(options, {
+                allowSK: true,
+                avoidSKCreeps: true,
+                debug: global.DEBUG,
+                reportThreshold: global.TRAVELER_THRESHOLD,
+                useFindRoute: _.get(global, 'ROUTE_PRECALCULATION', true),
+                routeCallback: Room.routeCallback(this.pos.roomName, destination.roomName, options),
+                getStructureMatrix: room => Room.getStructureMatrix(room.name || room, options),
+                getCreepMatrix: room => room.getCreepMatrix(options.getStructureMatrix(room)),
+            });
             return traveler.travelTo(this, destination, options);
         };
     }

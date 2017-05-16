@@ -900,20 +900,6 @@ mod.extend = function(){
                 return this._structureMatrix;
             }
         },
-        'creepMatrix': {
-            configurable: true,
-            get: function () {
-                if (_.isUndefined(this._creepMatrix) ) {
-                    const costs = Room.isSKRoom(this.name) ? this.structureMatrix.clone() : this.avoidSKMatrix.clone();
-                    // Avoid creeps in the room
-                    this.allCreeps.forEach(function(creep) {
-                        costs.set(creep.pos.x, creep.pos.y, 0xff);
-                    });
-                    this._creepMatrix = costs;
-                }
-                return this._creepMatrix;
-            }
-        },
         'avoidSKMatrix': {
             configurable: true,
             get: function () {
@@ -2589,8 +2575,7 @@ mod.extend = function(){
         }
         return ret;
     }
-    Room.prototype.showCostMatrix = function(matrixName, aroundPos) {
-        const matrix = this[matrixName] || this.structureMatrix;
+    Room.prototype.showCostMatrix = function(matrix = this.structureMatrix, aroundPos) {
         const vis = new RoomVisual(this.name);
         let startY = 0;
         let endY = 50;
@@ -2664,9 +2649,11 @@ mod.extend = function(){
                 for (let x = Math.max(0, creep.pos.x - 3); x <= Math.min(49, creep.pos.x + 3); x++) {
                     const deltaX = x < creep.pos.x ? creep.pos.x - x : x - creep.pos.x;
                     for (let y = Math.max(0, creep.pos.y - 3); y <= Math.min(49, creep.pos.y + 3); y++) {
-                        const deltaY = y < creep.pos.y ? creep.pos.y - y : y - creep.pos.y;
-                        const cost = 17 - (2 * Math.max(deltaX, deltaY));
-                        avoidMatrix.set(x, y, cost) // make it less desirable than a swamp
+                        if (this.isWalkable(x, y)) {
+                            const deltaY = y < creep.pos.y ? creep.pos.y - y : y - creep.pos.y;
+                            const cost = 17 - (2 * Math.max(deltaX, deltaY));
+                            avoidMatrix.set(x, y, cost) // make it less desirable than a swamp
+                        }
                     }
                 }
             }
@@ -2705,6 +2692,17 @@ mod.extend = function(){
     };
     Room.prototype.invalidateCostMatrix = function() {
         Room.costMatrixInvalid.trigger(this.name);
+    };
+    Room.prototype.getCreepMatrix = function(structureMatrix = this.structureMatrix) {
+        if (_.isUndefined(this._creepMatrix) ) {
+            const costs = structureMatrix.clone();
+            // Avoid creeps in the room
+            this.allCreeps.forEach(function(creep) {
+                costs.set(creep.pos.x, creep.pos.y, 0xff);
+            });
+            this._creepMatrix = costs;
+        }
+        return this._creepMatrix;
     };
 };
 mod.flush = function(){
@@ -3104,7 +3102,7 @@ mod.getCachedStructureMatrix = function(roomName) {
 mod.getStructureMatrix = function(roomName, options) {
     const room = Game.rooms[roomName];
     let matrix;
-    if (Room.isSKRoom(roomName) && options.avoidSK) {
+    if (Room.isSKRoom(roomName) && options.avoidSKCreeps) {
         matrix = _.get(room, 'avoidSKMatrix');
     } else {
         matrix = _.get(room, 'structureMatrix');
