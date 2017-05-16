@@ -2650,7 +2650,7 @@ mod.extend = function(){
                 for (let x = Math.max(0, creep.pos.x - 3); x <= Math.min(49, creep.pos.x + 3); x++) {
                     const deltaX = x < creep.pos.x ? creep.pos.x - x : x - creep.pos.x;
                     for (let y = Math.max(0, creep.pos.y - 3); y <= Math.min(49, creep.pos.y + 3); y++) {
-                        if (room.isWalkable(x, y)) {
+                        if (this.isWalkable(x, y)) {
                             const deltaY = y < creep.pos.y ? creep.pos.y - y : y - creep.pos.y;
                             const cost = 17 - (2 * Math.max(deltaX, deltaY));
                             avoidMatrix.set(x, y, cost) // make it less desirable than a swamp
