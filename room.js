@@ -2575,8 +2575,7 @@ mod.extend = function(){
         }
         return ret;
     }
-    Room.prototype.showCostMatrix = function(matrixName, aroundPos) {
-        const matrix = this[matrixName] || this.structureMatrix;
+    Room.prototype.showCostMatrix = function(matrix = this.structureMatrix, aroundPos) {
         const vis = new RoomVisual(this.name);
         let startY = 0;
         let endY = 50;
