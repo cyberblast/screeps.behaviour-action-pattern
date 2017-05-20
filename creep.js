@@ -401,7 +401,7 @@ mod.bodyCosts = function(body){
     return costs;
 };
 // params: {minThreat, minWeight, maxWeight, minMulti, maxMulti}
-// calculates the multi that is above the smallest minimum, and above the largest maximum based on parameters
+// calculates the multi that is above the smallest minimum, and below the largest maximum based on parameters
 mod.multi = function (room, params = {}) {
     const minMulti = params.minMulti || 0;
     const fixedCosts = Creep.bodyCosts(params.fixedBody);
@@ -426,12 +426,17 @@ mod.multi = function (room, params = {}) {
             weight += multiCosts;
         }
     }
-    const maxParts = Math.floor((50 - params.fixedBody.length) / params.multiBody.length);
+    const maxPartsMulti = Math.floor((50 - params.fixedBody.length) / params.multiBody.length);
     const maxEnergy = params.currentEnergy ? room.energyAvailable : room.energyCapacityAvailable;
-    const maxAffordable = Math.floor((maxEnergy - fixedCosts) / multiCosts);
+    const maxAffordableMulti = Math.floor((maxEnergy - fixedCosts) / multiCosts);
     const maxWeightMulti = params.maxWeight ? Math.floor((params.maxWeight - fixedCosts) / multiCosts) : Infinity;
     const maxMulti = params.maxMulti || Infinity;
-    return Math.max(minMulti, minWeightMulti, _.min([maxParts, maxAffordable, maxThreatMulti, maxWeightMulti, maxMulti]));
+    // find the smallest maximum to set our upper bound
+    const max = _.min([maxAffordableMulti, maxThreatMulti, maxWeightMulti, maxMulti]);
+    // ensure we are above our lower bound
+    const min = _.max([minMulti, minWeightMulti, max]);
+    // ensure this won't result in more than 50 parts
+    return _.min([maxPartsMulti, min]);
 };
 mod.partsComparator = function (a, b) {
     let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, HEAL, MOVE];
