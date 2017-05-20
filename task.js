@@ -112,7 +112,7 @@ mod.spawn = (creepDefinition, destiny, roomParams, onQueued) => {
     const targetMem = Memory.rooms[roomParams.targetRoom];
     let room;
     if (targetMem && targetMem.spawn) {
-        const spawnRoomName = typeof targetMem.spawn === 'string' ? targetMem.spawn : targetMem.spawn[params.creepType];
+        const spawnRoomName = typeof targetMem.spawn === 'string' ? targetMem.spawn : targetMem.spawn[creepDefinition.name];
         room = Game.rooms[spawnRoomName];
     }
     // get nearest room
