@@ -139,6 +139,10 @@ mod.extend = function() {
             let assignTerminal = s => s.memory.terminal = this.terminal.id;
             source.forEach(assignTerminal);
             mineral.forEach(assignTerminal);
+
+            if (this.terminal.pos.getRangeTo(this.controller) < 4) {
+                this.controller.memory.storage = this.terminal.id;
+            }
         }
         if( this.storage ) {
             let source = this.storage.pos.findInRange(this.sources, 2);
