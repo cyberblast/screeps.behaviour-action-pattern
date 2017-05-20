@@ -131,7 +131,7 @@ global.install = () => {
 
     // Load modules
     _.assign(global, {
-        CostMatrix: load('costMatrix'),
+        CompressedMatrix: load('compressedMatrix'),
         Extensions: load("extensions"),
         Population: load("population"),
         FlagDir: load("flagDir"),
