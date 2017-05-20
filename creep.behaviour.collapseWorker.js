@@ -20,9 +20,12 @@ mod.nextAction = function(creep){
         return true;
     }
 
-    if( !creep.room.collapsed ) {
-        if( global.DEBUG && global.TRACE ) trace('Behaviour', {actionName:'recycling', behaviourName:this.name, creepName:creep.name, assigned: true, Behaviour:'nextAction', Action:'assign'});
-        return Creep.action.recycling.assign(creep);
+    if (!creep.room.collapsed) {
+        Util.set(creep, ['data', 'recycle'], Game.time + 50);
+        if (Game.time >= creep.data.recycle) {
+            if( global.DEBUG && global.TRACE ) trace('Behaviour', {actionName:'recycling', behaviourName:this.name, creepName:creep.name, assigned: true, Behaviour:'nextAction', Action:'assign'});
+            return Creep.action.recycling.assign(creep);
+        }
     }
     const invasion = creep.room.situation.invasion && creep.room.controller && creep.room.controller.level > 2;
     const outflowPriority = invasion ? 
