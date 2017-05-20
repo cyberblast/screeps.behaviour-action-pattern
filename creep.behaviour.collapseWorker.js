@@ -21,8 +21,8 @@ mod.nextAction = function(creep){
     }
 
     if (!creep.room.collapsed) {
-        Util.set(creep, ['data', 'recycle'], Game.time + 50);
-        if (Game.time >= creep.data.recycle) {
+        Util.set(creep, ['data', 'recycleTick'], Game.time + 50);
+        if (Game.time >= creep.data.recycleTick) {
             if( global.DEBUG && global.TRACE ) trace('Behaviour', {actionName:'recycling', behaviourName:this.name, creepName:creep.name, assigned: true, Behaviour:'nextAction', Action:'assign'});
             return Creep.action.recycling.assign(creep);
         }
