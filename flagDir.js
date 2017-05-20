@@ -17,7 +17,7 @@ mod.findName = function(flagColor, pos, local=true, mod, modArgs){
     if (pos instanceof Room) pos = pos.getPositionAt(25, 25);
     if (typeof flagColor === 'function' ) {
         filter = function(flagEntry) {
-            if (flagColor(flagEntry) && !flagEntry.cloaking) {
+            if (flagColor(flagEntry) && flagEntry.cloaking == 0) {
                 if (!local) return true;
                 if (pos && pos.roomName && flagEntry.roomName === pos.roomName) return true;
             }
