@@ -127,22 +127,21 @@ let Setup = function(typeName){
         }
         return existingWeight;
     };
-    this.parts = function(room){
-        let fixedBody = this.SelfOrCall(this._fixedBody, room);
-        let multiBody = this.SelfOrCall(this._multiBody, room);
-        let min = this.SelfOrCall(this._minMulti, room);
-        let maxMulti = this.SelfOrCall(this._maxMulti, room);
-        let maxWeight = this.SelfOrCall(this._maxWeight, room);
-        let maxMultiWeight;
-        if( maxWeight ){
-            let existingWeight = this.existingWeight(room);
-            maxMultiWeight = maxWeight - existingWeight;
+    this.parts = function(room) {
+        const fixedBody = this.SelfOrCall(this._fixedBody, room);
+        const multiBody = this.SelfOrCall(this._multiBody, room);
+        const minMulti = this.SelfOrCall(this._minMulti, room);
+        const maxMulti = this.SelfOrCall(this._maxMulti, room);
+        const maxWeight = this.SelfOrCall(this._maxWeight, room);
+        let maxCreepWeight;
+        if (maxWeight) {
+            const existingWeight = this.existingWeight(room);
+            maxCreepWeight = maxWeight - existingWeight;
+            if (maxCreepWeight <= 0) logError('error, Creep.Setup.parts: maxCreepWeight <= 0', , maxCreepWeight, maxWeight, existingWeight);
         }
         return Creep.compileBody(room, {
-            fixedBody, multiBody,
-            maxWeight: maxMultiWeight,
-            minMulti: min,
-            maxMulti: maxMulti,
+            fixedBody, multiBody, minMulti, maxMulti,
+            maxWeight: maxCreepWeight,
             currentEnergy: true,
             sort: this.sortedParts,
         });
