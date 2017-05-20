@@ -1,7 +1,7 @@
 const mod = {};
 module.exports = mod;
 mod.analyzeRoom = function(room) {
-    if (room.hostiles.length > 0) room.processInvaders();
+    if (room.hostiles.length || (room.memory.hostileIds && room.memory.hostileIds.length)) room.processInvaders();
 };
 const triggerNewInvaders = creep => {
     // create notification
