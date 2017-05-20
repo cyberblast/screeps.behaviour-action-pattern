@@ -2,6 +2,7 @@ let setup = new Creep.Setup('mineralMiner');
 module.exports = setup;
 setup.minControllerLevel = 6;
 setup.maxCount = function(room) {
+    if (room.memory.noMineralMiners) return 0;
     let max = 0;
     let haulers = (room.population.typeCount.hauler || 0);
     if( haulers === 0 ) return 0;
