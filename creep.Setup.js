@@ -137,7 +137,6 @@ let Setup = function(typeName){
         if (maxWeight) {
             const existingWeight = this.existingWeight(room);
             maxCreepWeight = maxWeight - existingWeight;
-            if (maxCreepWeight <= 0) logError('error, Creep.Setup.parts: maxCreepWeight <= 0', , maxCreepWeight, maxWeight, existingWeight);
         }
         return Creep.compileBody(room, {
             fixedBody, multiBody, minMulti, maxMulti,
