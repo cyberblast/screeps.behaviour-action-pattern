@@ -1,26 +1,7 @@
 let action = new Creep.Action('storing');
 module.exports = action;
-action.isValidAction = function(creep){
-    return (
-        creep.room.storage && creep.room.storage.active &&
-        creep.sum > 0 &&
-        (
-            creep.data.creepType != 'worker' ||
-            (
-                creep.sum > creep.carry.energy ||
-                (
-                    (
-                        !creep.room.population ||
-                        (
-                            creep.room.population.actionCount.upgrading != null &&
-                            creep.room.population.actionCount.upgrading >= 1
-                        )
-                    ) &&
-                    creep.room.sourceEnergyAvailable > 0 && creep.room.storage.charge <= 1
-                )
-            )
-        )
-    );
+action.isValidAction = function(creep) {
+    return creep.room.storage && creep.room.storage.isActive() && creep.sum > 0;
 };
 action.isValidTarget = function(target){
     return ((target) && (target.store) && target.active && target.sum < target.storeCapacity);

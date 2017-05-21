@@ -25,31 +25,14 @@ action.isAddableTarget = function(target, creep){
         )
     ) && ( target.targetOf === undefined || target.targetOf.length < target.accessibleFields );
 };
-action.newTarget = function(creep){
-    let target = null;
-    let sourceGuests = 999;
-    var roomSources = _.sortBy(creep.room.sources, s => creep.pos.getRangeTo(s));
-    for( var iSource = 0; iSource < roomSources.length; iSource++ ){
-        let source = roomSources[iSource];
-        if( this.isValidTarget(source, creep) && this.isAddableTarget(source, creep) ){
-            if( source.targetOf === undefined ) {
-                sourceGuests = 0;
-                target = source;
-                break;
-            } else {
-                let guests = _.countBy(source.targetOf, 'creepType');
-                let count = guests[creep.data.creepType];
-                if( !count ) {
-                    sourceGuests = 0;
-                    target = source;
-                } else if( count < sourceGuests ) {
-                    sourceGuests = count;
-                    target = source;
-                }
-            }
+action.newTarget = function(creep) {
+    const roomSources = _.sortBy(creep.room.sources, s => creep.pos.getRangeTo(s));
+    for (const source of roomSources) {
+        if (this.isValidTarget(source, creep) && this.isAddableTarget(source, creep)) {
+            return source;
         }
     }
-    return target;
+    return null;
 };
 action.work = function(creep){
     return creep.harvest(creep.target);

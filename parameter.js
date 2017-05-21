@@ -14,6 +14,7 @@ let mod = {
         ANALYZE_LIMIT: 2, // profile warning levels
         AVERAGE_USAGE: false, // display average creep & flag usage
         BASIC_ONLY: true, // only display basic profiling information, disables all other profiling
+        BEHAVIOUR: false, // profile behaviour action assignment
         CREEPS: false, // display creep profiling information
         CREEP_TYPE: '', // define a specific creep to profile, requires CREEPS=true
         EXECUTE_LIMIT: 5, // profile warning levels
@@ -178,6 +179,7 @@ let mod = {
     ROBBER_REHOME: false, // May robbers choose closer storage for delivery?
     OBSERVER_OBSERVE_RANGE: 3, // the range for observers to look at
     OBSERVER_OBSERVE_HIGHWAYS_ONLY: true, // the observers will only look at highways - changing this will require you to clear cached rooms
+    COMPRESS_COST_MATRICES: false, // enable to compress cached cost matrices (1/5 the size, but currently about 2x CPU usage)
     ACTION_SAY: { // what gets said on creep.action.*.onAssignment
         ATTACK_CONTROLLER: String.fromCodePoint(0x1F5E1) + String.fromCodePoint(0x26F3), // 🗡⛳
         AVOIDING: String.fromCodePoint(0x21A9), // ↩
@@ -197,6 +199,7 @@ let mod = {
         HEALING: String.fromCodePoint(0x26E8), // ⛨
         IDLE: String.fromCodePoint(0x1F3B5), // 🎵
         INVADING: String.fromCodePoint(0x1F52B), // 🔫
+        MINING: String.fromCodePoint(0x26CF), // ⛏
         PICKING: String.fromCodePoint(0x23EC), // ⏬
         REALLOCATING: String.fromCodePoint(0x2194), // ↔
         RECYCLING: String.fromCodePoint(0x267B), // ♻

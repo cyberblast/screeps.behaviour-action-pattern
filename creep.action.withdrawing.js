@@ -24,8 +24,8 @@ action.newTarget = function(creep) {
 action.work = function(creep){
     return creep.withdraw(creep.target, RESOURCE_ENERGY);
 };
-action.assignDebounce = function(creep, outflowActions) {
-    const withdrawTarget = action.newTarget(creep);
+action.assignDebounce = function(creep, outflowActions, target) {
+    const withdrawTarget = target || action.newTarget(creep);
     if (withdrawTarget) {
         if (withdrawTarget instanceof StructureStorage && creep.data.lastAction === 'storing' && creep.data.lastTarget === creep.room.storage.id) {
             // cycle detected
