@@ -2,12 +2,18 @@ let mod = {};
 module.exports = mod;
 mod.name = 'remoteHauler';
 mod.run = function(creep) {
+    const flag = creep.data.destiny && Game.flags[creep.data.destiny.targetName];
+    if (!flag && (!creep.action || creep.action.name !== 'recycling')) {
+        //TODO: in the future look for a nearby room we can support
+        return Creep.action.recycling.assign(creep);
+    }
+
     // Assign next Action
     let oldTargetId = creep.data.targetId;
     if( creep.action == null || creep.action.name == 'idle' ) {
         this.nextAction(creep);
     }
-    
+
     // Do some work
     if( creep.action && creep.target ) {
         creep.action.step(creep);
@@ -54,7 +60,7 @@ mod.nextAction = function(creep){
     // at target room
     else if( creep.data.destiny.room == creep.pos.roomName ){
         // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
-        if( creep.sum / creep.carryCapacity > REMOTE_HAULER_MIN_LOAD) {
+        if( creep.sum / creep.carryCapacity > REMOTE_HAULER.MIN_LOAD) {
             this.goHome(creep);
             return;
         }
@@ -66,7 +72,7 @@ mod.nextAction = function(creep){
         if ( creep.sum === 0 ) {
             let source = creep.pos.findClosestByRange(creep.room.sources);
             if (creep.room && source && creep.pos.getRangeTo(source) > 3) {
-                creep.moveTo(source);
+                creep.data.travelRange = 3;
                 return Creep.action.travelling.assign(creep, source);
             }
         }
@@ -76,7 +82,7 @@ mod.nextAction = function(creep){
     else {
         let ret = false;
         // TODO: This should perhaps check which distance is greater and make this decision based on that plus its load size
-        if( creep.sum / creep.carryCapacity > REMOTE_HAULER_MIN_LOAD )
+        if( creep.sum / creep.carryCapacity > REMOTE_HAULER.MIN_LOAD )
             ret = this.goHome(creep);
         else
             ret = this.gotoTargetRoom(creep);
@@ -95,8 +101,21 @@ mod.assign = function(creep, action, target){
     return (action.isValidAction(creep) && action.isAddableAction(creep) && action.assign(creep, target));
 };
 mod.gotoTargetRoom = function(creep){
-    return Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.targetName]);
+    const targetFlag = creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
+    if (targetFlag) return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName);
 };
 mod.goHome = function(creep){
-    return Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+    return Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`
+    },
+    picking: {
+        name: `picking-${mod.name}`,
+        energyOnly: false
+    }
 };

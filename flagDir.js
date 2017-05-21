@@ -1,10 +1,21 @@
 let mod = {};
 module.exports = mod;
-mod.findName = function(flagColor, pos, local, mod, modArgs){
+mod.flagFilter = function(flagColour) {
+    if (!flagColour) return;
+    let filter;
+    if (flagColour.filter) {
+        filter = _.clone(flagColour.filter);
+    } else {
+        filter = {color: flagColour.color, secondaryColor: flagColour.secondaryColor};
+    }
+    return filter;
+};
+mod.findName = function(flagColor, pos, local=true, mod, modArgs){
     let that = this;
     if( flagColor == null || this.list.length == 0)
         return null;
     let filter;
+    if (pos instanceof Room) pos = pos.getPositionAt(25, 25);
     if (typeof flagColor === 'function' ) {
         filter = function(flagEntry) {
             if ( flagColor(flagEntry) && flagEntry.cloaking == 0 ) {
@@ -15,7 +26,7 @@ mod.findName = function(flagColor, pos, local, mod, modArgs){
         }
     }
     else {
-        filter = _.clone(flagColor.filter);
+        filter = this.flagFilter(flagColor);
         if( local && pos && pos.roomName )
             _.assign(filter, {roomName: pos.roomName, cloaking: "0"});
         else
@@ -46,7 +57,8 @@ mod.findName = function(flagColor, pos, local, mod, modArgs){
         return flag.valid ? flag.name : null;
     } else return flags[0].name;
 };
-mod.find = function(flagColor, pos, local, mod, modArgs){
+mod.find = function(flagColor, pos, local=true, mod, modArgs){
+    if (pos instanceof Room) pos = pos.getPositionAt(25, 25);
     let id = this.findName(flagColor, pos, local, mod, modArgs);
     if( id === null )
         return null;
@@ -57,32 +69,33 @@ mod.removeFromDir = function(name){
     if( index > -1 )
         this.list = this.list.splice(index, 1);
 };
-mod.count = function(flagColor, pos, local){
+mod.count = function(flagColor, pos, local=true){
     let that = this;
     if( flagColor == null || this.list.length == 0)
         return 0;
-
-    let filter = _.clone(flagColor.filter);
+    
+    if (pos instanceof Room) pos = pos.getPositionAt(25, 25);
+    let filter = this.flagFilter(flagColor);
     if( local && pos && pos.roomName )
         _.assign(filter, {roomName: pos.roomName});
     return _.countBy(this.list, filter).true || 0;
 };
-mod.filter = function(flagColor, pos, local){
+mod.filter = function(flagColor, pos, local=true){
     if( flagColor == null || this.list.length == 0)
         return [];
     let filter;
+    if (pos instanceof Room) pos = pos.getPositionAt(25, 25);
     if( Array.isArray(flagColor) ) {
         filter = entry => {
             if( local && pos && pos.roomName && entry.roomName != pos.roomName )
                 return false;
             for( let i = 0; i < flagColor.length; i++ ){
-                if( flagColor[i].color == entry.color && flagColor[i].secondaryColor == entry.secondaryColor )
-                    return true;
+                if (Flag.compare(flagColor[i], entry)) return true;
             }
             return false;
         };
     } else {
-        filter = _.clone(flagColor.filter);
+        filter = this.flagFilter(flagColor);
         if( local && pos && pos.roomName )
             _.assign(filter, {'roomName': pos.roomName});
     }
@@ -133,7 +146,52 @@ mod.extend = function(){
         set: function(value) {
             this.memory.cloaking = value;
         }
-    });        
+    });
+    
+    Object.defineProperty(Flag, 'compare', {
+        configurable: true,
+        value: function(flagA, flagB) {
+            return flagA.color === flagB.color && flagA.secondaryColor === flagB.secondaryColor;
+        }
+    });
+    
+    Object.defineProperty(Flag.prototype, 'compareTo', {
+        configurable: true,
+        // FLAG_COLOR flag
+        value: function(flag) {
+            return Flag.compare(this, flag);
+        },
+    });
+    
+    Object.defineProperty(RoomPosition.prototype, 'newFlag', {
+        configurable: true,
+        /**
+         * Create a new flag at this position
+         * @param {Object|string} flagColour - An object with color and secondaryColor properties, or a string path for a FLAG_COLOR
+         * @param {string} [name] - Optional name for the flag
+         * @returns {string|Number} The name of the flag or an error code.
+         */
+        value: function(flagColour, name) {
+            if (!flagColour) flagColour = _.get(FLAG_COLOR, flagColour); // allows you to pass through a string (e.g. 'invade.robbing')
+            if (!flagColour) return;
+            return this.createFlag(name, flagColour.color, flagColour.secondaryColor);
+        },
+    });
+    
+    Object.defineProperty(Room.prototype, 'newFlag', {
+        configurable: true,
+        /**
+         * Create a new flag
+         * @param {Object|string} flagColour - An object with color and secondaryColor properties, or a string path for a FLAG_COLOR
+         * @param {RoomPosition} [pos] - The position to place the flag. Will assume (25, 25) if left undefined
+         * @param {string} [name] - Optional name for the flag
+         * @returns {string|Number} The name of the flag or an error code.
+         */
+        value: function(flagColour, pos, name) {
+            if (!pos) pos = this.getPositionAt(25, 25);
+            return pos.newFlag(flagColour, name);
+        },
+    });
 };
 mod.flush = function(){        
     let clear = flag => delete flag.targetOf;
@@ -144,32 +202,50 @@ mod.flush = function(){
 };
 mod.analyze = function(){
     let register = flag => {
-        flag.creeps = {};
-        if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
-        this.list.push({
-            name: flag.name,
-            color: flag.color,
-            secondaryColor: flag.secondaryColor,
-            roomName: flag.pos.roomName,
-            x: flag.pos.x,
-            y: flag.pos.y,
-            cloaking: flag.cloaking
-        });
+        try {
+            flag.creeps = {};
+            if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
+            this.list.push({
+                name: flag.name,
+                color: flag.color,
+                secondaryColor: flag.secondaryColor,
+                roomName: flag.pos.roomName,
+                x: flag.pos.x,
+                y: flag.pos.y,
+                cloaking: flag.cloaking
+            });
+        } catch(e) {
+            Util.logError(e.stack || e.message);
+        }
     };
     _.forEach(Game.flags, register);
     
     let findStaleFlags = (entry, flagName) => {
-        if(!Game.flags[flagName]) {
-            this.stale.push(flagName);
+        try {
+            if(!Game.flags[flagName]) {
+                this.stale.push(flagName);
+            }
+        } catch(e) {
+            Util.logError(e.stack || e.message);
         }
     };
     _.forEach(Memory.flags, findStaleFlags);
+    const specialFlag = mod.specialFlag(true);
+    return !!specialFlag;
 };
 mod.execute = function() {
     let triggerFound = entry => {
-        if( !entry.cloaking || entry.cloaking == 0)
-        Flag.found.trigger(Game.flags[entry.name]);
-    }
+        try {
+            if( !entry.cloaking || entry.cloaking == 0) {
+                const p = Util.startProfiling('Flag.execute', {enabled:PROFILING.FLAGS});
+                const flag = Game.flags[entry.name];
+                Flag.found.trigger(flag);
+                p.checkCPU(entry.name, PROFILING.EXECUTE_LIMIT, mod.flagType(flag));
+            }
+        } catch(e) {
+            Util.logError(e.stack || e.message);
+        }
+    };
     this.list.forEach(triggerFound);
 
     let triggerRemoved = flagName => Flag.FlagRemoved.trigger(flagName);
@@ -180,21 +256,35 @@ mod.cleanup = function(){
     this.stale.forEach(clearMemory);
 };
 mod.flagType = function(flag) {
-    if (mod.isSpecialFlag(flag)) return 'specialFlag';
+    if (mod.isSpecialFlag(flag)) return '_OCS';
     for (const primary in FLAG_COLOR) {
-        const obj = FLAG_COLOR[primary];
-        if (flag.color === obj.color) {
-            if (flag.secondaryColor === obj.secondaryColor) {
-                return primary + '.' + primary;
-            } else {
-                for (const secondary in obj) {
-                    if (flag.secondaryColor === obj[secondary].secondaryColor) {
-                        return primary + '.' + secondary;
-                    }
-                }
-            }
+        const type = FLAG_COLOR[primary];
+        if (Flag.compare(flag, type)) {
+            return primary;
+        }
+        for (const secondary in type) {
+            const subType = type[secondary];
+            if (Flag.compare(flag, subType)) return `${primary}.${secondary}`;
         }
     }
-    logError('Unknown flag type for flag ' + flag ? flag.name : 'undefined flag');
+    logError(`Unknown flag type for flag: ${flag ? flag.name : 'undefined flag'}.`);
     return 'undefined';
+};
+mod.specialFlag = function(create) {
+    const name = '_OCS';
+    const flag = Game.flags[name];
+    if (create) {
+        if (!flag) {
+            return _(Game.rooms).values().some(function (room) {
+                room.getPositionAt(49, 49).newFlag({color: COLOR_WHITE, secondaryColor: COLOR_PURPLE}, name);
+                return true;
+            });
+        } else if (flag.pos.roomName !== 'W0N0') {
+            flag.setPosition(new RoomPosition(49, 49, 'W0N0'));
+        }
+    }
+    return flag;
+};
+mod.isSpecialFlag = function(object) {
+    return object.name === '_OCS';
 };

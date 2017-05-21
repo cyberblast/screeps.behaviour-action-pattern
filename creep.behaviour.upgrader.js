@@ -1,20 +1,26 @@
 let mod = {};
 module.exports = mod;
 mod.name = 'upgrader';
-let invalidCreep = c => ['miner', 'upgrader'].includes(c.data.creepType) && c.data.determinatedSpot &&
+mod.invalidCreep = c => ['miner', 'upgrader'].includes(c.data.creepType) && c.data.determinatedSpot &&
     (c.data.ttl > c.data.spawningTime || c.data.ttl > c.data.predictedRenewal);
 mod.approach = function(creep){
     let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.pos.roomName);
     let range = creep.pos.getRangeTo(targetPos);
     if( range > 0 ) {
+        creep.data.movingToTarget = true;
+        const creepAtSpot = targetPos.lookFor(LOOK_CREEPS);
+        const targetRange =  creepAtSpot.length ? 1 : 0;
         if (range === 1) {
-            const creeps = targetPos.lookFor(LOOK_CREEPS);
-            if (creeps.length && _.some(creeps, invalidCreep)) {
+            if (creepAtSpot.length && _.some(creepAtSpot, mod.invalidCreep)) {
                 // forget spots that have been improperly selected/unable to move to
                 delete creep.data.determinatedSpot;
             }
         }
-        creep.drive( targetPos, 0, 0, range );
+        creep.travelTo( targetPos, {range:targetRange} );
+    } else if (creep.data.movingToTarget) {
+        // we have arrived at our determinatedSpot
+        creep.room.invalidateCostMatrix();
+        delete creep.data.movingToTarget;
     }
     return range;
 };
@@ -23,7 +29,7 @@ mod.run = function(creep) {
         creep.data.creepType='recycler';
         return;
     }
-    if( !creep.action ) Population.registerAction(creep, Creep.action.upgrading, creep.room.controller);
+    if( !creep.action || creep.action.name !== 'upgrading' ) Population.registerAction(creep, Creep.action.upgrading, creep.room.controller);
     if( !creep.data.determinatedSpot ) {
         let determineSpots = (ignoreSources=false) => {
             let spots = [];
@@ -38,7 +44,7 @@ mod.run = function(creep) {
                         range: 1
                     }],
                     checkWalkable: true,
-                    where: pos => !_.some(pos.lookFor(LOOK_CREEPS), invalidCreep) && (ignoreSources || pos.findInRange(creep.room.sources, 1).length === 0),
+                    where: pos => !_.some(pos.lookFor(LOOK_CREEPS), mod.invalidCreep) && (ignoreSources || pos.findInRange(creep.room.sources, 1).length === 0),
                     roomName: creep.pos.roomName
                 };
                 return Room.fieldsInRange(args);
@@ -85,8 +91,9 @@ mod.run = function(creep) {
                 }
             }
         }
-        if( !creep.data.determinatedSpot ) logError('Unable to determine working location for upgrader in room ' + creep.pos.roomName);
-        else if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9962), SAY_PUBLIC);
+        if( !creep.data.determinatedSpot ) {
+            logError('Unable to determine working location for upgrader in room ' + creep.pos.roomName);  
+        } else if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9962), SAY_PUBLIC);
     }
     if( creep.data.determinatedSpot ) {
         if(CHATTY) creep.say('upgrading', SAY_PUBLIC);
@@ -109,4 +116,15 @@ mod.run = function(creep) {
             creep.upgradeController(creep.room.controller);
         }
     }
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        moveOptions: function(options) {
+            return options || {};
+        }
+    }
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
 };

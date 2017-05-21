@@ -7,14 +7,14 @@ action.isValidAction = function(creep){
 action.isValidTarget = function(target){
     return ( (target != null) && (target.energy != null) && (target.energy < target.energyCapacity) );
 };
-action.isAddableAction = function(creep){
-    return true;
-};
 action.isAddableTarget = function(target){
     return ( target.my &&
         (!target.targetOf || _.filter(target.targetOf, {'actionName':'feeding'}).length < this.maxPerTarget));
 };
 action.newTarget = function(creep){
+    if (creep.room.energyAvailable === creep.room.energyCapacityAvailable) {
+        return null;
+    }
     var that = this;
     return creep.pos.findClosestByRange(creep.room.structures.all, {
         filter: (structure) => {
@@ -31,8 +31,4 @@ action.work = function(creep){
         this.assign(creep);
     }
     return result;
-};
-action.onAssignment = function(creep, target) {
-    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
-    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);
 };

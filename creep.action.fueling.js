@@ -13,14 +13,11 @@ action.isAddableTarget = function(target){
         (!target.targetOf || target.targetOf.length < this.maxPerTarget));
 };
 action.newTarget = function(creep){
-    return creep.room.structures.fuelable.length > 0 ? creep.room.structures.fuelable[0] : null;
+    return creep.room.structures.fuelable.length > 0 ? creep.pos.findClosestByRange(creep.room.structures.fuelable) : null;
 };
 action.work = function(creep){
     let response = creep.transfer(creep.target, RESOURCE_ENERGY);
     if( creep.target.energyCapacity - creep.target.energy < 20 )
         creep.data.targetId = null;
     return response;
-};
-action.onAssignment = function(creep, target) {
-    if( SAY_ASSIGNMENT ) creep.say('\u{26FD}\u{FE0E}', SAY_PUBLIC);
 };

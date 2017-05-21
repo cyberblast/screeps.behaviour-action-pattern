@@ -18,9 +18,11 @@ mod.run = function(creep) {
         logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
     }
     if( creep.hits < creep.hitsMax ) { // creep injured. move to next owned room
-        let nextHome = Room.bestSpawnRoomFor(creep.pos.roomName);
-        if( nextHome )
-            creep.drive( nextHome.controller.pos, 3, 5);
+        if (!creep.data.nearestHome || !Game.rooms[creep.data.nearestHome]) creep.data.nearestHome = Room.bestSpawnRoomFor(creep.pos.roomName);
+        if (creep.data.nearestHome) {
+            Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
+            return;
+        }
     }
 };
 mod.nextAction = function(creep){
@@ -64,8 +66,7 @@ mod.nextAction = function(creep){
         // at target room
         if( creep.flag && creep.flag.pos.roomName == creep.pos.roomName ){
             // check invader/cloaking state
-            if( creep.room.situation.invasion &&
-                (creep.flag.color != FLAG_COLOR.invade.robbing.color || creep.flag.secondaryColor != FLAG_COLOR.invade.robbing.secondaryColor )) {
+            if( creep.room.situation.invasion && !creep.flag.compareTo(FLAG_COLOR.invade.robbing)) {
                 creep.flag.cloaking = 50; // TODO: set to Infinity & release when solved
                 this.exploitNextRoom(creep);
                 return;
@@ -115,7 +116,7 @@ mod.nextAction = function(creep){
                         return;
                 }
                 Population.registerCreepFlag(creep, null);
-                Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
+                Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
                 return;
             }
         }
@@ -132,14 +133,13 @@ mod.exploitNextRoom = function(creep){
     if( creep.sum < creep.carryCapacity*0.4 ) {
         // calc by distance to home room
         let validColor = flagEntry => (
-            (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor) ||
-            (flagEntry.color == FLAG_COLOR.invade.robbing.color && flagEntry.secondaryColor == FLAG_COLOR.invade.robbing.secondaryColor)
+            Flag.compare(flagEntry, FLAG_COLOR.invade.exploit) || Flag.compare(flagEntry, FLAG_COLOR.invade.robbing)
         );
         let flag = FlagDir.find(validColor, new RoomPosition(25, 25, creep.data.homeRoom), false, FlagDir.exploitMod, creep.name);
         // new flag found
         if( flag ) {
             // travelling
-            if( Creep.action.travelling.assign(creep, flag) ) {
+            if( Creep.action.travelling.assignRoom(creep, flag.pos.roomName) ) {
                 Population.registerCreepFlag(creep, flag);
                 return true;
             }
@@ -149,8 +149,26 @@ mod.exploitNextRoom = function(creep){
     // go home
     Population.registerCreepFlag(creep, null);
     if (creep.room.name !== creep.data.homeRoom) {
-        creep.data.travelRoom = creep.data.homeRoom;
-        Creep.action.travelling.assign(creep, creep);
+        Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
     }
     return false;
+};
+mod.strategies = {
+    defaultStrategy: {
+        name: `default-${mod.name}`,
+        moveOptions: function(options) {
+            // // allow routing in and through hostile rooms
+            // if (_.isUndefined(options.allowHostile)) options.allowHostile = true;
+            return options;
+        }
+    },
+    withdrawing: {
+        name: `withdrawing-${mod.name}`,
+        isValidAction: function(creep) {
+            return false;
+        },
+    },
+};
+mod.selectStrategies = function(actionName) {
+    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
 };

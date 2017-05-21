@@ -2,14 +2,7 @@
 let mod = {};
 module.exports = mod;
 // hook into events
-mod.register = () => {
-    // When a new invader has been spotted
-    Room.newInvader.on( invaderCreep => Task.defense.handleNewInvader(invaderCreep) );
-    // When an invader leaves a room
-    Room.goneInvader.on( invaderId => Task.defense.handleGoneInvader(invaderId) );
-    // a creep died
-    Creep.died.on( creepName => Task.defense.handleCreepDied(creepName) );
-};
+mod.register = () => {};
 // When a new invader has been spotted
 mod.handleNewInvader = invaderCreep => {
     // ignore if on blacklist
@@ -19,7 +12,7 @@ mod.handleNewInvader = invaderCreep => {
     if( !invaderCreep.room.my && !invaderCreep.room.reserved ) {
         // if it is not our exploiting target
     let validColor = flagEntry => (
-    (flagEntry.color == FLAG_COLOR.invade.exploit.color && flagEntry.secondaryColor == FLAG_COLOR.invade.exploit.secondaryColor) ||
+    (Flag.compare(flagEntry, FLAG_COLOR.invade.exploit)) ||
     (flagEntry.color == FLAG_COLOR.claim.color )
     );
         let flag = FlagDir.find(validColor, invaderCreep.pos, true);
@@ -63,7 +56,7 @@ mod.handleGoneInvader = invaderId => {
     }
 };
 // when a creep died
-mod.handleCreepDied = creepName => {     
+mod.handleCreepDied = creepName => {
     // check if its our creep
     let creepMemory = Memory.population[creepName];
     if (!creepMemory || !creepMemory.destiny || !creepMemory.destiny.task || creepMemory.destiny.task != 'defense' || !creepMemory.destiny.invaderId )
@@ -90,7 +83,12 @@ mod.memory = invaderId => {
 mod.creep = {
     defender: {
         fixedBody: [RANGED_ATTACK, MOVE],
-        multiBody: [TOUGH, RANGED_ATTACK, RANGED_ATTACK, HEAL, MOVE, MOVE],
+        multiBody: {
+            [HEAL]: 1,
+            [MOVE]: 2,
+            [RANGED_ATTACK]: 2,
+            [TOUGH]: 1,
+        },
         name: "defender", 
         behaviour: "ranger"
     },
@@ -168,24 +166,20 @@ mod.nextAction = creep => {
     }
     // travel to invader
     let invader = Game.getObjectById(creep.data.destiny.invaderId);
-    if( invader ) {
+    if( invader && creep.pos.roomName === invader.pos.roomName ) {
         Creep.action.travelling.assign(creep, invader);
         return;
     }
     // travel to initial calling room
     let callingRoom = Game.rooms[creep.data.destiny.spottedIn];
     if( !callingRoom || callingRoom.hostiles.length > 0 ) {
-        Creep.action.travelling.assign(creep, creep);
-        creep.data.travelRoom = creep.data.destiny.spottedIn;
-        return;
+        return Creep.action.travelling.assignRoom(creep, creep.data.destiny.spottedIn);
     }
     // check adjacent rooms for invasion
     let hasHostile = roomName => Game.rooms[roomName] && Game.rooms[roomName].hostiles.length > 0;
     let invasionRoom = creep.room.adjacentRooms.find(hasHostile);
     if( invasionRoom ) {
-        Creep.action.travelling.assign(creep, creep);
-        creep.data.travelRoom = invasionRoom;
-        return;
+        return Creep.action.travelling.assignRoom(creep, invasionRoom);
     }
     // recycle self
     let mother = Game.spawns[creep.data.motherSpawn];

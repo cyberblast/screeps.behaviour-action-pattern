@@ -2,6 +2,12 @@ let mod = {};
 module.exports = mod;
 mod.name = 'remoteWorker';
 mod.run = function(creep) {
+    const flag = creep.data.destiny && Game.flags[creep.data.destiny.targetName];
+    if (!flag && (!creep.action || creep.action.name !== 'recycling')) {
+        //TODO: in the future, look for another nearby room we can support
+        return Creep.action.recycling.assign(creep);
+    }
+
     if (Creep.action.avoiding.run(creep)) {
         return;
     }
@@ -61,10 +67,9 @@ mod.nextAction = function(creep){
     }
 };
 mod.gotoTargetRoom = function(creep){
-    Creep.action.travelling.assign(creep, Game.flags[creep.data.destiny.targetName]);
-    return;
+    const targetFlag = creep.data.destiny ? Game.flags[creep.data.destiny.targetName] : null;
+    if (targetFlag) return Creep.action.travelling.assignRoom(creep, targetFlag.pos.roomName);
 };
 mod.goHome = function(creep){
-    Creep.action.travelling.assign(creep, Game.rooms[creep.data.homeRoom].controller);
-    return;
+    return Creep.action.travelling.assignRoom(creep, creep.data.homeRoom);
 };

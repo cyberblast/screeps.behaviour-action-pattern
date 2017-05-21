@@ -3,18 +3,22 @@ const strategy = load("strategy");
 let mod = {};
 module.exports = mod;
 mod.extend = function(){
+    Creep.prototype.assignAction = function(action, target) {
+        if (typeof action === 'string') action = Creep.action[action];
+        if (!action || !(action instanceof Creep.Action)) return;
+        return action.assign(this, target);
+    };
+    // to maintain legacy code for now
     Creep.prototype.findGroupMemberByType = function(creepType, flagName) {
-        let creep;
-        if(creepType && flagName) {
-            for(let i in Memory.population) {
-                creep = Memory.population[i];
-
-                if(creep.creepType === creepType && creep.flagName === flagName) {
-                    return i;
-                }
-            }
+        return Creep.prototype.findGroupMemberBy(c => c.creepType === creepType, flagName);
+    };
+    Creep.prototype.findGroupMemberBy = function(findFunc, flagName) {
+        if (_.isUndefined(flagName)) flagName = this.data.flagName;
+        if (!_.isUndefined(findFunc) && flagName) {
+            const ret = _(Memory.population).filter({flagName}).find(findFunc);
+            return ret ? ret.creepName : null;
         } else {
-            // logError("Invalid arguments for Creep.findGroupMemberByType");
+            Util.logError(`${this.name} - Invalid arguments for Creep.findGroupMemberBy ${flagName} ${findFunc}`);
         }
         return null;
     };
@@ -56,11 +60,17 @@ mod.extend = function(){
                     return;
                 }
             }
+            const total = Util.startProfiling('Creep.run', {enabled:PROFILING.CREEPS});
+            const p = Util.startProfiling(this.name + '.run', {enabled:this.data && this.data.creepType && PROFILING.CREEP_TYPE === this.data.creepType});
             if (this.data && !_.contains(['remoteMiner', 'miner', 'upgrader'], this.data.creepType)) {
                 this.repairNearby();
+                p.checkCPU('repairNearby', PROFILING.MIN_THRESHOLD);
             }
             if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Behaviour: behaviour && behaviour.name, Creep:'run'});
-            if( behaviour ) behaviour.run(this);
+            if( behaviour ) {
+                behaviour.run(this);
+                p.checkCPU('behaviour.run', PROFILING.MIN_THRESHOLD);
+            }
             else if(!this.data){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Creep:'run'}, 'memory init');
                 let type = this.memory.setup;
@@ -85,7 +95,7 @@ mod.extend = function(){
                     });
                     Population.countCreep(this.room, entry);
                 } else {
-                    console.log( dye(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ));
+                    console.log( dye(CRAYON.error, 'Corrupt creep without population entry!! : ' + this.name ), Util.stack());
                     // trying to import creep
                     let counts = _.countBy(this.body, 'type');
                     if( counts[WORK] && counts[CARRY])
@@ -106,13 +116,17 @@ mod.extend = function(){
                         });
                         Population.countCreep(this.room, entry);
                     } else this.suicide();
+                    p.checkCPU('!this.data', PROFILING.MIN_THRESHOLD);
                 }
             }
             if( this.flee ) {
                 this.fleeMove();
+                p.checkCPU('fleeMove', PROFILING.MIN_THRESHOLD);
                 Creep.behaviour.ranger.heal(this);
+                p.checkCPU('heal', PROFILING.MIN_THRESHOLD);
                 if( SAY_ASSIGNMENT ) this.say(String.fromCharCode(10133), SAY_PUBLIC);
             }
+            total.checkCPU(this.name, PROFILING.EXECUTE_LIMIT / 3, this.data ? this.data.creepType : 'noType');
         }
 
         strategy.freeStrategy(this);
@@ -142,119 +156,6 @@ mod.extend = function(){
     Creep.prototype.honkEvade = function(){
         if( HONK ) this.say('\u{1F500}\u{FE0E}', SAY_PUBLIC);
     };
-    // intentionRange: how near should the creep approach?
-    // enoughRange: range at wich the creep may calm down and interact with the target (may be higher than intentionRange)
-    // range: current distance (optional)
-    Creep.prototype.drive = function( targetPos, intentionRange, enoughRange, range ) {
-        if( !targetPos ) {
-            if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, drive: 'no target', Creep:'drive'}, 'no target');
-            return;
-        }
-        if( !range ) range = this.pos.getRangeTo(targetPos);
-        if( range <= intentionRange ) {
-            if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, range, intentionRange, drive: 'arrived', Creep:'drive'}, 'arrived');
-            return;
-        }
-        if (this.getActiveBodyparts(MOVE) === 0) {
-            if ( DEBUG && TRACE ) trace('Creep', {creepName:this.name, moveParts: this.getActiveBodyparts(MOVE), drive: 'no move parts'}, 'no move parts');
-            return;
-        }
-        if( this.fatigue > 0 ) {
-            if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, fatigue: this.fatigue, drive: 'fatigued', Creep:'drive'}, 'fatigued');
-            return;
-        }
-        let lastPos = this.data.lastPos;
-        this.data.lastPos = new RoomPosition(this.pos.x, this.pos.y, this.pos.roomName);
-        if( this.data.moveMode === null ||
-            (lastPos && // moved
-            (lastPos.x != this.pos.x || lastPos.y != this.pos.y || lastPos.roomName != this.pos.roomName))
-        ) {
-            // at this point its sure, that the this DID move in the last loop.
-            // from lastPos to this.pos
-            this.room.recordMove(this);
-
-            if( this.data.moveMode === null)
-                this.data.moveMode = 'auto';
-            if( this.data.path && this.data.path.length > 1 )
-                this.data.path = this.data.path.substr(1);
-            else
-                this.data.path = this.getPath( targetPos, true);
-
-            if( this.data.path && this.data.path.length > 0 ) {
-                const direction = +this.data.path.charAt(0);
-                const moveResult = this.move(direction);
-                if( moveResult === OK ) { // OK is no guarantee that it will move to the next pos.
-                    this.data.moveMode = 'auto';
-                } else logErrorCode(this, moveResult);
-                if( moveResult === ERR_NOT_FOUND ) delete this.data.path;
-                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, direction, moveResult, drive:'ok', Creep:'drive'});
-            } else if( range > enoughRange ) {
-                this.say('NO PATH!');
-                this.data.targetId = null;
-                const leaveBorder = this.leaveBorder();
-                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, leaveBorder, nopath: 'zero len', drive: 'nopath', Creep:'drive'});
-            }
-        } else if( this.data.moveMode === 'auto' ) {
-            // try again to use path.
-            if( range > enoughRange ) {
-                this.honk();
-                this.data.moveMode = 'evade';
-            }
-            if( !this.data.path || this.data.path.length === 0 )
-                this.data.path = this.getPath( targetPos, true);
-
-            if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, lastPos, moveMode: this.data.moveMode, path: this.data.path, Creep:'drive'}, 'move failed');
-            if( this.data.path && this.data.path.length > 0 ) {
-                const direction = +this.data.path.charAt(0);
-                const moveResult = this.move(direction);
-                if( moveResult != OK ) logErrorCode(this, moveResult);
-                if( moveResult === ERR_NOT_FOUND ) delete this.data.path;
-                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, direction, moveResult, drive:'auto', Creep:'drive'});
-            } else if( range > enoughRange ) {
-                this.say('NO PATH!');
-                this.data.targetId = null;
-                const leaveBorder = this.leaveBorder();
-                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, leaveBorder, nopath: 'blocked', drive: 'nopath', Creep:'drive'});
-            }
-        } else { // evade
-            // get path (don't ignore thiss)
-            // try to move.
-            if( range > enoughRange ) {
-                this.honkEvade();
-                delete this.data.path;
-                this.data.path = this.getPath( targetPos, false);
-            }
-            if( this.data.path && this.data.path.length > 0 ) {
-                if( this.data.path.length > 5 )
-                    this.data.path = this.data.path.substr(0,4);
-                const direction = +this.data.path.charAt(0);
-                const moveResult = this.move(direction);
-                if( moveResult != OK ) logErrorCode(this, moveResult);
-                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, direction, moveResult, drive:'evade', Creep:'drive'});
-            } else if( range > enoughRange ) {
-                this.say('NO PATH!');
-                this.data.targetId = null;
-                const leaveBorder = this.leaveBorder();
-                if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, leaveBorder, nopath:'evade', drive:'nopath', Creep:'drive'});
-            }
-        }
-    };
-    Creep.prototype.getPath = function( targetPos, ignoreCreeps ) {
-        let tempTarget = targetPos;
-        if (ROUTE_PRECALCULATION && this.pos.roomName != targetPos.roomName) {
-            var route = this.room.findRoute(targetPos.roomName);
-            if ( route.length > 0 )
-                targetPos = new RoomPosition(25,25,route[0].room);
-        }
-
-        let path = this.room.findPath(this.pos, targetPos, {
-            serialize: true,
-            ignoreCreeps: ignoreCreeps
-        });
-        if( path && path.length > 4 )
-            return path.substr(4);
-        else return null;
-    };
     Creep.prototype.fleeMove = function() {
         if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, pos:this.pos, Action:'fleeMove', Creep:'run'});
         let drop = r => { if(this.carry[r] > 0 ) this.drop(r); };
@@ -277,7 +178,7 @@ mod.extend = function(){
                     roomCallback: function(roomName) {
                         let room = Game.rooms[roomName];
                         if (!room) return;
-                        return room.currentCostMatrix;
+                        return room.creepMatrix;
                     }
                 }
             );
@@ -296,6 +197,7 @@ mod.extend = function(){
         // check if on road/structure
         let here = _.chain(this.room.structures.piles).filter('pos', this.pos)
             .concat(this.room.lookForAt(LOOK_STRUCTURES, this.pos))
+            .concat(this.room.lookForAt(LOOK_CONSTRUCTION_SITES, this.pos, {filter: s => s.my}))
             .value();
         if( here && here.length > 0 ) {
             let path;
@@ -306,6 +208,8 @@ mod.extend = function(){
                     return { pos: s.pos, range: 2 };
                 })).concat(this.pos.findInRange(FIND_EXIT, 2).map(function (e) {
                     return { pos: e, range: 1 };
+                })).concat(this.room.myConstructionSites.map(function(o) {
+                    return { pos: o.pos, range: 1};
                 }));
 
                 let ret = PathFinder.search(
@@ -319,7 +223,7 @@ mod.extend = function(){
                         roomCallback: function(roomName) {
                             let room = Game.rooms[roomName];
                             if (!room) return;
-                            return room.currentCostMatrix;
+                            return room.creepMatrix;
                         }
                     }
                 );
@@ -338,17 +242,18 @@ mod.extend = function(){
         if (this.room.controller && this.room.controller.owner && !(this.room.my || this.room.reserved || this.room.ally)) return;
         // if it has energy and a work part, remoteMiners do repairs once the source is exhausted.
         if(this.carry.energy > 0 && this.hasActiveBodyparts(WORK)) {
-            let nearby = this.pos.findInRange(this.room.structures.repairable, DRIVE_BY_REPAIR_RANGE);
+            const repairRange = this.data && this.data.creepType === 'remoteHauler' ? REMOTE_HAULER.DRIVE_BY_REPAIR_RANGE : DRIVE_BY_REPAIR_RANGE;
+            let nearby = this.pos.findInRange(this.room.structures.repairable, repairRange);
             if( nearby && nearby.length ){
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, nearby[0].pos);
                 this.repair(nearby[0]);
             } else {
                 if( DEBUG && TRACE ) trace('Creep', {creepName:this.name, Action:'repairing', Creep:'repairNearby'}, 'none');
                 // enable remote haulers to build their own roads and containers
-                if( REMOTE_HAULER_DRIVE_BY_BUILDING && this.data && this.data.creepType === 'remoteHauler' ) {
+                if( REMOTE_HAULER.DRIVE_BY_BUILDING && this.data && this.data.creepType === 'remoteHauler' ) {
                     // only search in a range of 1 to save cpu
-                    let nearby = this.pos.findInRange(this.room.constructionSites, REMOTE_HAULER_DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
-                        return site.my && REMOTE_HAULER_DRIVE_BY_BUILD_ALL ||
+                    let nearby = this.pos.findInRange(this.room.myConstructionSites, REMOTE_HAULER.DRIVE_BY_BUILD_RANGE, {filter: (site) =>{
+                        return site.my && REMOTE_HAULER.DRIVE_BY_BUILD_ALL ||
                             (site.structureType === STRUCTURE_CONTAINER ||
                             site.structureType === STRUCTURE_ROAD);
                     }});
@@ -460,13 +365,24 @@ mod.extend = function(){
             selector: taskName => Task[taskName] && Task[taskName],
         });
 
+    // Explain API extension
+    Creep.prototype.explainAgent = function() {
+        return `ttl:${this.ticksToLive} pos:${this.pos}`;
+    };
+
     // API
     Creep.prototype.staticCustomStrategy = function(actionName, behaviourName, taskName) {};
     Creep.prototype.customStrategy = function(actionName, behaviourName, taskName) {};
 };
 mod.execute = function(){
     if ( DEBUG && Memory.CPU_CRITICAL ) logSystem('system',`${Game.time}: CPU Bucket level is critical (${Game.cpu.bucket}). Skipping non critical creep roles.`);
-    let run = creep => creep.run();
+    let run = creep => {
+        try {
+            creep.run();
+        } catch (e) {
+            console.log('<span style="color:FireBrick">Creep ' + creep.name + (e.stack || e.toString()) + '</span>', Util.stack());
+        }
+    };
     _.forEach(Game.creeps, run);
 };
 mod.bodyCosts = function(body){
@@ -507,8 +423,25 @@ mod.partsComparator = function (a, b) {
     let indexOfB = partsOrder.indexOf(b);
     return indexOfA - indexOfB;
 };
+mod.formatParts = function(parts) {
+    if (parts && !Array.isArray(parts) && typeof parts === 'object') {
+        const body = [];
+        for (const part of BODYPARTS_ALL) {
+            if (part in parts) body.push(..._.times(parts[part], n => part));
+        }
+        parts = body;
+    }
+    return parts;
+};
+mod.formatBody = function(fixedBody, multiBody) {
+    fixedBody = Creep.formatParts(fixedBody);
+    multiBody = Creep.formatParts(multiBody);
+    return {fixedBody, multiBody};
+};
 // params: {minThreat, maxWeight, maxMulti}
 mod.compileBody = function (room, params, sort = true) {
+    const {fixedBody, multiBody} = Creep.formatBody(params.fixedBody || [], params.multiBody || []);
+    _.assign(params, {fixedBody, multiBody});
     if (params.sort !== undefined) sort = params.sort;
     let parts = [];
     let multi = Creep.multi(room, params);
@@ -518,7 +451,10 @@ mod.compileBody = function (room, params, sort = true) {
     for (let iPart = 0; iPart < params.fixedBody.length; iPart++) {
         parts[parts.length] = params.fixedBody[iPart];
     }
-    if( sort ) parts.sort(Creep.partsComparator);            
+    if( sort ) {
+        const compareFunction = typeof sort === 'function' ? sort : Creep.partsComparator;
+        parts.sort(compareFunction);
+    }
     if( parts.includes(HEAL) ) {
         let index = parts.indexOf(HEAL);
         parts.splice(index, 1);

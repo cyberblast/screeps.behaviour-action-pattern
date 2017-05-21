@@ -25,9 +25,10 @@ action.isValidAction = function(creep){
 action.isValidTarget = function(target){
     return ((target != null) && (target.store != null) && target.sum < target.storeCapacity);
 };
-action.isAddableTarget = function(target){
+action.isAddableTarget = function(target, creep){
     return ( target.my &&
-        (!target.targetOf || target.targetOf.length < this.maxPerTarget));
+        (!target.targetOf || target.targetOf.length < this.maxPerTarget) && 
+        target.sum + creep.carry[RESOURCE_ENERGY] < target.storeCapacity);
 };
 action.isValidMineralToTerminal = function(room){
     return ( room.storage.store[room.mineralType] &&
@@ -68,8 +69,4 @@ action.work = function(creep){
     delete creep.data.actionName;
     delete creep.data.targetId;
     return workResult;
-};
-action.onAssignment = function(creep, target) {
-    //if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9739), SAY_PUBLIC);
-    if( SAY_ASSIGNMENT ) creep.say('\u{1F4E5}\u{FE0E}', SAY_PUBLIC);
 };
