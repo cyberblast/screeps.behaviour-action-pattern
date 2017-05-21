@@ -514,6 +514,15 @@ mod.extend = function(){
                 return this._my;
             }
         },
+        'myReservation': {
+            configurable: true,
+            get: function (){
+                if (_.isUndefined(this._myReservation)) {
+                    this._myReservation = this.reservation === global.ME;
+                }
+                return this._myReservation;
+            },
+        },
         'reserved': {
             configurable: true,
             get: function () {

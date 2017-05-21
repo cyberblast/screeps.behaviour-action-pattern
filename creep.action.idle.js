@@ -9,7 +9,8 @@ action.newTarget = function(creep){
 };
 action.step = function(creep){
     if(global.CHATTY) creep.say(this.name, global.SAY_PUBLIC);
-    creep.idleMove();
+    if (creep.getStrategyHandler([action.name], 'idleMove', creep)) creep.idleMove();
     delete creep.data.actionName;
     delete creep.data.targetId;
 };
+action.defaultStrategy.idleMove = (creep) => true;

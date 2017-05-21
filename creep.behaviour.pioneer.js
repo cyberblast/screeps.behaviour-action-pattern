@@ -1,21 +1,40 @@
-let mod = {};
+const mod = new Creep.Behaviour('pioneer');
 module.exports = mod;
-mod.name = 'pioneer';
-mod.run = function(creep) {
-    // Assign next Action
-    let oldTargetId = creep.data.targetId;
-    if( creep.action == null || creep.action.name == 'idle') {
-        if( creep.data.destiny && creep.data.destiny.task && Task[creep.data.destiny.task] && Task[creep.data.destiny.task].nextAction ) 
-            Task[creep.data.destiny.task].nextAction(creep);
-        else this.nextAction(creep);
-    }
-    
-    // Do some work
-    if( creep.action && creep.target ) {
-        creep.action.step(creep);
+mod.inflowActions = (creep) => Creep.behaviour.worker.inflowActions.call(this, creep);
+mod.outflowActions = (creep) => {
+    let priority;
+    if (creep.room.controller && creep.room.controller.level < 2) {
+        priority = [
+            Creep.action.feeding,
+            Creep.action.upgrading,
+            Creep.action.building,
+            Creep.action.repairing,
+            Creep.action.fueling,
+            Creep.action.fortifying,
+            Creep.action.charging,
+            Creep.action.storing,
+            Creep.action.picking
+        ];
     } else {
-        logError('Creep without action/activity!\nCreep: ' + creep.name + '\ndata: ' + JSON.stringify(creep.data));
+        priority = [
+            Creep.action.feeding,
+            Creep.action.building,
+            Creep.action.repairing,
+            Creep.action.fueling,
+            Creep.action.fortifying,
+            Creep.action.charging,
+            Creep.action.upgrading,
+            Creep.action.storing,
+            Creep.action.picking
+        ];
     }
+    if (creep.room.controller && creep.room.controller.ticksToDowngrade < 2000) { // urgent upgrading
+        priority.unshift(Creep.action.upgrading);
+    }
+    if (creep.sum > creep.carry.energy) {
+        priority.unshift(Creep.action.storing);
+    }
+    return priority;
 };
 mod.nextAction = function(creep) {
     var flag;
@@ -51,7 +70,5 @@ mod.nextAction = function(creep) {
             }
         }
     }    
-    
-    // else run as worker
-    Creep.behaviour.worker.nextAction(creep);
+    return this.nextEnergyAction(creep);
 };

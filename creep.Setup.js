@@ -138,6 +138,8 @@ let Setup = function(typeName){
             let existingWeight = this.existingWeight(room);
             maxMultiWeight = maxWeight - existingWeight;
         }
+        if (global.DEBUG && global.TRACE) trace('Setup', {setupType:this.type, room:room.name, Setup:'parts',
+                                                maxWeight: maxMultiWeight, minMulti: min, maxMulti});
         return Creep.compileBody(room, {
             fixedBody, multiBody,
             maxWeight: maxMultiWeight,
