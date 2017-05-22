@@ -174,13 +174,11 @@ mod.extend = function() {
     };
 
     Room.prototype.registerIsHostile = function() {
-        if (this.controller) {
-            if (_.isUndefined(this.hostile) || typeof this.hostile === 'number') { // not overridden by user
-                if (this.controller.owner && !this.controller.my && !this.ally) {
-                    this.memory.hostile = this.controller.level;
-                } else {
-                    delete this.memory.hostile;
-                }
+        if (_.isUndefined(this.hostile) || typeof this.hostile === 'number') { // not overridden by user
+            if (this.controller && this.controller.owner && !this.controller.my && !this.ally) {
+                this.memory.hostile = this.controller.level;
+            } else {
+                delete this.memory.hostile;
             }
         }
     };

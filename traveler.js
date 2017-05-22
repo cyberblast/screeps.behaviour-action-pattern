@@ -13,7 +13,7 @@
  *   defaultStuckValue: integer    The maximum number of ticks the creep is in the same RoomPosition before it
  *                                   determines it is stuck and repaths.
  *   reportThreshold:   integer    The mimimum CPU used on pathing to console.log() warnings on CPU usage. Defaults to 50
- * 
+ *
  * Examples: var Traveler = require('Traveler')();
  *           require('util.traveler')({exportTraveler: false, installTraveler: false, installPrototype: true, defaultStuckValue: 2});
  */
@@ -154,59 +154,70 @@ module.exports = function(globalOpts = {}){
             ret.route = allowedRooms && allowedRooms.route;
             return ret;
         }
-        prepareTravel(creep, destination, options = {}) {
-            // register hostile rooms entered
-            let creepPos = creep.pos, destPos = (destination.pos || destination);
-            this.registerHostileRoom(creep.room);
+        static isBorder(pos) {
+            return pos.x === 0 || pos.x === 49 || pos.y === 0 || pos.y === 49;
+        };
+        static opposingBorders(p1, p2) {
+            return Traveler.isBorder(p1) && Traveler.isBorder(p2) && p1.roomName !== p2.roomName && (p1.x === p2.x || p1.y === p2.y);
+        };
+        prepareTravel(creep, destPos, options = {}) {
+            const p = Util.startProfiling('prepareTravel', {enabled: false});
             // initialize data object
-            if (!creep.memory._travel) {
+            if (_.isUndefined(creep.memory._travel)) {
                 creep.memory._travel = { stuck: 0, tick: Game.time, cpu: 0, count: 0 };
             }
-            let travelData = creep.memory._travel;
+            const travelData = creep.memory._travel;
+            const creepPos = creep.pos;
+            p.checkCPU('', 5, 'prepareTravel:init1');
+
             if (creep.fatigue > 0) {
                 travelData.tick = Game.time;
                 return ERR_BUSY;
             }
-            if (!destination) {
+            p.checkCPU('', 5, 'prepareTravel:init2');
+            if (!destPos) {
                 return ERR_INVALID_ARGS;
             }
-            // manage case where creep is nearby destination
-            let rangeToDestination = creep.pos.getRangeTo(destPos);
-            if (rangeToDestination <= options.range) {
-                return OK;
-            }
-            else if (rangeToDestination <= 1) {
-                if (rangeToDestination === 1 && !options.range) {
-                    if (options.returnData) {
-                        options.returnData.nextPos = destination.pos;
-                    }
-                   return creep.move(creep.pos.getDirectionTo(destination));
-                }
-                return OK;
-             }
+            p.checkCPU('', 5, 'prepareTravel:init3');
             // check if creep is stuck
             let hasMoved = true;
             if (travelData.prev) {
-                const isBorder = (pos) => {
-                    return pos.x === 0 || pos.x === 49 || pos.y === 0 || pos.y === 49;
-                };
-                const opposingBorders = (p1, p2) => {
-                    return isBorder(p1) && isBorder(p2) && p1.roomName !== p2.roomName && (p1.x === p2.x || p1.y === p2.y);
-                };
-                travelData.prev = Traveler.initPosition(travelData.prev);
-                if (creepPos.inRangeTo(travelData.prev, 0) ||
-                    opposingBorders(creep.pos, travelData.prev)) {
+                if ((creep.pos.x === travelData.prev.x && creep.pos.y === travelData.prev.y && creep.pos.roomName === travelData.prev.roomName) ||
+                    Traveler.opposingBorders(creep.pos, travelData.prev)) {
                     hasMoved = false;
                     travelData.stuck++;
                 } else {
                     creep.room.recordMove(creep);
+                    p.checkCPU('', 5, 'prepareTravel:recordMove');
                     travelData.stuck = 0;
+                    if (creepPos.roomName === destPos.roomName) {
+                        // manage case where creep is nearby destination
+                        let rangeToDestination = creepPos.getRangeTo(destPos.x, destPos.y);
+                        p.checkCPU('getRange', 5, 'prepareTravel:getRange');
+                        if (rangeToDestination <= options.range) {
+                            return OK;
+                        } else if (rangeToDestination <= 1) {
+                            if (rangeToDestination === 1 && !options.range) {
+                                if (options.returnData) {
+                                    options.returnData.nextPos = destPos;
+                                }
+                                return creep.move(creepPos.getDirectionTo(destPos));
+                            }
+                            return OK;
+                        }
+                    }
+                    p.checkCPU('', 5, 'prepareTravel:beforeHostile');
+                    if (creepPos.roomName !== travelData.prev.roomName) {
+                        this.registerHostileRoom(creep.room);
+                        p.checkCPU('getRange', 5, 'prepareTravel:registerHostileRoom');
+                    }
                 }
             }
             if (travelData.stuck >= gOpts.defaultStuckValue && !options.ignoreStuck) {
                 options.stuck = true;
             }
             travelData.tick = Game.time;
+            p.checkCPU('', 5, 'prepareTravel:return');
         }
         travelTo(creep, destination, options = {}) {
             const travelData = creep.memory._travel;
@@ -236,7 +247,7 @@ module.exports = function(globalOpts = {}){
                 if (travelData.count > 25 && travelData.avg > options.reportThreshold) {
                     if (options.debug){
                         console.log(`TRAVELER: heavy cpu use: ${creep.name}, avg: ${travelData.cpu / travelData.count}, total: ${_.round(travelData.cpu, 2)},` +
-                            `origin: ${creep.pos}, dest: ${destPos}`); 
+                            `origin: ${creep.pos}, dest: ${destPos}`);
                     }
                 }
                 if (ret.incomplete) {
@@ -391,38 +402,52 @@ module.exports = function(globalOpts = {}){
             global.traveler = new Traveler();
             global.travelerTick = Game.time;
         }
-
-        Creep.prototype.travelTo = function(destination, options = {}) {
-            if(global.traveler && global.travelerTick !== Game.time){
-                global.traveler = new Traveler();
-            }
+        Creep.prototype.travelTo = function(destination, _options = {}) {
+            const p = Util.startProfiling(this.name, {enabled: global.PROFILING.TRAVELER});
+            const p2 = Util.startProfiling(this.name, {enabled: global.PROFILING.TRAVELER});
+            if (_.isUndefined(global.traveler)) global.traveler = new Traveler();
             destination = destination.pos || destination;
-            options = this.getStrategyHandler([], 'moveOptions', options);
-            options.avoidSK = !options.allowSK;
+            if (!destination || !destination.roomName) return logError('Room.routeCallback', 'destination must be defined');
+
+            _options = this.getStrategyHandler([this.action && this.action.name], 'moveOptions', _options);
+            p2.checkCPU('Creep.travelTo', 1, 'travelTo:getStrategy');
+            const options = {
+                allowSK: true,
+                avoidSKCreeps: true,
+                debug: global.DEBUG,
+                reportThreshold: global.TRAVELER_THRESHOLD,
+                useFindRoute: global.ROUTE_PRECALCULATION || true,
+            };
+            options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
+            options.getStructureMatrix = room => Room.getStructureMatrix(room.name || room, options);
+            options.getCreepMatrix = room => room.getCreepMatrix(options.getStructureMatrix(room));
+            _.assign(options, _options);
+            p2.checkCPU('Creep.travelTo', 1, 'travelTo:defaults');
+
             // cache all routes for this creep by default
             const cacheThisRoute = (dest) => {
-                if (!options.cacheRoutes || !options.ignoreCreeps) return false;
+                if (!options.cacheRoutes || options.ignoreCreeps === false) {
+                    console.log(this.name, dest, options.cacheRoutes, options.ignoreCreeps);
+                    return false;
+                }
                 // don't do expensive checks each tick once you've determined this destination is not to be cached
-                const destId = Room.getPosId(dest);
-                if (_.get(this.data, ['cachedRoute', 'dest']) === destId) {
+                const destId = Room.getDestId(dest);
+                if (this.data.cachedRoute && this.data.cachedRoute.dest === destId) {
                     return this.data.cachedRoute.shouldCache;
                 }
                 const shouldCache = options.cacheThisRoute ? options.cacheThisRoute(dest) : options.cacheRoutes;
-                this.data.cachedRoute = {destId, shouldCache};
+                this.data.cachedRoute = {dest: destId, shouldCache};
                 return shouldCache;
             }
-            if (_.isUndefined(options.ignoreCreeps)) options.ignoreCreeps = true;
-            if (_.isUndefined(options.debug)) options.debug = global.DEBUG;
-            if (_.isUndefined(options.allowSK)) options.allowSK = true;
-            if (_.isUndefined(options.reportThreshold)) options.reportThreshold = TRAVELER_THRESHOLD;
-            if (_.isUndefined(options.useFindRoute)) options.useFindRoute = _.get(global, 'ROUTE_PRECALCULATION', true);
-            if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
-            if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
-            if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => Room.getStructureMatrix(room.name || room, options);
+            let type = '';
             const ret = traveler.prepareTravel(this, destination, options);
+            p2.checkCPU('Creep.travelTo', 1, 'travelTo:prepareTravel');
             if (ret) return ret;
             if (cacheThisRoute(destination)) {
+                p2.checkCPU('Creep.travelTo', 1, 'travelToCached:cacheThisRoute');
+                type = 'Cached';
                 const ret = this.room.getPath(this.pos, destination, options);
+                p2.checkCPU('Creep.travelTo', 1, 'travelToCached:getPath');
                 if (ret && ret.path) {
                     const path = ret.path;
                     let next;
@@ -444,7 +469,7 @@ module.exports = function(globalOpts = {}){
                             options.ignoreCreeps = false; // creeps are the most common reason for a detour
                             travelData.detour = traveler.findDetour(this, goals, options);
                             if (!travelData.detour && options.debug) {
-                                console.log(this.name, this.pos, 'could not find a detour around the obstacle at, reverting to travelTo');
+                                console.log(this.name, this.pos, 'could not find a detour, reverting to travelTo');
                                 options.ignoreCreeps = ignoreCreeps;
                             }
                         }
@@ -454,6 +479,7 @@ module.exports = function(globalOpts = {}){
                                 delete travelData.detour;
                             }
                         }
+                        p2.checkCPU('Creep.travelTo', 1, 'travelToCached:detour');
                     } else {
                         if (ret.reverse) {
                             const dir = Traveler.reverseDirection[path[Room.getPosId(this.pos)]];
@@ -462,13 +488,17 @@ module.exports = function(globalOpts = {}){
                         } else {
                             next = path[Room.getPosId(this.pos)];
                         }
+                        p2.checkCPU('Creep.travelTo', 1, 'travelToCached:next');
                     }
                     if (next) {
                         if (next === 'B') return; // wait for border to cycle
                         else {
                             travelData.prev = this.pos;
                             delete travelData.path; // clean up other memory usage
-                            return this.move(next); // take next step
+                            const rVal = this.move(next); // take next step
+                            p2.checkCPU('Creep.travelTo', 3, 'travelToCached:move');
+                            p.checkCPU('Creep.travelTo', 1, 'travelTo' + type + ':total');
+                            return rVal;
                         }
                     } else if (options.debug) {
                         console.log(this.name, 'no next step to take, using traveler.', next, 'from', this.pos, 'to', destination);
@@ -476,8 +506,11 @@ module.exports = function(globalOpts = {}){
                 } else if (options.debug) { // TODO:find closest place to get on the path
                     console.log(this.name, 'could not generate or use cached route, falling back to traveler.');
                 }
+            } else {
+                p2.checkCPU('Creep.travelTo', 1, 'travelTo:noCacheRoute');
             }
             const rVal = traveler.travelTo(this, destination, options);
+            p.checkCPU('Creep.travelTo', 1, 'travelTo' + type + ':total');
             return rVal;
         };
     }

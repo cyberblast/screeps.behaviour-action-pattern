@@ -650,11 +650,10 @@ mod.extend = function(){
     Room.prototype.getPath = function(startPos, destPos, options) {
         const startId = Room.getPosId(startPos);
         const destId = Room.getDestId(destPos);
-        Util.set(Room, ['pathCache', this.name], {});
-        let directions = Util.get(Room, ['pathCache', this.name, destId], {});
+        let directions = Util.get(Room.pathCache, [this.name, destId], {});
         if (_.isUndefined(directions[startId])) {
             const reversed = _.get(Room, ['pathCache', destPos.roomName, startId], {});
-            if (!_.isUndefined(reversed[destId])) {
+            if (reversed[destId]) {
                 // return the reversed path
                 return {path: reversed[destId], reverse: true};
             }
@@ -669,23 +668,23 @@ mod.extend = function(){
                 let lastPos = startPos;
                 for (const pos of ret.path) {
                     const lastPosId = Room.getPosId(lastPos);
-                    if (!_.isUndefined(directions[lastPosId])){
-                        saveCache(lastPos.roomName, destId, directions);
+                    if (directions[lastPosId]){
                         break; // hit an existing path
                     } else if (lastPos.roomName !== pos.roomName) {
                         // new room
                         directions[lastPosId] = 'B'; // last position was a border
                         saveCache(lastPos.roomName, destId, directions);
-                        directions = Util.get(Room, ['pathCache', pos.roomName, destId], {});
+                        directions = Util.get(Room.pathCache, [pos.roomName, destId], {});
                     } else {
                         directions[lastPosId] = lastPos.getDirectionTo(pos);
                     }
                     lastPos = pos;
                 }
+                saveCache(lastPos.roomName, destId, directions);
                 Room.pathCacheDirty = true;
             }
         }
-        return {path: _.get(Room, ['pathCache', this.name, destId]), reverse: false};
+        return {path: Room.pathCache[this.name][destId], reverse: false};
     };
 
     Room.prototype.countMySites = function() {
@@ -731,8 +730,8 @@ mod.extend = function(){
         });
     };
 
-    Room.prototype.recordMove = function(creep){
-        if( !ROAD_CONSTRUCTION_ENABLE ) return;
+    Room.prototype.recordMove = function(creep) {
+        if (!global.ROAD_CONSTRUCTION_ENABLE) return;
         let x = creep.pos.x;
         let y = creep.pos.y;
         if ( x == 0 || y == 0 || x == 49 || y == 49 ||
@@ -1118,13 +1117,13 @@ mod.cleanup = function() {
         Room.costMatrixCacheDirty = false;
     }
     if (Room.pathCacheDirty && Room.pathCacheLoaded) {
+        console.log('flushing dirty path cache');
         OCSMemory.saveSegment(MEM_SEGMENTS.PATH_CACHE, Util.get(Room, 'pathCache', {}));
         Room.pathCacheDirty = false;
     }
 };
 
 mod.routeCallback = function(origin, destination, options) {
-    if (_.isUndefined(origin) || _.isUndefined(destination)) logError('Room.routeCallback', 'both origin and destination must be defined - origin:' + origin + ' destination:' + destination);
     return function(roomName) {
         if (Game.map.getRoomLinearDistance(origin, roomName) > options.restrictDistance)
             return false;
@@ -1285,6 +1284,7 @@ mod.loadPathCache = function(cache) {
                     count++;
                     Room.pathCache[key] = cache[key];
                 } else if (cache[key].stale) {
+                    count++;
                     delete Room.pathCache[key];
                 }
             }
