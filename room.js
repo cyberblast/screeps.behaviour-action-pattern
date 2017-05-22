@@ -1247,52 +1247,6 @@ mod.getCachedStructureMatrix = function(roomName) {
 mod.getStructureMatrix = function(roomName, options) {
     const room = Game.rooms[roomName];
     let matrix;
-    if (Room.isSKRoom(roomName) && options.avoidSK) {
-        matrix = _.get(room, 'avoidSKMatrix');
-    } else {
-        matrix = _.get(room, 'structureMatrix');
-    }
-
-    if (!matrix) {
-        matrix = Room.getCachedStructureMatrix(roomName);
-    }
-    return matrix;
-};
-mod.getCachedStructureMatrix = function(roomName) {
-    const cacheValid = (roomName) => {
-        if (_.isUndefined(Room.pathfinderCache)) {
-            Room.pathfinderCache = {};
-            Room.pathfinderCache[roomName] = {};
-            return false;
-        } else if (_.isUndefined(Room.pathfinderCache[roomName])) {
-            Room.pathfinderCache[roomName] = {};
-            return false;
-        }
-        const mem = Room.pathfinderCache[roomName];
-        const ttl = Game.time - mem.updated;
-        if (mem.version === Room.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && !mem.stale && ttl < COST_MATRIX_VALIDITY) {
-            if (global.DEBUG && global.TRACE) trace('PathFinder', {roomName:roomName, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
-            return true;
-        }
-        return false;
-    };
-
-    const cache = Room.pathfinderCache[roomName];
-    if (cache) {
-        if (cache.costMatrix) {
-            return {costMatrix: cache.costMatrix, valid: cacheValid(roomName)};
-        } else if (cache.serializedMatrix) {
-            const costMatrix = PathFinder.CostMatrix.deserialize(cache.serializedMatrix);
-            cache.costMatrix = costMatrix;
-            return {costMatrix, valid: cacheValid(roomName)};
-        } else {
-            Util.logError('Room.getCachedStructureMatrix', `Cached costmatrix for ${roomName} is invalid ${cache}`);
-        }
-    }
-};
-mod.getStructureMatrix = function(roomName, options) {
-    const room = Game.rooms[roomName];
-    let matrix;
     if (Room.isSKRoom(roomName) && options.avoidSKCreeps) {
         matrix = _.get(room, 'avoidSKMatrix');
     } else {
