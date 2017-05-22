@@ -481,20 +481,6 @@ mod.extend = function(){
                 return this._structureMatrix;
             }
         },
-        'creepMatrix': {
-            configurable: true,
-            get: function () {
-                if (_.isUndefined(this._creepMatrix) ) {
-                    const costs = Room.getStructureMatrix(this.name, {avoidSK: true}).clone();
-                    // Avoid creeps in the room
-                    this.allCreeps.forEach(function(creep) {
-                        costs.set(creep.pos.x, creep.pos.y, 0xff);
-                    });
-                    this._creepMatrix = costs;
-                }
-                return this._creepMatrix;
-            }
-        },
         'avoidSKMatrix': {
             configurable: true,
             get: function () {
@@ -625,7 +611,7 @@ mod.extend = function(){
             },
         },
     });
-    
+
     Room.prototype.checkRCL = function() {
         if (!this.controller) return;
         if (this.memory.RCL !== this.controller.level) {
@@ -740,8 +726,7 @@ mod.extend = function(){
         }
         return ret;
     }
-    Room.prototype.showCostMatrix = function(matrixName, aroundPos) {
-        const matrix = this[matrixName] || this.structureMatrix;
+    Room.prototype.showCostMatrix = function(matrix = this.structureMatrix, aroundPos) {
         const vis = new RoomVisual(this.name);
         let startY = 0;
         let endY = 50;
@@ -775,9 +760,11 @@ mod.extend = function(){
                 for (let x = Math.max(0, creep.pos.x - 3); x <= Math.min(49, creep.pos.x + 3); x++) {
                     const deltaX = x < creep.pos.x ? creep.pos.x - x : x - creep.pos.x;
                     for (let y = Math.max(0, creep.pos.y - 3); y <= Math.min(49, creep.pos.y + 3); y++) {
-                        const deltaY = y < creep.pos.y ? creep.pos.y - y : y - creep.pos.y;
-                        const cost = 17 - (2 * Math.max(deltaX, deltaY));
-                        avoidMatrix.set(x, y, cost) // make it less desirable than a swamp
+                        if (this.isWalkable(x, y)) {
+                            const deltaY = y < creep.pos.y ? creep.pos.y - y : y - creep.pos.y;
+                            const cost = 17 - (2 * Math.max(deltaX, deltaY));
+                            avoidMatrix.set(x, y, cost) // make it less desirable than a swamp
+                        }
                     }
                 }
             }
@@ -787,7 +774,7 @@ mod.extend = function(){
     Room.prototype.invalidateCostMatrix = function() {
         Room.costMatrixInvalid.trigger(this.name);
     };
-    
+
     Room.prototype.highwayHasWalls = function() {
         if (!Room.isHighwayRoom(this.name)) return false;
         return !!_.find(this.getPositionAt(25, 25).lookFor(LOOK_STRUCTURES), s => s instanceof StructureWall);
@@ -800,16 +787,16 @@ mod.extend = function(){
         for (const prop of ['x', 'y', 'roomName']) {
             if (!Reflect.has(object, prop) || !Reflect.has(target, prop)) return;
         }
-        
+
         if (!Room.isHighwayRoom(this.name)) return;
         if (!this.highwayHasWalls()) return true;
-        
+
         const [x, y] = Room.calcCoordinates(this.name, (x, y) => [x, y]);
-        
+
         const getVerHalf = o => Math.floor(o.x / 25) === 0 ? LEFT : RIGHT;
-        
+
         const getHorHalf = o => Math.floor(o.y / 25) === 0 ? TOP : BOTTOM;
-        
+
         const getQuadrant = o => {
             const verHalf = getVerHalf(o);
             const horHalf = getHorHalf(o);
@@ -819,23 +806,23 @@ mod.extend = function(){
                 return horHalf === TOP ? TOP_RIGHT : BOTTOM_RIGHT;
             }
         };
-        
+
         if (x % 10 === 0) {
             if (y % 10 === 0) { // corner room
-                
+
                 const top = !!_.find(this.getPositionAt(25, 24).lookFor(LOOK_STRUCTURES), s => s instanceof StructureWall);
                 const left = !!_.find(this.getPositionAt(24, 25).lookFor(LOOK_STRUCTURES, s => s instanceof StructureWall));
                 const bottom = !!_.find(this.getPositionAt(25, 26).lookFor(LOOK_STRUCTURES, s => s instanceof StructureWall));
                 const right = !!_.find(this.getPositionAt(26, 25).lookFor(LOOK_STRUCTURES, s => s instanceof StructureWall));
-                
+
                 // both in same quadrant
                 if (getQuadrant(object) === getQuadrant(target)) return true;
-                
+
                 if (top && left && bottom && right) {
                     // https://i.imgur.com/8lmqtbi.png
                     return getQuadrant(object) === getQuadrant(target);
                 }
-                
+
                 if (top) {
                     if (bottom) {
                         // cross section
@@ -888,13 +875,13 @@ mod.extend = function(){
         for (const prop of ['x', 'y', 'roomName']) {
             if (!Reflect.has(target, prop)) return;
         }
-        
+
         if (!Room.isHighwayRoom(this.name)) return;
         if (!this.highwayHasWalls()) return true;
-        
+
         const closestRoom = _(Game.rooms).filter('my').min(r => Game.map.getRoomLinearDistance(r.name, this.name));
         if (closestRoom === Infinity) return;
-        
+
         const [x1, y1] = Room.calcGlobalCoordinates(this.name, (x, y) => [x, y]);
         const [x2, y2] = Room.calcGlobalCoordinates(closestRoom, (x, y) => [x, y]);
         let dir = '';
@@ -940,6 +927,17 @@ mod.extend = function(){
             }
         }
         return true;
+    };
+    Room.prototype.getCreepMatrix = function(structureMatrix = this.structureMatrix) {
+        if (_.isUndefined(this._creepMatrix) ) {
+            const costs = structureMatrix.clone();
+            // Avoid creeps in the room
+            this.allCreeps.forEach(function(creep) {
+                costs.set(creep.pos.x, creep.pos.y, 0xff);
+            });
+            this._creepMatrix = costs;
+        }
+        return this._creepMatrix;
     };
 };
 mod.flush = function(){
@@ -1258,6 +1256,53 @@ mod.getStructureMatrix = function(roomName, options) {
     if (!matrix) {
         matrix = Room.getCachedStructureMatrix(roomName);
     }
+    return matrix;
+};
+mod.getCachedStructureMatrix = function(roomName) {
+    const cacheValid = (roomName) => {
+        if (_.isUndefined(Room.pathfinderCache)) {
+            Room.pathfinderCache = {};
+            Room.pathfinderCache[roomName] = {};
+            return false;
+        } else if (_.isUndefined(Room.pathfinderCache[roomName])) {
+            Room.pathfinderCache[roomName] = {};
+            return false;
+        }
+        const mem = Room.pathfinderCache[roomName];
+        const ttl = Game.time - mem.updated;
+        if (mem.version === Room.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && !mem.stale && ttl < COST_MATRIX_VALIDITY) {
+            if (global.DEBUG && global.TRACE) trace('PathFinder', {roomName:roomName, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
+            return true;
+        }
+        return false;
+    };
+
+    const cache = Room.pathfinderCache[roomName];
+    if (cache) {
+        if (cache.costMatrix) {
+            return {costMatrix: cache.costMatrix, valid: cacheValid(roomName)};
+        } else if (cache.serializedMatrix) {
+            const costMatrix = PathFinder.CostMatrix.deserialize(cache.serializedMatrix);
+            cache.costMatrix = costMatrix;
+            return {costMatrix, valid: cacheValid(roomName)};
+        } else {
+            Util.logError('Room.getCachedStructureMatrix', `Cached costmatrix for ${roomName} is invalid ${cache}`);
+        }
+    }
+};
+mod.getStructureMatrix = function(roomName, options) {
+    const room = Game.rooms[roomName];
+    let matrix;
+    if (Room.isSKRoom(roomName) && options.avoidSKCreeps) {
+        matrix = _.get(room, 'avoidSKMatrix');
+    } else {
+        matrix = _.get(room, 'structureMatrix');
+    }
+
+    if (!matrix) {
+        matrix = _.get(Room.getCachedStructureMatrix(roomName), 'costMatrix');
+    }
+
     return matrix;
 };
 mod.validFields = function(roomName, minX, maxX, minY, maxY, checkWalkable = false, where = null) {
