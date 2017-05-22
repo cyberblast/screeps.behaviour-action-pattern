@@ -189,7 +189,7 @@ const Visuals = class {
                 }
             }
             
-            if (VISUALS.ROOM) {
+            if (VISUALS.ROOM && !!room.controller) {
                 this.drawRoomInfo(room, VISUALS.ROOM_GLOBAL);
                 p2.checkCPU('Room Info', PROFILING.VISUALS_LIMIT);
             }

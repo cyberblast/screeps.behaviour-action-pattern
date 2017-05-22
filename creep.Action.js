@@ -46,6 +46,12 @@ let Action = function(actionName){
     this.newTarget = function(creep){
         return null;
     };
+    this.unassign = function(creep) {
+        delete creep.data.actionName;
+        delete creep.data.targetId;
+        delete creep.action;
+        delete creep.target;
+    };
     // order for the creep to execute each tick, when assigned to that action
     this.step = function(creep){
         if(global.CHATTY) creep.say(this.name, global.SAY_PUBLIC);
@@ -53,12 +59,8 @@ let Action = function(actionName){
         if( range <= this.targetRange ) {
             var workResult = this.work(creep);
             if( workResult != OK ) {
-                const tryAction = creep.action;
-                const tryTarget = creep.target;
-                creep.action = null;
-                creep.target = null;
                 creep.handleError({errorCode: workResult, action: this, target: creep.target, range, creep});
-                return;
+                return this.unassign(creep);
             }
             range = creep.pos.getRangeTo(creep.target); // target may have changed (eg. hauler feed+move/tick)
         }
