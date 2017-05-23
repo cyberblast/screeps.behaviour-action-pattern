@@ -634,8 +634,8 @@ mod.extend = function(){
         Room.showCachedPath(this.name, destination);
     };
     Room.prototype.getPath = function(startPos, destPos, options) {
-        const startId = Room.getPosId(startPos);
-        const destId = Room.getDestId(destPos);
+        const startId = Traveler.getPosId(startPos);
+        const destId = Traveler.getDestId(destPos);
         let directions = Util.get(Room.pathCache, [this.name, destId], {});
         if (_.isUndefined(directions[startId])) {
             const reversed = _.get(Room, ['pathCache', destPos.roomName, startId], {});
@@ -653,7 +653,7 @@ mod.extend = function(){
                 };
                 let lastPos = startPos;
                 for (const pos of ret.path) {
-                    const lastPosId = Room.getPosId(lastPos);
+                    const lastPosId = Traveler.getPosId(lastPos);
                     if (directions[lastPosId]){
                         break; // hit an existing path
                     } else if (lastPos.roomName !== pos.roomName) {
@@ -1371,12 +1371,12 @@ mod.fieldsInRange = function(args) {
 };
 mod.showCachedPath = function(roomName, destination) {
     const room = Game.rooms[roomName];
-    const destId = Room.getDestId(destination.pos || destination);
+    const destId = Traveler.getDestId(destination.pos || destination);
     const path = Util.get(Room, ['pathCache', roomName, destId], {});
     const vis = room ? room.visual : new RoomVisual(roomName);
     for (var y = 0; y < 50; y++) {
         for (var x = 0; x < 50; x++) {
-            const dir = path[Room.getPosId({x, y})];
+            const dir = path[Traveler.getPosId({x, y})];
             if (dir) {
                 if (dir === 'B') {
                     vis.text('B', x, y);
@@ -1393,7 +1393,7 @@ mod.invalidateCachedPaths = function(roomName, destination) {
     if (roomName) {
         if (destination) {
             msg = `Invalidating cached paths in ${roomName} to ${destination}.`;
-            const destId = Room.getDestId(destination.pos || destination);
+            const destId = Traveler.getDestId(destination.pos || destination);
             if (!_.isUndefined(Room.pathCache[roomName][destId])) {
                 delete Room.pathCache[roomName][destId];
                 Room.pathCache[roomName].updated = Game.time;
@@ -1413,19 +1413,3 @@ mod.invalidateCachedPaths = function(roomName, destination) {
     Room.pathCacheDirty = true;
     return msg;
 };
-// unique identifier for each position within the starting room
-// codes 13320 - 15819 represent positions, and are all single character, unique representations
-mod.getPosId = (pos) => String.fromCodePoint(13320 + (pos.x * 50) + pos.y);
-mod.getPos = (id, roomName) => {
-    if (!roomName) {
-        const ret = id.split(',');
-        roomName = ret[0];
-        id = ret[1];
-    }
-    const total = id.codePointAt(0) - 13320
-    const x = Math.floor(total / 50);
-    const y = total % 50;
-    return new RoomPosition(x, y, roomName);
-};
-// unique destination identifier for room positions
-mod.getDestId = (pos) => `${pos.roomName},${Room.getPosId(pos)}`;
