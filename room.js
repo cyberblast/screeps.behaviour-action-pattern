@@ -1115,7 +1115,6 @@ mod.cleanup = function() {
         Room.costMatrixCacheDirty = false;
     }
     if (Room.pathCacheDirty && Room.pathCacheLoaded) {
-        console.log('flushing dirty path cache');
         OCSMemory.saveSegment(MEM_SEGMENTS.PATH_CACHE, Util.get(Room, 'pathCache', {}));
         Room.pathCacheDirty = false;
     }
