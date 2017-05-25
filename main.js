@@ -16,7 +16,7 @@ global.validatePath = path => {
     }
     return mod != null;
 };
-// evaluate existing module overrides and store them to memory. 
+// evaluate existing module overrides and store them to memory.
 // return current module path to use for require
 global.getPath = (modName, reevaluate = false) => {
     if( reevaluate || !Memory.modules[modName] ){
@@ -24,7 +24,7 @@ global.getPath = (modName, reevaluate = false) => {
         let path = './custom.' + modName;
         if(!validatePath(path)) {
             path = './internal.' + modName;
-            if(!validatePath(path)) 
+            if(!validatePath(path))
                 path = './' + modName;
         }
         Memory.modules[modName] = path;
@@ -105,7 +105,7 @@ global.load = (modName) => {
         mod = tryRequire(path);
     }
     if( mod ) {
-        // load viral overrides 
+        // load viral overrides
         mod = infect(mod, 'internalViral', modName);
         mod = infect(mod, 'viral', modName);
     }
@@ -175,10 +175,10 @@ global.install = () => {
             defending: load("creep.action.defending"),
             dismantling: load("creep.action.dismantling"),
             dropping: load("creep.action.dropping"),
-            feeding: load("creep.action.feeding"), 
-            fortifying: load("creep.action.fortifying"), 
-            fueling: load("creep.action.fueling"), 
-            guarding: load("creep.action.guarding"), 
+            feeding: load("creep.action.feeding"),
+            fortifying: load("creep.action.fortifying"),
+            fueling: load("creep.action.fueling"),
+            guarding: load("creep.action.guarding"),
             harvesting: load("creep.action.harvesting"),
             healing: load("creep.action.healing"),
             idle: load("creep.action.idle"),
@@ -193,7 +193,7 @@ global.install = () => {
             storing: load("creep.action.storing"),
             travelling: load("creep.action.travelling"),
             uncharging: load("creep.action.uncharging"),
-            upgrading: load("creep.action.upgrading"), 
+            upgrading: load("creep.action.upgrading"),
             withdrawing: load("creep.action.withdrawing"),
         },
         behaviour: {
@@ -257,18 +257,48 @@ global.install = () => {
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
     OCSMemory.activateSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, true);
-    
+
     global.modulesValid = Memory.modules.valid;
     if (global.DEBUG) logSystem('Global.install', 'Code reloaded.');
 };
 global.install();
 load('traveler')({exportTraveler: false, installTraveler: true, installPrototype: true, defaultStuckValue: TRAVELER_STUCK_TICKS, reportThreshold: TRAVELER_THRESHOLD});
 
+function wrapLoop(fn) {
+    let memory;
+    let tick;
+
+    return () => {
+        if (tick && tick + 1 === Game.time && memory) {
+            delete global.Memory;
+            Memory = memory;
+        } else {
+            memory = Memory;
+        }
+
+        tick = Game.time;
+
+        fn();
+
+        // there are two ways of saving Memory with different advantages and disadvantages
+        // 1. RawMemory.set(JSON.stringify(Memory));
+        // + ability to use custom serialization method
+        // - you have to pay for serialization
+        // - unable to edit Memory via Memory watcher or console
+        // 2. RawMemory._parsed = Memory;
+        // - undocumented functionality, could get removed at any time
+        // + the server will take care of serialization, it doesn't cost any CPU on your site
+        // + maintain full functionality including Memory watcher and console
+
+        RawMemory._parsed = Memory;
+    };
+};
+
 let cpuAtFirstLoop;
-module.exports.loop = function () {
+module.exports.loop = wrapLoop(function () {
     const cpuAtLoop = Game.cpu.getUsed();
     if (Memory.pause) return;
-    
+
     try {
         const totalUsage = Util.startProfiling('main', {startCPU: cpuAtLoop});
         const p = Util.startProfiling('main', {enabled: PROFILING.MAIN, startCPU: cpuAtLoop});
@@ -286,17 +316,17 @@ module.exports.loop = function () {
         if (Memory.cloaked === undefined) {
             Memory.cloaked = {};
         }
-        
+
         Util.set(Memory, 'parameters', {});
         _.assign(global, {parameters: Memory.parameters}); // allow for shorthand access in console
         // ensure up to date parameters, override in memory
         _.assign(global, load("parameter"));
-        _.merge(global, parameters);        
-        
+        _.merge(global, parameters);
+
       // process loaded memory segments
         OCSMemory.processSegments();
         p.checkCPU('processSegments', PROFILING.ANALYZE_LIMIT);
-    
+
         // Flush cache
         Events.flush();
         FlagDir.flush();
@@ -306,10 +336,10 @@ module.exports.loop = function () {
         // custom flush
         if( global.mainInjection.flush ) global.mainInjection.flush();
         p.checkCPU('flush', PROFILING.FLUSH_LIMIT);
-    
+
         // Room event hooks must be registered before analyze for costMatrixInvalid
         Room.register();
-    
+
         // analyze environment, wait a tick if critical failure
         if (!FlagDir.analyze()) {
             logError('FlagDir.analyze failed, waiting one tick to sync flags');
@@ -357,7 +387,7 @@ module.exports.loop = function () {
         p.checkCPU('FlagDir.cleanup', PROFILING.FLUSH_LIMIT);
         Population.cleanup();
         p.checkCPU('Population.cleanup', PROFILING.FLUSH_LIMIT);
-        Room.cleanup(); 
+        Room.cleanup();
         p.checkCPU('Room.cleanup', PROFILING.FLUSH_LIMIT);
         // custom cleanup
         if( global.mainInjection.cleanup ) global.mainInjection.cleanup();
@@ -371,11 +401,11 @@ module.exports.loop = function () {
         p.checkCPU('grafana', PROFILING.EXECUTE_LIMIT);
 
         Game.cacheTime = Game.time;
-    
+
         if( global.DEBUG && global.TRACE ) trace('main', {cpuAtLoad, cpuAtFirstLoop, cpuAtLoop, cpuTick: Game.cpu.getUsed(), isNewServer: global.isNewServer, lastServerSwitch: Game.lastServerSwitch, main:'cpu'});
         totalUsage.totalCPU();
     }
     catch (e) {
         Util.logError(e.stack || e.message);
     }
-};
+});
