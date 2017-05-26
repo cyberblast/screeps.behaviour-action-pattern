@@ -150,7 +150,9 @@ action.step = function(creep) {
     }
 };
 action.getEnergy = function(creep) {
-    const dropped = creep.pos.findInRange(FIND_DROPPED_ENERGY, 1)[0];
+    const dropped = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {
+        filter: r => r.resourceType === RESOURCE_ENERGY
+    })[0];
     if (dropped) {
         if (global.DEBUG && global.TRACE) trace('Action', {actionName:this.name, method: 'getEnergy', creepName:creep.name, pos:creep.pos, pickup: dropped.id});
         creep.pickup(dropped);
