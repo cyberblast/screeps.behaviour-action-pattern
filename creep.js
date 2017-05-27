@@ -443,28 +443,43 @@ mod.bodyCosts = function(body){
     }
     return costs;
 };
-// params: {minThreat, maxWeight, maxMulti}
-mod.multi = function (room, params) {
-    let fixedCosts = Creep.bodyCosts(params.fixedBody);
-    let multiCosts = Creep.bodyCosts(params.multiBody);
-    let maxThreatMulti;
-    if( params && params.minThreat ){
-        let fixedThreat = Creep.bodyThreat(params.fixedBody);
-        let multiThreat = Creep.bodyThreat(params.multiBody);
+// params: {minThreat, minWeight, maxWeight, minMulti, maxMulti}
+// calculates the multi that is above the smallest minimum, and below the largest maximum based on parameters
+mod.multi = function (room, params = {}) {
+    const minMulti = params.minMulti || 0;
+    const fixedCosts = Creep.bodyCosts(params.fixedBody);
+    const multiCosts = Creep.bodyCosts(params.multiBody);
+    if (multiCosts === 0) return 0; // prevent divide-by-zero
+    let maxThreatMulti = Infinity;
+    if (params.minThreat) {
+        const fixedThreat = Creep.bodyThreat(params.fixedBody);
+        const multiThreat = Creep.bodyThreat(params.multiBody);
         maxThreatMulti = 0;
-        let iThreat = fixedThreat;
-        while(iThreat < params.minThreat){
+        let threat = fixedThreat;
+        while(threat < params.minThreat) {
             maxThreatMulti += 1;
-            iThreat += multiThreat;
+            threat += multiThreat;
         }
-    } else maxThreatMulti = Infinity;
-    if(multiCosts === 0) return 0; // prevent divide-by-zero
-    let maxParts = Math.floor((50 - params.fixedBody.length) / params.multiBody.length);
-    let maxEnergy = params.currentEnergy ? room.energyAvailable : room.energyCapacityAvailable;
-    let maxAffordable = Math.floor((maxEnergy - fixedCosts) / multiCosts);
-    let maxWeightMulti = (params && params.maxWeight) ? Math.floor((params.maxWeight-fixedCosts)/multiCosts) : Infinity;
-    let maxMulti = (params && params.maxMulti) ? params.maxMulti : Infinity;
-    return _.min([maxParts, maxAffordable, maxThreatMulti, maxWeightMulti, maxMulti]);
+    }
+    let minWeightMulti = 0;
+    if (params.minWeight) {
+        let weight = fixedCosts;
+        while (weight < params.minWeight) {
+            minWeightMulti += 1;
+            weight += multiCosts;
+        }
+    }
+    const maxPartsMulti = Math.floor((50 - params.fixedBody.length) / params.multiBody.length);
+    const maxEnergy = params.currentEnergy ? room.energyAvailable : room.energyCapacityAvailable;
+    const maxAffordableMulti = Math.floor((maxEnergy - fixedCosts) / multiCosts);
+    const maxWeightMulti = params.maxWeight ? Math.floor((params.maxWeight - fixedCosts) / multiCosts) : Infinity;
+    const maxMulti = params.maxMulti || Infinity;
+    // find the smallest maximum to set our upper bound
+    const max = _.min([maxAffordableMulti, maxThreatMulti, maxWeightMulti, maxMulti]);
+    // ensure we are above our lower bound
+    const min = _.max([minMulti, minWeightMulti, max]);
+    // ensure this won't result in more than 50 parts
+    return _.min([maxPartsMulti, min]);
 };
 mod.partsComparator = function (a, b) {
     let partsOrder = [TOUGH, CLAIM, WORK, CARRY, ATTACK, RANGED_ATTACK, HEAL, MOVE];
@@ -493,13 +508,11 @@ mod.compileBody = function (room, params, sort = true) {
     _.assign(params, {fixedBody, multiBody});
     if (params.sort !== undefined) sort = params.sort;
     let parts = [];
-    let multi = Creep.multi(room, params);
-    for (let iMulti = 0; iMulti < multi; iMulti++) {
+    const multi = Creep.multi(room, params);
+    for (var i = 0; i < multi; i++) {
         parts = parts.concat(params.multiBody);
     }
-    for (let iPart = 0; iPart < params.fixedBody.length; iPart++) {
-        parts[parts.length] = params.fixedBody[iPart];
-    }
+    parts = parts.concat(params.fixedBody);
     if( sort ) {
         const compareFunction = typeof sort === 'function' ? sort : Creep.partsComparator;
         parts.sort(compareFunction);
