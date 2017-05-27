@@ -341,7 +341,7 @@ const Visuals = class {
             let count = _(Game.spawns).filter('spawning').size();
             count += _(Game.rooms).map(r => r.spawnQueueHigh.concat(r.spawnQueueMedium, r.spawnQueueLow)).flatten().size();
             const SCU_PERCENTAGE = count / spawnCount;
-            this.drawPie(vis, SCU_PERCENTAGE, 1, 'SCU', getColourByPercentage(SCU_PERCENTAGE), {x, y: y++});
+            this.drawPie(vis, Math.round(count), spawnCount, 'SCU', getColourByPercentage(SCU_PERCENTAGE), {x, y: y++});
 
             // TICK
             y += 15;
