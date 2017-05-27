@@ -179,6 +179,10 @@ mod.FLAG_COLOR = {
             color: COLOR_WHITE,
             secondaryColor: COLOR_GREEN,
         },
+        idle: {
+            color: COLOR_WHITE,
+            secondaryColor: COLOR_BROWN,
+        },
     },
 };
 mod.DECAY_AMOUNT = {

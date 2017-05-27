@@ -202,49 +202,78 @@ mod.extend = function(){
         if( path && path.length > 0 )
             this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
     };
-    Creep.prototype.idleMove = function( ) {
+    Creep.prototype.idleMove = function() {
         if( this.fatigue > 0 ) return;
         // check if on road/structure
-        let here = _.chain(this.room.structures.piles).filter('pos', this.pos)
-            .concat(this.room.lookForAt(LOOK_STRUCTURES, this.pos))
-            .concat(this.room.lookForAt(LOOK_CONSTRUCTION_SITES, this.pos, {filter: s => s.my}))
-            .value();
-        if( here && here.length > 0 ) {
-            let path;
-            if( !this.data.idlePath || this.data.idlePath.length < 2 || this.data.idlePath[0].x != this.pos.x || this.data.idlePath[0].y != this.pos.y || this.data.idlePath[0].roomName != this.pos.roomName ) {
-                let goals = this.room.structures.all.map(function(o) {
-                    return { pos: o.pos, range: 1 };
-                }).concat(this.room.sources.map(function (s) {
-                    return { pos: s.pos, range: 2 };
-                })).concat(this.pos.findInRange(FIND_EXIT, 2).map(function (e) {
-                    return { pos: e, range: 1 };
-                })).concat(this.room.myConstructionSites.map(function(o) {
-                    return { pos: o.pos, range: 1};
-                }));
-
-                let ret = PathFinder.search(
-                    this.pos, goals, {
-                        flee: true,
-                        plainCost: 2,
-                        swampCost: 10,
-                        maxOps: 350,
-                        maxRooms: 1,
-
-                        roomCallback: function(roomName) {
-                            let room = Game.rooms[roomName];
-                            if (!room) return;
-                            return room.creepMatrix;
-                        }
+        const needToMove = _(this.room.structures.piles).filter('pos', this.pos)
+            .concat(this.pos.lookFor(LOOK_STRUCTURES))
+            .concat(this.pos.lookFor(LOOK_CONSTRUCTION_SITES))
+            .size();
+        if (needToMove) {
+            if (!this.data.idle || !this.data.idle.path || !this.data.idle.path.length || this.pos.isEqualTo(this.data.idle.lastPos)) {
+                const idleFlag = FlagDir.find(FLAG_COLOR.command.idle, this.pos, true, (r, flagEntry) => {
+                    const flag = Game.flags[flagEntry.name];
+                    const occupied = flag.pos.lookFor(LOOK_CREEPS);
+                    if (occupied && occupied.length) {
+                        return Infinity;
+                    } else {
+                        return r;
                     }
-                );
-                path = ret.path;
-                this.data.idlePath = path;
+                });
+                let ret;
+                if (idleFlag) {
+                    ret = PathFinder.search(
+                        this.pos, {pos: idleFlag.pos, range: 0}, {
+                            plainCost: 2,
+                            swampCost: 10,
+                            maxOps: 350,
+                            maxRooms: 1,
+                            roomCallback: (roomName) => {
+                                let room = Game.rooms[roomName];
+                                if (!room) return;
+                                return room.structureMatrix;
+                            }
+                        });
+                } else {
+                    let goals = this.room.structures.all.map(function(o) {
+                        return { pos: o.pos, range: 1 };
+                    }).concat(this.room.sources.map(function (s) {
+                        return { pos: s.pos, range: 2 };
+                    })).concat(this.pos.findInRange(FIND_EXIT, 2).map(function (e) {
+                        return { pos: e, range: 1 };
+                    })).concat(this.room.myConstructionSites.map(function(o) {
+                        return { pos: o.pos, range: 1};
+                    }));
+                    ret = PathFinder.search(
+                        this.pos, goals, {
+                            flee: true,
+                            plainCost: 2,
+                            swampCost: 10,
+                            maxOps: 350,
+                            maxRooms: 1,
+                            roomCallback: (roomName) => {
+                                let room = Game.rooms[roomName];
+                                if (!room) return;
+                                return room.structureMatrix;
+                            }
+                        }
+                    );
+                }
+                this.data.idle = {
+                    path: Traveler.serializePath(this.pos, ret.path),
+                    lastPos: this.pos,
+                };
             } else {
-                this.data.idlePath.shift();
-                path = this.data.idlePath;
+                this.data.idle.path = this.data.idle.path.substr(1);
             }
-            if( path && path.length > 0 )
-                this.move(this.pos.getDirectionTo(new RoomPosition(path[0].x,path[0].y,path[0].roomName)));
+            const next = parseInt(this.data.idle.path[0], 10);
+            if (next) {
+                this.data.idle.lastPos = this.pos;
+                this.move(next);
+            }
+            if (this.data.idle.path && !this.data.idle.path.length) {
+                delete this.data.idle;
+            }
         }
     };
     Creep.prototype.repairNearby = function() {
