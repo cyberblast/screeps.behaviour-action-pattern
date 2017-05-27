@@ -459,8 +459,8 @@ mod.extend = function(){
                             } else if (OBSTACLE_OBJECT_TYPES.includes(structure.structureType)) {
                                 if (!site || Task.reputation.allyOwner(structure)) // don't set for hostile construction sites
                                     return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
-                            } else if (structure.structureType === STRUCTURE_RAMPART && !structure.my && !structure.isPublic) {
-                                if (!site || Task.reputation.allyOwner(structure)) // don't set for hostile construction sites
+                            } else if (structure.structureType === STRUCTURE_RAMPART && !Task.reputation.allyOwner(structure) && !structure.isPublic) {
+                                if (!site)
                                     return costMatrix.set(structure.pos.x, structure.pos.y, 0xFF);
                             }
                         };
@@ -928,6 +928,38 @@ mod.extend = function(){
         }
         return true;
     };
+
+    Room.prototype.switchRamparts = function() {
+        if (!this.my) return;
+
+        const accessString = String.fromCodePoint(0x1f44b) + String.fromCodePoint(0x1f3fe) + String.fromCodePoint(0x1F6AA) + String.fromCodePoint(0x1f510);
+
+        // Close Ramparts
+        this.structures.my                                  // Iterate over all room structures
+            .filter(s => s instanceof StructureRampart)     // Filter out structures not a rampart
+            .filter(rampart => rampart.isPublic)            // Filter out any rampart already closed
+            .forEach(rampart => rampart.setPublic(false));  // Close any public rampart
+
+        // Open Ramparts
+        this.allCreeps                                          // Iterate over all creeps
+            .filter(creep => creep.saying === accessString)     // Filter out any creeps not requesting access
+            .filter(creep => Task.reputation.allyOwner(creep))  // Filter out any non-friendly creeps
+            .forEach(creep => {
+                const radius = 2;
+                const [x, y] = [creep.pos.x, creep.pos.y];
+                const bounds = [
+                    y - radius < 0 ? 0 : y - radius,    // TOP
+                    x - radius < 0 ? 0 : x - radius,    // LEFT
+                    y + radius > 49 ? 49 : y + radius,  // BOTTOM
+                    x + radius > 49 ? 49 : x + radius,  // RIGHT
+                ];
+                creep.room.lookForAtArea(LOOK_STRUCTURES, ...bounds, true)      // Iterate over positions within bounds to the creep
+                    .filter(look => look.structure instanceof StructureRampart) // Filter out structures not a rampart
+                    .map(look => look.structure)                                // Map the array to ramparts
+                    .forEach(rampart => rampart.setPublic(true));               // Open closed ramparts
+            });
+    };
+
     Room.prototype.getCreepMatrix = function(structureMatrix = this.structureMatrix) {
         if (_.isUndefined(this._creepMatrix) ) {
             const costs = structureMatrix.clone();
@@ -991,6 +1023,7 @@ mod.analyze = function() {
             if (totalSitesChanged) room.countMySites();
             if (totalStructuresChanged) room.countMyStructures();
             room.checkRCL();
+            room.switchRamparts();
         }
         catch(err) {
             Game.notify('Error in room.js (Room.prototype.loop) for "' + room.name + '" : ' + err.stack ? err + '<br/>' + err.stack : err);
