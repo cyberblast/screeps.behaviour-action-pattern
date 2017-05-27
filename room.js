@@ -63,18 +63,7 @@ mod.extend = function(){
                         let that = this;
                         this._repairable = _.sortBy(
                             that.all.filter(
-                                structure => (
-                                    // is not at 100%
-                                    structure.hits < structure.hitsMax &&
-                                    // not owned room or hits below RCL repair limit
-                                    ( !that.room.my || structure.hits < MAX_REPAIR_LIMIT[that.room.controller.level] || structure.hits < (LIMIT_URGENT_REPAIRING + (2*DECAY_AMOUNT[structure.structureType] || 0))) &&
-                                    // not decayable or below threshold
-                                    ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > GAP_REPAIR_DECAYABLE ) &&
-                                    // not pavement art
-                                    ( Memory.pavementArt[that.room.name] === undefined || Memory.pavementArt[that.room.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y+'x') < 0 ) &&
-                                    // not flagged for removal
-                                    ( !FlagDir.list.some(f => f.roomName == structure.pos.roomName && f.color == COLOR_ORANGE && f.x == structure.pos.x && f.y == structure.pos.y) )
-                                )
+                                structure => Room.shouldRepair(that.room, structure)
                             ),
                             'hits'
                         );
@@ -1321,3 +1310,17 @@ mod.fieldsInRange = function(args) {
     let maxY = Math.min(...plusRangeY);
     return Room.validFields(args.roomName, minX, maxX, minY, maxY, args.checkWalkable, args.where);
 };
+mod.shouldRepair = function(room, structure) {
+    return (
+        // is not at 100%
+        structure.hits < structure.hitsMax &&
+        // not owned room or hits below RCL repair limit
+        ( !room.my || structure.hits < global.MAX_REPAIR_LIMIT[room.controller.level] || structure.hits < (global.LIMIT_URGENT_REPAIRING + (2*global.DECAY_AMOUNT[structure.structureType] || 0))) &&
+        // not decayable or below threshold
+        ( !DECAYABLES.includes(structure.structureType) || (structure.hitsMax - structure.hits) > global.GAP_REPAIR_DECAYABLE ) &&
+        // not pavement art
+        ( Memory.pavementArt[room.name] === undefined || Memory.pavementArt[room.name].indexOf('x'+structure.pos.x+'y'+structure.pos.y+'x') < 0 ) &&
+        // not flagged for removal
+        ( !FlagDir.list.some(f => f.roomName == structure.pos.roomName && f.color == COLOR_ORANGE && f.x == structure.pos.x && f.y == structure.pos.y) )
+    );
+}
