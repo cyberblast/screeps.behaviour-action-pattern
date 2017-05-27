@@ -384,6 +384,9 @@ mod.extend = function(){
 
     // Explain API extension
     Creep.prototype.explainAgent = function() {
+        if (this.action) {
+            this.action.showAssignment(this, this.target);
+        }
         return `ttl:${this.ticksToLive} pos:${this.pos}`;
     };
 

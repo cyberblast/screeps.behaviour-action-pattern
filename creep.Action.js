@@ -109,12 +109,15 @@ let Action = function(actionName){
         }
         return false;
     };
-    // assignment postprocessing
-    this.onAssignment = function(creep, target) {
+    this.showAssignment = function(creep, target) {
         if (global.SAY_ASSIGNMENT && ACTION_SAY[this.name.toUpperCase()]) creep.say(ACTION_SAY[this.name.toUpperCase()], global.SAY_PUBLIC);
         if (target instanceof RoomObject || target instanceof RoomPosition && VISUALS.ACTION_ASSIGNMENT) {
             Visuals.drawArrow(creep, target);
         }
+    };
+    // assignment postprocessing
+    this.onAssignment = function(creep, target) {
+        this.showAssignment(creep, target);
     };
     // empty default strategy
     this.defaultStrategy = {
