@@ -211,6 +211,62 @@ mod.extend = function(){
             return pos.newFlag(flagColour, name);
         },
     });
+    
+    if (!Room.prototype._createFlag) {
+        Room.prototype._createFlag = Room.prototype.createFlag;
+        Room.prototype.createFlag = function(...args) {
+            let pos;
+            if (_.isUndefined(args[0]) || !_.isNumber(args[1])) {
+                if (!_.isObject(args[0])) return this._createFlag.apply(this, args);
+                
+                if (args[0] instanceof RoomPosition) {
+                    pos = args[0];
+                }
+                if (args[0].pos && args[0].pos instanceof RoomPosition) {
+                    pos = args[0].pos;
+                }
+                args.splice(0, 1);
+            } else {
+                pos = this.getPositionAt(args[0], args[1]);
+                args.splice(0, 2);
+            }
+            let name = args[0];
+            let color = args[1];
+            let secondaryColor = args[2];
+            const oColor = color;
+            const oSecondaryColor = secondaryColor;
+            if (name && typeof name === 'string') {
+                if (name.includes('COLOR_')) {
+                    const re = /(COLOR_\w+)/g;
+                    const match = name.match(re);
+                    if (match) {
+                        if (match.length === 1) {
+                            secondaryColor = COLOURS[match[0]] || global.VIRTUAL_FLAGS[match[0]] || match[0];
+                        } else {
+                            color = COLORS_ALL[match[0]] || global.VIRTUAL_FLAGS[match[0]] || match[0];
+                            secondaryColor = COLOURS[match[1]] || global.VIRTUAL_FLAGS[match[1]] || match[1];
+                        }
+                    }
+                    do {
+                        name.replace(re, ''); // remove colours in the flag name
+                    } while (re.test(name));
+                }
+                if (name.length === 0) {
+                    let cnt = 1;
+                    do {
+                        name = 'Flag' + cnt;
+                        cnt++;
+                    } while(_.any(Game.flags, {name}));
+                }
+            }
+            if (!color) color = COLOR_WHITE;
+            if (!secondaryColor) secondaryColor = color;
+            _.set(Memory, ['virtualFlags', name], {
+                color, secondaryColor,
+            });
+            return this._createFlag.call(this, pos, name, color in COLOURS ? color : oColor, secondaryColor in COLOURS ? secondaryColor : oSecondaryColor);
+        };
+    }
 };
 mod.flush = function(){        
     let clear = flag => delete flag.targetOf;
@@ -224,7 +280,7 @@ mod.analyze = function(){
         try {
             flag.creeps = {};
             if( flag.cloaking && flag.cloaking > 0 ) flag.cloaking--;
-            this.list.push({
+            const entry = {
                 name: flag.name,
                 color: flag.color,
                 secondaryColor: flag.secondaryColor,
@@ -232,7 +288,12 @@ mod.analyze = function(){
                 x: flag.pos.x,
                 y: flag.pos.y,
                 cloaking: flag.cloaking
-            });
+            };
+            const virtual = _.get(Memory, ['virtualFlags', flag.name], false);
+            if (virtual) {
+                _.merge(entry, virtual);
+            }
+            this.list.push(entry);
         } catch(e) {
             Util.logError(e.stack || e.message);
         }
@@ -271,7 +332,12 @@ mod.execute = function() {
     this.stale.forEach(triggerRemoved);
 };
 mod.cleanup = function(){
-    let clearMemory = flagName => delete Memory.flags[flagName];
+    const clearMemory = flagName => {
+        delete Memory.flags[flagName];
+        if (_.get(Memory, ['virtualFlags', flagName], false)) {
+            delete Memory.virtualFlags[flagName];
+        }
+    };
     this.stale.forEach(clearMemory);
 };
 mod.flagType = function(flag) {

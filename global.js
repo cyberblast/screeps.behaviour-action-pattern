@@ -38,6 +38,26 @@ mod.LiteEvent = function() {
         }
     }
 };
+mod.COLOURS = {
+    COLOR_RED,
+    COLOR_PURPLE,
+    COLOR_BLUE,
+    COLOR_CYAN,
+    COLOR_GREEN,
+    COLOR_YELLOW,
+    COLOR_ORANGE,
+    COLOR_BROWN,
+    COLOR_GREY,
+    COLOR_WHITE,
+};
+// Virtual Colours
+mod.VIRTUAL_FLAGS = {
+    COLOR_PINK: 'pink',
+    COLOR_MAGENTA: 'magenta',
+    COLOR_GOLD: 'gold',
+    COLOR_SILVER: 'silver',
+};
+_.merge(mod, mod.VIRTUAL_FLAGS);
 // Flag colors, used throughout the code
 //COLOR_RED
 mod.FLAG_COLOR = {
