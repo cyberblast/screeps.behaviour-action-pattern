@@ -1,0 +1,35 @@
+{
+  "ocs.internal": {
+    "reset": "upstream/dev",
+    "merge": [
+      "upstream/change/hopperTargets",
+      "upstream/feature/actionRenewing",
+      "upstream/feature/disableMineralMiners",
+      "upstream/hotfix/SKMining"
+    ]
+  },
+  "ocs.public": {
+    "reset": "upstream/dev",
+    "merge": [
+      "upstream/change/brokerAllMinerals",
+      "upstream/change/switchRamparts",
+      "upstream/feature/defineTaskSpawnRoom",
+      "upstream/feature/disableMineralMiners",
+      "upstream/feature/explainSaysAssignment",
+      "upstream/feature/idleFlags",
+      "upstream/feature/optimizeMemoryCosts",
+      "upstream/feature/terminalUpgrading",
+      "upstream/feature/virtualFlags",
+      "upstream/fix/setupSpawning",
+      "upstream/fix/singleSourceWorkerCount",
+      "upstream/fix/upgraderCount",
+      "upstream/hotfix/collapseWorkerRecycle",
+      "upstream/hotfix/defenseMemory",
+      "upstream/hotfix/determinatedStorage",
+      "upstream/hotfix/robbingNoPrivateers",
+      "upstream/hotfix/routeRange",
+      "upstream/hotfix/visSCUformat",
+      "upstream/refactor/repairNearby"
+    ]
+  }
+}
