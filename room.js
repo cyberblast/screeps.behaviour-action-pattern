@@ -935,13 +935,13 @@ mod.extend = function(){
         const accessString = String.fromCodePoint(0x1f44b) + String.fromCodePoint(0x1f3fe) + String.fromCodePoint(0x1F6AA) + String.fromCodePoint(0x1f510);
 
         // Close Ramparts
-        _(this.structures.my)                               // Iterate over all room structures
+        this.structures.my                                  // Iterate over all room structures
             .filter(s => s instanceof StructureRampart)     // Filter out structures not a rampart
             .filter(rampart => rampart.isPublic)            // Filter out any rampart already closed
             .forEach(rampart => rampart.setPublic(false));  // Close any public rampart
 
         // Open Ramparts
-        _(this.allCreeps)                                       // Iterate over all creeps
+        this.allCreeps                                          // Iterate over all creeps
             .filter(creep => creep.saying === accessString)     // Filter out any creeps not requesting access
             .filter(creep => Task.reputation.allyOwner(creep))  // Filter out any non-friendly creeps
             .forEach(creep => {
@@ -953,7 +953,7 @@ mod.extend = function(){
                     y + radius > 49 ? 49 : y + radius,  // BOTTOM
                     x + radius > 49 ? 49 : x + radius,  // RIGHT
                 ];
-                _(creep.room.lookForAtArea(LOOK_STRUCTURES, ...bounds, true))   // Iterate over positions within bounds to the creep
+                creep.room.lookForAtArea(LOOK_STRUCTURES, ...bounds, true)      // Iterate over positions within bounds to the creep
                     .filter(look => look.structure instanceof StructureRampart) // Filter out structures not a rampart
                     .map(look => look.structure)                                // Map the array to ramparts
                     .forEach(rampart => rampart.setPublic(true));               // Open closed ramparts
