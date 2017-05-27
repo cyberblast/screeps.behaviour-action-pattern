@@ -57,7 +57,7 @@ let Setup = function(typeName){
         memory.cost = Creep.bodyCosts(memory.parts);
         memory.mother = spawn.name;
         memory.home = spawn.pos.roomName;
-        for( var son = 1; memory.name == null || Game.creeps[memory.name]; son++ ) {
+        for( var son = 1; memory.name == null || Game.creeps[memory.name] || Memory.population[memory.name]; son++ ) {
             memory.name = this.type + '-' + memory.cost + '-' + son;
         }
         return memory;
@@ -138,6 +138,8 @@ let Setup = function(typeName){
             let existingWeight = this.existingWeight(room);
             maxMultiWeight = maxWeight - existingWeight;
         }
+        if (global.DEBUG && global.TRACE) trace('Setup', {setupType:this.type, room:room.name, Setup:'parts',
+                                                maxWeight: maxMultiWeight, minMulti: min, maxMulti});
         return Creep.compileBody(room, {
             fixedBody, multiBody,
             maxWeight: maxMultiWeight,

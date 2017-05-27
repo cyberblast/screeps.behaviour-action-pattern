@@ -131,6 +131,7 @@ global.install = () => {
 
     // Load modules
     _.assign(global, {
+        CompressedMatrix: load('compressedMatrix'),
         Extensions: load("extensions"),
         Population: load("population"),
         FlagDir: load("flagDir"),
@@ -160,6 +161,7 @@ global.install = () => {
         labTech: load("task.labTech"),
     });
     Creep.Action = load("creep.Action");
+    Creep.Behaviour = load("creep.Behaviour");
     Creep.Setup = load("creep.Setup");
     _.assign(Creep, {
         action: {
@@ -181,6 +183,7 @@ global.install = () => {
             healing: load("creep.action.healing"),
             idle: load("creep.action.idle"),
             invading: load("creep.action.invading"),
+            mining: load("creep.action.mining"),
             picking: load("creep.action.picking"),
             reallocating:load("creep.action.reallocating"),
             recycling:load("creep.action.recycling"),
@@ -254,7 +257,7 @@ global.install = () => {
     // custom extend
     if( global.mainInjection.extend ) global.mainInjection.extend();
     OCSMemory.activateSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, true);
-
+    
     global.modulesValid = Memory.modules.valid;
     if (global.DEBUG) logSystem('Global.install', 'Code reloaded.');
 };

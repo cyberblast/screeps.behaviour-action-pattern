@@ -16,7 +16,7 @@ mod.register = function() {
 Room.pathfinderCache = {};
 Room.pathfinderCacheDirty = false;
 Room.pathfinderCacheLoaded = false;
-Room.COSTMATRIX_CACHE_VERSION = 3; // change this to invalidate previously cached costmatrices
+Room.COSTMATRIX_CACHE_VERSION = global.COMPRESS_COST_MATRICES ? 4 : 5; // change this to invalidate previously cached costmatrices
 mod.extend = function(){
     // run extend in each of our submodules
     for (const key of Object.keys(Room._ext)) {
@@ -263,6 +263,12 @@ mod.extend = function(){
     };
 
     Object.defineProperties(Room.prototype, {
+        'flags': {
+            configurable: true,
+            get() {
+                return Util.get(this, '_flags', _.filter(FlagDir.list, {roomName: this.name}));
+            },
+        },
         'structures': {
             configurable: true,
             get: function() {
@@ -435,12 +441,12 @@ mod.extend = function(){
             configurable: true,
             get: function () {
                 if (_.isUndefined(this._structureMatrix)) {
-                    const cached = Room.getCachedStructureMatrix(this.name);
-                    if (cached && cached.valid) {
-                        this._structureMatrix = cached.costMatrix;
+                    const cachedMatrix = Room.getCachedStructureMatrix(this.name);
+                    if (cachedMatrix) {
+                        this._structureMatrix = cachedMatrix;
                     } else {
                         if (global.DEBUG) logSystem(this.name, 'Calculating cost matrix');
-                        var costMatrix = new PathFinder.CostMatrix();
+                        const costMatrix = new PathFinder.CostMatrix;
                         let setCosts = structure => {
                             const site = structure instanceof ConstructionSite;
                             // don't walk on allied construction sites.
@@ -475,20 +481,6 @@ mod.extend = function(){
                 return this._structureMatrix;
             }
         },
-        'creepMatrix': {
-            configurable: true,
-            get: function () {
-                if (_.isUndefined(this._creepMatrix) ) {
-                    const costs = Room.isSKRoom(this.name) ? this.structureMatrix.clone() : this.avoidSKMatrix.clone();
-                    // Avoid creeps in the room
-                    this.allCreeps.forEach(function(creep) {
-                        costs.set(creep.pos.x, creep.pos.y, 0xff);
-                    });
-                    this._creepMatrix = costs;
-                }
-                return this._creepMatrix;
-            }
-        },
         'avoidSKMatrix': {
             configurable: true,
             get: function () {
@@ -507,6 +499,15 @@ mod.extend = function(){
                 }
                 return this._my;
             }
+        },
+        'myReservation': {
+            configurable: true,
+            get: function (){
+                if (_.isUndefined(this._myReservation)) {
+                    this._myReservation = this.reservation === global.ME;
+                }
+                return this._myReservation;
+            },
         },
         'reserved': {
             configurable: true,
@@ -603,8 +604,14 @@ mod.extend = function(){
                 return Util.get(this.memory, 'RCL', this.controller.level);
             },
         },
+        'skip': {
+            configurable: true,
+            get() {
+                return Util.get(this, '_skip', !!FlagDir.find(FLAG_COLOR.command.skipRoom, this));
+            },
+        },
     });
-    
+
     Room.prototype.checkRCL = function() {
         if (!this.controller) return;
         if (this.memory.RCL !== this.controller.level) {
@@ -624,14 +631,12 @@ mod.extend = function(){
 
     Room.prototype.countMyStructures = function() {
         const numStructures = _.size(this.structures.my);
-        // only trigger when a structure has been destroyed, we already avoid unpathable construction sites, and treat road sites like roads
-        if (!_.isUndefined(this.memory.myTotalStructures) && numStructures < this.memory.myTotalStructures) {
+        if (!_.isUndefined(this.memory.myTotalStructures) && numStructures !== this.memory.myTotalStructures) {
             Room.costMatrixInvalid.trigger(this);
             // these are vital for feeding
             this.saveExtensions();
             this.saveSpawns();
         }
-        if (numStructures > 0) this.memory.myTotalStructures = numStructures;
         else delete this.memory.myTotalStructures;
     };
     Room.prototype.getBorder = function(roomName) {
@@ -721,8 +726,7 @@ mod.extend = function(){
         }
         return ret;
     }
-    Room.prototype.showCostMatrix = function(matrixName, aroundPos) {
-        const matrix = this[matrixName] || this.structureMatrix;
+    Room.prototype.showCostMatrix = function(matrix = this.structureMatrix, aroundPos) {
         const vis = new RoomVisual(this.name);
         let startY = 0;
         let endY = 50;
@@ -756,9 +760,11 @@ mod.extend = function(){
                 for (let x = Math.max(0, creep.pos.x - 3); x <= Math.min(49, creep.pos.x + 3); x++) {
                     const deltaX = x < creep.pos.x ? creep.pos.x - x : x - creep.pos.x;
                     for (let y = Math.max(0, creep.pos.y - 3); y <= Math.min(49, creep.pos.y + 3); y++) {
-                        const deltaY = y < creep.pos.y ? creep.pos.y - y : y - creep.pos.y;
-                        const cost = 17 - (2 * Math.max(deltaX, deltaY));
-                        avoidMatrix.set(x, y, cost) // make it less desirable than a swamp
+                        if (this.isWalkable(x, y)) {
+                            const deltaY = y < creep.pos.y ? creep.pos.y - y : y - creep.pos.y;
+                            const cost = 17 - (2 * Math.max(deltaX, deltaY));
+                            avoidMatrix.set(x, y, cost) // make it less desirable than a swamp
+                        }
                     }
                 }
             }
@@ -768,7 +774,7 @@ mod.extend = function(){
     Room.prototype.invalidateCostMatrix = function() {
         Room.costMatrixInvalid.trigger(this.name);
     };
-    
+
     Room.prototype.highwayHasWalls = function() {
         if (!Room.isHighwayRoom(this.name)) return false;
         return !!_.find(this.getPositionAt(25, 25).lookFor(LOOK_STRUCTURES), s => s instanceof StructureWall);
@@ -781,16 +787,16 @@ mod.extend = function(){
         for (const prop of ['x', 'y', 'roomName']) {
             if (!Reflect.has(object, prop) || !Reflect.has(target, prop)) return;
         }
-        
+
         if (!Room.isHighwayRoom(this.name)) return;
         if (!this.highwayHasWalls()) return true;
-        
+
         const [x, y] = Room.calcCoordinates(this.name, (x, y) => [x, y]);
-        
+
         const getVerHalf = o => Math.floor(o.x / 25) === 0 ? LEFT : RIGHT;
-        
+
         const getHorHalf = o => Math.floor(o.y / 25) === 0 ? TOP : BOTTOM;
-        
+
         const getQuadrant = o => {
             const verHalf = getVerHalf(o);
             const horHalf = getHorHalf(o);
@@ -800,23 +806,23 @@ mod.extend = function(){
                 return horHalf === TOP ? TOP_RIGHT : BOTTOM_RIGHT;
             }
         };
-        
+
         if (x % 10 === 0) {
             if (y % 10 === 0) { // corner room
-                
+
                 const top = !!_.find(this.getPositionAt(25, 24).lookFor(LOOK_STRUCTURES), s => s instanceof StructureWall);
                 const left = !!_.find(this.getPositionAt(24, 25).lookFor(LOOK_STRUCTURES, s => s instanceof StructureWall));
                 const bottom = !!_.find(this.getPositionAt(25, 26).lookFor(LOOK_STRUCTURES, s => s instanceof StructureWall));
                 const right = !!_.find(this.getPositionAt(26, 25).lookFor(LOOK_STRUCTURES, s => s instanceof StructureWall));
-                
+
                 // both in same quadrant
                 if (getQuadrant(object) === getQuadrant(target)) return true;
-                
+
                 if (top && left && bottom && right) {
                     // https://i.imgur.com/8lmqtbi.png
                     return getQuadrant(object) === getQuadrant(target);
                 }
-                
+
                 if (top) {
                     if (bottom) {
                         // cross section
@@ -869,13 +875,13 @@ mod.extend = function(){
         for (const prop of ['x', 'y', 'roomName']) {
             if (!Reflect.has(target, prop)) return;
         }
-        
+
         if (!Room.isHighwayRoom(this.name)) return;
         if (!this.highwayHasWalls()) return true;
-        
+
         const closestRoom = _(Game.rooms).filter('my').min(r => Game.map.getRoomLinearDistance(r.name, this.name));
         if (closestRoom === Infinity) return;
-        
+
         const [x1, y1] = Room.calcGlobalCoordinates(this.name, (x, y) => [x, y]);
         const [x2, y2] = Room.calcGlobalCoordinates(closestRoom, (x, y) => [x, y]);
         let dir = '';
@@ -922,18 +928,18 @@ mod.extend = function(){
         }
         return true;
     };
-    
+
     Room.prototype.switchRamparts = function() {
         if (!this.my) return;
-        
+
         const accessString = String.fromCodePoint(0x1f44b) + String.fromCodePoint(0x1f3fe) + String.fromCodePoint(0x1F6AA) + String.fromCodePoint(0x1f510);
-        
+
         // Close Ramparts
         _(this.structures.my)                               // Iterate over all room structures
             .filter(s => s instanceof StructureRampart)     // Filter out structures not a rampart
             .filter(rampart => rampart.isPublic)            // Filter out any rampart already closed
             .forEach(rampart => rampart.setPublic(false));  // Close any public rampart
-    
+
         // Open Ramparts
         _(this.allCreeps)                                       // Iterate over all creeps
             .filter(creep => creep.saying === accessString)     // Filter out any creeps not requesting access
@@ -952,6 +958,18 @@ mod.extend = function(){
                     .map(look => look.structure)                                // Map the array to ramparts
                     .forEach(rampart => rampart.setPublic(true));               // Open closed ramparts
             });
+    };
+
+    Room.prototype.getCreepMatrix = function(structureMatrix = this.structureMatrix) {
+        if (_.isUndefined(this._creepMatrix) ) {
+            const costs = structureMatrix.clone();
+            // Avoid creeps in the room
+            this.allCreeps.forEach(function(creep) {
+                costs.set(creep.pos.x, creep.pos.y, 0xff);
+            });
+            this._creepMatrix = costs;
+        }
+        return this._creepMatrix;
     };
 };
 mod.flush = function(){
@@ -1013,6 +1031,7 @@ mod.analyze = function() {
         }
     };
     _.forEach(Game.rooms, r => {
+        if (r.skip) return;
         getEnvironment(r);
         p.checkCPU(r.name, PROFILING.ANALYZE_LIMIT / 5);
     });
@@ -1063,10 +1082,13 @@ mod.cleanup = function() {
             const entry = Room.pathfinderCache[key];
             if (entry.version === Room.COSTMATRIX_CACHE_VERSION) {
                 encodedCache[key] = {
-                    serializedMatrix: entry.serializedMatrix || entry.costMatrix.serialize(),
+                    serializedMatrix: entry.serializedMatrix || (global.COMPRESS_COST_MATRICES ?
+                        CompressedMatrix.serialize(entry.costMatrix) : entry.costMatrix.serialize()),
                     updated: entry.updated,
                     version: entry.version
                 };
+                // only set memory when we need to
+                if (entry.stale) encodedCache[key].stale = true;
             }
         }
         OCSMemory.saveSegment(MEM_SEGMENTS.COSTMATRIX_CACHE, encodedCache);
@@ -1204,8 +1226,9 @@ mod.roomDistance = function(roomName1, roomName2, diagonal, continuous){
     return xDif + yDif; // count diagonal as 2
 };
 mod.rebuildCostMatrix = function(roomName) {
-    if (global.DEBUG) logSystem(roomName, 'Removing invalid costmatrix to force a rebuild.')
-    Room.pathfinderCache[roomName] = {};
+    if (global.DEBUG) logSystem(roomName, 'Invalidating costmatrix to force a rebuild when we have vision.');
+    _.set(Room, ['pathfinderCache', roomName, 'stale'], true);
+    _.set(Room, ['pathfinderCache', roomName, 'updated'], Game.time);
     Room.pathfinderCacheDirty = true;
 };
 mod.loadCostMatrixCache = function(cache) {
@@ -1231,28 +1254,33 @@ mod.getCachedStructureMatrix = function(roomName) {
         }
         const mem = Room.pathfinderCache[roomName];
         const ttl = Game.time - mem.updated;
-        if (mem.version === Room.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && ttl < COST_MATRIX_VALIDITY) {
+        if (mem.version === Room.COSTMATRIX_CACHE_VERSION && (mem.serializedMatrix || mem.costMatrix) && !mem.stale && ttl < COST_MATRIX_VALIDITY) {
             if (global.DEBUG && global.TRACE) trace('PathFinder', {roomName:roomName, ttl, PathFinder:'CostMatrix'}, 'cached costmatrix');
             return true;
         }
         return false;
     };
 
-    const cache = Room.pathfinderCache[roomName];
-    if (cache) {
+    if (cacheValid(roomName)) {
+        const cache = Room.pathfinderCache[roomName];
         if (cache.costMatrix) {
-            return {costMatrix: cache.costMatrix, valid: cacheValid(roomName)};
-        } else {
-            const costMatrix = PathFinder.CostMatrix.deserialize(cache.serializedMatrix);
+            return cache.costMatrix;
+        } else if (cache.serializedMatrix) {
+            // disabled until the CPU efficiency can be improved
+            const costMatrix = global.COMPRESS_COST_MATRICES ? CompressedMatrix.deserialize(cache.serializedMatrix)
+                : PathFinder.CostMatrix.deserialize(cache.serializedMatrix);
             cache.costMatrix = costMatrix;
-            return {costMatrix, valid: cacheValid(roomName)};
+            return costMatrix;
+        } else {
+            Util.logError('Room.getCachedStructureMatrix', `Cached costmatrix for ${roomName} is invalid ${cache}`);
+            delete Room.pathfinderCache[roomName];
         }
     }
 };
 mod.getStructureMatrix = function(roomName, options) {
     const room = Game.rooms[roomName];
     let matrix;
-    if (Room.isSKRoom(roomName) && options.avoidSK) {
+    if (Room.isSKRoom(roomName) && options.avoidSKCreeps) {
         matrix = _.get(room, 'avoidSKMatrix');
     } else {
         matrix = _.get(room, 'structureMatrix');

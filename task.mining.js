@@ -7,9 +7,9 @@ mod.handleFlagRemoved = flagName => {
     // check flag
     const flagMem = Memory.flags[flagName];
     if( flagMem && flagMem.task === mod.name && flagMem.roomName ){
-        // if there is still a mining flag in that room ignore. 
+        // if there is still a mining flag in that room ignore.
         const flags = FlagDir.filter(FLAG_COLOR.claim.mining, new RoomPosition(25,25,flagMem.roomName), true);
-        if( flags && flags.length > 0 ) 
+        if( flags && flags.length > 0 )
             return;
         else {
             // no more mining in that room.
@@ -120,7 +120,7 @@ mod.checkForRequiredCreeps = (flag) => {
                     task: mod.name, // taskName
                     targetName: flag.name, // targetName
                     type: miner.behaviour // custom
-                }, 
+                },
                 { // spawn room selection params
                     targetRoom: roomName,
                     minEnergyCapacity: miner.minEnergyCapacity, // TODO calculate this
@@ -148,8 +148,8 @@ mod.checkForRequiredCreeps = (flag) => {
             }
 
             // haulers set homeRoom if closer storage exists
-            const storageRoom = REMOTE_HAULER.REHOME && mod.strategies.hauler.homeRoom(roomName) || spawnRoom;
-            let maxWeight = mod.strategies.hauler.maxWeight(roomName, storageRoom, memory); // TODO Task.strategies
+            const storageRoomName = REMOTE_HAULER.REHOME ? mod.strategies.hauler.homeRoomName(roomName) : spawnRoom.name;
+            let maxWeight = mod.strategies.hauler.maxWeight(roomName, storageRoomName, memory); // TODO Task.strategies
             if( !maxWeight || (!REMOTE_HAULER.ALLOW_OVER_CAPACITY && maxWeight < minWeight)) {
                 memory.capacityLastChecked = Game.time;
                 break;
@@ -173,7 +173,7 @@ mod.checkForRequiredCreeps = (flag) => {
                     task: mod.name, // taskName
                     targetName: flag.name, // targetName
                     type: Task.mining.creep.hauler.behaviour, // custom
-                    homeRoom: storageRoom.name
+                    homeRoom: storageRoomName
                 }, {
                     targetRoom: roomName,
                     explicit: spawnRoom.name,
@@ -197,7 +197,7 @@ mod.checkForRequiredCreeps = (flag) => {
                     task: mod.name, // taskName
                     targetName: flag.name, // targetName
                     type: Task.mining.creep.worker.behaviour // custom
-                }, 
+                },
                 { // spawn room selection params
                     targetRoom: roomName,
                     minEnergyCapacity: 600
@@ -366,7 +366,7 @@ mod.checkCapacity= function(roomName) {
     const checkRoomCapacity = function(roomName, minPopulation, maxDropped) {
         const population = Math.round(mod.carryPopulation(roomName) * 100);
         const room = Game.rooms[roomName];
-        const dropped = room ? room.find(FIND_DROPPED_ENERGY): null;
+        const dropped = room ? room.find(FIND_DROPPED_RESOURCES): null;
         let message = 'unknown dropped energy, room not visible.';
         let totalDropped = 0;
         if (dropped) {
@@ -413,11 +413,11 @@ function haulerCarryToWeight(carry) {
     const multiCarry = _.max([0, carry - 5]);
     return 500 + 150 * _.ceil(multiCarry * 0.5);
 }
-mod.carryPopulation = function(miningRoomName, homeRoom) {
+mod.carryPopulation = function(miningRoomName, homeRoomName) {
     // how much more do we need to meet our goals
-    const neededWeight = Task.mining.strategies.hauler.maxWeight(miningRoomName, homeRoom, undefined, false, true);
+    const neededWeight = Task.mining.strategies.hauler.maxWeight(miningRoomName, homeRoomName, undefined, false, true);
     // how much do we need for this room in total
-    const totalWeight = Task.mining.strategies.hauler.maxWeight(miningRoomName, homeRoom, undefined, true, true);
+    const totalWeight = Task.mining.strategies.hauler.maxWeight(miningRoomName, homeRoomName, undefined, true, true);
     return 1 - neededWeight / totalWeight;
 };
 mod.strategies = {
@@ -453,12 +453,12 @@ mod.strategies = {
             const room = Game.rooms[roomName];
             return room ? 10 * room.sources.length : 20;
         },
-        homeRoom: function(flagRoomName) {
+        homeRoomName: function(flagRoomName) {
             // Explicity set by user?
             const memory = Task.mining.memory(flagRoomName);
-            if(memory.storageRoom) return Game.rooms[memory.storageRoom];
+            if(memory.storageRoom) return memory.storageRoom;
             // Otherwise, score it
-            return Room.bestSpawnRoomFor(flagRoomName);
+            return Room.bestSpawnRoomFor(flagRoomName).name;
         },
         spawnRoom: function(flagRoomName, minWeight) {
             return Room.findSpawnRoom({
@@ -466,14 +466,14 @@ mod.strategies = {
                 minEnergyCapacity: minWeight || 500,
             });
         },
-        maxWeight: function(flagRoomName, homeRoom, memory, ignorePopulation, ignoreQueue) {
+        maxWeight: function(flagRoomName, homeRoomName, memory, ignorePopulation, ignoreQueue) {
+            if (!homeRoomName) homeRoomName = mod.strategies.hauler.homeRoomName(flagRoomName);
             if( !memory ) memory = Task.mining.memory(flagRoomName);
-            if( !homeRoom ) homeRoom = mod.strategies.hauler.homeRoom(flagRoomName);
             const existingHaulers = ignorePopulation ? [] : _.map(memory.running.remoteHauler, n=>Game.creeps[n]);
             const queuedHaulers = ignoreQueue ? [] : _.union(memory.queued.remoteHauler, memory.spawning.remoteHauler);
             const room = Game.rooms[flagRoomName];
             // TODO loop per-source, take pinned delivery for route calc
-            const travel = routeRange(flagRoomName, homeRoom.name);
+            const travel = routeRange(flagRoomName, homeRoomName);
             const ept = Task.mining.strategies.hauler.ept(flagRoomName);
             // carry = ept * travel * 2 * 50 / 50
             const validHaulers = _.filter(existingHaulers, c => !Task.mining.needsReplacement(c));
@@ -481,7 +481,7 @@ mod.strategies = {
             const queuedCarry = _.sum(queuedHaulers, c => (c && c.body) ? c.body.carry : 5);
             const neededCarry = ept * travel * 2 + (memory.carryParts || 0) - existingCarry - queuedCarry;
             const maxWeight = haulerCarryToWeight(neededCarry);
-            if( DEBUG && TRACE ) trace('Task', {Task:mod.name, room: flagRoomName, homeRoom: homeRoom.name,
+            if( DEBUG && TRACE ) trace('Task', {Task:mod.name, room: flagRoomName, homeRoom: homeRoomName,
                 haulers: existingHaulers.length + queuedHaulers.length, ept, travel, existingCarry, queuedCarry,
                 neededCarry, maxWeight, [mod.name]:'maxWeight'});
             return maxWeight;

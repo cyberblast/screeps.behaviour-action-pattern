@@ -17,7 +17,7 @@ mod.extend = function(){
         configurable: true,
         get() {
             if (!this.room.owner) return false;
-            if (this.room.owner.username !== this.owner.username) return false;
+            if (this.room.owner !== this.owner.username) return false;
             return _.get(this.room.memory, ['structures', this.id, 'active'], true);
         },
     });
@@ -25,7 +25,7 @@ mod.extend = function(){
         configurable: true,
         get() {
             if (!this.room.owner) return false;
-            if (this.room.owner.username !== this.owner.username) return false;
+            if (this.room.owner !== this.owner.username) return false;
             if (this.room.RCL < 3) return false;
             return _.get(this.room.memory, ['structures', this.id, 'active'], true);
         },
@@ -34,7 +34,7 @@ mod.extend = function(){
         configurable: true,
         get() {
             if (!this.room.owner) return false;
-            if (this.room.owner.username !== this.owner.username) return false;
+            if (this.room.owner !== this.owner.username) return false;
             if (this.room.RCL < 6) return false;
             return _.get(this.room.memory, ['structures', this.id, 'active'], true);
         },
@@ -50,6 +50,14 @@ mod.extend = function(){
         get() {
             return this.room.RCL > 1;
         },
+    });
+    Object.defineProperty(StructureContainer.prototype, 'active', {
+        configurable: true,
+        value: true,
+    });
+    Object.defineProperty(StructureRoad.prototype, 'active', {
+        configurable: true,
+        value: true,
     });
     Object.defineProperty(Source.prototype, 'memory', {
         configurable: true,
