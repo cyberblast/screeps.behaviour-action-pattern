@@ -7,9 +7,9 @@ mod.handleFlagRemoved = flagName => {
     // check flag
     const flagMem = Memory.flags[flagName];
     if( flagMem && flagMem.task === mod.name && flagMem.roomName ){
-        // if there is still a mining flag in that room ignore. 
+        // if there is still a mining flag in that room ignore.
         const flags = FlagDir.filter(FLAG_COLOR.claim.mining, new RoomPosition(25,25,flagMem.roomName), true);
-        if( flags && flags.length > 0 ) 
+        if( flags && flags.length > 0 )
             return;
         else {
             // no more mining in that room.
@@ -120,7 +120,7 @@ mod.checkForRequiredCreeps = (flag) => {
                     task: mod.name, // taskName
                     targetName: flag.name, // targetName
                     type: miner.behaviour // custom
-                }, 
+                },
                 { // spawn room selection params
                     targetRoom: roomName,
                     minEnergyCapacity: miner.minEnergyCapacity, // TODO calculate this
@@ -197,7 +197,7 @@ mod.checkForRequiredCreeps = (flag) => {
                     task: mod.name, // taskName
                     targetName: flag.name, // targetName
                     type: Task.mining.creep.worker.behaviour // custom
-                }, 
+                },
                 { // spawn room selection params
                     targetRoom: roomName,
                     minEnergyCapacity: 600
@@ -366,7 +366,7 @@ mod.checkCapacity= function(roomName) {
     const checkRoomCapacity = function(roomName, minPopulation, maxDropped) {
         const population = Math.round(mod.carryPopulation(roomName) * 100);
         const room = Game.rooms[roomName];
-        const dropped = room ? room.find(FIND_DROPPED_ENERGY): null;
+        const dropped = room ? room.find(FIND_DROPPED_RESOURCES): null;
         let message = 'unknown dropped energy, room not visible.';
         let totalDropped = 0;
         if (dropped) {

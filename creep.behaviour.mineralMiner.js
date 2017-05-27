@@ -1,18 +1,20 @@
-let mod = {};
+const mod = new Creep.Behaviour('mineralMiner');
 module.exports = mod;
-mod.name = 'mineralMiner';
-mod.determineTarget = creep => {
-    let notDeterminated = source => {
-        let hasThisSource = data => data.determinatedTarget === source.id;
-        let existingBranding = _.find(Memory.population, hasThisSource);
-        return !existingBranding;
-    };
-    const source = _.find(creep.room.minerals, notDeterminated);
-    if( source ) {
-        creep.data.determinatedTarget = source.id;
-    }
-    if( SAY_ASSIGNMENT ) creep.say(String.fromCharCode(9935), SAY_PUBLIC);
+mod.actions = function(creep) {
+    return Creep.behaviour.miner.actions.call(this, creep);
 };
-mod.run = function(creep) {
-    return Creep.behaviour.miner.run(creep, {determineTarget: mod.determineTarget});
+mod.getEnergy = function(creep) {
+    return Creep.behaviour.miner.getEnergy.call(this, creep);
+};
+mod.maintain = function(creep) {
+    return Creep.behaviour.miner.maintain.call(this, creep);
+};
+mod.strategies.mining = {
+    newTarget: function(creep) {
+        const notOccupied = source => {
+            const hasThisSource = data => data.creepName !== creep.name && data.determinatedTarget === source.id;
+            return !_.find(Memory.population, hasThisSource);
+        };
+        return _.find(creep.room.minerals, notOccupied);
+    },
 };

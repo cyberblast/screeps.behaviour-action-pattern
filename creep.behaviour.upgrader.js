@@ -1,9 +1,8 @@
-let mod = {};
+const mod = new Creep.Behaviour('upgrader');
 module.exports = mod;
-mod.name = 'upgrader';
 mod.invalidCreep = c => ['miner', 'upgrader'].includes(c.data.creepType) && c.data.determinatedSpot &&
     (c.data.ttl > c.data.spawningTime || c.data.ttl > c.data.predictedRenewal);
-mod.approach = function(creep){
+mod.approach = function(creep) {
     let targetPos = new RoomPosition(creep.data.determinatedSpot.x, creep.data.determinatedSpot.y, creep.pos.roomName);
     let range = creep.pos.getRangeTo(targetPos);
     if( range > 0 ) {
@@ -116,15 +115,4 @@ mod.run = function(creep) {
             creep.upgradeController(creep.room.controller);
         }
     }
-};
-mod.strategies = {
-    defaultStrategy: {
-        name: `default-${mod.name}`,
-        moveOptions: function(options) {
-            return options || {};
-        }
-    }
-};
-mod.selectStrategies = function(actionName) {
-    return [mod.strategies.defaultStrategy, mod.strategies[actionName]];
 };

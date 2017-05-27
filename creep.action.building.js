@@ -2,6 +2,9 @@ let action = new Creep.Action('building');
 module.exports = action;
 action.maxPerTarget = 3;
 action.targetRange = 3;
+action.reachedRange = function(creep) {
+    return creep.getStrategyHandler([action.name], 'reachedRange', creep);
+};
 action.maxPerAction = 3;
 action.isValidAction = function(creep){
     return ( creep.carry.energy > 0 );
@@ -22,5 +25,11 @@ action.newTarget = function(creep){
     return creep.room.getBestConstructionSiteFor(creep.pos, isAddable);
 };
 action.work = function(creep){
+    creep.getStrategyHandler([action.name], 'getEnergy', creep);
     return creep.build(creep.target);
+};
+action.defaultStrategy.reachedRange = 1;
+// this allows us to get energy in the same tick if a behaviour defines this strategy, used in behaviour.miner
+action.defaultStrategy.getEnergy = function(creep) {
+    return false;
 };

@@ -10,6 +10,10 @@ action.isValidTarget = function(target){
         return false;
     }
 
+    if (target.structureType === STRUCTURE_NUKER || target.structureType === STRUCTURE_POWER_SPAWN) {
+        return false;
+    }
+
     return target.store || target.energy || target.mineralAmount;
 };
 action.newTarget = function(creep){
@@ -41,6 +45,7 @@ action.work = function(creep){
         .sortBy(resourceRobValue)
         .values().value();
 
+    // KARL YOU NEED TO DOCUMENT THIS, RESULTS OF WITHDRAW ARE NOT HANDLED INTUITIVELY
     return this.targetCall(creep, resourcesDescending, (target) => {
         return (type, amount, capacity) => {
             // console.log(creep.name, target);

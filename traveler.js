@@ -13,7 +13,7 @@
  *   defaultStuckValue: integer    The maximum number of ticks the creep is in the same RoomPosition before it
  *                                   determines it is stuck and repaths.
  *   reportThreshold:   integer    The mimimum CPU used on pathing to console.log() warnings on CPU usage. Defaults to 50
- * 
+ *
  * Examples: var Traveler = require('Traveler')();
  *           require('util.traveler')({exportTraveler: false, installTraveler: false, installPrototype: true, defaultStuckValue: 2});
  */
@@ -226,7 +226,7 @@ module.exports = function(globalOpts = {}){
                 if (travelData.count > 25 && travelData.avg > options.reportThreshold) {
                     if (options.debug){
                         console.log(`TRAVELER: heavy cpu use: ${creep.name}, avg: ${travelData.cpu / travelData.count}, total: ${_.round(travelData.cpu, 2)},` +
-                            `origin: ${creep.pos}, dest: ${destPos}`); 
+                            `origin: ${creep.pos}, dest: ${destPos}`);
                     }
                 }
                 if (ret.incomplete) {
@@ -368,14 +368,16 @@ module.exports = function(globalOpts = {}){
                 global.traveler = new Traveler();
             }
             options = this.getStrategyHandler([], 'moveOptions', options);
-            options.avoidSK = !options.allowSK;
-            if (_.isUndefined(options.debug)) options.debug = global.DEBUG;
-            if (_.isUndefined(options.allowSK)) options.allowSK = true;
-            if (_.isUndefined(options.reportThreshold)) options.reportThreshold = TRAVELER_THRESHOLD;
-            if (_.isUndefined(options.useFindRoute)) options.useFindRoute = _.get(global, 'ROUTE_PRECALCULATION', true);
-            if (_.isUndefined(options.routeCallback)) options.routeCallback = Room.routeCallback(this.pos.roomName, destination.roomName, options);
-            if (_.isUndefined(options.getCreepMatrix)) options.getCreepMatrix = room => room.creepMatrix;
-            if (_.isUndefined(options.getStructureMatrix)) options.getStructureMatrix = room => Room.getStructureMatrix(room.name || room, options);
+            _.defaults(options, {
+                allowSK: true,
+                avoidSKCreeps: true,
+                debug: global.DEBUG,
+                reportThreshold: global.TRAVELER_THRESHOLD,
+                useFindRoute: _.get(global, 'ROUTE_PRECALCULATION', true),
+                routeCallback: Room.routeCallback(this.pos.roomName, destination.roomName, options),
+                getStructureMatrix: room => Room.getStructureMatrix(room.name || room, options),
+                getCreepMatrix: room => room.getCreepMatrix(options.getStructureMatrix(room)),
+            });
             return traveler.travelTo(this, destination, options);
         };
     }

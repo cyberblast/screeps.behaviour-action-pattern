@@ -8,6 +8,11 @@ mod.extend = function(){
         if (!action || !(action instanceof Creep.Action)) return;
         return action.assign(this, target);
     };
+    Creep.prototype.assignBehaviour = function(behaviour) {
+        if (typeof behaviour === 'string') behaviour = Creep.behaviour[behaviour];
+        if (!behaviour || !(behaviour instanceof Creep.Behaviour)) return;
+        return behaviour.assign(this);
+    };
     // to maintain legacy code for now
     Creep.prototype.findGroupMemberByType = function(creepType, flagName) {
         return Creep.prototype.findGroupMemberBy(c => c.creepType === creepType, flagName);
@@ -336,7 +341,13 @@ mod.extend = function(){
                     delete Memory.debugTrace.creepName;
                 }
             }
-        }
+        },
+        'behaviour': {
+            configurable: true,
+            get: function() {
+                return Creep.behaviour[this.data.creepType];
+            },
+        },
     });
 
     // errorData = {errorCode, action, target, ...}
