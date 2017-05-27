@@ -7,7 +7,7 @@ setup.maxWorker = room => {
     // if none of them are present spawn a worker first
     if (room.controller.level < 4) {
         if (room.situation.invasion) return 1;
-        let max = room.controller.level === 2 ? 6 : 4;
+        let max = room.controller.level === 2 ? 3 * room.sources.length : 2 * room.sources.length;
         const numPioneers = room.population && room.population.typeCount.pioneer || 0;
         return max - numPioneers;
     }
