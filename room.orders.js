@@ -403,54 +403,57 @@ mod.extend = function() {
         if( !this.my || !this.terminal || !this.storage ) return;
         if (this.terminal.cooldown && this.terminal.cooldown > 0) return;
         let that = this;
-        let mineral = this.mineralType;
         let transacting = false;
-        let terminalFull = (this.terminal.sum / this.terminal.storeCapacity) > 0.8;
-        if( this.terminal.store[mineral] >= MIN_MINERAL_SELL_AMOUNT ) {
-            let orders = Game.market.getAllOrders( o => {
-                if( !o.roomName ||
-                    o.resourceType != mineral ||
-                    o.type != 'buy' ||
-                    o.amount < MIN_MINERAL_SELL_AMOUNT ) return false;
+        for (const mineral in this.terminal.store) {
+            if (mineral === RESOURCE_ENERGY || mineral === RESOURCE_POWER) continue;
+            let terminalFull = (this.terminal.sum / this.terminal.storeCapacity) > 0.8;
+            if( this.terminal.store[mineral] >= MIN_MINERAL_SELL_AMOUNT ) {
+                let orders = Game.market.getAllOrders( o => {
+                    if( !o.roomName ||
+                        o.resourceType != mineral ||
+                        o.type != 'buy' ||
+                        o.amount < MIN_MINERAL_SELL_AMOUNT ) return false;
 
-                o.range = Game.map.getRoomLinearDistance(o.roomName, that.name, true);
-                o.transactionAmount = Math.min(o.amount, that.terminal.store[mineral]);
-                o.transactionCost = Game.market.calcTransactionCost(
-                    o.transactionAmount,
-                    that.name,
-                    o.roomName);
-                if(o.transactionCost > that.terminal.store.energy && o.transactionAmount > MIN_MINERAL_SELL_AMOUNT) {
-                    // cant afford. try min amount
-                    o.transactionAmount = MIN_MINERAL_SELL_AMOUNT;
+                    o.range = Game.map.getRoomLinearDistance(o.roomName, that.name, true);
+                    o.transactionAmount = Math.min(o.amount, that.terminal.store[mineral]);
                     o.transactionCost = Game.market.calcTransactionCost(
                         o.transactionAmount,
                         that.name,
                         o.roomName);
+                    if(o.transactionCost > that.terminal.store.energy && o.transactionAmount > MIN_MINERAL_SELL_AMOUNT) {
+                        // cant afford. try min amount
+                        o.transactionAmount = MIN_MINERAL_SELL_AMOUNT;
+                        o.transactionCost = Game.market.calcTransactionCost(
+                            o.transactionAmount,
+                            that.name,
+                            o.roomName);
+                    }
+
+                    o.credits = o.transactionAmount*o.price;
+                    //o.ratio = o.credits/o.transactionCost; // old formula
+                    //o.ratio = (o.credits-o.transactionCost)/o.transactionAmount; // best offer assuming 1e == 1 credit
+                    //o.ratio = o.credits/(o.transactionAmount+o.transactionCost); // best offer assuming 1e == 1 mineral
+                    o.ratio = (o.credits - (o.transactionCost*ENERGY_VALUE_CREDITS)) / o.transactionAmount; // best offer assuming 1e == ENERGY_VALUE_CREDITS credits
+
+                    return (
+                        (terminalFull || o.ratio >= MIN_SELL_RATIO[mineral]) &&
+                        //o.range <= MAX_SELL_RANGE &&
+                        o.transactionCost <= that.terminal.store.energy);
+                });
+
+                if( orders.length > 0 ){
+                    let order = _.max(orders, 'ratio');
+                    let result = Game.market.deal(order.id, order.transactionAmount, that.name);
+                    if( global.DEBUG || SELL_NOTIFICATION ) logSystem(that.name, `Selling ${order.transactionAmount} ${mineral} for ${order.credits} (${order.price} ¢/${mineral}, ${order.transactionCost} e): ${translateErrorCode(result)}`);
+                    if( SELL_NOTIFICATION ) Game.notify( `<h2>Room ${that.name} executed an order!</h2><br/>Result: ${translateErrorCode(result)}<br/>Details:<br/>${JSON.stringify(order).replace(',',',<br/>')}` );
+                    transacting = result == OK;
+                    break;
                 }
-
-                o.credits = o.transactionAmount*o.price;
-                //o.ratio = o.credits/o.transactionCost; // old formula
-                //o.ratio = (o.credits-o.transactionCost)/o.transactionAmount; // best offer assuming 1e == 1 credit
-                //o.ratio = o.credits/(o.transactionAmount+o.transactionCost); // best offer assuming 1e == 1 mineral
-                o.ratio = (o.credits - (o.transactionCost*ENERGY_VALUE_CREDITS)) / o.transactionAmount; // best offer assuming 1e == ENERGY_VALUE_CREDITS credits
-
-                return (
-                    (terminalFull || o.ratio >= MIN_SELL_RATIO[mineral]) &&
-                    //o.range <= MAX_SELL_RANGE &&
-                    o.transactionCost <= that.terminal.store.energy);
-            });
-
-            if( orders.length > 0 ){
-                let order = _.max(orders, 'ratio');
-                let result = Game.market.deal(order.id, order.transactionAmount, that.name);
-                if( global.DEBUG || SELL_NOTIFICATION ) logSystem(that.name, `Selling ${order.transactionAmount} ${mineral} for ${order.credits} (${order.price} ¢/${mineral}, ${order.transactionCost} e): ${translateErrorCode(result)}`);
-                if( SELL_NOTIFICATION ) Game.notify( `<h2>Room ${that.name} executed an order!</h2><br/>Result: ${translateErrorCode(result)}<br/>Details:<br/>${JSON.stringify(order).replace(',',',<br/>')}` );
-                transacting = result == OK;
             }
         }
         if( this.controller.level == 8 && !transacting &&
             this.storage.charge > 0.8 &&
-            (this.terminal.store[mineral]||0) < 150000 &&
+            (this.terminal.store[this.mineralType]||0) < 150000 &&
             this.terminal.store.energy > 55000 ){
             let requiresEnergy = room => (
                 room.my &&
