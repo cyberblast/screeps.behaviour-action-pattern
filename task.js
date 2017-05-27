@@ -109,9 +109,15 @@ mod.clearCache = (task, s) => {
 // destiny: { task, targetName }
 // roomParams: { targetRoom, minRCL = 0, maxRange = Infinity, minEnergyAvailable = 0, minEnergyCapacity = 0, callBack = null, allowTargetRoom = false, rangeRclRatio = 3, rangeQueueRatio = 51 }
 mod.spawn = (creepDefinition, destiny, roomParams, onQueued) => {
+    const targetMem = Memory.rooms[roomParams.targetRoom];
+    let room;
+    if (targetMem && targetMem.spawn) {
+        const spawnRoomName = typeof targetMem.spawn === 'string' ? targetMem.spawn : targetMem.spawn[creepDefinition.name];
+        room = Game.rooms[spawnRoomName];
+    }
     // get nearest room
-    let room = roomParams.explicit ? Game.rooms[roomParams.explicit] : Room.findSpawnRoom(roomParams);
-    if( !room ) return null;
+    if (!room) room = roomParams.explicit ? Game.rooms[roomParams.explicit] : Room.findSpawnRoom(roomParams);
+    if (!room) return null;
     // define new creep
     if(!destiny) destiny = {};
     if(!destiny.room && roomParams.targetRoom) destiny.room = roomParams.targetRoom;
